@@ -1,0 +1,9 @@
+{
+  "surfaceRoots": {
+    "interfacectl-web": "apps/interfacectl-web",
+    "surfaceops-web": "apps/surfaceops-web",
+    "surfaces-web": "apps/surfaces-web"
+  }
+}
+
+
