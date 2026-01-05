@@ -34,13 +34,7 @@ jobs:
 
       - name: Install interfacectl dependencies
         working-directory: interfacectl-tooling
-        run: pnpm install --frozen-lockfile
-
-      - name: Build interfacectl CLI
-        working-directory: interfacectl-tooling
-        run: |
-          pnpm --filter @surfaces/interfacectl-validator run build
-          pnpm --filter @surfaces/interfacectl-cli run build
+        run: pnpm install --frozen-lockfile --prod
 
       - name: Validate interface contract
         env:
