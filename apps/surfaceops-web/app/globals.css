@@ -1,26 +1,64 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #020617;
+  --foreground: #0f172a;
+  --surface: rgba(15, 23, 42, 0.1);
+  --highlight: #38bdf8;
+  --contract-max-width: 1120px;
+  --contract-motion-duration: 120ms;
+  --contract-motion-timing: linear;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-highlight: var(--highlight);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #01010f;
+    --foreground: #f1f5f9;
+    --surface: rgba(148, 163, 184, 0.08);
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.contract-container {
+  width: min(100%, var(--contract-max-width));
+  margin: 0 auto;
+  padding-inline: clamp(1.5rem, 3vw, 4rem);
+}
+
+.contract-panel {
+  background: rgba(15, 23, 42, 0.3);
+  border: 1px solid rgba(94, 234, 212, 0.1);
+  border-radius: 1.5rem;
+  padding: clamp(2.5rem, 4vw, 4rem);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 24px 96px rgba(2, 132, 199, 0.2);
+}
+
+.contract-motion {
+  transition: all var(--contract-motion-duration)
+    var(--contract-motion-timing);
+}
+
+.contract-motion:hover {
+  transform: translateY(-2px);
+}
+
+.contract-motion:focus-visible {
+  outline: 3px solid rgba(56, 189, 248, 0.9);
+  outline-offset: 3px;
 }

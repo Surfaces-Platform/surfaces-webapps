@@ -1,0 +1,95 @@
+{
+  "$schema": "./surfaces.web.contract.schema.json",
+  "contractId": "surfaces.web",
+  "version": "0.1.0",
+  "description": "Interface expectations shared across InterfaceCTL, SurfaceOps, and Surfaces web experiences.",
+  "surfaces": [
+    {
+      "id": "interfacectl-web",
+      "displayName": "InterfaceCTL Web",
+      "type": "web",
+      "requiredSections": [
+        "landing.hero",
+        "landing.guidance",
+        "landing.actions"
+      ],
+      "allowedFonts": [
+        "var(--font-geist-sans)",
+        "var(--font-geist-mono)",
+        "Arial",
+        "Helvetica",
+        "sans-serif"
+      ],
+      "layout": {
+        "maxContentWidth": 1120
+      }
+    },
+    {
+      "id": "surfaceops-web",
+      "displayName": "SurfaceOps Web",
+      "type": "web",
+      "requiredSections": [
+        "landing.hero",
+        "landing.guidance",
+        "landing.actions"
+      ],
+      "allowedFonts": [
+        "var(--font-geist-sans)",
+        "var(--font-geist-mono)",
+        "Arial",
+        "Helvetica",
+        "sans-serif"
+      ],
+      "layout": {
+        "maxContentWidth": 1120
+      }
+    },
+    {
+      "id": "surfaces-web",
+      "displayName": "Surfaces Web",
+      "type": "web",
+      "requiredSections": [
+        "landing.hero",
+        "landing.guidance",
+        "landing.actions"
+      ],
+      "allowedFonts": [
+        "var(--font-geist-sans)",
+        "var(--font-geist-mono)",
+        "Arial",
+        "Helvetica",
+        "sans-serif"
+      ],
+      "layout": {
+        "maxContentWidth": 1120
+      }
+    }
+  ],
+  "sections": [
+    {
+      "id": "landing.hero",
+      "intent": "primary-intro",
+      "description": "Primary hero section introducing the surface intent."
+    },
+    {
+      "id": "landing.guidance",
+      "intent": "supporting-guidance",
+      "description": "Supplemental copy guiding users to next actions."
+    },
+    {
+      "id": "landing.actions",
+      "intent": "primary-actions",
+      "description": "Primary calls-to-action for the surface."
+    }
+  ],
+  "constraints": {
+    "motion": {
+      "allowedDurationsMs": [
+        120
+      ],
+      "allowedTimingFunctions": [
+        "linear"
+      ]
+    }
+  }
+}
