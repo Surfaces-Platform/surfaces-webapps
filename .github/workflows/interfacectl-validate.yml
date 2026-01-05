@@ -26,7 +26,29 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Checkout interfacectl tooling
+        uses: actions/checkout@v4
+        with:
+          repository: mikeylong/interfacectl
+          path: interfacectl-tooling
+
+      - name: Install interfacectl dependencies
+        working-directory: interfacectl-tooling
+        run: pnpm install --frozen-lockfile
+
+      - name: Build interfacectl CLI
+        working-directory: interfacectl-tooling
+        run: |
+          pnpm --filter @surfaces/interfacectl-validator run build
+          pnpm --filter @surfaces/interfacectl-cli run build
+
       - name: Validate interface contract
-        run: pnpm contract:validate
+        env:
+          INTERFACECTL_BIN: ${{ github.workspace }}/interfacectl-tooling/packages/interfacectl-cli/dist/index.js
+        run: |
+          node "$INTERFACECTL_BIN" validate \
+            --root . \
+            --contract contracts/surfaces.web.contract.json \
+            --format json
 
 
