@@ -29,7 +29,7 @@ jobs:
       - name: Checkout interfacectl tooling
         uses: actions/checkout@v4
         with:
-          repository: mikeylong/interfacectl
+          repository: Surfaces-Platform/interfacectl
           path: interfacectl-tooling
 
       - name: Install interfacectl dependencies
