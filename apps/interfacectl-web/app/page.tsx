@@ -20,19 +20,11 @@ export default function Home() {
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
             <a
               className="contract-motion inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-medium text-slate-950 no-underline hover:bg-slate-200"
-              href="https://surfaces.dev/interfacectl"
+              href="https://github.com/mikeylong/interfacectl"
               target="_blank"
               rel="noopener noreferrer"
             >
-              Explore InterfaceCTL
-            </a>
-            <a
-              className="contract-motion inline-flex items-center justify-center rounded-full border border-white/30 px-6 py-3 text-sm font-medium text-white no-underline hover:border-white/60"
-              href="https://surfaces.dev/contact"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Talk to a specialist
+              View project on GitHub
             </a>
           </div>
         </section>
@@ -86,24 +78,9 @@ export default function Home() {
             validate` into CI. Then invite partner teams to extend the shared
             contract for future surfaces.
           </p>
-          <div className="flex flex-col gap-4 sm:flex-row">
-            <a
-              className="contract-motion inline-flex flex-1 items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-medium text-slate-950 no-underline hover:bg-slate-200"
-              href="https://github.com/surfaces-dev"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              View example repo
-            </a>
-            <a
-              className="contract-motion inline-flex flex-1 items-center justify-center rounded-full border border-white/20 px-6 py-3 text-sm font-medium text-white no-underline hover:border-white/60"
-              href="https://surfaces.dev/resources"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Download validation guide
-            </a>
-          </div>
+          <p className="max-w-2xl text-sm text-slate-400">
+            Learn more about the contract workflow in the project documentation.
+          </p>
         </section>
       </main>
     </div>
