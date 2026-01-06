@@ -43,7 +43,7 @@ export default function Home() {
               CLI and UI surfaces without second-guessing naming or layout.
             </p>
           </div>
-          <dl className="grid gap-6 sm:grid-cols-3">
+          <dl className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
               <dt className="text-sm font-semibold text-white">Sections</dt>
               <dd className="mt-2 text-sm text-slate-300">
@@ -61,6 +61,13 @@ export default function Home() {
               <dt className="text-sm font-semibold text-white">Motion</dt>
               <dd className="mt-2 text-sm text-slate-300">
                 Motion classes enforce 120ms linear transitions across states.
+              </dd>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+              <dt className="text-sm font-semibold text-white">UI Copy</dt>
+              <dd className="mt-2 text-sm text-slate-300">
+                Contract-backed UI copy ensures consistent messaging across all
+                surfaces.
               </dd>
             </div>
           </dl>
