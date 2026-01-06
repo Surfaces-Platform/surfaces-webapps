@@ -20,19 +20,9 @@ export default function Home() {
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
             <a
               className="contract-motion inline-flex items-center justify-center rounded-full bg-indigo-500 px-6 py-3 text-sm font-medium text-white no-underline hover:bg-indigo-400"
-              href="https://surfaces.dev/platform"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="mailto:hello@surfaces.systems"
             >
-              View platform tour
-            </a>
-            <a
-              className="contract-motion inline-flex items-center justify-center rounded-full border border-indigo-300 px-6 py-3 text-sm font-medium text-indigo-600 no-underline hover:border-indigo-400"
-              href="https://surfaces.dev/pricing"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Pricing &amp; plans
+              Get in touch
             </a>
           </div>
         </section>
@@ -96,20 +86,10 @@ export default function Home() {
           </p>
           <div className="flex flex-col gap-4 sm:flex-row">
             <a
-              className="contract-motion inline-flex flex-1 items-center justify-center rounded-full bg-slate-900 px-6 py-3 text-sm font-medium text-white no-underline hover:bg-slate-700"
-              href="https://surfaces.dev/get-started"
-              target="_blank"
-              rel="noopener noreferrer"
+              className="contract-motion inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-3 text-sm font-medium text-white no-underline hover:bg-slate-700"
+              href="mailto:hello@surfaces.systems"
             >
-              Get started
-            </a>
-            <a
-              className="contract-motion inline-flex flex-1 items-center justify-center rounded-full border border-slate-300 px-6 py-3 text-sm font-medium text-slate-900 no-underline hover:border-slate-400"
-              href="https://surfaces.dev/support"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Contact support
+              Get in touch
             </a>
           </div>
         </section>
