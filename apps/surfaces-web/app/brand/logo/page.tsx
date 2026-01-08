@@ -23,8 +23,8 @@ export default function BrandLogoPage() {
       <Navigation
         currentSurface="surfaces"
         currentContext={{
-          contentType: 'guidelines',
-          subject: 'brand'
+          contentType: 'docs',
+          subject: undefined
         }}
         sections={[
           { label: 'Logo', href: '#logo' },
