@@ -128,6 +128,21 @@ Failures produce deterministic CLI output with remediation guidance; block the m
 4. Reuse `.contract-motion` (or equivalent) transitions defined via contract motion variables.
 5. After installing the CLI (`pnpm add -D @surfaces/interfacectl-cli`), run `pnpm exec interfacectl validate --root . --contract contracts/surfaces.web.contract.json` locally before opening a PR.
 
+## Pre-commit Hooks
+
+A pre-commit hook is configured to automatically run contract validation before each commit. This prevents contract violations from being committed.
+
+**Setup**: Once `@surfaces/interfacectl-cli` is published and installed, the pre-commit hook will automatically run `pnpm validate:contract` before each commit.
+
+The hook is managed via [husky](https://typicode.github.io/husky/) and configured in:
+- `.husky/pre-commit` - Git hook script
+- `package.json` - Contains the `validate:contract` script and `prepare` script for husky initialization
+
+**Bypassing the hook** (not recommended):
+```bash
+git commit --no-verify
+```
+
 Future enhancements (`init`, `diff`, `route`) can build on this foundation without changing the single source of truth.
 
 

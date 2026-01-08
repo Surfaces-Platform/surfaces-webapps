@@ -103,6 +103,18 @@ pnpm validate:contract
 
 This runs `interfacectl validate` against the contract defined in `contracts/surfaces.web.contract.json`.
 
+### Pre-commit Hooks
+
+Interface contract validation runs automatically before each commit via a pre-commit hook. This ensures contract violations are caught locally before code is pushed.
+
+**Note**: The pre-commit hook requires `@surfaces/interfacectl-cli` to be published and installed. Once the package is available, run `pnpm install` to set up the hook.
+
+To bypass the pre-commit hook (not recommended):
+
+```bash
+git commit --no-verify
+```
+
 ## Project Structure
 
 ```

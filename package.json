@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "validate:contract": "interfacectl validate --root . --contract contracts/surfaces.web.contract.json --format json",
+    "prepare": "husky install",
+    "validate:contract": "pnpm exec interfacectl validate --root . --contract contracts/surfaces.web.contract.json --format json",
     "dev:surfaces": "pnpm --filter surfaces-web dev",
     "dev:surfaceops": "pnpm --filter surfaceops-web dev",
     "dev:interfacectl": "pnpm --filter interfacectl-web dev",
@@ -15,7 +16,10 @@
     "type-check:interfacectl": "pnpm --filter interfacectl-web type-check"
   },
   "devDependencies": {
+    "@surfaces/interfacectl-cli": "^0.1.0",
     "@types/node": "^20.14.9",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.10",
     "typescript": "^5.6.3"
   },
   "packageManager": "pnpm@10.26.2+sha512.0e308ff2005fc7410366f154f625f6631ab2b16b1d2e70238444dd6ae9d630a8482d92a451144debc492416896ed16f7b114a86ec68b8404b2443869e68ffda6",
