@@ -14,8 +14,10 @@
         "landing.actions"
       ],
       "allowedFonts": [
-        "var(--font-geist-sans)",
         "var(--font-geist-mono)",
+        "JetBrains Mono",
+        "monospace",
+        "var(--font-geist-sans)",
         "Arial",
         "Helvetica",
         "sans-serif"
@@ -35,6 +37,8 @@
       ],
       "allowedFonts": [
         "var(--font-geist-sans)",
+        "var(--font-inter)",
+        "Inter",
         "var(--font-geist-mono)",
         "Arial",
         "Helvetica",
@@ -55,6 +59,8 @@
       ],
       "allowedFonts": [
         "var(--font-geist-sans)",
+        "var(--font-inter)",
+        "Inter",
         "var(--font-geist-mono)",
         "Arial",
         "Helvetica",
