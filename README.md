@@ -76,6 +76,23 @@ You can customize the development URLs by setting environment variables in each 
 
 These can be set in `.env.local` files in each app directory.
 
+## Type Checking
+
+Run TypeScript type checking (same strictness as Vercel builds):
+
+```bash
+# Type-check all packages
+pnpm type-check
+
+# Type-check individual packages
+pnpm type-check:ui           # UI package only
+pnpm type-check:surfaces     # surfaces-web only
+pnpm type-check:surfaceops   # surfaceops-web only
+pnpm type-check:interfacectl # interfacectl-web only
+```
+
+This runs `tsc --noEmit` for each package, catching type errors before pushing to Vercel.
+
 ## Contract Validation
 
 Validate interface contract compliance:
