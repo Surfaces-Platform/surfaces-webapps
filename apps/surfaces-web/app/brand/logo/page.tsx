@@ -229,7 +229,7 @@ export default function BrandLogoPage() {
                 >
                   <SurfacesLogo size={item.size} />
                 </div>
-                <div style={{ fontSize: '12px', color: colors.neutral[500] }}>
+                <div style={{ fontSize: '12px', color: colors.neutral[600] }}>
                   {item.label}
                 </div>
               </div>
@@ -298,7 +298,7 @@ export default function BrandLogoPage() {
                     >
                       <SurfacesLogo size={48} />
                     </div>
-                    <div style={{ fontSize: '12px', color: colors.neutral[500] }}>{item.label}</div>
+                    <div style={{ fontSize: '12px', color: colors.neutral[600] }}>{item.label}</div>
                   </div>
                 ))}
               </div>
@@ -326,7 +326,7 @@ export default function BrandLogoPage() {
                     >
                       <SurfacesLogo size={48} />
                     </div>
-                    <div style={{ fontSize: '12px', color: colors.neutral[500] }}>{item.label}</div>
+                    <div style={{ fontSize: '12px', color: colors.neutral[600] }}>{item.label}</div>
                   </div>
                 ))}
               </div>
@@ -468,7 +468,7 @@ export default function BrandLogoPage() {
                     >
                       <SurfacesLogo size={size} />
                     </div>
-                    <div style={{ fontSize: '12px', color: colors.neutral[500] }}>{size}×{size}</div>
+                    <div style={{ fontSize: '12px', color: colors.neutral[600] }}>{size}×{size}</div>
                   </div>
                 ))}
               </div>
