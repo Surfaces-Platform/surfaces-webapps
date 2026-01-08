@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "prepare": "husky install",
-    "validate:contract": "pnpm exec interfacectl validate --root . --contract contracts/surfaces.web.contract.json --format json",
+    "validate:contract": "./scripts/validate-contract.sh",
     "dev:surfaces": "pnpm --filter surfaces-web dev",
     "dev:surfaceops": "pnpm --filter surfaceops-web dev",
     "dev:interfacectl": "pnpm --filter interfacectl-web dev",
