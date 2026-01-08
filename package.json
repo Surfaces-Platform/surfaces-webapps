@@ -7,7 +7,12 @@
     "dev:surfaces": "pnpm --filter surfaces-web dev",
     "dev:surfaceops": "pnpm --filter surfaceops-web dev",
     "dev:interfacectl": "pnpm --filter interfacectl-web dev",
-    "dev:all": "pnpm --filter surfaces-web dev & pnpm --filter surfaceops-web dev & pnpm --filter interfacectl-web dev"
+    "dev:all": "pnpm --filter surfaces-web dev & pnpm --filter surfaceops-web dev & pnpm --filter interfacectl-web dev",
+    "type-check": "pnpm --filter @surfaces/ui type-check && pnpm --filter surfaces-web type-check && pnpm --filter surfaceops-web type-check && pnpm --filter interfacectl-web type-check",
+    "type-check:ui": "pnpm --filter @surfaces/ui type-check",
+    "type-check:surfaces": "pnpm --filter surfaces-web type-check",
+    "type-check:surfaceops": "pnpm --filter surfaceops-web type-check",
+    "type-check:interfacectl": "pnpm --filter interfacectl-web type-check"
   },
   "devDependencies": {
     "@types/node": "^20.14.9",
