@@ -16,7 +16,6 @@
     "type-check:interfacectl": "pnpm --filter interfacectl-web type-check"
   },
   "devDependencies": {
-    "@surfaces/interfacectl-cli": "^0.1.0",
     "@types/node": "^20.14.9",
     "husky": "^9.0.11",
     "lint-staged": "^15.2.10",
