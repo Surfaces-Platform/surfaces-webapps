@@ -17,8 +17,8 @@ export const fadeUpVariants = {
     opacity: 1, 
     y: 0,
     transition: {
-      duration: 0.18,
-      ease: [0.2, 0, 0, 1]
+      duration: 0.12,
+      ease: 'linear'
     }
   }
 };
@@ -29,8 +29,8 @@ export const fadeRightVariants = {
     opacity: 1, 
     x: 0,
     transition: {
-      duration: 0.18,
-      ease: [0.2, 0, 0, 1]
+      duration: 0.12,
+      ease: 'linear'
     }
   }
 };
@@ -41,8 +41,8 @@ export const fadeDownVariants = {
     opacity: 1, 
     y: 0,
     transition: {
-      duration: 0.18,
-      ease: [0.2, 0, 0, 1]
+      duration: 0.12,
+      ease: 'linear'
     }
   }
 };
