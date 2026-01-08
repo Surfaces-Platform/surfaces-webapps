@@ -131,7 +131,7 @@ export default function BrandLogoPage() {
               fontSize: '12px',
               lineHeight: 1.6,
               maxWidth: '800px',
-              color: colors.neutral[700]
+              color: colors.neutral[600]
             }}
           >
             This is the Surfaces Platform logo at minimum approved size (24×24 pixels). 
@@ -199,7 +199,7 @@ export default function BrandLogoPage() {
               fontSize: '12px',
               lineHeight: 1.6,
               maxWidth: '800px',
-              color: colors.neutral[700]
+              color: colors.neutral[600]
             }}
           >
             The logo may be scaled uniformly. Minimum size is 16×16 pixels. Below this threshold, the logo <strong>must not appear in any form</strong>. 
@@ -268,7 +268,7 @@ export default function BrandLogoPage() {
               fontSize: '12px',
               lineHeight: 1.6,
               maxWidth: '800px',
-              color: colors.neutral[700]
+              color: colors.neutral[600]
             }}
           >
             The logo appears <strong>identically</strong> on all backgrounds. It is not inverted, recolored, or modified for dark mode. 
@@ -321,7 +321,7 @@ export default function BrandLogoPage() {
                       className="p-6 inline-flex mb-2"
                       style={{ 
                         backgroundColor: item.bg,
-                        border: `1px solid ${colors.neutral[700] || colors.neutral[800]}`
+                        border: `1px solid ${colors.neutral[600] || colors.neutral[800]}`
                       }}
                     >
                       <SurfacesLogo size={48} />
@@ -362,7 +362,7 @@ export default function BrandLogoPage() {
             <div style={{ fontSize: '12px', fontWeight: 500, marginBottom: '8px', color: colors.neutral[900] }}>
               Do not:
             </div>
-            <ul style={{ fontSize: '12px', color: colors.neutral[700], listStyle: 'none', padding: 0, margin: 0 }}>
+            <ul style={{ fontSize: '12px', color: colors.neutral[600], listStyle: 'none', padding: 0, margin: 0 }}>
               <li>– Invert the logo</li>
               <li>– Recolor the logo</li>
               <li>– Outline or inline the logo</li>
@@ -423,7 +423,7 @@ export default function BrandLogoPage() {
                 className="p-4 flex items-center gap-3"
                 style={{ 
                   backgroundColor: colors.neutral[900],
-                  border: `1px solid ${colors.neutral[700] || colors.neutral[800]}`
+                  border: `1px solid ${colors.neutral[600] || colors.neutral[800]}`
                 }}
               >
                 <SurfacesLogo size={32} />
@@ -524,7 +524,7 @@ export default function BrandLogoPage() {
           <motion.div 
             variants={fadeUpVariants}
             className="space-y-4"
-            style={{ fontSize: '12px', lineHeight: 1.6, maxWidth: '800px', color: colors.neutral[700] }}
+            style={{ fontSize: '12px', lineHeight: 1.6, maxWidth: '800px', color: colors.neutral[600] }}
           >
             <div>
               <div style={{ fontWeight: 500, marginBottom: '8px', color: colors.neutral[900] }}>
