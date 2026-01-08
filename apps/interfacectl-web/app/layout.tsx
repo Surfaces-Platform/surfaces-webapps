@@ -1,21 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
-  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "InterfaceCTL",
-  description:
-    "InterfaceCTL aligns surfaces with a shared contract across tooling.",
+  title: "interfacectl - Command-line control for interface contracts",
+  description: "interfacectl validates, enforces, and inspects interface contracts as executable truth.",
 };
 
 export default function RootLayout({
@@ -26,7 +20,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans`}
+        className={`${jetbrainsMono.variable} antialiased font-mono`}
+        style={{ fontFamily: 'var(--font-geist-mono), JetBrains Mono, monospace' }}
       >
         {children}
       </body>

@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@surfaces/ui": ["../../packages/ui/src"]
     }
   },
   "include": [
