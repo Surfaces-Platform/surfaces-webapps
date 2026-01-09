@@ -55,6 +55,7 @@
         "type",
         "requiredSections",
         "allowedFonts",
+        "allowedColors",
         "layout"
       ],
       "properties": {
@@ -83,6 +84,15 @@
           "uniqueItems": true
         },
         "allowedFonts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "allowedColors": {
           "type": "array",
           "minItems": 1,
           "items": {
