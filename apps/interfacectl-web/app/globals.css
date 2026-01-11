@@ -1,11 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&display=swap');
 @import "tailwindcss";
 
-/* Test: Intentional contract violation - disallowed color */
-.test-violation {
-  color: #FF0000; /* Red color not in allowedColors list */
-}
-
 :root {
   --background: #171717;
   --foreground: #FFFFFF;
