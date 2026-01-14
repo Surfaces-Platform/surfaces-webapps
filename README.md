@@ -131,7 +131,7 @@ git commit --no-verify
 ## Project Structure
 
 ```
-surfaces-monorepo/
+surfaces-webapps/
 ├── apps/
 │   ├── surfaces-web/        # Surfaces landing page
 │   ├── surfaceops-web/      # SurfaceOps landing page
