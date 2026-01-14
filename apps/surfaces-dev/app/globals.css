@@ -1,0 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&display=swap');
+@import "tailwindcss";
+
+:root {
+  --background: #171717;
+  --foreground: #FFFFFF;
+  --contract-max-width: 1120px;
+  --contract-motion-duration: 120ms;
+  --contract-motion-timing: linear;
+  --font-geist-mono: 'JetBrains Mono', monospace;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-mono), JetBrains Mono, monospace;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.contract-container {
+  width: min(100%, var(--contract-max-width));
+  margin: 0 auto;
+  padding-inline: clamp(1.5rem, 2vw, 3rem);
+}
+
+.contract-surface-card {
+  background: var(--surface);
+  border-radius: 1.5rem;
+  padding: clamp(2rem, 3vw, 3.5rem);
+  box-shadow: 0 12px 48px rgba(17, 24, 39, 0.08);
+}
+
+.contract-motion {
+  transition: all var(--contract-motion-duration)
+    var(--contract-motion-timing);
+}
+
+.contract-motion:hover {
+  transform: translateY(-2px);
+}
+
+.contract-motion:focus-visible {
+  outline: 3px solid var(--contrast);
+  outline-offset: 3px;
+}

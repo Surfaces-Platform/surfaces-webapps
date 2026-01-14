@@ -6,7 +6,7 @@ import { colors } from '@surfaces/ui/tokens/colors';
 import { fadeUpVariants, staggerContainer } from '@surfaces/ui/utils/motion';
 
 export default function Home() {
-  const handleSurfaceChange = (surface: 'surfaces' | 'surfaceops' | 'interfacectl') => {
+  const handleSurfaceChange = (surface: 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev') => {
     // Handle surface change - could use router for Next.js navigation
     console.log('Surface change:', surface);
   };

@@ -15,7 +15,7 @@ interface SurfaceInfo {
 }
 
 interface NavigationProps {
-  currentSurface: 'surfaces' | 'surfaceops' | 'interfacectl';
+  currentSurface: 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev';
   sections: NavigationSection[];
   utilities?: {
     label: string;
@@ -26,25 +26,28 @@ interface NavigationProps {
     contentType?: 'docs' | 'concepts' | 'usage' | 'commands' | 'spec' | 'overview' | 'operations' | 'states';
     subject?: 'contracts' | 'validation' | 'drift' | 'enforcement';
   };
-  onSurfaceChange?: (surface: 'surfaces' | 'surfaceops' | 'interfacectl') => void;
+  onSurfaceChange?: (surface: 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev') => void;
 }
 
 // Get domain configuration based on environment
-function getDomainConfig(): Record<'surfaces' | 'surfaceops' | 'interfacectl', string> {
+function getDomainConfig(): Record<'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev', string> {
   // Check if we're in production (check if hostname matches production domains)
   const isProduction = typeof window !== 'undefined' && 
     (window.location.hostname === 'surfaces.systems' || 
      window.location.hostname === 'surfaceops.ai' || 
      window.location.hostname === 'interfacectl.com' ||
+     window.location.hostname === 'surfaces.dev' ||
      window.location.hostname.endsWith('.surfaces.systems') ||
      window.location.hostname.endsWith('.surfaceops.ai') ||
-     window.location.hostname.endsWith('.interfacectl.com'));
+     window.location.hostname.endsWith('.interfacectl.com') ||
+     window.location.hostname.endsWith('.surfaces.dev'));
 
   if (isProduction) {
     return {
       surfaces: 'https://surfaces.systems',
       surfaceops: 'https://surfaceops.ai',
-      interfacectl: 'https://interfacectl.com'
+      interfacectl: 'https://interfacectl.com',
+      'surfaces-dev': 'https://surfaces.dev'
     };
   }
 
@@ -52,14 +55,15 @@ function getDomainConfig(): Record<'surfaces' | 'surfaceops' | 'interfacectl', s
   return {
     surfaces: process.env.NEXT_PUBLIC_SURFACES_URL || 'http://localhost:3000',
     surfaceops: process.env.NEXT_PUBLIC_SURFACEOPS_URL || 'http://localhost:3001',
-    interfacectl: process.env.NEXT_PUBLIC_INTERFACECTL_URL || 'http://localhost:3002'
+    interfacectl: process.env.NEXT_PUBLIC_INTERFACECTL_URL || 'http://localhost:3002',
+    'surfaces-dev': process.env.NEXT_PUBLIC_SURFACES_DEV_URL || 'http://localhost:3003'
   };
 }
 
 // Context-preserving routing logic
 function getContextualRoute(
-  fromSurface: 'surfaces' | 'surfaceops' | 'interfacectl',
-  toSurface: 'surfaces' | 'surfaceops' | 'interfacectl',
+  fromSurface: 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev',
+  toSurface: 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev',
   context?: {
     contentType?: string;
     subject?: string;
@@ -75,6 +79,7 @@ function getContextualRoute(
   if (!context || !context.contentType) {
     path = toSurface === 'surfaces' ? '/' : 
            toSurface === 'surfaceops' ? '/' : 
+           toSurface === 'surfaces-dev' ? '/' :
            '/';
   } else {
     const { contentType, subject } = context;
@@ -83,6 +88,7 @@ function getContextualRoute(
     if (contentType === 'docs') {
       if (toSurface === 'surfaces') path = '/#docs';
       else if (toSurface === 'surfaceops') path = '/#docs';
+      else if (toSurface === 'surfaces-dev') path = '/';
       else path = '/#spec';
     }
     // Concept → Operational
@@ -126,6 +132,7 @@ function getContextualRoute(
     else {
       if (toSurface === 'surfaces') path = '/#docs';
       else if (toSurface === 'surfaceops') path = '/#docs';
+      else if (toSurface === 'surfaces-dev') path = '/';
       else path = '/#spec';
     }
   }
@@ -219,6 +226,11 @@ export default function Navigation({
       name: 'interfacectl.com',
       url: '/interfacectl',
       descriptor: 'Executable interface control'
+    },
+    {
+      name: 'surfaces.dev',
+      url: '/surfaces-dev',
+      descriptor: 'Developer documentation and reference'
     }
   ];
 
@@ -226,7 +238,8 @@ export default function Navigation({
   const identifiers = {
     surfaces: 'Surfaces',
     surfaceops: 'surfaceops',
-    interfacectl: 'interfacectl'
+    interfacectl: 'interfacectl',
+    'surfaces-dev': 'surfaces.dev'
   };
 
 
@@ -267,7 +280,7 @@ export default function Navigation({
               fontWeight: 600,
               color: activeTheme.text,
               textDecoration: 'none',
-              fontFamily: currentSurface === 'interfacectl' ? 'JetBrains Mono, monospace' : 'Inter, sans-serif'
+              fontFamily: currentSurface === 'interfacectl' || currentSurface === 'surfaces-dev' ? 'JetBrains Mono, monospace' : 'Inter, sans-serif'
             }}
           >
             {identifiers[currentSurface]}
@@ -288,7 +301,7 @@ export default function Navigation({
                   fontWeight: 400,
                   color: activeTheme.textMuted,
                   textDecoration: 'none',
-                  fontFamily: currentSurface === 'interfacectl' ? 'JetBrains Mono, monospace' : 'Inter, sans-serif',
+                  fontFamily: currentSurface === 'interfacectl' || currentSurface === 'surfaces-dev' ? 'JetBrains Mono, monospace' : 'Inter, sans-serif',
                   transition: 'color 0.12s linear'
                 }}
                 onMouseEnter={(e) => {
@@ -326,7 +339,7 @@ export default function Navigation({
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                fontFamily: currentSurface === 'interfacectl' ? 'JetBrains Mono, monospace' : 'Inter, sans-serif',
+                fontFamily: currentSurface === 'interfacectl' || currentSurface === 'surfaces-dev' ? 'JetBrains Mono, monospace' : 'Inter, sans-serif',
                 transition: 'color 0.12s linear'
               }}
               onMouseEnter={(e) => {
@@ -338,6 +351,7 @@ export default function Navigation({
             >
               {currentSurface === 'surfaces' ? 'surfaces.systems' : 
                currentSurface === 'surfaceops' ? 'surfaceops.ai' : 
+               currentSurface === 'surfaces-dev' ? 'surfaces.dev' :
                'interfacectl.com'}
               <span style={{ fontSize: '10px' }}>▾</span>
             </button>
@@ -380,9 +394,10 @@ export default function Navigation({
                       const isCurrent = 
                         (currentSurface === 'surfaces' && surface.name === 'surfaces.systems') ||
                         (currentSurface === 'surfaceops' && surface.name === 'surfaceops.ai') ||
-                        (currentSurface === 'interfacectl' && surface.name === 'interfacectl.com');
+                        (currentSurface === 'interfacectl' && surface.name === 'interfacectl.com') ||
+                        (currentSurface === 'surfaces-dev' && surface.name === 'surfaces.dev');
 
-                      const targetSurface = surface.name.split('.')[0] as 'surfaces' | 'surfaceops' | 'interfacectl';
+                      const targetSurface = (surface.name === 'surfaces.dev' ? 'surfaces-dev' : surface.name.split('.')[0]) as 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev';
                       const targetUrl = getContextualRoute(currentSurface, targetSurface, currentContext);
 
                       return (
@@ -390,7 +405,7 @@ export default function Navigation({
                           key={idx}
                           href={targetUrl}
                           onClick={(e) => {
-                            const targetSurface = surface.name.split('.')[0] as 'surfaces' | 'surfaceops' | 'interfacectl';
+                            const targetSurface = (surface.name === 'surfaces.dev' ? 'surfaces-dev' : surface.name.split('.')[0]) as 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev';
                             const targetUrl = getContextualRoute(currentSurface, targetSurface, currentContext);
                             
                             e.preventDefault();
@@ -438,7 +453,7 @@ export default function Navigation({
                               fontWeight: 600,
                               color: activeTheme.text,
                               marginBottom: '4px',
-                              fontFamily: surface.name === 'interfacectl.com' ? 'JetBrains Mono, monospace' : 'Inter, sans-serif'
+                              fontFamily: surface.name === 'interfacectl.com' || surface.name === 'surfaces.dev' ? 'JetBrains Mono, monospace' : 'Inter, sans-serif'
                             }}
                           >
                             {surface.name}
@@ -478,7 +493,7 @@ export default function Navigation({
                     fontWeight: 400,
                     color: activeTheme.textMuted,
                     textDecoration: 'none',
-                    fontFamily: currentSurface === 'interfacectl' ? 'JetBrains Mono, monospace' : 'Inter, sans-serif',
+                    fontFamily: currentSurface === 'interfacectl' || currentSurface === 'surfaces-dev' ? 'JetBrains Mono, monospace' : 'Inter, sans-serif',
                     transition: 'color 0.12s linear'
                   }}
                   onMouseEnter={(e) => {

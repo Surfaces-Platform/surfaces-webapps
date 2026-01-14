@@ -1,10 +1,11 @@
 # Surfaces Platform Web Monorepo
 
-This monorepo contains three Next.js web applications for the Surfaces Platform:
+This monorepo contains four Next.js web applications for the Surfaces Platform:
 
 - **surfaces-web** - Canonical source of interface truth (surfaces.systems)
 - **surfaceops-web** - Operational enforcement and monitoring (surfaceops.ai)
 - **interfacectl-web** - Executable interface control (interfacectl.com)
+- **surfaces-dev** - Developer documentation and reference (surfaces.dev)
 
 ## Local Development
 
@@ -27,11 +28,16 @@ cd apps/surfaceops-web && pnpm dev
 pnpm dev:interfacectl
 # or
 cd apps/interfacectl-web && pnpm dev
+
+# Run surfaces-dev on port 3003
+pnpm dev:surfaces-dev
+# or
+cd apps/surfaces-dev && pnpm dev
 ```
 
 ### Running All Apps
 
-To run all three apps concurrently:
+To run all four apps concurrently:
 
 ```bash
 pnpm dev:all
@@ -48,6 +54,9 @@ pnpm dev:surfaceops  # http://localhost:3001
 
 # Terminal 3
 pnpm dev:interfacectl # http://localhost:3002
+
+# Terminal 4
+pnpm dev:surfaces-dev # http://localhost:3003
 ```
 
 ### Local Development URLs
@@ -55,6 +64,7 @@ pnpm dev:interfacectl # http://localhost:3002
 - Surfaces: http://localhost:3000
 - SurfaceOps: http://localhost:3001
 - InterfaceCTL: http://localhost:3002
+- Surfaces.dev: http://localhost:3003
 
 ## Production Domains
 
@@ -63,6 +73,7 @@ When deployed, each app runs on its own domain:
 - Surfaces: https://surfaces.systems
 - SurfaceOps: https://surfaceops.ai
 - InterfaceCTL: https://interfacectl.com
+- Surfaces.dev: https://surfaces.dev
 
 The Navigation component automatically detects the environment and routes to the correct domains in production, or localhost ports in development.
 
@@ -73,6 +84,7 @@ You can customize the development URLs by setting environment variables in each 
 - `NEXT_PUBLIC_SURFACES_URL` - Default: `http://localhost:3000`
 - `NEXT_PUBLIC_SURFACEOPS_URL` - Default: `http://localhost:3001`
 - `NEXT_PUBLIC_INTERFACECTL_URL` - Default: `http://localhost:3002`
+- `NEXT_PUBLIC_SURFACES_DEV_URL` - Default: `http://localhost:3003`
 
 These can be set in `.env.local` files in each app directory.
 
@@ -89,6 +101,7 @@ pnpm type-check:ui           # UI package only
 pnpm type-check:surfaces     # surfaces-web only
 pnpm type-check:surfaceops   # surfaceops-web only
 pnpm type-check:interfacectl # interfacectl-web only
+pnpm type-check:surfaces-dev # surfaces-dev only
 ```
 
 This runs `tsc --noEmit` for each package, catching type errors before pushing to Vercel.
@@ -122,7 +135,8 @@ surfaces-monorepo/
 ├── apps/
 │   ├── surfaces-web/        # Surfaces landing page
 │   ├── surfaceops-web/      # SurfaceOps landing page
-│   └── interfacectl-web/    # InterfaceCTL landing page
+│   ├── interfacectl-web/    # InterfaceCTL landing page
+│   └── surfaces-dev/        # Developer documentation
 ├── packages/
 │   └── ui/                  # Shared UI components
 │       ├── components/      # Navigation, etc.

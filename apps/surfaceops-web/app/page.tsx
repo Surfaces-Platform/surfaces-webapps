@@ -6,7 +6,7 @@ import { colors } from '@surfaces/ui/tokens/colors';
 import { fadeRightVariants, fadeDownVariants, staggerContainer } from '@surfaces/ui/utils/motion';
 
 export default function Home() {
-  const handleSurfaceChange = (surface: 'surfaces' | 'surfaceops' | 'interfacectl') => {
+  const handleSurfaceChange = (surface: 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev') => {
     console.log('Surface change:', surface);
   };
 
