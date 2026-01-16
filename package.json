@@ -7,6 +7,10 @@
     "validate:contract": "./scripts/validate-contract.sh",
     "validate:contract:text": "node /Users/mike/Cursor/interfacectl/packages/interfacectl-cli/dist/index.js validate --root . --contract ./contracts/surfaces.web.contract.json --format text",
     "validate:contract:dev": "cd /Users/mike/Cursor/interfacectl && pnpm run build && cd - && ./scripts/validate-contract.sh",
+    "validate:local": "pnpm exec interfacectl validate --workspace-root . --contract ./contracts/surfaces.web.contract.json",
+    "validate:ci": "pnpm --filter @surfaces/interfacectl-validator run build && pnpm --filter @surfaces/interfacectl-cli run build && node scripts/print-provenance.mjs && pnpm exec interfacectl validate --workspace-root . --contract ./contracts/surfaces.web.contract.json",
+    "cli:where:local": "node -e \"const pkg = require('./interfacectl-tooling/packages/interfacectl-cli/package.json'); const {execSync} = require('child_process'); console.log('=== Local Workspace CLI ==='); try { const bin = execSync('pnpm exec which interfacectl', {encoding: 'utf8'}).trim(); console.log('Binary:', bin); } catch { console.log('Binary: node_modules/.bin/interfacectl'); } try { const version = execSync('pnpm exec interfacectl --version', {encoding: 'utf8'}).trim(); console.log('Version:', version); } catch { console.log('Version:', pkg.version); } try { const sha = execSync('git rev-parse HEAD', {encoding: 'utf8'}).trim(); console.log('Git SHA:', sha); } catch { console.log('Git SHA: not a git repo'); }\"",
+    "cli:where:ci": "node -e \"const pkg = require('./interfacectl-tooling/packages/interfacectl-cli/package.json'); const {execSync} = require('child_process'); console.log('=== CI/Prod Workspace CLI ==='); console.log('Build status: CLI packages built from source'); try { const bin = execSync('pnpm exec which interfacectl', {encoding: 'utf8'}).trim(); console.log('Binary:', bin); } catch { console.log('Binary: node_modules/.bin/interfacectl'); } try { const version = execSync('pnpm exec interfacectl --version', {encoding: 'utf8'}).trim(); console.log('Version:', version); } catch { console.log('Version:', pkg.version); } try { const sha = execSync('git rev-parse HEAD', {encoding: 'utf8'}).trim(); console.log('Git SHA:', sha); } catch { console.log('Git SHA: not a git repo'); }\"",
     "dev:surfaces": "pnpm --filter surfaces-web dev",
     "dev:surfaceops": "pnpm --filter surfaceops-web dev",
     "dev:interfacectl": "pnpm --filter interfacectl-web dev",
@@ -20,12 +24,19 @@
     "type-check:surfaces-dev": "pnpm --filter surfaces-dev type-check"
   },
   "devDependencies": {
+    "@surfaces/interfacectl-cli": "workspace:*",
+    "@surfaces/interfacectl-validator": "workspace:*",
     "@types/node": "^20.14.9",
     "husky": "^9.0.11",
     "lint-staged": "^15.2.10",
     "typescript": "^5.6.3"
   },
   "packageManager": "pnpm@10.26.2+sha512.0e308ff2005fc7410366f154f625f6631ab2b16b1d2e70238444dd6ae9d630a8482d92a451144debc492416896ed16f7b114a86ec68b8404b2443869e68ffda6",
+  "pnpm": {
+    "overrides": {
+      "@surfaces/interfacectl-validator": "workspace:*"
+    }
+  },
   "dependencies": {
     "motion": "^12.24.7"
   }

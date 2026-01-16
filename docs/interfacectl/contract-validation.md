@@ -31,16 +31,17 @@ No dev servers, app execution, or runtime introspection is invoked. If informati
 
 ## CLI usage
 
-Install the CLI from the standalone repo (once published to npm):
+The CLI is available in the workspace via `@surfaces/interfacectl-cli`. Run validation from the Surfaces monorepo root:
 
 ```bash
-pnpm add -D @surfaces/interfacectl-cli
-```
+# Local development (assumes CLI packages are built)
+pnpm validate:local
 
-Then run the validator from the Surfaces monorepo root:
+# CI/production (builds CLI from source, then validates)
+pnpm validate:ci
 
-```bash
-pnpm exec interfacectl validate --root . --contract contracts/surfaces.web.contract.json
+# Direct usage (if CLI is built)
+pnpm exec interfacectl validate --workspace-root . --contract contracts/surfaces.web.contract.json
 ```
 
 The CLI will:
@@ -132,11 +133,17 @@ Failures produce deterministic CLI output with remediation guidance; block the m
 
 A pre-commit hook is configured to automatically run contract validation before each commit. This prevents contract violations from being committed.
 
-**Setup**: Once `@surfaces/interfacectl-cli` is published and installed, the pre-commit hook will automatically run `pnpm validate:contract` before each commit.
+**Setup**: The pre-commit hook automatically runs `pnpm validate:local` before each commit. This uses the workspace-linked CLI, which must be built first. If you encounter build errors, run:
+
+```bash
+# Build the CLI packages
+pnpm --filter @surfaces/interfacectl-validator run build
+pnpm --filter @surfaces/interfacectl-cli run build
+```
 
 The hook is managed via [husky](https://typicode.github.io/husky/) and configured in:
-- `.husky/pre-commit` - Git hook script
-- `package.json` - Contains the `validate:contract` script and `prepare` script for husky initialization
+- `.husky/pre-commit` - Git hook script (runs `pnpm validate:local`)
+- `package.json` - Contains the validation scripts and `prepare` script for husky initialization
 
 **Bypassing the hook** (not recommended):
 ```bash
@@ -144,5 +151,59 @@ git commit --no-verify
 ```
 
 Future enhancements (`init`, `diff`, `route`) can build on this foundation without changing the single source of truth.
+
+## Contract Maturity Model
+
+Surfaces uses a three-tier maturity model to gradually evolve interface correctness rules from informational to enforced. This allows teams to validate rules at low risk before making them blocking.
+
+### Policy Levels
+
+Rules are configured via policy fields that control how violations are handled:
+
+- **`"off"`**: Defined but not evaluated - The rule exists in the contract but validation is disabled. Useful for documenting intent without enforcement.
+- **`"warn"`**: Evaluated, non-blocking - Validation runs and violations emit warnings, but they do not block builds or deployments. Exit code allows warnings.
+- **`"strict"`**: Evaluated, blocking - Validation runs and violations emit errors that block builds or deployments. Exit code fails on violations.
+
+**Note:** In narrative text, `"off"` can be described as "informational" to convey that the rule is observed but not enforced. However, the technical definition must be clear: `"off"` means the rule is not evaluated at all, not that it's evaluated but never blocking.
+
+### Current Policy Examples
+
+The contract demonstrates each state:
+
+- **Informational (`"off"`)**: Currently not demonstrated in contract, but available for future rules
+- **Warning (`"warn"`)**: `color.rawValues.policy: "warn"` - Raw color literals trigger warnings but don't block validation
+- **Enforcement (`"strict"`)**: Available but not yet used in contract; can be applied when ready
+
+### Graduation Criteria
+
+Rules should progress through maturity levels when these conditions are met:
+
+1. **False-positive rate acceptable** (< 5% suggested)
+   - Rule correctly identifies violations without flagging legitimate code
+   - Location metadata enables developers to verify findings quickly
+
+2. **Location metadata available** (file, line, property)
+   - Violations include exact file path, line number, and relevant property
+   - Developers can fix violations without searching
+
+3. **Clear remediation path exists**
+   - Violations have obvious fixes (e.g., replace raw color with token)
+   - Policy allows explicit allowlist/denylist when needed
+
+4. **Team consensus on enforcement**
+   - False positives are resolved
+   - Developers trust the output
+   - Migration path is documented
+
+### Maturity Progression Example
+
+A typical progression for a new rule:
+
+1. **Define rule** (`policy: "off"`) - Document intent without enforcement
+2. **Enable warnings** (`policy: "warn"`) - Surface violations without blocking
+3. **Monitor and refine** - Collect feedback, fix false positives, refine allowlist/denylist
+4. **Enable enforcement** (`policy: "strict"`) - Block violations when confidence is high
+
+This model allows Surfaces to enforce correctness gradually, reducing risk while building developer trust in the validation system.
 
 

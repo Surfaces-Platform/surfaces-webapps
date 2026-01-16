@@ -1,1 +1,1 @@
-pnpm type-check && ./scripts/validate-contract.sh
+pnpm type-check && pnpm validate:local
