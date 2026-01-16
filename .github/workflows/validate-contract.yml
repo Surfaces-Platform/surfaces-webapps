@@ -29,6 +29,21 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       
+      - name: Checkout interfacectl tooling
+        uses: actions/checkout@v4
+        with:
+          repository: Surfaces-Platform/interfacectl
+          path: interfacectl-tooling
+          ref: feat/pageframe-color-policy
+      
+      - name: Install interfacectl dependencies
+        working-directory: interfacectl-tooling
+        run: pnpm install --frozen-lockfile
+      
+      - name: Build interfacectl
+        working-directory: interfacectl-tooling
+        run: pnpm run build
+      
       - name: Show CLI provenance
         run: pnpm cli:where:ci
       
