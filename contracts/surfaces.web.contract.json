@@ -134,5 +134,18 @@
         "linear"
       ]
     }
+  },
+  "color": {
+    "sourceOfTruth": {
+      "type": "tokens",
+      "tokenNamespaces": ["--color-", "--surfaces-color-", "--background", "--foreground", "--surface"]
+    },
+    "rawValues": {
+      "policy": "warn",
+      "allowlist": [],
+      "denylist": []
+    },
+    "semantics": {},
+    "consistency": {}
   }
 }
