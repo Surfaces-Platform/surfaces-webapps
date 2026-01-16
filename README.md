@@ -111,7 +111,24 @@ This runs `tsc --noEmit` for each package, catching type errors before pushing t
 Validate interface contract compliance:
 
 ```bash
-pnpm validate:contract
+# Local development: uses workspace CLI (assumes already built)
+pnpm validate:local
+
+# CI/production: builds CLI from source, then validates
+pnpm validate:ci
+```
+
+**Validation strategy:** 
+- `validate:local` uses the workspace-linked CLI for fast local iteration (assumes packages are already built).
+- `validate:ci` builds the CLI packages from source in the current repo commit, then runs validation. This ensures deterministic, clean validation in CI/prod environments.
+
+Check CLI provenance:
+```bash
+# Local dev provenance
+pnpm cli:where:local
+
+# CI/prod provenance (after build)
+pnpm cli:where:ci
 ```
 
 This runs `interfacectl validate` against the contract defined in `contracts/surfaces.web.contract.json`.
@@ -120,7 +137,18 @@ This runs `interfacectl validate` against the contract defined in `contracts/sur
 
 Interface contract validation runs automatically before each commit via a pre-commit hook. This ensures contract violations are caught locally before code is pushed.
 
-**Note**: The pre-commit hook requires `@surfaces/interfacectl-cli` to be published and installed. Once the package is available, run `pnpm install` to set up the hook.
+The hook uses `validate:local`, which requires the interfacectl CLI packages to be built. If you see build errors, run:
+
+```bash
+# Build the CLI packages once
+pnpm --filter @surfaces/interfacectl-validator run build
+pnpm --filter @surfaces/interfacectl-cli run build
+
+# Or use the CI validation script which builds automatically
+pnpm validate:ci
+```
+
+The pre-commit hook is managed via [husky](https://typicode.github.io/husky/) and runs `pnpm validate:local` before each commit.
 
 To bypass the pre-commit hook (not recommended):
 

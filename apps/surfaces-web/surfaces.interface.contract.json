@@ -1,0 +1,75 @@
+{
+  "$schema": "../contracts/surfaces.web.contract.schema.json",
+  "contractId": "surfaces.interface",
+  "version": "0.1.0",
+  "description": "Interface intent declaration for Surfaces Web application - Page Frame contract for drift discovery.",
+  "surfaces": [
+    {
+      "id": "surfaces-web",
+      "displayName": "Surfaces Web",
+      "type": "web",
+      "requiredSections": [
+        "landing.hero",
+        "landing.guidance",
+        "landing.actions"
+      ],
+      "allowedFonts": [
+        "var(--font-inter)",
+        "Inter",
+        "var(--font-geist-sans)",
+        "Arial",
+        "Helvetica",
+        "sans-serif"
+      ],
+      "allowedColors": [
+        "var(--background)",
+        "var(--foreground)",
+        "var(--color-background)",
+        "var(--color-foreground)",
+        "#FAFAFA",
+        "#fafafa",
+        "#171717",
+        "rgba(255, 255, 255, 0.8)",
+        "rgba(99, 102, 241, 0.15)",
+        "rgba(99, 102, 241, 0.4)"
+      ],
+      "layout": {
+        "maxContentWidth": 1120,
+        "pageFrame": {
+          "containerSelector": "[data-contract='page-container']",
+          "containerMaxWidthPx": 1120,
+          "paddingXpx": 24,
+          "alignment": "center",
+          "enforcement": "strict"
+        }
+      }
+    }
+  ],
+  "sections": [
+    {
+      "id": "landing.hero",
+      "intent": "primary-intro",
+      "description": "Primary hero section introducing the surface intent."
+    },
+    {
+      "id": "landing.guidance",
+      "intent": "supporting-guidance",
+      "description": "Supplemental copy guiding users to next actions."
+    },
+    {
+      "id": "landing.actions",
+      "intent": "primary-actions",
+      "description": "Primary calls-to-action for the surface."
+    }
+  ],
+  "constraints": {
+    "motion": {
+      "allowedDurationsMs": [
+        120
+      ],
+      "allowedTimingFunctions": [
+        "linear"
+      ]
+    }
+  }
+}

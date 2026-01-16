@@ -40,7 +40,7 @@ export default function Home() {
         onSurfaceChange={handleSurfaceChange}
       />
       
-      <div className="contract-container">
+      <div className="contract-container" data-contract="page-container">
         
         {/* Section 1 - Header / Hero */}
         <motion.section 
