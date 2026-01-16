@@ -32,7 +32,7 @@ jobs:
         with:
           repository: Surfaces-Platform/interfacectl
           path: interfacectl-tooling
-          ref: feat/pageframe-color-policy
+          ref: main
       
       - name: Install interfacectl dependencies
         working-directory: interfacectl-tooling
