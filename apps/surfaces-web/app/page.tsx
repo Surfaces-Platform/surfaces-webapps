@@ -61,8 +61,8 @@ export default function Home() {
               maxWidth: '720px'
             }}
           >
-            Interfaces drift. Systems break.<br />
-            Surfaces keeps them aligned.
+            Agent behavior,<br />
+            contract-enforced.
           </motion.h1>
           
           <motion.p 
@@ -75,7 +75,7 @@ export default function Home() {
               maxWidth: '600px'
             }}
           >
-            Surfaces is the system layer that defines, enforces, and operates interface contracts across modern software and AI systems.
+            Interface contracts enforced at generation time and runtime. Behavior stays predictable and accountable.
           </motion.p>
           
           <motion.div 
@@ -127,12 +127,12 @@ export default function Home() {
           <div className="grid grid-cols-12 gap-6">
             <motion.div variants={fadeUpVariants} className="col-span-4">
               <h2 style={{ fontSize: '20px', fontWeight: 600, lineHeight: 1.4 }}>
-                As teams scale, interfaces lose integrity.
+                Agent-driven interfaces require bounded adaptation.
               </h2>
             </motion.div>
             <motion.div variants={fadeUpVariants} className="col-span-7 col-start-6">
               <p style={{ fontSize: '14px', fontWeight: 400, lineHeight: 1.6 }}>
-                Design systems drift from implementation. UI copy diverges across platforms. AI-generated interfaces introduce inconsistency at scale. No enforceable contract exists between design intent and shipped product. The result is fragmentation, user confusion, and mounting technical debt.
+                Agents generate and adapt interfaces. Without bounded adaptation, behavior becomes unpredictable. Drift follows. Invariants break. Accountability erodes. Contracts enforce boundaries at generation time and runtime, keeping behavior aligned with intent.
               </p>
             </motion.div>
           </div>
@@ -152,10 +152,10 @@ export default function Home() {
               Interfaces are systems, not screens.
             </h2>
             <p style={{ fontSize: '14px', fontWeight: 400, lineHeight: 1.6, marginBottom: '16px' }}>
-              Every interface is composed of interconnected elements: visual structure, language, behavior, and state. These elements form contracts that must hold across platforms, teams, and time.
+              Interfaces make decisions. They determine what users see, when they see it, and how the system responds. These decisions form behavioral contracts that hold across generation cycles, runtime adaptations, and edge personalization.
             </p>
             <p style={{ fontSize: '14px', fontWeight: 400, lineHeight: 1.6 }}>
-              Documentation describes intent. Surfaces enforces it. The difference is the distance between aspiration and operational reality.
+              Contracts define invariants and bounded adaptation. Surfaces enforces them at generation time and runtime. The difference is documented intent versus operational control.
             </p>
           </motion.div>
         </motion.section>
@@ -190,9 +190,9 @@ export default function Home() {
                 Define
               </h3>
               <div className="space-y-2">
-                <p style={{ fontSize: '14px', lineHeight: 1.6 }}>Visual tokens</p>
-                <p style={{ fontSize: '14px', lineHeight: 1.6 }}>Language rules</p>
-                <p style={{ fontSize: '14px', lineHeight: 1.6 }}>Structural intent</p>
+                <p style={{ fontSize: '14px', lineHeight: 1.6 }}>Interface intent and invariants</p>
+                <p style={{ fontSize: '14px', lineHeight: 1.6 }}>Allowed change surface</p>
+                <p style={{ fontSize: '14px', lineHeight: 1.6 }}>Contextual conditions</p>
               </div>
             </motion.div>
 
@@ -208,9 +208,9 @@ export default function Home() {
                 Enforce
               </h3>
               <div className="space-y-2">
-                <p style={{ fontSize: '14px', lineHeight: 1.6 }}>Contracts</p>
-                <p style={{ fontSize: '14px', lineHeight: 1.6 }}>Validation</p>
-                <p style={{ fontSize: '14px', lineHeight: 1.6 }}>Drift detection</p>
+                <p style={{ fontSize: '14px', lineHeight: 1.6 }}>Validation at generation time</p>
+                <p style={{ fontSize: '14px', lineHeight: 1.6 }}>Runtime gates for agent-proposed changes</p>
+                <p style={{ fontSize: '14px', lineHeight: 1.6 }}>Drift prevention as outcome</p>
               </div>
             </motion.div>
 
@@ -226,9 +226,9 @@ export default function Home() {
                 Operate
               </h3>
               <div className="space-y-2">
-                <p style={{ fontSize: '14px', lineHeight: 1.6 }}>Monitoring</p>
-                <p style={{ fontSize: '14px', lineHeight: 1.6 }}>Change management</p>
-                <p style={{ fontSize: '14px', lineHeight: 1.6 }}>System evolution</p>
+                <p style={{ fontSize: '14px', lineHeight: 1.6 }}>Signals from violations and near-misses</p>
+                <p style={{ fontSize: '14px', lineHeight: 1.6 }}>Contract refinement and change control</p>
+                <p style={{ fontSize: '14px', lineHeight: 1.6 }}>Lifecycle control over time</p>
               </div>
             </motion.div>
           </div>
@@ -250,6 +250,13 @@ export default function Home() {
             One system. Multiple surfaces.
           </motion.h2>
           
+          <motion.p 
+            variants={fadeUpVariants}
+            style={{ fontSize: '14px', fontWeight: 400, lineHeight: 1.6, marginBottom: '32px', maxWidth: '800px' }}
+          >
+            One contract model compiles once and applies everywhere.
+          </motion.p>
+          
           <div className="space-y-8 max-w-[800px]">
             <motion.div 
               variants={fadeUpVariants}
@@ -260,7 +267,7 @@ export default function Home() {
                 surfaces.systems
               </h3>
               <p style={{ fontSize: '14px', lineHeight: 1.6, color: colors.neutral[600] }}>
-                The canonical source of truth for interface contracts and design system enforcement.
+                Same contracts, different enforcement surface. The canonical source of truth for interface contracts.
               </p>
             </motion.div>
 
@@ -273,7 +280,7 @@ export default function Home() {
                 surfaceops.ai
               </h3>
               <p style={{ fontSize: '14px', lineHeight: 1.6, color: colors.neutral[600] }}>
-                Operational enforcement and monitoring for interface integrity across AI and traditional systems.
+                Same contracts, different enforcement surface. Operational enforcement and feedback for interface integrity across AI and traditional systems.
               </p>
             </motion.div>
 
@@ -282,7 +289,7 @@ export default function Home() {
                 interfacectl.com
               </h3>
               <p style={{ fontSize: '14px', lineHeight: 1.6, color: colors.neutral[600] }}>
-                Literal, executable interface control through command-line precision.
+                Same contracts, different enforcement surface. Literal, executable interface control through command-line precision.
               </p>
             </motion.div>
           </div>
@@ -310,7 +317,7 @@ export default function Home() {
                 Platform and infrastructure teams
               </h3>
               <p style={{ fontSize: '14px', lineHeight: 1.6, color: colors.neutral[600] }}>
-                Enforce interface contracts as infrastructure, not aspiration.
+                Unbounded adaptation breaks invariants. Contracts enforce boundaries at generation time and runtime, preventing agent-proposed changes that violate intent.
               </p>
             </motion.div>
 
@@ -319,7 +326,7 @@ export default function Home() {
                 Design system owners
               </h3>
               <p style={{ fontSize: '14px', lineHeight: 1.6, color: colors.neutral[600] }}>
-                Close the gap between design intent and production reality.
+                Interface divergence creates unclear responsibility. Contracts enforce boundaries at generation time and runtime, making behavior predictable and accountable.
               </p>
             </motion.div>
 
@@ -328,7 +335,7 @@ export default function Home() {
                 AI and automation leaders
               </h3>
               <p style={{ fontSize: '14px', lineHeight: 1.6, color: colors.neutral[600] }}>
-                Ensure generated interfaces maintain systematic coherence.
+                Agent-driven generation creates inconsistent behavior. Contracts enforce boundaries at generation time and runtime, keeping agent behavior aligned with intent.
               </p>
             </motion.div>
           </div>
@@ -357,8 +364,8 @@ export default function Home() {
               lineHeight: 1.5,
               textAlign: 'center'
             }}>
-              Consistency is not aesthetic preference.<br />
-              It is operational integrity.
+              Users trust interfaces that behave<br />
+              predictably and accountably.
             </p>
           </div>
         </motion.section>
