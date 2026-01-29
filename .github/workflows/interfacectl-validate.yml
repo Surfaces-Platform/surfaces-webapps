@@ -10,6 +10,9 @@ jobs:
   validate-interface:
     name: Validate surfaces against contract
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -31,6 +34,7 @@ jobs:
         with:
           repository: Surfaces-Platform/interfacectl
           path: interfacectl-tooling
+          token: ${{ secrets.INTERFACECTL_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Install interfacectl dependencies
         working-directory: interfacectl-tooling
