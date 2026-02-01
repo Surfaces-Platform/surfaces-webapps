@@ -13,6 +13,7 @@
     "migrate": "tsx scripts/run-migrations.ts"
   },
   "dependencies": {
+    "@surfaces/platform-auth": "workspace:*",
     "@surfaces/ui": "workspace:*",
     "motion": "^12.23.24",
     "next": "16.1.1",
