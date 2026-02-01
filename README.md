@@ -1,5 +1,13 @@
 # Surfaces Platform Web Monorepo
 
+## Feature planning requirement
+
+Before planning or implementing any feature, read "docs/strategy.md" and produce a short "Feature Plan" that explicitly maps the work to the strategy decision filter and enforcement model.
+
+See "docs/feature-plan.template.md".
+
+**Documentation:** [docs/decisions.md](docs/decisions.md), [docs/plans/](docs/plans/) (e.g. [v1 Step 0: Shell](docs/plans/v1-step-0-shell.md)).
+
 This monorepo contains four Next.js web applications for the Surfaces Platform:
 
 - **surfaces-web** - Canonical source of interface truth (surfaces.systems)
