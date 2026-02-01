@@ -14,6 +14,27 @@ import {
 } from "./pkce-cookies.js";
 import { AUTH_INVALID_STATE, AUTH_TOKEN_EXCHANGE_FAILED } from "./errors.js";
 import { createErrorResponse } from "./errors.js";
+
+function clearPkceStateAndError(
+  prod: boolean,
+  code: "AUTH_INVALID_STATE" | "AUTH_TOKEN_EXCHANGE_FAILED",
+  status: number,
+  message?: string
+): Response {
+  const [clearPkce, clearState] = buildClearPkceStateCookies(prod);
+  const resp = createErrorResponse(code, message, status);
+  resp.headers.append("Set-Cookie", clearPkce);
+  resp.headers.append("Set-Cookie", clearState);
+  return resp;
+}
+
+function clearPkceStateAndRespond(prod: boolean, response: Response): Response {
+  const [clearPkce, clearState] = buildClearPkceStateCookies(prod);
+  response.headers.append("Set-Cookie", clearPkce);
+  response.headers.append("Set-Cookie", clearState);
+  return response;
+}
+
 import type { Session, ClaimMapping } from "./types.js";
 
 /**
@@ -91,10 +112,10 @@ export async function handleCallback(req: Request, opts: { surface: string }): P
     const statePayload = await getStatePayload(req, config.sessionSecret, prod);
 
     if (!verifier || !statePayload) {
-      return createErrorResponse(AUTH_INVALID_STATE, undefined, 400);
+      return clearPkceStateAndError(prod, AUTH_INVALID_STATE, 400);
     }
     if (statePayload.state !== stateFromIdp || statePayload.surface !== opts.surface) {
-      return createErrorResponse(AUTH_INVALID_STATE, undefined, 400);
+      return clearPkceStateAndError(prod, AUTH_INVALID_STATE, 400);
     }
 
     const discovery = await fetchOidcConfig(config.oidcIssuer);
@@ -102,12 +123,14 @@ export async function handleCallback(req: Request, opts: { surface: string }): P
     try {
       tokens = await exchangeCodeForTokens(discovery, config, { code, verifier });
     } catch (err) {
-      return createErrorResponse(AUTH_TOKEN_EXCHANGE_FAILED, String((err as Error)?.message ?? err), 401);
+      return clearPkceStateAndError(prod, AUTH_TOKEN_EXCHANGE_FAILED, 401, String((err as Error)?.message ?? err));
     }
 
     const claims = await validateIdToken(discovery, config, tokens.id_token);
     const result = validateClaims(claims, opts.surface);
-    if (result instanceof Response) return result;
+    if (result instanceof Response) {
+      return clearPkceStateAndRespond(prod, result);
+    }
     const session = result;
 
     const sessionCookie = await createSessionCookie(session, config.sessionSecret, prod, config.sessionTtlSeconds);
