@@ -31,6 +31,9 @@ export function getConfig(env: Record<string, string | undefined> = process.env)
   if (!sessionSecret?.trim()) throw new ConfigError("SESSION_SECRET is required");
   if (!surfaceId?.trim()) throw new ConfigError("PLATFORM_SURFACE_ID is required");
 
+  const oidcWorkspaceClaim = env.OIDC_WORKSPACE_CLAIM?.trim() || undefined;
+  const oidcSurfaceAccessClaim = env.OIDC_SURFACE_ACCESS_CLAIM?.trim() || undefined;
+
   return {
     oidcIssuer: oidcIssuer.trim(),
     oidcClientId: oidcClientId.trim(),
@@ -45,5 +48,7 @@ export function getConfig(env: Record<string, string | undefined> = process.env)
       env.SESSION_TTL_SECONDS != null
         ? parseInt(env.SESSION_TTL_SECONDS, 10)
         : DEFAULT_SESSION_TTL_SECONDS,
+    oidcWorkspaceClaim,
+    oidcSurfaceAccessClaim,
   };
 }

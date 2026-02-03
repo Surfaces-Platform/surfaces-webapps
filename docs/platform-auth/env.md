@@ -18,7 +18,11 @@
 | `OIDC_CLIENT_SECRET` | Client secret (if required by IdP) |
 | `OIDC_SCOPE` | OAuth2 scope (default: `openid profile email`) |
 | `OIDC_AUDIENCE` | Optional audience for token validation |
+| `OIDC_WORKSPACE_CLAIM` | Custom claim key for workspace id (overrides default and namespaced lookup) |
+| `OIDC_SURFACE_ACCESS_CLAIM` | Custom claim key for surface_access array (overrides default and namespaced lookup) |
 | `SESSION_TTL_SECONDS` | Session cookie TTL (default: 604800 = 7 days) |
+
+Platform-auth accepts workspace id from (in order): configured `OIDC_WORKSPACE_CLAIM` key, namespaced `https://surfaces.systems/workspace_id`, or raw `workspace_id`. Same for surface_access with `https://surfaces.systems/surface_access` and `surface_access`. See [auth0-post-login-action.md](./auth0-post-login-action.md) for Auth0 Action and application checklist.
 
 ## Per-app redirect URIs
 

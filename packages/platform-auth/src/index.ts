@@ -44,13 +44,20 @@ import type { Session, ClaimMapping } from "./types.js";
 export async function startLogin(req: Request, opts: { surface: string }): Promise<Response> {
   try {
     const config = getConfig();
+    const surface = (opts.surface ?? "").trim();
     const url = new URL(req.url);
     const returnToRaw = url.searchParams.get("returnTo") ?? "/";
     const validated = validateReturnTo(returnToRaw);
     if (validated instanceof Response) return validated;
     const returnTo = validated;
 
-    return await startLoginAsync(config, opts.surface, returnTo, req);
+    // If already logged in, redirect to returnTo to avoid Auth0 round-trip and loop risk
+    const sessionResult = await getSession(req);
+    if (sessionResult.ok) {
+      return new Response(null, { status: 302, headers: { Location: returnTo } });
+    }
+
+    return await startLoginAsync(config, surface, returnTo, req);
   } catch (err) {
     if (err instanceof ConfigError) {
       console.error("[platform-auth] config error:", err.message);
@@ -67,6 +74,7 @@ async function startLoginAsync(
   returnTo: string,
   req: Request
 ): Promise<Response> {
+  // surface is already trimmed by startLogin
   const discovery = await fetchOidcConfig(config.oidcIssuer);
   const { verifier, challenge } = await generatePKCE();
 
@@ -103,6 +111,7 @@ function base64UrlEncode(buf: Uint8Array): string {
 export async function handleCallback(req: Request, opts: { surface: string }): Promise<Response> {
   try {
     const config = getConfig();
+    const surface = (opts.surface ?? "").trim();
     const url = new URL(req.url);
     const code = url.searchParams.get("code");
     const stateFromIdp = url.searchParams.get("state");
@@ -118,7 +127,8 @@ export async function handleCallback(req: Request, opts: { surface: string }): P
     if (!verifier || !statePayload) {
       return clearPkceStateAndError(prod, AUTH_INVALID_STATE, 400);
     }
-    if (statePayload.state !== stateFromIdp || statePayload.surface !== opts.surface) {
+    const stateSurface = typeof statePayload.surface === "string" ? statePayload.surface.trim() : "";
+    if (statePayload.state !== stateFromIdp || stateSurface !== surface) {
       return clearPkceStateAndError(prod, AUTH_INVALID_STATE, 400);
     }
 
@@ -131,7 +141,14 @@ export async function handleCallback(req: Request, opts: { surface: string }): P
     }
 
     const claims = await validateIdToken(discovery, config, tokens.id_token);
-    const result = validateClaims(claims, opts.surface);
+    const claimMapping: ClaimMapping | undefined =
+      config.oidcWorkspaceClaim || config.oidcSurfaceAccessClaim
+        ? {
+            ...(config.oidcWorkspaceClaim && { workspaceId: config.oidcWorkspaceClaim }),
+            ...(config.oidcSurfaceAccessClaim && { surfaceAccess: config.oidcSurfaceAccessClaim }),
+          }
+        : undefined;
+    const result = validateClaims(claims, surface, claimMapping);
     if (result instanceof Response) {
       return clearPkceStateAndRespond(prod, result);
     }

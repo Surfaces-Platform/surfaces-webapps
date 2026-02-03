@@ -44,6 +44,10 @@ export interface PlatformAuthConfig {
   sessionSecret: string;
   surfaceId: string;
   sessionTtlSeconds: number;
+  /** Optional claim key for workspace_id (overrides default and namespaced lookup). */
+  oidcWorkspaceClaim?: string;
+  /** Optional claim key for surface_access (overrides default and namespaced lookup). */
+  oidcSurfaceAccessClaim?: string;
 }
 
 export interface StatePayload {
