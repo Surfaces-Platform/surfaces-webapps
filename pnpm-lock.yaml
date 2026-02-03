@@ -36,6 +36,9 @@ importers:
 
   apps/interfacectl-web:
     dependencies:
+      '@surfaces/platform-auth':
+        specifier: workspace:*
+        version: link:../../packages/platform-auth
       '@surfaces/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -137,6 +140,9 @@ importers:
 
   apps/surfaces-dev:
     dependencies:
+      '@surfaces/platform-auth':
+        specifier: workspace:*
+        version: link:../../packages/platform-auth
       '@surfaces/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -180,6 +186,9 @@ importers:
 
   apps/surfaces-web:
     dependencies:
+      '@surfaces/platform-auth':
+        specifier: workspace:*
+        version: link:../../packages/platform-auth
       '@surfaces/ui':
         specifier: workspace:*
         version: link:../../packages/ui
