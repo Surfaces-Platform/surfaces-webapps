@@ -136,9 +136,27 @@ const DEFAULT_CLAIM_KEYS = {
   surfaceAccess: "surface_access",
 } as const;
 
+/** Auth0-friendly namespaced claim keys (single shared app). Checked after mapping, before raw key. */
+export const NAMESPACED_CLAIM_KEYS = {
+  workspaceId: "https://surfaces.systems/workspace_id",
+  surfaceAccess: "https://surfaces.systems/surface_access",
+} as const;
+
 function getClaimKey(contractKey: keyof typeof DEFAULT_CLAIM_KEYS, mapping?: ClaimMapping): string {
   const m = mapping as Record<string, string> | undefined;
   return (m?.[contractKey] as string | undefined) ?? DEFAULT_CLAIM_KEYS[contractKey];
+}
+
+/** First defined value from claims for the given keys (mapping key, namespaced, then default). */
+function getClaimValue(
+  claims: Record<string, unknown>,
+  keys: string[]
+): unknown {
+  for (const k of keys) {
+    const v = claims[k];
+    if (v !== undefined && v !== null) return v;
+  }
+  return undefined;
 }
 
 export function validateClaims(
@@ -150,9 +168,17 @@ export function validateClaims(
   const email = claims[getClaimKey("email", mapping)];
   const name =
     claims[getClaimKey("name", mapping)] ?? claims[getClaimKey("preferredUsername", mapping)];
-  const workspaceId = claims[getClaimKey("workspaceId", mapping)];
+  const workspaceId = getClaimValue(claims, [
+    getClaimKey("workspaceId", mapping),
+    NAMESPACED_CLAIM_KEYS.workspaceId,
+    DEFAULT_CLAIM_KEYS.workspaceId,
+  ]);
   const roles = claims[getClaimKey("roles", mapping)];
-  const surfaceAccess = claims[getClaimKey("surfaceAccess", mapping)];
+  const surfaceAccess = getClaimValue(claims, [
+    getClaimKey("surfaceAccess", mapping),
+    NAMESPACED_CLAIM_KEYS.surfaceAccess,
+    DEFAULT_CLAIM_KEYS.surfaceAccess,
+  ]);
 
   if (!workspaceId || (typeof workspaceId === "string" && !workspaceId.trim())) {
     return createErrorResponse(AUTH_MISSING_WORKSPACE, undefined, 403);
