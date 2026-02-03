@@ -2,10 +2,10 @@
 
 This monorepo contains four Next.js web applications for the Surfaces Platform:
 
-- **surfaces-web** - Canonical source of interface truth (surfaces.systems)
-- **surfaceops-web** - Operational enforcement and monitoring (surfaceops.ai)
-- **interfacectl-web** - Executable interface control (interfacectl.com)
-- **surfaces-dev** - Developer documentation and reference (surfaces.dev)
+- **surfaces-web** - Canonical source of interface truth (surfaces.systems) — auth-aware, public by default
+- **surfaceops-web** - Operational enforcement and monitoring (surfaceops.ai) — auth required for app workflows
+- **interfacectl-web** - Executable interface control (interfacectl.com) — auth-aware, public by default
+- **surfaces-dev** - Developer documentation and reference (surfaces.dev) — auth-aware, public by default
 
 ## Local Development
 
@@ -65,6 +65,10 @@ pnpm dev:surfaces-dev # http://localhost:3003
 - SurfaceOps: http://localhost:3001
 - InterfaceCTL: http://localhost:3002
 - Surfaces.dev: http://localhost:3003
+
+## Auth posture
+
+All apps expose the same `/auth` routes (login, callback, session, logout) to support SSO across domains. surfaces.systems, surfaces.dev, and interfacectl.com are public by default in v1 but are auth-aware. surfaceops.ai is the first place where authenticated workflows will matter.
 
 ## Production Domains
 

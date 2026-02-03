@@ -21,7 +21,8 @@
     "type-check:surfaces": "pnpm --filter surfaces-web type-check",
     "type-check:surfaceops": "pnpm --filter surfaceops-web type-check",
     "type-check:interfacectl": "pnpm --filter interfacectl-web type-check",
-    "type-check:surfaces-dev": "pnpm --filter surfaces-dev type-check"
+    "type-check:surfaces-dev": "pnpm --filter surfaces-dev type-check",
+    "test": "pnpm --filter surfaceops-web test"
   },
   "devDependencies": {
     "@surfaces/interfacectl-cli": "workspace:*",
