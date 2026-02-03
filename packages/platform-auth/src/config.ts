@@ -4,6 +4,15 @@
  */
 import type { PlatformAuthConfig } from "./types.js";
 
+/** Thrown when required env vars are missing; detail is for server logs only. */
+export class ConfigError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ConfigError";
+    Object.setPrototypeOf(this, ConfigError.prototype);
+  }
+}
+
 const DEFAULT_SCOPE = "openid profile email";
 const DEFAULT_SESSION_TTL_SECONDS = 7 * 24 * 60 * 60; // 7 days
 
@@ -16,11 +25,11 @@ export function getConfig(env: Record<string, string | undefined> = process.env)
   const sessionSecret = env.SESSION_SECRET;
   const surfaceId = env.PLATFORM_SURFACE_ID;
 
-  if (!oidcIssuer?.trim()) throw new Error("OIDC_ISSUER is required");
-  if (!oidcClientId?.trim()) throw new Error("OIDC_CLIENT_ID is required");
-  if (!oidcRedirectUri?.trim()) throw new Error("OIDC_REDIRECT_URI is required");
-  if (!sessionSecret?.trim()) throw new Error("SESSION_SECRET is required");
-  if (!surfaceId?.trim()) throw new Error("PLATFORM_SURFACE_ID is required");
+  if (!oidcIssuer?.trim()) throw new ConfigError("OIDC_ISSUER is required");
+  if (!oidcClientId?.trim()) throw new ConfigError("OIDC_CLIENT_ID is required");
+  if (!oidcRedirectUri?.trim()) throw new ConfigError("OIDC_REDIRECT_URI is required");
+  if (!sessionSecret?.trim()) throw new ConfigError("SESSION_SECRET is required");
+  if (!surfaceId?.trim()) throw new ConfigError("PLATFORM_SURFACE_ID is required");
 
   return {
     oidcIssuer: oidcIssuer.trim(),

@@ -1,7 +1,7 @@
 /**
  * Platform Auth Contract v1 — public API.
  */
-import { getConfig } from "./config.js";
+import { getConfig, ConfigError } from "./config.js";
 import { fetchOidcConfig, generatePKCE, getAuthorizeUrl, exchangeCodeForTokens, validateIdToken, validateClaims } from "./oidc.js";
 import { createSessionCookie, readSessionCookie, clearSessionCookie, isProduction } from "./session.js";
 import { validateReturnTo } from "./returnTo.js";
@@ -12,7 +12,7 @@ import {
   getPkceVerifier,
   getStatePayload,
 } from "./pkce-cookies.js";
-import { AUTH_INVALID_STATE, AUTH_TOKEN_EXCHANGE_FAILED } from "./errors.js";
+import { AUTH_CONFIG_MISSING, AUTH_INVALID_STATE, AUTH_TOKEN_EXCHANGE_FAILED } from "./errors.js";
 import { createErrorResponse } from "./errors.js";
 
 function clearPkceStateAndError(
@@ -52,6 +52,10 @@ export async function startLogin(req: Request, opts: { surface: string }): Promi
 
     return await startLoginAsync(config, opts.surface, returnTo, req);
   } catch (err) {
+    if (err instanceof ConfigError) {
+      console.error("[platform-auth] config error:", err.message);
+      return createErrorResponse(AUTH_CONFIG_MISSING, undefined, 500);
+    }
     console.error("[platform-auth] startLogin error:", err);
     return createErrorResponse(AUTH_TOKEN_EXCHANGE_FAILED, String((err as Error)?.message ?? err), 500);
   }
@@ -147,6 +151,10 @@ export async function handleCallback(req: Request, opts: { surface: string }): P
       },
     });
   } catch (err) {
+    if (err instanceof ConfigError) {
+      console.error("[platform-auth] config error:", err.message);
+      return createErrorResponse(AUTH_CONFIG_MISSING, undefined, 500);
+    }
     console.error("[platform-auth] handleCallback error:", err);
     return createErrorResponse(AUTH_TOKEN_EXCHANGE_FAILED, String((err as Error)?.message ?? err), 500);
   }
@@ -182,34 +190,42 @@ export async function requireSession(req: Request): Promise<Session> {
  * Clears session. If global=1, redirects to IdP logout.
  */
 export async function logout(req: Request, opts: { surface: string; global?: boolean }): Promise<Response> {
-  const config = getConfig();
-  const prod = isProduction(req);
-  const clearCookie = clearSessionCookie(prod);
+  try {
+    const config = getConfig();
+    const prod = isProduction(req);
+    const clearCookie = clearSessionCookie(prod);
 
-  const url = new URL(req.url);
-  const doGlobal = url.searchParams.get("global") === "1";
+    const url = new URL(req.url);
+    const doGlobal = url.searchParams.get("global") === "1";
 
-  if (doGlobal) {
-    const discovery = await fetchOidcConfig(config.oidcIssuer);
-    const endSession = discovery.end_session_endpoint;
-    if (endSession) {
-      const logoutUrl = new URL(endSession);
-      logoutUrl.searchParams.set("post_logout_redirect_uri", config.oidcPostLogoutRedirectUri);
-      return new Response(null, {
-        status: 302,
-        headers: {
-          Location: logoutUrl.toString(),
-          "Set-Cookie": clearCookie,
-        },
-      });
+    if (doGlobal) {
+      const discovery = await fetchOidcConfig(config.oidcIssuer);
+      const endSession = discovery.end_session_endpoint;
+      if (endSession) {
+        const logoutUrl = new URL(endSession);
+        logoutUrl.searchParams.set("post_logout_redirect_uri", config.oidcPostLogoutRedirectUri);
+        return new Response(null, {
+          status: 302,
+          headers: {
+            Location: logoutUrl.toString(),
+            "Set-Cookie": clearCookie,
+          },
+        });
+      }
     }
-  }
 
-  return new Response(null, {
-    status: 204,
-    headers: { "Set-Cookie": clearCookie },
-  });
+    return new Response(null, {
+      status: 204,
+      headers: { "Set-Cookie": clearCookie },
+    });
+  } catch (err) {
+    if (err instanceof ConfigError) {
+      console.error("[platform-auth] config error:", err.message);
+      return createErrorResponse(AUTH_CONFIG_MISSING, undefined, 500);
+    }
+    throw err;
+  }
 }
 
 export type { Session, ClaimMapping };
-export { AUTH_MISSING_WORKSPACE, AUTH_SURFACE_DENIED, AUTH_INVALID_STATE, AUTH_TOKEN_EXCHANGE_FAILED, AUTH_INVALID_RETURN_TO } from "./errors.js";
+export { AUTH_CONFIG_MISSING, AUTH_MISSING_WORKSPACE, AUTH_SURFACE_DENIED, AUTH_INVALID_STATE, AUTH_TOKEN_EXCHANGE_FAILED, AUTH_INVALID_RETURN_TO } from "./errors.js";
