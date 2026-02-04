@@ -1,7 +1,10 @@
 node_modules
 tmp/
 interfacectl-tooling/
-docs/.DS_Store
+scratch/
+scratch/secrets/
+.DS_Store
 
 # Next.js build output
 .next/
+.vercel
