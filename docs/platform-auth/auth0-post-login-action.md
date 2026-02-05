@@ -57,6 +57,7 @@ For the single shared **Regular Web Application**:
   - `https://www.surfaceops.ai/`
   - `https://www.interfacectl.com/`
   - `https://www.surfaces.dev/`
+- **OIDC_LOGOUT_URL** (Vercel env): `https://surfaces.us.auth0.com/v2/logout` — use Auth0 v2 logout instead of discovery `/oidc/logout` to avoid "something went wrong" errors.
 - **Settings** → ensure the Login Action above is in the Login flow and applied.
 
 No code changes are required in the repo for claim keys if you use the namespaced keys above; platform-auth accepts them by default.

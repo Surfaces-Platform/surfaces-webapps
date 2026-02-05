@@ -15,6 +15,7 @@
 
 | Variable | Description |
 | -------- | ----------- |
+| `OIDC_LOGOUT_URL` | Auth0 v2 logout URL (e.g. `https://tenant.auth0.com/v2/logout`). When set, used with `client_id` and `returnTo` instead of OIDC discovery `end_session_endpoint`. Required for Auth0 to avoid `/oidc/logout` errors. |
 | `OIDC_CLIENT_SECRET` | Client secret (if required by IdP) |
 | `OIDC_SCOPE` | OAuth2 scope (default: `openid profile email`) |
 | `OIDC_AUDIENCE` | Optional audience for token validation |

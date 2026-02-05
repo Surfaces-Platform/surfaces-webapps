@@ -39,6 +39,7 @@ Each file should contain a single line with the value (no trailing placeholder t
 
 2. Fill in values from your Auth0 dashboard:
    - **OIDC_ISSUER** — Auth0 tenant URL, e.g. `https://your-tenant.auth0.com`
+   - **OIDC_LOGOUT_URL** — Auth0 v2 logout, e.g. `https://your-tenant.auth0.com/v2/logout` (avoids `/oidc/logout` errors)
    - **OIDC_CLIENT_ID** — Application → Client ID
    - **OIDC_CLIENT_SECRET** — Application → Client Secret (required for Regular Web Application)
    - **SESSION_SECRET** — Any random string (e.g. `openssl rand -hex 32`)

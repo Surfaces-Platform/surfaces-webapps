@@ -216,19 +216,33 @@ export async function logout(req: Request, opts: { surface: string; global?: boo
     const doGlobal = url.searchParams.get("global") === "1";
 
     if (doGlobal) {
-      const discovery = await fetchOidcConfig(config.oidcIssuer);
-      const endSession = discovery.end_session_endpoint;
-      if (endSession) {
-        const logoutUrl = new URL(endSession);
-        logoutUrl.searchParams.set("post_logout_redirect_uri", config.oidcPostLogoutRedirectUri);
-        return new Response(null, {
-          status: 302,
-          headers: {
-            Location: logoutUrl.toString(),
-            "Set-Cookie": clearCookie,
-          },
-        });
+      let logoutTarget: string;
+      if (config.oidcLogoutUrl) {
+        const url = new URL(config.oidcLogoutUrl);
+        url.searchParams.set("client_id", config.oidcClientId);
+        url.searchParams.set("returnTo", config.oidcPostLogoutRedirectUri);
+        logoutTarget = url.toString();
+      } else {
+        const discovery = await fetchOidcConfig(config.oidcIssuer);
+        const endSession = discovery.end_session_endpoint;
+        if (endSession) {
+          const url = new URL(endSession);
+          url.searchParams.set("post_logout_redirect_uri", config.oidcPostLogoutRedirectUri);
+          logoutTarget = url.toString();
+        } else {
+          return new Response(null, {
+            status: 204,
+            headers: { "Set-Cookie": clearCookie },
+          });
+        }
       }
+      return new Response(null, {
+        status: 302,
+        headers: {
+          Location: logoutTarget,
+          "Set-Cookie": clearCookie,
+        },
+      });
     }
 
     return new Response(null, {

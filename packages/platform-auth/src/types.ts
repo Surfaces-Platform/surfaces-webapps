@@ -39,6 +39,8 @@ export interface PlatformAuthConfig {
   oidcClientSecret?: string;
   oidcRedirectUri: string;
   oidcPostLogoutRedirectUri: string;
+  /** Optional Auth0 v2 logout URL (e.g. https://tenant.auth0.com/v2/logout). When set, used with client_id and returnTo instead of discovery end_session_endpoint. */
+  oidcLogoutUrl?: string;
   oidcScope: string;
   oidcAudience?: string;
   sessionSecret: string;
