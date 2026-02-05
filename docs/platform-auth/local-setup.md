@@ -60,5 +60,6 @@ Each file should contain a single line with the value (no trailing placeholder t
 ## Troubleshooting
 
 - **AUTH_CONFIG_MISSING:** Required env vars are missing. Run `pnpm setup:auth` or fill `.env.local` manually.
+- **OIDC_ISSUER is required** after `vercel link`: `vercel link` overwrites `.env.local` with Vercel development vars (which may lack auth config). Run `pnpm setup:auth -- --force` to restore from `scratch/secrets`.
 - **invalid_grant:** Redirect URI mismatch. Ensure Auth0 Allowed Callback URLs includes the exact `OIDC_REDIRECT_URI` value.
 - **AUTH_MISSING_WORKSPACE:** Auth0 Post Login Action must add `https://surfaces.systems/workspace_id` and `https://surfaces.systems/surface_access` to the ID token. See `auth0-post-login-action.md`.
