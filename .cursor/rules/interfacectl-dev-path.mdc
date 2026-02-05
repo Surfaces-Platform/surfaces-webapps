@@ -6,31 +6,31 @@ alwaysApply: false
 
 # interfacectl Development Path
 
+**Pairs with:** `interfacectl/.cursor/rules/dev-location.mdc` — both repos share the same workflow.
+
 When modifying interfacectl CLI, validator, extractor, or related packages:
 
 - **Edit**: `/Users/mike/Cursor/interfacectl/` (standalone repo)
 - **Do not edit**: `tools/interfacectl/` (submodule) for source changes
 
-The submodule is a pinned checkout. Develop in the standalone repo, commit and push there, then update the submodule reference in surfaces-monorepo to the new commit.
+The submodule is a pinned checkout. Develop in the standalone repo, commit and push there, then update the submodule reference in surfaces-webapps to the new commit.
 
 ## Dogfooding workflow
 
-When testing interfacectl changes against surfaces-monorepo:
+When testing interfacectl changes against surfaces-webapps:
 
 1. **Edit & build** in `/Users/mike/Cursor/interfacectl/`
-2. **Run from interfacectl** with surfaces-monorepo as target:
+2. **Run from interfacectl** with surfaces-webapps as target:
    ```bash
    cd /Users/mike/Cursor/interfacectl && pnpm run build
    node packages/interfacectl-cli/dist/index.js validate \
-     --workspace-root /Users/mike/Cursor/surfaces-monorepo \
-     --contract /Users/mike/Cursor/surfaces-monorepo/contracts/surfaces.web.contract.json
+     --workspace-root /Users/mike/Cursor/surfaces-webapps \
+     --contract /Users/mike/Cursor/surfaces-webapps/contracts/surfaces.web.contract.json
    ```
 3. **Do not** copy dist into the submodule or edit `tools/interfacectl/` for testing
 
 ## Order of operations (release)
 
-1. Edit in `/Users/mike/Cursor/interfacectl/`
-2. Build and dogfood from interfacectl with `--workspace-root` surfaces-monorepo
-3. Commit and push interfacectl; merge PR
-4. In surfaces-monorepo: `cd tools/interfacectl && git fetch && git checkout <new-commit>`
-5. Commit submodule update and push surfaces-monorepo
+1. Edit in interfacectl → build → dogfood (run CLI with `--workspace-root` surfaces-webapps)
+2. Commit and push interfacectl; merge PR
+3. In surfaces-webapps: update submodule to new commit, commit, push
