@@ -51,6 +51,14 @@ jobs:
       - name: Generate contract (surfaces-web)
         run: pnpm run generate:contract
       
+      - name: Validate extracted (Phase 0.5)
+        run: |
+          node "$INTERFACECTL_BIN" validate-extracted \
+            --contract ./contracts/surfaces.web.contract.json \
+            --extracted ./contracts/generated/surfaces-web.extraction.json \
+            --surface surfaces-web \
+            --exit-codes v2
+      
       - name: Check generated contract drift
         run: |
           if ! git diff --exit-code contracts/generated/; then
