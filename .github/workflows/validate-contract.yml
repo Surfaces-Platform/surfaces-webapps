@@ -10,6 +10,8 @@ jobs:
   validate:
     name: Validate Contract
     runs-on: ubuntu-latest
+    env:
+      INTERFACECTL_BIN: ${{ github.workspace }}/interfacectl-tooling/packages/interfacectl-cli/dist/index.js
     permissions:
       contents: read
       pull-requests: read
@@ -50,10 +52,21 @@ jobs:
         run: pnpm cli:where:ci
       
       - name: Validate interface contract
-        env:
-          INTERFACECTL_BIN: ${{ github.workspace }}/interfacectl-tooling/packages/interfacectl-cli/dist/index.js
         run: |
           node "$INTERFACECTL_BIN" validate \
             --workspace-root . \
             --contract ./contracts/surfaces.web.contract.json \
             --format json
+      
+      - name: Generate contract (surfaces-web)
+        run: |
+          node "$INTERFACECTL_BIN" generate-contract \
+            --app-root apps/surfaces-web \
+            --surface surfaces-web
+      
+      - name: Check generated contract drift
+        run: |
+          if ! git diff --exit-code contracts/generated/; then
+            echo "::error::Generated contract artifacts are out of date. Run 'pnpm run generate:contract' locally and commit the updated contracts/generated/ files."
+            exit 1
+          fi
