@@ -170,6 +170,8 @@ git add contracts/generated/
 git commit -m "chore: update generated contract artifacts"
 ```
 
+**Interpreting validation failures:** `validate-extracted` emits finding codes when policy expectations in `surfaces.web.contract.json` disagree with extracted reality. The contract is the source of truth for `phase0` expectations. Common codes: `phase0.authPosture.mismatch`, `phase0.authRoutes.missing`, `phase0.shell.mismatch`, `phase0.designSystem.missing`. Either update the code to match the contract, or update the contract to reflect reality. See [contracts/README.md](contracts/README.md) for field semantics and [docs/plans/phase-0-dogfooding.md](docs/plans/phase-0-dogfooding.md) for what Phase 0 enforces.
+
 ### Pre-commit Hooks
 
 Interface contract validation runs automatically before each commit via a pre-commit hook. This ensures contract violations are caught locally before code is pushed.
