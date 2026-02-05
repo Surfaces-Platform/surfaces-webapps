@@ -5,6 +5,7 @@
   "scripts": {
     "prepare": "husky install",
     "validate:contract": "./scripts/validate-contract.sh",
+    "generate:contract": "pnpm exec interfacectl generate-contract --app-root apps/surfaces-web --surface surfaces-web",
     "validate:contract:text": "node /Users/mike/Cursor/interfacectl/packages/interfacectl-cli/dist/index.js validate --root . --contract ./contracts/surfaces.web.contract.json --format text",
     "validate:contract:dev": "cd /Users/mike/Cursor/interfacectl && pnpm run build && cd - && ./scripts/validate-contract.sh",
     "validate:local": "pnpm exec interfacectl validate --workspace-root . --contract ./contracts/surfaces.web.contract.json",

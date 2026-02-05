@@ -3,6 +3,13 @@
 **Date:** 2026-02-03  
 **Domains checked:** surfaces.systems, surfaceops.ai, interfacectl.com, surfaces.dev (canonical hosts: www.* where bare domain redirects)
 
+## Final status (post-merge + prod checks)
+
+- PR **#9** merged (squash) and deployed; platform-auth now accepts namespaced Auth0 claims.
+- Auth0 Post Login Action configured to emit `https://surfaces.systems/workspace_id` and `https://surfaces.systems/surface_access`.
+- Production sanity checks show `/auth/login` returns **302** to Auth0 and `/auth/session` returns **401** when unauthenticated on all four domains.
+- Browser SSO verified across all four domains; `/auth/session` returns **200** with `workspaceId` and `surfaceAccess` after login.
+
 ## Results table (Step D — after setting Production secrets and redeploy)
 
 | Domain | /auth/login status | Location host (if 302) | /auth/session status |
