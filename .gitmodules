@@ -1,3 +1,3 @@
 [submodule "tools/interfacectl"]
 	path = tools/interfacectl
-	url = git@github.com:Surfaces-Platform/interfacectl.git
+	url = https://github.com/Surfaces-Platform/interfacectl.git
