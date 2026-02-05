@@ -23,24 +23,38 @@ export default function Home() {
               marginBottom: "24px",
             }}
           >
-            Surface contract state
+            SurfaceOps
           </h1>
           <p
             style={{
               fontSize: "14px",
               fontWeight: 400,
               lineHeight: 1.6,
-              marginBottom: "32px",
+              marginBottom: "24px",
               color: colors.neutral[800],
             }}
           >
-            SurfaceOps shows which surfaces pass and why. Contracts define what each
-            surface expects; extraction shows what was found.
+            SurfaceOps is an operational dashboard for surface contracts. It shows
+            which surfaces pass validation, who owns them, and what changed
+            recently. Contracts define expectations; extraction reports what was
+            found in the code.
+          </p>
+          <p
+            style={{
+              fontSize: "14px",
+              fontWeight: 400,
+              lineHeight: 1.6,
+              marginBottom: "32px",
+              color: colors.neutral[600],
+            }}
+          >
+            Contract details, validation status, and change history require
+            authentication. Log in to inspect surfaces, owners, and expectations.
           </p>
         </section>
         <section data-contract-section="landing.guidance" style={{ marginBottom: "32px" }}>
           <p style={{ fontSize: "14px", lineHeight: 1.6, color: colors.neutral[600] }}>
-            Log in to inspect surfaces, expectations, and validation status.
+            Sign in to view the surface list, validation outcomes, and change log.
           </p>
         </section>
         <section data-contract-section="landing.actions">
