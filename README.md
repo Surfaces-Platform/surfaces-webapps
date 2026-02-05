@@ -9,6 +9,8 @@ This monorepo contains four Next.js web applications for the Surfaces Platform:
 
 ## Local Development
 
+**First-time clone:** If you cloned without submodules, run `git submodule update --init --recursive` so `tools/interfacectl` is available (required for contract validation and generation).
+
 ### Running Individual Apps
 
 Each app runs on its own port to allow concurrent development:
@@ -115,16 +117,17 @@ This runs `tsc --noEmit` for each package, catching type errors before pushing t
 Validate interface contract compliance:
 
 ```bash
-# Local development: uses workspace CLI (assumes already built)
+# Local development: uses CLI from tools/interfacectl (build once with interfacectl:build)
 pnpm validate:local
 
-# CI/production: builds CLI from source, then validates
+# CI/production: builds CLI from tools/interfacectl, then validates
 pnpm validate:ci
 ```
 
 **Validation strategy:** 
-- `validate:local` uses the workspace-linked CLI for fast local iteration (assumes packages are already built).
-- `validate:ci` builds the CLI packages from source in the current repo commit, then runs validation. This ensures deterministic, clean validation in CI/prod environments.
+- The interfacectl CLI lives in `tools/interfacectl` (git submodule). Build it once with `pnpm run interfacectl:build`.
+- `validate:local` runs the built CLI for fast local iteration.
+- `validate:ci` builds the CLI from the submodule then runs validation (deterministic in CI).
 
 Check CLI provenance:
 ```bash
@@ -137,16 +140,46 @@ pnpm cli:where:ci
 
 This runs `interfacectl validate` against the contract defined in `contracts/surfaces.web.contract.json`.
 
+### Phase 0 contract generation
+
+Generated contract artifacts are produced by the interfacectl CLI and committed so CI can detect drift.
+
+**How to run generation (from repo root):**
+
+1. Ensure the interfacectl submodule is present and built:
+   ```bash
+   git submodule update --init --recursive
+   pnpm install
+   pnpm run interfacectl:build
+   ```
+2. Generate the contract:
+   ```bash
+   pnpm run generate:contract
+   ```
+
+**What files change:** Outputs are written to `contracts/generated/`:
+
+- `surfaces-web.contract.json` — schema-valid contract with extracted routes, shell, design-system components, auth.
+- `surfaces-web.extraction.json` — extraction report and warnings.
+
+**If CI fails on drift:** The job "Check generated contract drift" fails when committed artifacts in `contracts/generated/` differ from a fresh run. Fix it by running the same steps locally and committing the updated files:
+
+```bash
+pnpm run interfacectl:build && pnpm run generate:contract
+git add contracts/generated/
+git commit -m "chore: update generated contract artifacts"
+```
+
 ### Pre-commit Hooks
 
 Interface contract validation runs automatically before each commit via a pre-commit hook. This ensures contract violations are caught locally before code is pushed.
 
-The hook uses `validate:local`, which requires the interfacectl CLI packages to be built. If you see build errors, run:
+The hook uses `validate:local`, which requires the interfacectl CLI to be built from `tools/interfacectl`. If you see build errors, run:
 
 ```bash
-# Build the CLI packages once
-pnpm --filter @surfaces/interfacectl-validator run build
-pnpm --filter @surfaces/interfacectl-cli run build
+# Ensure submodule is present, then build the CLI once
+git submodule update --init --recursive
+pnpm run interfacectl:build
 
 # Or use the CI validation script which builds automatically
 pnpm validate:ci

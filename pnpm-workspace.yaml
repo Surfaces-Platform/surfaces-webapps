@@ -1,6 +1,5 @@
 packages:
   - "apps/*"
   - "packages/*"
-  - "interfacectl-tooling/packages/interfacectl-cli"
-  - "interfacectl-tooling/packages/interfacectl-validator"
+  - "tools/interfacectl/packages/*"
 

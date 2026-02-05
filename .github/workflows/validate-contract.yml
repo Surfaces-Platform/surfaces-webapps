@@ -11,7 +11,7 @@ jobs:
     name: Validate Contract
     runs-on: ubuntu-latest
     env:
-      INTERFACECTL_BIN: ${{ github.workspace }}/interfacectl-tooling/packages/interfacectl-cli/dist/index.js
+      INTERFACECTL_BIN: ${{ github.workspace }}/tools/interfacectl/packages/interfacectl-cli/dist/index.js
     permissions:
       contents: read
       pull-requests: read
@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
       
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -32,21 +34,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       
-      - name: Checkout interfacectl tooling
-        uses: actions/checkout@v4
-        with:
-          repository: Surfaces-Platform/interfacectl
-          path: interfacectl-tooling
-          ref: main
-          token: ${{ secrets.INTERFACECTL_TOKEN || secrets.GITHUB_TOKEN }}
-      
-      - name: Install interfacectl dependencies
-        working-directory: interfacectl-tooling
-        run: pnpm install --frozen-lockfile
-      
       - name: Build interfacectl
-        working-directory: interfacectl-tooling
-        run: pnpm run build
+        run: pnpm run interfacectl:build
       
       - name: Show CLI provenance
         run: pnpm cli:where:ci
@@ -59,14 +48,11 @@ jobs:
             --format json
       
       - name: Generate contract (surfaces-web)
-        run: |
-          node "$INTERFACECTL_BIN" generate-contract \
-            --app-root apps/surfaces-web \
-            --surface surfaces-web
+        run: pnpm run generate:contract
       
       - name: Check generated contract drift
         run: |
           if ! git diff --exit-code contracts/generated/; then
-            echo "::error::Generated contract artifacts are out of date. Run 'pnpm run generate:contract' locally and commit the updated contracts/generated/ files."
+            echo "::error::Generated contract artifacts are out of date. Run: pnpm run interfacectl:build && pnpm run generate:contract"
             exit 1
           fi

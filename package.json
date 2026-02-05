@@ -4,14 +4,16 @@
   "type": "module",
   "scripts": {
     "prepare": "husky install",
+    "interfacectl:build": "cd tools/interfacectl && pnpm install --frozen-lockfile && pnpm run build",
+    "interfacectl:bin": "echo tools/interfacectl/packages/interfacectl-cli/dist/index.js",
     "validate:contract": "./scripts/validate-contract.sh",
-    "generate:contract": "pnpm exec interfacectl generate-contract --app-root apps/surfaces-web --surface surfaces-web",
-    "validate:contract:text": "node /Users/mike/Cursor/interfacectl/packages/interfacectl-cli/dist/index.js validate --root . --contract ./contracts/surfaces.web.contract.json --format text",
-    "validate:contract:dev": "cd /Users/mike/Cursor/interfacectl && pnpm run build && cd - && ./scripts/validate-contract.sh",
-    "validate:local": "pnpm exec interfacectl validate --workspace-root . --contract ./contracts/surfaces.web.contract.json",
-    "validate:ci": "pnpm --filter @surfaces/interfacectl-validator run build && pnpm --filter @surfaces/interfacectl-cli run build && node scripts/print-provenance.mjs && pnpm exec interfacectl validate --workspace-root . --contract ./contracts/surfaces.web.contract.json",
-    "cli:where:local": "node -e \"const pkg = require('./interfacectl-tooling/packages/interfacectl-cli/package.json'); const {execSync} = require('child_process'); console.log('=== Local Workspace CLI ==='); try { const bin = execSync('pnpm exec which interfacectl', {encoding: 'utf8'}).trim(); console.log('Binary:', bin); } catch { console.log('Binary: node_modules/.bin/interfacectl'); } try { const version = execSync('pnpm exec interfacectl --version', {encoding: 'utf8'}).trim(); console.log('Version:', version); } catch { console.log('Version:', pkg.version); } try { const sha = execSync('git rev-parse HEAD', {encoding: 'utf8'}).trim(); console.log('Git SHA:', sha); } catch { console.log('Git SHA: not a git repo'); }\"",
-    "cli:where:ci": "node -e \"const pkg = require('./interfacectl-tooling/packages/interfacectl-cli/package.json'); const {execSync} = require('child_process'); console.log('=== CI/Prod Workspace CLI ==='); console.log('Build status: CLI packages built from source'); try { const bin = execSync('pnpm exec which interfacectl', {encoding: 'utf8'}).trim(); console.log('Binary:', bin); } catch { console.log('Binary: node_modules/.bin/interfacectl'); } try { const version = execSync('pnpm exec interfacectl --version', {encoding: 'utf8'}).trim(); console.log('Version:', version); } catch { console.log('Version:', pkg.version); } try { const sha = execSync('git rev-parse HEAD', {encoding: 'utf8'}).trim(); console.log('Git SHA:', sha); } catch { console.log('Git SHA: not a git repo'); }\"",
+    "generate:contract": "node tools/interfacectl/packages/interfacectl-cli/dist/index.js generate-contract --app-root apps/surfaces-web --surface surfaces-web --out contracts/generated/surfaces-web.contract.json --report-out contracts/generated/surfaces-web.extraction.json",
+    "validate:contract:text": "node tools/interfacectl/packages/interfacectl-cli/dist/index.js validate --root . --contract ./contracts/surfaces.web.contract.json --format text",
+    "validate:contract:dev": "pnpm run interfacectl:build && ./scripts/validate-contract.sh",
+    "validate:local": "node tools/interfacectl/packages/interfacectl-cli/dist/index.js validate --workspace-root . --contract ./contracts/surfaces.web.contract.json",
+    "validate:ci": "pnpm run interfacectl:build && node scripts/print-provenance.mjs && node tools/interfacectl/packages/interfacectl-cli/dist/index.js validate --workspace-root . --contract ./contracts/surfaces.web.contract.json",
+    "cli:where:local": "node -e \"const pkg = require('./tools/interfacectl/packages/interfacectl-cli/package.json'); const {execSync} = require('child_process'); console.log('=== Local Workspace CLI ==='); try { const bin = require('path').resolve(process.cwd(), 'tools/interfacectl/packages/interfacectl-cli/dist/index.js'); console.log('Binary:', bin); } catch { } try { const version = execSync('node tools/interfacectl/packages/interfacectl-cli/dist/index.js --version', {encoding: 'utf8', cwd: process.cwd()}).trim(); console.log('Version:', version); } catch { console.log('Version:', pkg.version); } try { const sha = execSync('git rev-parse HEAD', {encoding: 'utf8', cwd: 'tools/interfacectl'}).trim(); console.log('interfacectl Git SHA:', sha); } catch { console.log('Git SHA: not a git repo'); }\"",
+    "cli:where:ci": "node -e \"const pkg = require('./tools/interfacectl/packages/interfacectl-cli/package.json'); const path = require('path'); console.log('=== CI/Prod Workspace CLI ==='); console.log('Build status: CLI built from tools/interfacectl'); console.log('Binary:', path.resolve(process.cwd(), 'tools/interfacectl/packages/interfacectl-cli/dist/index.js')); try { const version = require('child_process').execSync('node tools/interfacectl/packages/interfacectl-cli/dist/index.js --version', {encoding: 'utf8', cwd: process.cwd()}).trim(); console.log('Version:', version); } catch { console.log('Version:', pkg.version); } try { const sha = require('child_process').execSync('git rev-parse HEAD', {encoding: 'utf8', cwd: 'tools/interfacectl'}).trim(); console.log('interfacectl Git SHA:', sha); } catch { }\"",
     "dev:surfaces": "pnpm --filter surfaces-web dev",
     "dev:surfaceops": "pnpm --filter surfaceops-web dev",
     "dev:interfacectl": "pnpm --filter interfacectl-web dev",
@@ -36,6 +38,7 @@
   "packageManager": "pnpm@10.26.2+sha512.0e308ff2005fc7410366f154f625f6631ab2b16b1d2e70238444dd6ae9d630a8482d92a451144debc492416896ed16f7b114a86ec68b8404b2443869e68ffda6",
   "pnpm": {
     "overrides": {
+      "@surfaces/interfacectl-extractor": "workspace:*",
       "@surfaces/interfacectl-validator": "workspace:*"
     }
   },

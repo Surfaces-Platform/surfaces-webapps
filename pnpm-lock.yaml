@@ -5,6 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
+  '@surfaces/interfacectl-extractor': workspace:*
   '@surfaces/interfacectl-validator': workspace:*
 
 importers:
@@ -17,10 +18,10 @@ importers:
     devDependencies:
       '@surfaces/interfacectl-cli':
         specifier: workspace:*
-        version: link:interfacectl-tooling/packages/interfacectl-cli
+        version: link:tools/interfacectl/packages/interfacectl-cli
       '@surfaces/interfacectl-validator':
         specifier: workspace:*
-        version: link:interfacectl-tooling/packages/interfacectl-validator
+        version: link:tools/interfacectl/packages/interfacectl-validator
       '@types/node':
         specifier: ^20.14.9
         version: 20.19.27
@@ -230,44 +231,6 @@ importers:
         specifier: ^5
         version: 5.9.3
 
-  interfacectl-tooling/packages/interfacectl-cli:
-    dependencies:
-      '@surfaces/interfacectl-validator':
-        specifier: workspace:*
-        version: link:../interfacectl-validator
-      commander:
-        specifier: ^12.1.0
-        version: 12.1.0
-      globby:
-        specifier: ^14.0.2
-        version: 14.1.0
-      picocolors:
-        specifier: ^1.0.0
-        version: 1.1.1
-    devDependencies:
-      '@types/node':
-        specifier: ^20.14.9
-        version: 20.19.27
-      typescript:
-        specifier: ^5.6.3
-        version: 5.9.3
-
-  interfacectl-tooling/packages/interfacectl-validator:
-    dependencies:
-      ajv:
-        specifier: ^8.17.1
-        version: 8.17.1
-      ajv-formats:
-        specifier: ^3.0.1
-        version: 3.0.1(ajv@8.17.1)
-    devDependencies:
-      '@types/node':
-        specifier: ^20.14.9
-        version: 20.19.27
-      typescript:
-        specifier: ^5.6.3
-        version: 5.9.3
-
   packages/platform-auth:
     dependencies:
       jose:
@@ -298,6 +261,56 @@ importers:
         version: 19.2.3(@types/react@19.2.7)
       typescript:
         specifier: ^5
+        version: 5.9.3
+
+  tools/interfacectl/packages/interfacectl-cli:
+    dependencies:
+      '@surfaces/interfacectl-extractor':
+        specifier: workspace:*
+        version: link:../interfacectl-extractor
+      '@surfaces/interfacectl-validator':
+        specifier: workspace:*
+        version: link:../interfacectl-validator
+      commander:
+        specifier: ^12.1.0
+        version: 12.1.0
+      globby:
+        specifier: ^14.0.2
+        version: 14.1.0
+      picocolors:
+        specifier: ^1.0.0
+        version: 1.1.1
+    devDependencies:
+      '@types/node':
+        specifier: ^20.14.9
+        version: 20.19.27
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+
+  tools/interfacectl/packages/interfacectl-extractor:
+    devDependencies:
+      '@types/node':
+        specifier: ^20.14.9
+        version: 20.19.27
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+
+  tools/interfacectl/packages/interfacectl-validator:
+    dependencies:
+      ajv:
+        specifier: ^8.17.1
+        version: 8.17.1
+      ajv-formats:
+        specifier: ^3.0.1
+        version: 3.0.1(ajv@8.17.1)
+    devDependencies:
+      '@types/node':
+        specifier: ^20.14.9
+        version: 20.19.27
+      typescript:
+        specifier: ^5.6.3
         version: 5.9.3
 
 packages:
