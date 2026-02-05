@@ -1,5 +1,5 @@
 {
-  "appRoot": "/Users/mike/Cursor/surfaces-monorepo/apps/surfaces-web",
+  "appRoot": "apps/surfaces-web",
   "extracted": {
     "authAware": true,
     "designSystemComponents": [

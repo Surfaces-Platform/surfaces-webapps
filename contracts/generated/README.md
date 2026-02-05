@@ -6,10 +6,10 @@ Artifacts in this directory are produced by `interfacectl generate-contract` and
 pnpm run generate:contract
 ```
 
-Or from the interfacectl repo:
+The CLI is built from the `tools/interfacectl` submodule; run `pnpm run interfacectl:build` once if needed. To run the command directly:
 
 ```bash
-interfacectl generate-contract --app-root apps/surfaces-web --surface surfaces-web --out contracts/generated/surfaces-web.contract.json --report-out contracts/generated/surfaces-web.extraction.json
+node tools/interfacectl/packages/interfacectl-cli/dist/index.js generate-contract --app-root apps/surfaces-web --surface surfaces-web --out contracts/generated/surfaces-web.contract.json --report-out contracts/generated/surfaces-web.extraction.json
 ```
 
 - `*.contract.json` — Schema-valid contract with `x_extracted` (routes, hasShell, designSystemComponents, authAware).
