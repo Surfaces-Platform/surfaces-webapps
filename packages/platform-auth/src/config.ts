@@ -22,6 +22,7 @@ export function getConfig(env: Record<string, string | undefined> = process.env)
   const oidcClientSecret = env.OIDC_CLIENT_SECRET;
   const oidcRedirectUri = env.OIDC_REDIRECT_URI;
   const oidcPostLogoutRedirectUri = env.OIDC_POST_LOGOUT_REDIRECT_URI ?? "/";
+  const oidcLogoutUrl = env.OIDC_LOGOUT_URL?.trim() || undefined;
   const sessionSecret = env.SESSION_SECRET;
   const surfaceId = env.PLATFORM_SURFACE_ID;
 
@@ -40,6 +41,7 @@ export function getConfig(env: Record<string, string | undefined> = process.env)
     oidcClientSecret: oidcClientSecret?.trim() || undefined,
     oidcRedirectUri: oidcRedirectUri.trim(),
     oidcPostLogoutRedirectUri: oidcPostLogoutRedirectUri.trim(),
+    oidcLogoutUrl,
     oidcScope: env.OIDC_SCOPE?.trim() || DEFAULT_SCOPE,
     oidcAudience: env.OIDC_AUDIENCE?.trim() || undefined,
     sessionSecret: sessionSecret.trim(),

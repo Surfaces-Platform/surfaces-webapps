@@ -1,7 +1,8 @@
 import { getSession } from "@surfaces/platform-auth";
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import Link from "next/link";
 import Navigation from "@surfaces/ui/components/Navigation";
+import { colors } from "@surfaces/ui/tokens/colors";
 
 export default async function ContractsLayout({
   children,
@@ -12,7 +13,46 @@ export default async function ContractsLayout({
   });
   const result = await getSession(req);
   if (!result.ok) {
-    redirect("/auth/login?returnTo=/contracts");
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        <Navigation
+          currentSurface="surfaceops"
+          currentContext={{ contentType: "operations", subject: "contracts" }}
+          sections={[
+            { label: "Overview", href: "/" },
+            { label: "Surfaces", href: "/contracts" },
+          ]}
+          utilities={[
+            { label: "GitHub", href: "#github" },
+            { label: "Logout", href: "/auth/logout?global=1" },
+          ]}
+          theme="light"
+        />
+        <main style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+          <div style={{ textAlign: "center", maxWidth: 400 }}>
+            <h2 style={{ fontSize: "18px", fontWeight: 600, marginBottom: 8 }}>Sign in to view surfaces</h2>
+            <p style={{ fontSize: "14px", color: colors.neutral[600], marginBottom: 24 }}>
+              Contract status and validation details require authentication.
+            </p>
+            <Link
+              href="/auth/login?returnTo=/contracts"
+              style={{
+                display: "inline-block",
+                fontSize: "14px",
+                fontWeight: 600,
+                padding: "12px 24px",
+                backgroundColor: colors.structure.primary,
+                color: colors.neutral[0],
+                textDecoration: "none",
+                borderRadius: "6px",
+              }}
+            >
+              Sign in
+            </Link>
+          </div>
+        </main>
+      </div>
+    );
   }
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -25,7 +65,7 @@ export default async function ContractsLayout({
         ]}
         utilities={[
           { label: "GitHub", href: "#github" },
-          { label: "Logout", href: "/auth/logout" },
+          { label: "Logout", href: "/auth/logout?global=1" },
         ]}
         theme="light"
       />
