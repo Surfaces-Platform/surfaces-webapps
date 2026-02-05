@@ -24,6 +24,13 @@
       ],
       "layout": {
         "maxContentWidth": 1120
+      },
+      "domain": "www.interfacectl.com",
+      "phase0": {
+        "authPosture": "auth-aware",
+        "requiresShell": true,
+        "expectsAuthRoutes": true,
+        "expectsDesignSystem": true
       }
     },
     {
@@ -46,6 +53,13 @@
       ],
       "layout": {
         "maxContentWidth": 1120
+      },
+      "domain": "www.surfaceops.ai",
+      "phase0": {
+        "authPosture": "auth-aware",
+        "requiresShell": true,
+        "expectsAuthRoutes": true,
+        "expectsDesignSystem": true
       }
     },
     {
@@ -68,6 +82,13 @@
       ],
       "layout": {
         "maxContentWidth": 1120
+      },
+      "domain": "www.surfaces.systems",
+      "phase0": {
+        "authPosture": "auth-aware",
+        "requiresShell": true,
+        "expectsAuthRoutes": true,
+        "expectsDesignSystem": true
       }
     },
     {
@@ -89,6 +110,13 @@
       ],
       "layout": {
         "maxContentWidth": 1120
+      },
+      "domain": "www.surfaces.dev",
+      "phase0": {
+        "authPosture": "auth-aware",
+        "requiresShell": true,
+        "expectsAuthRoutes": true,
+        "expectsDesignSystem": true
       }
     }
   ],
