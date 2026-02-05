@@ -1,8 +1,15 @@
-import { getSession } from "@surfaces/platform-auth";
+import { getSession, getLogoutUrl } from "@surfaces/platform-auth";
 import { headers } from "next/headers";
 import Link from "next/link";
 import Navigation from "@surfaces/ui/components/Navigation";
 import { colors } from "@surfaces/ui/tokens/colors";
+
+function getLogoutHref(): string {
+  const base = process.env.OIDC_POST_LOGOUT_REDIRECT_URI ?? "http://localhost:3001/";
+  const origin = new URL(base).origin;
+  const logoutUrl = getLogoutUrl({ returnTo: `${origin}/auth/logout/complete` });
+  return logoutUrl || "/auth/logout?global=1";
+}
 
 export default async function ContractsLayout({
   children,
@@ -12,6 +19,7 @@ export default async function ContractsLayout({
     headers: Object.fromEntries(headersList.entries()),
   });
   const result = await getSession(req);
+  const logoutHref = getLogoutHref();
   if (!result.ok) {
     return (
       <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -24,7 +32,7 @@ export default async function ContractsLayout({
           ]}
           utilities={[
             { label: "GitHub", href: "#github" },
-            { label: "Logout", href: "/auth/logout?global=1" },
+            { label: "Logout", href: logoutHref },
           ]}
           theme="light"
         />
@@ -65,7 +73,7 @@ export default async function ContractsLayout({
         ]}
         utilities={[
           { label: "GitHub", href: "#github" },
-          { label: "Logout", href: "/auth/logout?global=1" },
+          { label: "Logout", href: logoutHref },
         ]}
         theme="light"
       />
