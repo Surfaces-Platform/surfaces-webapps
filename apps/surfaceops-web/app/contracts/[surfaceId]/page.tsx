@@ -4,8 +4,39 @@ import {
   loadPolicyContract,
   loadExtraction,
   computeValidationStatus,
+  loadValidationOutcomes,
+  getLastContractChange,
+  getLastExtractionRun,
 } from "@/lib/contracts";
 import { colors } from "@surfaces/ui/tokens/colors";
+
+function OutcomeDots({
+  outcomes,
+}: {
+  outcomes: ("pass" | "fail" | "unknown")[];
+}) {
+  return (
+    <span style={{ display: "flex", gap: 4, alignItems: "center" }}>
+      {outcomes.map((o, i) => (
+        <span
+          key={i}
+          title={o}
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: "50%",
+            backgroundColor:
+              o === "pass"
+                ? colors.contract.valid
+                : o === "fail"
+                  ? colors.contract.invalid
+                  : colors.neutral[400],
+          }}
+        />
+      ))}
+    </span>
+  );
+}
 
 export default async function ContractDetailPage({
   params,
@@ -17,6 +48,10 @@ export default async function ContractDetailPage({
 
   const extracted = loadExtraction(surfaceId);
   const status = computeValidationStatus(surface, extracted);
+  const outcomes = loadValidationOutcomes(contract);
+  const surfaceOutcomes = outcomes[surfaceId] ?? [status];
+  const lastContractChange = getLastContractChange();
+  const lastExtractionRun = getLastExtractionRun(surfaceId);
 
   return (
     <div
@@ -54,21 +89,57 @@ export default async function ContractDetailPage({
           style={{
             fontSize: "14px",
             color: colors.neutral[600],
-            marginBottom: "24px",
+            marginBottom: "4px",
           }}
         >
           {surface.domain ?? surface.id}
         </p>
-
-        <div
+        <p
           style={{
             fontSize: "14px",
-            color: colors.neutral[600],
+            color: surface.owner?.trim()
+              ? colors.neutral[600]
+              : colors.neutral[400],
             marginBottom: "24px",
           }}
         >
-          Last generated: unknown
-        </div>
+          Owner: {surface.owner?.trim() || "No owner specified."}
+        </p>
+
+        <section
+          style={{
+            marginBottom: "24px",
+            padding: "16px",
+            backgroundColor: colors.neutral[0],
+            border: `1px solid ${colors.neutral[200]}`,
+            borderRadius: "6px",
+          }}
+        >
+          <h2
+            style={{
+              fontSize: "14px",
+              fontWeight: 600,
+              marginBottom: "12px",
+              fontFamily: "monospace",
+            }}
+          >
+            Change log
+          </h2>
+          <div style={{ fontSize: "14px", color: colors.neutral[600] }}>
+            <div style={{ marginBottom: "8px" }}>
+              Last contract change:{" "}
+              {lastContractChange
+                ? `${lastContractChange.hash} (${lastContractChange.relativeTime})`
+                : "unknown"}
+            </div>
+            <div>
+              Last extraction run:{" "}
+              {lastExtractionRun
+                ? `${lastExtractionRun.hash} (${lastExtractionRun.relativeTime})`
+                : "unknown"}
+            </div>
+          </div>
+        </section>
 
         <section
           style={{
@@ -89,6 +160,16 @@ export default async function ContractDetailPage({
           >
             Validation status
           </h2>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              marginBottom: extracted ? 0 : undefined,
+            }}
+          >
+            <OutcomeDots outcomes={surfaceOutcomes} />
+          </div>
           {extracted ? (
             <p
               style={{
@@ -100,9 +181,10 @@ export default async function ContractDetailPage({
                       ? colors.contract.invalid
                       : colors.neutral[600],
                 fontFamily: "monospace",
+                marginTop: "8px",
               }}
             >
-              {status}
+              Current: {status}
             </p>
           ) : (
             <>

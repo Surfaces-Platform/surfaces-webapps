@@ -1,9 +1,43 @@
 import Link from "next/link";
-import { loadPolicyContract, loadExtraction, computeValidationStatus } from "@/lib/contracts";
+import {
+  loadPolicyContract,
+  loadExtraction,
+  computeValidationStatus,
+  loadValidationOutcomes,
+} from "@/lib/contracts";
 import { colors } from "@surfaces/ui/tokens/colors";
+
+function OutcomeDots({
+  outcomes,
+}: {
+  outcomes: ("pass" | "fail" | "unknown")[];
+}) {
+  return (
+    <span style={{ display: "flex", gap: 4, alignItems: "center" }}>
+      {outcomes.map((o, i) => (
+        <span
+          key={i}
+          title={o}
+          style={{
+            width: 6,
+            height: 6,
+            borderRadius: "50%",
+            backgroundColor:
+              o === "pass"
+                ? colors.contract.valid
+                : o === "fail"
+                  ? colors.contract.invalid
+                  : colors.neutral[400],
+          }}
+        />
+      ))}
+    </span>
+  );
+}
 
 export default function ContractsPage() {
   const contract = loadPolicyContract();
+  const outcomes = loadValidationOutcomes(contract);
 
   return (
     <div
@@ -38,6 +72,7 @@ export default function ContractsPage() {
           {contract.surfaces.map((surface) => {
             const extracted = loadExtraction(surface.id);
             const status = computeValidationStatus(surface, extracted);
+            const surfaceOutcomes = outcomes[surface.id] ?? [status];
             const statusColor =
               status === "pass"
                 ? colors.contract?.valid ?? colors.neutral[600]
@@ -66,7 +101,32 @@ export default function ContractsPage() {
                   }}
                 >
                   <div>
-                    <div style={{ fontWeight: 600 }}>{surface.displayName}</div>
+                    <div style={{ fontWeight: 600 }}>
+                      {surface.displayName}
+                      {surface.owner?.trim() ? (
+                        <span
+                          style={{
+                            fontWeight: 400,
+                            color: colors.neutral[600],
+                            marginLeft: "8px",
+                            fontSize: "13px",
+                          }}
+                        >
+                          · {surface.owner.trim()}
+                        </span>
+                      ) : (
+                        <span
+                          style={{
+                            fontWeight: 400,
+                            color: colors.neutral[400],
+                            marginLeft: "8px",
+                            fontSize: "13px",
+                          }}
+                        >
+                          · No owner specified
+                        </span>
+                      )}
+                    </div>
                     {surface.domain && (
                       <div
                         style={{
@@ -81,13 +141,22 @@ export default function ContractsPage() {
                   </div>
                   <span
                     style={{
-                      fontSize: "12px",
-                      fontFamily: "monospace",
-                      color: statusColor,
-                      textTransform: "lowercase",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
                     }}
                   >
-                    {status}
+                    <OutcomeDots outcomes={surfaceOutcomes} />
+                    <span
+                      style={{
+                        fontSize: "12px",
+                        fontFamily: "monospace",
+                        color: statusColor,
+                        textTransform: "lowercase",
+                      }}
+                    >
+                      {status}
+                    </span>
                   </span>
                 </Link>
               </li>
