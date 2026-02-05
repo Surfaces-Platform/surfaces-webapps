@@ -2,7 +2,18 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+### Auth (required for /contracts)
+
+Configure auth env before accessing protected routes:
+
+```bash
+# From repo root
+pnpm setup:auth
+```
+
+Then fill in `apps/surfaceops-web/.env.local` with values from Auth0 (OIDC_ISSUER, OIDC_CLIENT_ID, OIDC_CLIENT_SECRET, SESSION_SECRET). Add `http://localhost:3001/auth/callback` to Auth0 Allowed Callback URLs. See `docs/platform-auth/local-setup.md`.
+
+### Run the dev server
 
 ```bash
 npm run dev
