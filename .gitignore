@@ -8,3 +8,4 @@ scratch/secrets/
 # Next.js build output
 .next/
 .vercel
+.env*.local
