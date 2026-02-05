@@ -46,7 +46,7 @@ Each file should contain a single line with the value (no trailing placeholder t
 
 3. In Auth0 → Application → Settings:
    - **Allowed Callback URLs:** add `http://localhost:3001/auth/callback` (for surfaceops-web)
-   - **Allowed Logout URLs:** add `http://localhost:3001/`
+   - **Allowed Logout URLs:** add `http://localhost:3001/` and `http://localhost:3001/auth/logout/complete`
 
 ## Per-app ports and redirect URIs
 

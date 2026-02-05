@@ -60,7 +60,11 @@ export async function createSessionCookie(
 
 export function clearSessionCookie(isProduction: boolean): string {
   const name = getCookieName(isProduction);
-  return `${name}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`;
+  const parts = [`${name}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`];
+  if (isProduction) {
+    parts.push("Secure");
+  }
+  return parts.join("; ");
 }
 
 function getCookieValue(req: Request, cookieName: string): string | null {

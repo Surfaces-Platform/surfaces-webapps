@@ -11,6 +11,7 @@
       "/auth/callback",
       "/auth/login",
       "/auth/logout",
+      "/auth/logout/complete",
       "/auth/session",
       "/contracts",
       "/contracts/[surfaceId]",

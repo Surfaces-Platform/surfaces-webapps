@@ -258,5 +258,38 @@ export async function logout(req: Request, opts: { surface: string; global?: boo
   }
 }
 
+/**
+ * Returns the direct IdP logout URL (e.g. Auth0 v2). Use for Logout links.
+ * When using direct link, returnTo should point to /auth/logout/complete so we
+ * clear our session cookie when Auth0 redirects back.
+ */
+export function getLogoutUrl(opts?: { returnTo?: string }): string {
+  const config = getConfig();
+  const returnTo = opts?.returnTo ?? config.oidcPostLogoutRedirectUri;
+  if (config.oidcLogoutUrl) {
+    const url = new URL(config.oidcLogoutUrl);
+    url.searchParams.set("client_id", config.oidcClientId);
+    url.searchParams.set("returnTo", returnTo);
+    return url.toString();
+  }
+  return "";
+}
+
+/**
+ * Clears session cookie and redirects. Use for /auth/logout/complete when Auth0
+ * redirects back after logout.
+ */
+export function clearSessionAndRedirect(req: Request, redirectTo: string): Response {
+  const prod = isProduction(req);
+  const clearCookie = clearSessionCookie(prod);
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: redirectTo,
+      "Set-Cookie": clearCookie,
+    },
+  });
+}
+
 export type { Session, ClaimMapping };
 export { AUTH_CONFIG_MISSING, AUTH_MISSING_WORKSPACE, AUTH_SURFACE_DENIED, AUTH_INVALID_STATE, AUTH_TOKEN_EXCHANGE_FAILED, AUTH_INVALID_RETURN_TO } from "./errors.js";

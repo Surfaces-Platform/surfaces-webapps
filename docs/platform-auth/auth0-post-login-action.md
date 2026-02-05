@@ -52,11 +52,16 @@ For the single shared **Regular Web Application**:
   - `https://www.surfaceops.ai/auth/callback`
   - `https://www.interfacectl.com/auth/callback`
   - `https://www.surfaces.dev/auth/callback`
-- **Allowed Logout URLs**:
+- **Allowed Logout URLs** (direct Auth0 logout link redirects to /auth/logout/complete to clear our cookie):
   - `https://www.surfaces.systems/`
+  - `https://www.surfaces.systems/auth/logout/complete`
   - `https://www.surfaceops.ai/`
+  - `https://www.surfaceops.ai/auth/logout/complete`
   - `https://www.interfacectl.com/`
+  - `https://www.interfacectl.com/auth/logout/complete`
   - `https://www.surfaces.dev/`
+  - `https://www.surfaces.dev/auth/logout/complete`
+  - Local: `http://localhost:3001/auth/logout/complete`, etc.
 - **OIDC_LOGOUT_URL** (Vercel env): `https://surfaces.us.auth0.com/v2/logout` — use Auth0 v2 logout instead of discovery `/oidc/logout` to avoid "something went wrong" errors.
 - **Settings** → ensure the Login Action above is in the Login flow and applied.
 
