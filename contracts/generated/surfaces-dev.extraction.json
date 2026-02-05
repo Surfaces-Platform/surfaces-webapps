@@ -1,0 +1,38 @@
+{
+  "appRoot": "apps/surfaces-dev",
+  "extracted": {
+    "authAware": true,
+    "designSystemComponents": [
+      "Navigation"
+    ],
+    "hasShell": true,
+    "routes": [
+      "/",
+      "/auth/callback",
+      "/auth/login",
+      "/auth/logout",
+      "/auth/session",
+      "/contracts",
+      "/get-started",
+      "/guides",
+      "/interfacectl",
+      "/interfacectl/exit-codes",
+      "/reference/validation-boundaries"
+    ]
+  },
+  "surfaceId": "surfaces-dev",
+  "warnings": [
+    {
+      "code": "requiredSections.omitted",
+      "message": "requiredSections cannot be extracted from code in Phase 0; using placeholder."
+    },
+    {
+      "code": "allowedFonts.default",
+      "message": "allowedFonts cannot be extracted from code in Phase 0; using default."
+    },
+    {
+      "code": "layout.default",
+      "message": "layout.maxContentWidth cannot be extracted from code in Phase 0; using default."
+    }
+  ]
+}
