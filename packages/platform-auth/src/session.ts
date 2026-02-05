@@ -15,6 +15,12 @@ function getCookieName(isProduction: boolean): string {
 
 function isProduction(req: Request): boolean {
   try {
+    // Check Host header first (used when req.url is a placeholder like http://localhost)
+    const hostHeader = req.headers.get("host") ?? req.headers.get("x-forwarded-host") ?? "";
+    const hostnameFromHeader = hostHeader.split(":")[0].toLowerCase();
+    if (hostnameFromHeader && hostnameFromHeader !== "localhost" && hostnameFromHeader !== "127.0.0.1") {
+      return true;
+    }
     const url = new URL(req.url);
     const host = url.hostname.toLowerCase();
     return host !== "localhost" && host !== "127.0.0.1";
