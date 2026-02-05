@@ -69,6 +69,27 @@
       "layout": {
         "maxContentWidth": 1120
       }
+    },
+    {
+      "id": "surfaces-dev",
+      "displayName": "Surfaces Dev",
+      "type": "web",
+      "requiredSections": [
+        "landing.hero",
+        "landing.actions"
+      ],
+      "allowedFonts": [
+        "var(--font-geist-mono)",
+        "JetBrains Mono",
+        "monospace",
+        "var(--font-geist-sans)",
+        "Arial",
+        "Helvetica",
+        "sans-serif"
+      ],
+      "layout": {
+        "maxContentWidth": 1120
+      }
     }
   ],
   "sections": [
