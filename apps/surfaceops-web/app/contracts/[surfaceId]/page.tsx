@@ -9,6 +9,10 @@ import {
   getCategoryLabel,
   getDriftLabel,
   getDriftLabelText,
+  getActionGuidance,
+  getInterventionPoint,
+  getInterventionLabel,
+  getOperationalResponsibility,
   validationOutcomesFileExists,
   loadValidationOutcomes,
   getLastContractChange,
@@ -76,6 +80,50 @@ function formatValue(v: unknown): string {
   if (Array.isArray(v)) return v.length ? v.join(", ") : "[]";
   if (typeof v === "boolean") return String(v);
   return JSON.stringify(v);
+}
+
+function NextStepsSection({ findings }: { findings: Phase0Finding[] }) {
+  const uniqueCodes = [...new Set(findings.map((f) => f.code))];
+  const interventionPoints = [
+    ...new Set(uniqueCodes.map((c) => getInterventionPoint(c))),
+  ];
+  const interventionLabel =
+    interventionPoints.length === 1
+      ? getInterventionLabel(interventionPoints[0])
+      : interventionPoints.map(getInterventionLabel).join("; ");
+
+  return (
+    <div
+      style={{
+        marginTop: "16px",
+        paddingTop: "16px",
+        borderTop: `1px solid ${colors.neutral[200]}`,
+        fontSize: "14px",
+        color: colors.neutral[800],
+      }}
+    >
+      <div
+        style={{
+          fontSize: "12px",
+          fontWeight: 600,
+          color: colors.neutral[600],
+          marginBottom: "8px",
+        }}
+      >
+        Next steps
+      </div>
+      <ul style={{ margin: 0, paddingLeft: "20px" }}>
+        <li style={{ marginBottom: "4px" }}>
+          Where to fix: {interventionLabel}
+        </li>
+        {uniqueCodes.map((code) => (
+          <li key={code} style={{ marginBottom: "4px" }}>
+            {getActionGuidance(code)}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
 function OutcomeDots({
@@ -179,7 +227,7 @@ export default async function ContractDetailPage({
             marginBottom: "24px",
           }}
         >
-          Owner: {surface.owner?.trim() || "No owner specified."}
+          Operational responsibility: {getOperationalResponsibility(surface.owner)}
         </p>
 
         <section
@@ -313,19 +361,22 @@ export default async function ContractDetailPage({
               </p>
             )}
             {findings.length > 0 ? (
-              <div style={{ fontSize: "14px", color: colors.neutral[800] }}>
-                {(Object.keys(groupedFindings) as FailureCategory[]).map((cat) => {
-                  const items = groupedFindings[cat];
-                  if (items.length === 0) return null;
-                  return (
-                    <FindingGroup
-                      key={cat}
-                      category={cat}
-                      findings={items}
-                    />
-                  );
-                })}
-              </div>
+              <>
+                <div style={{ fontSize: "14px", color: colors.neutral[800] }}>
+                  {(Object.keys(groupedFindings) as FailureCategory[]).map((cat) => {
+                    const items = groupedFindings[cat];
+                    if (items.length === 0) return null;
+                    return (
+                      <FindingGroup
+                        key={cat}
+                        category={cat}
+                        findings={items}
+                      />
+                    );
+                  })}
+                </div>
+                <NextStepsSection findings={findings} />
+              </>
             ) : (
               <div style={{ fontSize: "14px", color: colors.neutral[600] }}>
                 <p style={{ marginBottom: "4px" }}>
