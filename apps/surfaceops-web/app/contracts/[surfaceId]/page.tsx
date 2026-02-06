@@ -187,18 +187,24 @@ export default async function ContractDetailPage({
       }}
     >
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "48px 24px" }}>
-        <Link
-          href="/contracts"
+        <div
           style={{
             fontSize: "14px",
             color: colors.neutral[600],
-            textDecoration: "none",
             marginBottom: "24px",
-            display: "inline-block",
           }}
         >
-          ← Surfaces
-        </Link>
+          <Link href="/contracts" style={{ color: "inherit", textDecoration: "none" }}>
+            ← Surfaces
+          </Link>
+          {" · "}
+          <Link
+            href={`/contracts/runs/${surfaceId}`}
+            style={{ color: "inherit", textDecoration: "none" }}
+          >
+            View runs
+          </Link>
+        </div>
 
         <h1
           style={{

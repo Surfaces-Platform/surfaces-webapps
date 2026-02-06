@@ -227,7 +227,13 @@ export function computeFindings(
     });
   }
 
-  return findings.sort((a, b) => a.code.localeCompare(b.code));
+  return findings.sort((a, b) => {
+    const catA = getFindingCategory(a.code);
+    const catB = getFindingCategory(b.code);
+    if (catA !== catB) return catA.localeCompare(catB);
+    if (a.code !== b.code) return a.code.localeCompare(b.code);
+    return (a.message ?? "").localeCompare(b.message ?? "");
+  });
 }
 
 /** Map finding code to failure category for grouping. */
@@ -409,4 +415,296 @@ export function loadValidationOutcomes(
     }
   }
   return result;
+}
+
+/** Change summary since last extraction (Phase 6A hardening). */
+export interface ExtractionChangeSummary {
+  routesAdded: number;
+  routesRemoved: number;
+  designSystemComponentsAdded: number;
+  designSystemComponentsRemoved: number;
+  hasShellChanged: boolean | null;
+  authAwareChanged: boolean | null;
+  previousExtractionAvailable: boolean;
+}
+
+/** Run snapshot for a surface (Phase 6A / PR 2). Standardized shape, no undefined fields. */
+export interface RunSnapshot {
+  surfaceId: string;
+  domain: string;
+  status: ValidationOutcome;
+  findings: Phase0Finding[];
+  contractCommit: GitLogEntry | null;
+  extractionCommit: GitLogEntry | null;
+  contractTimestamp: string;
+  extractionTimestamp: string;
+  buildMetadata: ReturnType<typeof getBuildMetadata>;
+  changeSinceLastExtraction: ExtractionChangeSummary | null;
+  previousRunFindings: Phase0Finding[] | null;
+}
+
+/** Result of comparing current run to previous run (PR 2). */
+export type RunComparisonNarrative =
+  | { narrative: "Same failure as last run" }
+  | { narrative: "New failure since last run" };
+
+/** Surface run series (Phase 6A). */
+export interface SurfaceRunSeries {
+  surfaceId: string;
+  snapshots: RunSnapshot[];
+  history?: {
+    outcomes: ValidationOutcome[];
+  };
+}
+
+/**
+ * Get previous extraction from git parent commit (Phase 6A hardening).
+ * Returns null if previous extraction is not available.
+ */
+function getPreviousExtraction(surfaceId: string): ExtractedSurface | null {
+  try {
+    const path = `contracts/generated/${surfaceId}.extraction.json`;
+    const output = execSync(`git show HEAD~1:${path}`, {
+      cwd: WORKSPACE_ROOT,
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "ignore"],
+    }).trim();
+    if (!output) return null;
+    return JSON.parse(output) as ExtractedSurface;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Compute change summary since last extraction (Phase 6A hardening).
+ */
+function computeExtractionChangeSummary(
+  current: ExtractedSurface | null,
+  previous: ExtractedSurface | null
+): ExtractionChangeSummary {
+  if (!previous) {
+    return {
+      routesAdded: current?.extracted.routes?.length ?? 0,
+      routesRemoved: 0,
+      designSystemComponentsAdded: current?.extracted.designSystemComponents?.length ?? 0,
+      designSystemComponentsRemoved: 0,
+      hasShellChanged: null,
+      authAwareChanged: null,
+      previousExtractionAvailable: false,
+    };
+  }
+
+  const currentRoutes = new Set(current?.extracted.routes ?? []);
+  const previousRoutes = new Set(previous.extracted.routes ?? []);
+  const routesAdded = [...currentRoutes].filter((r) => !previousRoutes.has(r)).length;
+  const routesRemoved = [...previousRoutes].filter((r) => !currentRoutes.has(r)).length;
+
+  const currentComponents = new Set(current?.extracted.designSystemComponents ?? []);
+  const previousComponents = new Set(previous.extracted.designSystemComponents ?? []);
+  const designSystemComponentsAdded = [...currentComponents].filter(
+    (c) => !previousComponents.has(c)
+  ).length;
+  const designSystemComponentsRemoved = [...previousComponents].filter(
+    (c) => !currentComponents.has(c)
+  ).length;
+
+  const hasShellChanged =
+    current?.extracted.hasShell !== previous.extracted.hasShell
+      ? current?.extracted.hasShell !== previous.extracted.hasShell
+      : null;
+  const authAwareChanged =
+    current?.extracted.authAware !== previous.extracted.authAware
+      ? current?.extracted.authAware !== previous.extracted.authAware
+      : null;
+
+  return {
+    routesAdded,
+    routesRemoved,
+    designSystemComponentsAdded,
+    designSystemComponentsRemoved,
+    hasShellChanged,
+    authAwareChanged,
+    previousExtractionAvailable: true,
+  };
+}
+
+/**
+ * Get a single run snapshot for a surface (Phase 6A).
+ * Computes status and findings from current contract + extracted.
+ * Never throws; returns null on any error (PR 2).
+ */
+export function getRunSnapshot(surfaceId: string): RunSnapshot | null {
+  try {
+    const contract = loadPolicyContract();
+    const surface = contract.surfaces.find((s) => s.id === surfaceId);
+    if (!surface) return null;
+
+    const extracted = loadExtraction(surfaceId);
+    const status = computeValidationStatus(surface, extracted);
+    const findings = computeFindings(surface, extracted);
+    const contractCommit = getLastContractChange();
+    const extractionCommit = getLastExtractionRun(surfaceId);
+    const buildMetadata = getBuildMetadata();
+
+    // Compute change since last extraction. Null when git history unavailable (PR 2).
+    const previousExtraction = getPreviousExtraction(surfaceId);
+    const changeSinceLastExtraction = previousExtraction
+      ? computeExtractionChangeSummary(extracted, previousExtraction)
+      : null;
+
+    // Previous run findings (current contract + previous extraction) for run-to-run comparison
+    const previousRunFindings = previousExtraction
+      ? computeFindings(surface, previousExtraction)
+      : null;
+
+    return {
+      surfaceId,
+      domain: surface.domain ?? surface.id,
+      status,
+      findings,
+      contractCommit,
+      extractionCommit,
+      contractTimestamp: contractCommit?.relativeTime ?? "unknown",
+      extractionTimestamp: extractionCommit?.relativeTime ?? "unknown",
+      buildMetadata,
+      changeSinceLastExtraction,
+      previousRunFindings,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Compare current run to previous run by finding codes only (PR 2).
+ * Returns narrative when comparison is possible; null when no prior run exists.
+ */
+export function compareRuns(
+  currentFindings: Phase0Finding[],
+  previousFindings: Phase0Finding[] | null | undefined
+): RunComparisonNarrative | null {
+  if (previousFindings === null || previousFindings === undefined) {
+    return null;
+  }
+  const currentCodes = new Set(currentFindings.map((f) => f.code));
+  const previousCodes = new Set(previousFindings.map((f) => f.code));
+  const sameSet =
+    currentCodes.size === previousCodes.size &&
+    [...currentCodes].every((c) => previousCodes.has(c));
+  return sameSet
+    ? { narrative: "Same failure as last run" }
+    : { narrative: "New failure since last run" };
+}
+
+/**
+ * Get surface run series (Phase 6A).
+ * Returns a single snapshot in Phase 6A, with optional history from validation-outcomes.json.
+ * Future-proofed for multiple snapshots but does not parse git history in this phase.
+ */
+export function getSurfaceRunSeries(
+  surfaceId: string,
+  limit: number = 10
+): SurfaceRunSeries | null {
+  const snapshot = getRunSnapshot(surfaceId);
+  if (!snapshot) return null;
+
+  const contract = loadPolicyContract();
+  const outcomes = loadValidationOutcomes(contract);
+  const surfaceOutcomes = outcomes[surfaceId];
+
+  return {
+    surfaceId,
+    snapshots: [snapshot],
+    history: surfaceOutcomes ? { outcomes: surfaceOutcomes } : undefined,
+  };
+}
+
+/**
+ * Get contract expectation key that triggered a finding (Phase 6A hardening).
+ * Derives from finding code mapping.
+ */
+export function getContractExpectationKey(code: string): string | null {
+  const map: Record<string, string> = {
+    "phase0.designSystem.missing": "expectsDesignSystem",
+    "phase0.authRoutes.missing": "expectsAuthRoutes",
+    "phase0.authPosture.mismatch": "authPosture",
+    "phase0.shell.mismatch": "requiresShell",
+  };
+  return map[code] ?? null;
+}
+
+/**
+ * Get current expectation value from contract surface phase0 block.
+ * Reads directly from contract; does not infer.
+ */
+export function getContractExpectationValue(
+  surface: PolicySurface,
+  key: string
+): unknown {
+  const phase0 = surface.phase0;
+  if (!phase0) return undefined;
+  return (phase0 as Record<string, unknown>)[key];
+}
+
+/**
+ * Plain-text relaxed alternative for a finding.
+ * Describes what contract change would make this pass.
+ */
+export function getRelaxedAlternativeText(
+  code: string,
+  key: string,
+  value: unknown
+): string {
+  if (value === true && (key === "expectsDesignSystem" || key === "expectsAuthRoutes" || key === "requiresShell")) {
+    return "Would pass if false";
+  }
+  if (key === "authPosture" && (value === "auth-aware" || value === "auth-first")) {
+    return "Would pass if relaxed to public";
+  }
+  return "Would pass if expectation removed or relaxed";
+}
+
+/**
+ * One-line explanation of what an expectation asserts and which extraction signal it activates.
+ */
+export function getExpectationMeaning(key: string): string {
+  const map: Record<string, string> = {
+    expectsDesignSystem:
+      "Asserts that the app uses design system components. Checks extraction signal: designSystemComponents.",
+    expectsAuthRoutes:
+      "Asserts that the app exposes auth routes (/auth/login, etc.). Checks extraction signal: routes.",
+    authPosture:
+      "Asserts auth integration level (auth-aware or auth-first). Checks extraction signal: authAware.",
+    requiresShell:
+      "Asserts that the app has a layout shell. Checks extraction signal: hasShell.",
+  };
+  return map[key] ?? "Checks extraction signals against contract expectations.";
+}
+
+/**
+ * Summarize recurring findings for a surface (Phase 6A).
+ * Uses validation-outcomes.json when present, otherwise uses current findings only.
+ */
+export function summarizeRecurringFindings(
+  surfaceId: string
+): { code: string; count: number }[] {
+  const contract = loadPolicyContract();
+  const outcomesFileExists = validationOutcomesFileExists();
+  const outcomes = loadValidationOutcomes(contract);
+  const surfaceOutcomes = outcomes[surfaceId];
+
+  // If we have validation-outcomes.json with history, we could analyze recurring patterns
+  // For Phase 6A, we'll use current findings only since we don't have historical findings stored
+  const snapshot = getRunSnapshot(surfaceId);
+  if (!snapshot) return [];
+
+  const codeCounts: Record<string, number> = {};
+  for (const finding of snapshot.findings) {
+    codeCounts[finding.code] = (codeCounts[finding.code] || 0) + 1;
+  }
+
+  return Object.entries(codeCounts)
+    .map(([code, count]) => ({ code, count }))
+    .sort((a, b) => b.count - a.count);
 }

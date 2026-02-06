@@ -29,6 +29,7 @@ export default async function ContractsLayout({
           sections={[
             { label: "Overview", href: "/" },
             { label: "Surfaces", href: "/contracts" },
+            { label: "Runs", href: "/contracts/runs" },
           ]}
           utilities={[
             { label: "GitHub", href: "#github" },
@@ -70,6 +71,7 @@ export default async function ContractsLayout({
         sections={[
           { label: "Overview", href: "/" },
           { label: "Surfaces", href: "/contracts" },
+          { label: "Runs", href: "/contracts/runs" },
         ]}
         utilities={[
           { label: "GitHub", href: "#github" },
