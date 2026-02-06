@@ -7,6 +7,8 @@
     "interfacectl:build": "cd tools/interfacectl && pnpm install --frozen-lockfile && pnpm run build",
     "interfacectl:bin": "echo tools/interfacectl/packages/interfacectl-cli/dist/index.js",
     "validate:contract": "./scripts/validate-contract.sh",
+    "vercel:check": "./scripts/check-vercel-deployments.sh",
+    "vercel:monitor": "./scripts/monitor-vercel.sh",
     "generate:contract": "node tools/interfacectl/packages/interfacectl-cli/dist/index.js generate-contract --app-root apps/surfaces-web --surface surfaces-web --out contracts/generated/surfaces-web.contract.json --report-out contracts/generated/surfaces-web.extraction.json",
     "generate:contract:all": "./scripts/generate-all-contracts.sh",
     "validate:contract:text": "node tools/interfacectl/packages/interfacectl-cli/dist/index.js validate --root . --contract ./contracts/surfaces.web.contract.json --format text",
