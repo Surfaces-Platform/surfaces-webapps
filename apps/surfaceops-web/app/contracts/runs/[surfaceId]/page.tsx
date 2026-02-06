@@ -17,10 +17,12 @@ import {
   compareRuns,
   getPassRate,
   hasEverPassed,
+  countSurfacesUsingExpectation,
 } from "@/lib/contracts";
 import type {
   FailureCategory,
   Phase0Finding,
+  PolicyContract,
   PolicySurface,
 } from "@/lib/contracts";
 import { colors } from "@surfaces/ui/tokens/colors";
@@ -42,10 +44,12 @@ function FindingGroup({
   category,
   findings,
   surface,
+  contract,
 }: {
   category: FailureCategory;
   findings: Phase0Finding[];
   surface: PolicySurface;
+  contract: PolicyContract;
 }) {
   return (
     <div style={{ marginBottom: "16px" }}>
@@ -72,6 +76,15 @@ function FindingGroup({
               : null;
           const meaning =
             expectationKey !== null ? getExpectationMeaning(expectationKey) : null;
+          const isEnabled =
+            expectationKey !== null &&
+            (expectationKey === "authPosture"
+              ? (expectationValue === "auth-aware" || expectationValue === "auth-first")
+              : expectationValue === true);
+          const surfacesUsing =
+            expectationKey !== null && isEnabled
+              ? countSurfacesUsingExpectation(contract, expectationKey)
+              : 0;
 
           return (
             <li
@@ -94,6 +107,11 @@ function FindingGroup({
                 >
                   Contract expectation: phase0.{expectationKey} ={" "}
                   {formatValue(expectationValue ?? "undefined")}
+                  {surfacesUsing > 0 && (
+                    <span style={{ marginLeft: "8px", fontWeight: 400 }}>
+                      (Used by {surfacesUsing} surface{surfacesUsing !== 1 ? "s" : ""})
+                    </span>
+                  )}
                 </div>
               )}
               {relaxedText && (
@@ -567,6 +585,7 @@ export default async function SurfaceRunsDetailPage({
                             category={cat}
                             findings={items}
                             surface={surface}
+                            contract={contract}
                           />
                         );
                       })}

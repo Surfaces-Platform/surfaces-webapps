@@ -409,6 +409,28 @@ export function hasEverPassed(surfaceId: string): boolean | null {
 }
 
 /**
+ * Count surfaces in the contract that use this expectation (PR 4).
+ * "Use" means the expectation is enabled (would trigger validation).
+ */
+export function countSurfacesUsingExpectation(
+  contract: PolicyContract,
+  expectationKey: string
+): number {
+  let count = 0;
+  for (const s of contract.surfaces) {
+    const phase0 = s.phase0;
+    if (!phase0) continue;
+    const val = (phase0 as Record<string, unknown>)[expectationKey];
+    if (expectationKey === "authPosture") {
+      if (val === "auth-aware" || val === "auth-first") count++;
+    } else if (val === true) {
+      count++;
+    }
+  }
+  return count;
+}
+
+/**
  * Load last N validation outcomes per surface from committed state.
  * Falls back to current state only when file is unavailable.
  */
