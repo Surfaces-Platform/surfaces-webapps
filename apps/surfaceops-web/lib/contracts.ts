@@ -328,6 +328,51 @@ export function validationOutcomesFileExists(): boolean {
   return existsSync(VALIDATION_OUTCOMES_PATH);
 }
 
+/** Point of intervention for a finding (Phase 5). */
+export type InterventionPoint = "Application code" | "Contract definition" | "Both";
+
+/** Action guidance for a finding code (Phase 5). Deterministic, non-prescriptive. */
+export function getActionGuidance(code: string): string {
+  const map: Record<string, string> = {
+    "phase0.designSystem.missing":
+      "Restore @surfaces/ui usage or update contract expectations.",
+    "phase0.authRoutes.missing": "Add auth routes or relax expectsAuthRoutes.",
+    "phase0.authPosture.mismatch":
+      "Add auth integration or relax authPosture in contract.",
+    "phase0.shell.mismatch": "Add layout shell or relax requiresShell in contract.",
+    "phase0.load.contract": "Resolve contract load or parse error.",
+    "phase0.load.extracted": "Resolve extraction load or parse error.",
+  };
+  return map[code] ?? "Review the finding and adjust application code or contract definition.";
+}
+
+/** Where the fix happens for a finding (Phase 5). */
+export function getInterventionPoint(code: string): InterventionPoint {
+  if (code.startsWith("phase0.load.")) return "Contract definition";
+  if (
+    code === "phase0.designSystem.missing" ||
+    code === "phase0.authRoutes.missing" ||
+    code === "phase0.authPosture.mismatch" ||
+    code === "phase0.shell.mismatch"
+  ) {
+    return "Both";
+  }
+  return "Both";
+}
+
+/** Human-readable intervention label for display (Phase 5). */
+export function getInterventionLabel(point: InterventionPoint): string {
+  return point === "Both"
+    ? "Application code, Contract definition"
+    : point;
+}
+
+/** Operational responsibility label (Phase 5). Uses owner; neutral fallback when empty. */
+export function getOperationalResponsibility(owner: string | undefined): string {
+  const trimmed = owner?.trim();
+  return trimmed ? trimmed : "Owner not specified";
+}
+
 /**
  * Load last N validation outcomes per surface from committed state.
  * Falls back to current state only when file is unavailable.
