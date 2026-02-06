@@ -1,10 +1,14 @@
 # Phase 2 Ship Plan — SurfaceOps
 
+**Scope:** SurfaceOps UI phase. Independent of interfacectl CLI phase numbering.
+
 **Status:** Ready to ship. All verification steps pass.
 
 ---
 
 ## A) interfacectl PR (canonical schema)
+
+**Note:** Any contract schema changes referenced here are implemented in interfacectl and consumed by surfaces-webapps. This document does not define or modify schema semantics.
 
 ### 1. Schema change verified
 - **File:** `packages/interfacectl-validator/src/schema/surfaces.web.contract.schema.json`

@@ -1,5 +1,7 @@
 # Phase 3 close-out — SurfaceOps explainability
 
+**Scope:** SurfaceOps UI phase. Independent of interfacectl CLI phase numbering.
+
 **Status:** Done. Phase 3A/3B frozen; no tweaks unless something is factually wrong.
 
 Phase 3 added **failure explainability** and a **drift narrative**: when a surface fails, you see why (grouped findings, expected vs found), and when history exists you see whether it’s newly failing, regressed, or persistently failing. It explicitly did **not** add alerts, ownership workflows, auto-fixes, or any automation—only interpretability. A later Phase 3C (notifications) or 3D (governance workflows) would only be justified by real usage signal that people need to be notified or need approval flows; until then, SurfaceOps is a strong stopping point: it tells you what broke, why, and whether it’s getting worse without inventing meaning.

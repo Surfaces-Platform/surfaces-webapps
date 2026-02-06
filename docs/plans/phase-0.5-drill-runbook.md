@@ -1,5 +1,9 @@
 # Phase 0.5 drill: ship, spot-check, revert
 
+**Scope:** SurfaceOps UI phase. Independent of interfacectl CLI phase numbering.
+
+**Status:** Completed. Drill runbook; drill executed and reverted.
+
 **Goal:** Use the temporary `/auth/register` expectation to force a deterministic failure in production so we can verify Phase 3 and Phase 5 UI. Then remove the drill everywhere.
 
 **Stop condition:** Do not leave `expectsAuthRegisterRoute` in main after the spot-check.
