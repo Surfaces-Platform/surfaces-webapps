@@ -4,11 +4,79 @@ import {
   loadPolicyContract,
   loadExtraction,
   computeValidationStatus,
+  computeFindings,
+  groupFindingsByCategory,
+  getCategoryLabel,
+  getDriftLabel,
+  getDriftLabelText,
+  validationOutcomesFileExists,
   loadValidationOutcomes,
   getLastContractChange,
   getLastExtractionRun,
+  getBuildMetadata,
 } from "@/lib/contracts";
+import type { FailureCategory, Phase0Finding } from "@/lib/contracts";
 import { colors } from "@surfaces/ui/tokens/colors";
+
+function FindingGroup({
+  category,
+  findings,
+}: {
+  category: FailureCategory;
+  findings: Phase0Finding[];
+}) {
+  return (
+    <div style={{ marginBottom: "16px" }}>
+      <div
+        style={{
+          fontSize: "12px",
+          fontWeight: 600,
+          color: colors.neutral[600],
+          marginBottom: "8px",
+        }}
+      >
+        {getCategoryLabel(category)}
+      </div>
+      <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+        {findings.map((f, i) => (
+          <li
+            key={i}
+            style={{
+              padding: "8px 0",
+              borderTop:
+                i === 0 ? "none" : `1px solid ${colors.neutral[100]}`,
+            }}
+          >
+            <div style={{ marginBottom: "4px" }}>{f.message}</div>
+            {(f.expected !== undefined || f.found !== undefined) && (
+              <div
+                style={{
+                  fontSize: "12px",
+                  color: colors.neutral[600],
+                  fontFamily: "monospace",
+                }}
+              >
+                {f.expected !== undefined && (
+                  <span>Expected: {formatValue(f.expected)}</span>
+                )}
+                {f.expected !== undefined && f.found !== undefined && " · "}
+                {f.found !== undefined && (
+                  <span>Found: {formatValue(f.found)}</span>
+                )}
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function formatValue(v: unknown): string {
+  if (Array.isArray(v)) return v.length ? v.join(", ") : "[]";
+  if (typeof v === "boolean") return String(v);
+  return JSON.stringify(v);
+}
 
 function OutcomeDots({
   outcomes,
@@ -48,10 +116,18 @@ export default async function ContractDetailPage({
 
   const extracted = loadExtraction(surfaceId);
   const status = computeValidationStatus(surface, extracted);
+  const findings = computeFindings(surface, extracted);
+  const groupedFindings = groupFindingsByCategory(findings);
   const outcomes = loadValidationOutcomes(contract);
   const surfaceOutcomes = outcomes[surfaceId] ?? [status];
+  const outcomesFileExists = validationOutcomesFileExists();
+  const hasSufficientHistory =
+    outcomesFileExists && (surfaceOutcomes?.length ?? 0) >= 2;
+  const driftLabel =
+    status === "fail" ? getDriftLabel(surfaceOutcomes, hasSufficientHistory) : null;
   const lastContractChange = getLastContractChange();
   const lastExtractionRun = getLastExtractionRun(surfaceId);
+  const buildMetadata = getBuildMetadata();
 
   return (
     <div
@@ -132,11 +208,17 @@ export default async function ContractDetailPage({
                 ? `${lastContractChange.hash} (${lastContractChange.relativeTime})`
                 : "unknown"}
             </div>
-            <div>
+            <div style={{ marginBottom: "8px" }}>
               Last extraction run:{" "}
               {lastExtractionRun
                 ? `${lastExtractionRun.hash} (${lastExtractionRun.relativeTime})`
                 : "unknown"}
+            </div>
+            <div style={{ marginBottom: "4px" }}>
+              SurfaceOps build: {buildMetadata.surfaceopsBuildSha}
+            </div>
+            <div>
+              interfacectl: {buildMetadata.interfacectlSha}
             </div>
           </div>
         </section>
@@ -197,6 +279,65 @@ export default async function ContractDetailPage({
             </>
           )}
         </section>
+
+        {status === "fail" && (
+          <section
+            style={{
+              marginBottom: "24px",
+              padding: "16px",
+              backgroundColor: colors.neutral[0],
+              border: `1px solid ${colors.neutral[200]}`,
+              borderRadius: "6px",
+            }}
+          >
+            <h2
+              style={{
+                fontSize: "14px",
+                fontWeight: 600,
+                marginBottom: "12px",
+                fontFamily: "monospace",
+              }}
+            >
+              Why this failed
+            </h2>
+            {driftLabel && (
+              <p
+                style={{
+                  fontSize: "12px",
+                  color: colors.neutral[600],
+                  marginBottom: "12px",
+                  fontFamily: "monospace",
+                }}
+              >
+                {getDriftLabelText(driftLabel)}
+              </p>
+            )}
+            {findings.length > 0 ? (
+              <div style={{ fontSize: "14px", color: colors.neutral[800] }}>
+                {(Object.keys(groupedFindings) as FailureCategory[]).map((cat) => {
+                  const items = groupedFindings[cat];
+                  if (items.length === 0) return null;
+                  return (
+                    <FindingGroup
+                      key={cat}
+                      category={cat}
+                      findings={items}
+                    />
+                  );
+                })}
+              </div>
+            ) : (
+              <div style={{ fontSize: "14px", color: colors.neutral[600] }}>
+                <p style={{ marginBottom: "4px" }}>
+                  No findings available for this failure.
+                </p>
+                <p style={{ fontSize: "12px", color: colors.neutral[400] }}>
+                  Details not available for this failure.
+                </p>
+              </div>
+            )}
+          </section>
+        )}
 
         <section
           style={{
