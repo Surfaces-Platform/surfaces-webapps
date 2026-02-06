@@ -49,6 +49,22 @@ export function getLastExtractionRun(surfaceId: string): GitLogEntry | null {
   return runGitLog(`contracts/generated/${surfaceId}.extraction.json`);
 }
 
+/**
+ * Build metadata for drift-safety transparency.
+ * SurfaceOps build sha from VERCEL_GIT_COMMIT_SHA when present.
+ * interfacectl sha: unknown (TODO: inject at build time from tools/interfacectl submodule if needed).
+ */
+export function getBuildMetadata(): {
+  surfaceopsBuildSha: string;
+  interfacectlSha: string;
+} {
+  const surfaceopsBuildSha =
+    (typeof process !== "undefined" && process.env?.VERCEL_GIT_COMMIT_SHA) || "unknown";
+  // TODO: Expose interfacectl submodule SHA at build time if needed; avoid git at runtime on Vercel.
+  const interfacectlSha = "unknown";
+  return { surfaceopsBuildSha: surfaceopsBuildSha.slice(0, 7), interfacectlSha };
+}
+
 export interface PolicySurface {
   id: string;
   displayName: string;
@@ -123,10 +139,194 @@ export function computeValidationStatus(
   return "pass";
 }
 
+/**
+ * Compute Phase 0 findings (same logic as interfacectl validate-extracted).
+ * Returns structured failures for explainability.
+ */
+export function computeFindings(
+  surface: PolicySurface,
+  extracted: ExtractedSurface | null
+): Phase0Finding[] {
+  if (!extracted) return [];
+  const phase0 = surface.phase0;
+  if (!phase0) return [];
+
+  const findings: Phase0Finding[] = [];
+  const routes = extracted.extracted.routes ?? [];
+  const routesSet = new Set(routes);
+  const hasAllAuthRoutes = AUTH_ROUTES.every((r) => routesSet.has(r));
+  const authAware = extracted.extracted.authAware ?? false;
+  const hasShell = extracted.extracted.hasShell ?? false;
+  const designSystemComponents = extracted.extracted.designSystemComponents ?? [];
+
+  if (phase0.authPosture === "auth-first") {
+    if (!authAware) {
+      findings.push({
+        surfaceId: surface.id,
+        code: "phase0.authPosture.mismatch",
+        category: "E2",
+        message: "Contract expects auth-first but extracted authAware is false.",
+        expected: "authAware true",
+        found: authAware,
+      });
+    } else if (!hasAllAuthRoutes) {
+      findings.push({
+        surfaceId: surface.id,
+        code: "phase0.authRoutes.missing",
+        category: "E2",
+        message:
+          "Contract expects auth-first but extraction is missing one or more auth routes.",
+        expected: AUTH_ROUTES,
+        found: routes.filter((r) => AUTH_ROUTES.includes(r)),
+      });
+    }
+  } else if (phase0.authPosture === "auth-aware") {
+    if (!authAware) {
+      findings.push({
+        surfaceId: surface.id,
+        code: "phase0.authPosture.mismatch",
+        category: "E2",
+        message: "Contract expects auth-aware but extracted authAware is false.",
+        expected: "authAware true",
+        found: authAware,
+      });
+    }
+  }
+
+  if (phase0.requiresShell === true && !hasShell) {
+    findings.push({
+      surfaceId: surface.id,
+      code: "phase0.shell.mismatch",
+      category: "E2",
+      message: "Contract requires shell but extraction has hasShell false.",
+      expected: true,
+      found: hasShell,
+    });
+  }
+
+  if (phase0.expectsAuthRoutes === true && !hasAllAuthRoutes) {
+    const missing = AUTH_ROUTES.filter((r) => !routesSet.has(r));
+    findings.push({
+      surfaceId: surface.id,
+      code: "phase0.authRoutes.missing",
+      category: "E2",
+      message: `Contract expects auth routes; missing: ${missing.join(", ")}.`,
+      expected: AUTH_ROUTES,
+      found: routes.filter((r) => AUTH_ROUTES.includes(r)),
+    });
+  }
+
+  if (phase0.expectsDesignSystem === true && designSystemComponents.length === 0) {
+    findings.push({
+      surfaceId: surface.id,
+      code: "phase0.designSystem.missing",
+      category: "E2",
+      message: "Contract expects design-system usage but extraction found none.",
+      expected: "at least one component",
+      found: designSystemComponents,
+    });
+  }
+
+  return findings.sort((a, b) => a.code.localeCompare(b.code));
+}
+
+/** Map finding code to failure category for grouping. */
+export function getFindingCategory(code: string): FailureCategory {
+  if (code === "phase0.authPosture.mismatch" || code === "phase0.authRoutes.missing") {
+    return code.includes("authRoutes") ? "auth-routes" : "auth-posture";
+  }
+  if (code === "phase0.shell.mismatch") return "shell";
+  if (code === "phase0.designSystem.missing") return "design-system";
+  return "auth-posture";
+}
+
+/** Group findings by category. */
+export function groupFindingsByCategory(
+  findings: Phase0Finding[]
+): Record<FailureCategory, Phase0Finding[]> {
+  const groups: Record<FailureCategory, Phase0Finding[]> = {
+    "auth-posture": [],
+    shell: [],
+    "design-system": [],
+    "auth-routes": [],
+  };
+  for (const f of findings) {
+    const cat = getFindingCategory(f.code);
+    groups[cat].push(f);
+  }
+  return groups;
+}
+
+/** Human-readable category label. */
+export function getCategoryLabel(cat: FailureCategory): string {
+  const labels: Record<FailureCategory, string> = {
+    "auth-posture": "Auth posture",
+    shell: "Shell",
+    "design-system": "Design system",
+    "auth-routes": "Auth routes",
+  };
+  return labels[cat];
+}
+
+/**
+ * Derive drift label from outcome history (Phase 3B).
+ * Only returns narrative labels (Newly failing / Regressed / Persistently failing)
+ * when validation-outcomes.json exists and surface has at least 2 outcomes.
+ * Otherwise returns "failing" when status is fail, or null.
+ */
+export function getDriftLabel(
+  outcomes: ValidationOutcome[],
+  hasSufficientHistory: boolean
+): DriftLabelDisplay | null {
+  if (outcomes.length === 0 || outcomes[0] !== "fail") return null;
+  if (!hasSufficientHistory) return "failing";
+  const hasEverPassed = outcomes.some((o) => o === "pass");
+  const previousWasPass = outcomes[1] === "pass";
+  if (previousWasPass) return "newly-failing";
+  if (hasEverPassed) return "regressed";
+  return "persistently-failing";
+}
+
+/** Human-readable drift label. */
+export function getDriftLabelText(label: DriftLabelDisplay): string {
+  const texts: Record<DriftLabelDisplay, string> = {
+    "newly-failing": "Newly failing",
+    regressed: "Regressed",
+    "persistently-failing": "Persistently failing",
+    failing: "Failing",
+  };
+  return texts[label];
+}
+
 const VALIDATION_OUTCOMES_PATH = join(CONTRACTS_DIR, "generated", "validation-outcomes.json");
 const MAX_OUTCOMES = 5;
+const AUTH_ROUTES = ["/auth/login", "/auth/callback", "/auth/session", "/auth/logout"];
 
 export type ValidationOutcome = "pass" | "fail" | "unknown";
+
+/** Phase 0 finding from validate-extracted logic. Same structure as interfacectl. */
+export interface Phase0Finding {
+  surfaceId: string;
+  code: string;
+  category: "E0" | "E2";
+  message: string;
+  expected?: unknown;
+  found?: unknown;
+}
+
+/** Category for grouping failures (Phase 3A). */
+export type FailureCategory = "auth-posture" | "shell" | "design-system" | "auth-routes";
+
+/** Drift label for failure timeline (Phase 3B). */
+export type DriftLabel = "newly-failing" | "regressed" | "persistently-failing";
+
+/** Display label for drift (includes fallback when history insufficient). */
+export type DriftLabelDisplay = DriftLabel | "failing";
+
+/** Whether validation-outcomes.json exists and has sufficient history for narrative labels. */
+export function validationOutcomesFileExists(): boolean {
+  return existsSync(VALIDATION_OUTCOMES_PATH);
+}
 
 /**
  * Load last N validation outcomes per surface from committed state.
