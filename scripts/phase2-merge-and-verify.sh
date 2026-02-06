@@ -13,7 +13,7 @@ INTERFACECTL_MERGE_SHA=$(cd tools/interfacectl && git log origin/main -1 --forma
 echo "interfacectl origin/main SHA: $INTERFACECTL_MERGE_SHA"
 
 # Only update submodule if main has the owner schema (avoid pointing at older main before merge)
-SCHEMA_HAS_OWNER=$(cd tools/interfacectl && git show origin/main:packages/interfacectl-validator/src/schema/surfaces.web.contract.schema.json 2>/dev/null | grep -q '"owner"' && echo yes || echo no)
+SCHEMA_HAS_OWNER=$(cd tools/interfacectl && git show origin/main:packages/interfacectl-validator/src/schema/web.surface.contract.schema.json 2>/dev/null | grep -q '"owner"' && echo yes || echo no)
 if [[ "$SCHEMA_HAS_OWNER" == "yes" && "$INTERFACECTL_MERGE_SHA" != "16e754a" ]]; then
   echo "Updating submodule to merge SHA $INTERFACECTL_MERGE_SHA..."
   git checkout feat/surfaceops-phase-2

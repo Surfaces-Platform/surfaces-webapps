@@ -3,7 +3,7 @@
 ## Canonical contract
 
 - **Source of truth**: [`contracts/surfaces.web.contract.json`](../../contracts/surfaces.web.contract.json)
-- **Schema**: [`contracts/surfaces.web.contract.schema.json`](../../contracts/surfaces.web.contract.schema.json)
+- **Schema**: [`contracts/web.surface.contract.schema.json`](../../contracts/web.surface.contract.schema.json)
 - **Guarantees**: surface enumerations, required section identifiers, allowed fonts, layout width, and motion constraints.
 
 The contract is versioned JSON—surfaces must conform to it but never redefine it. All validation logic derives exclusively from this file (and optional schema).
