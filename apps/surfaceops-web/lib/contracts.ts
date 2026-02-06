@@ -380,6 +380,35 @@ export function getOperationalResponsibility(owner: string | undefined): string 
 }
 
 /**
+ * Pass rate over recent runs (PR 3). Uses validation-outcomes.json when present.
+ * Returns null when no history data available.
+ */
+export function getPassRate(
+  surfaceId: string,
+  limit: number = 10
+): { passed: number; total: number } | null {
+  const contract = loadPolicyContract();
+  const outcomes = loadValidationOutcomes(contract);
+  const surfaceOutcomes = outcomes[surfaceId];
+  if (!surfaceOutcomes || surfaceOutcomes.length === 0) return null;
+  const recent = surfaceOutcomes.slice(0, limit);
+  const passed = recent.filter((o) => o === "pass").length;
+  return { passed, total: recent.length };
+}
+
+/**
+ * Whether this surface has ever passed in outcome history (PR 3).
+ * Uses validation-outcomes.json when present. Returns null when no history.
+ */
+export function hasEverPassed(surfaceId: string): boolean | null {
+  const contract = loadPolicyContract();
+  const outcomes = loadValidationOutcomes(contract);
+  const surfaceOutcomes = outcomes[surfaceId];
+  if (!surfaceOutcomes || surfaceOutcomes.length === 0) return null;
+  return surfaceOutcomes.some((o) => o === "pass");
+}
+
+/**
  * Load last N validation outcomes per surface from committed state.
  * Falls back to current state only when file is unavailable.
  */

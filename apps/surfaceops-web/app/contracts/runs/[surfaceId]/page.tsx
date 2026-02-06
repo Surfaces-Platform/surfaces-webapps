@@ -15,6 +15,8 @@ import {
   getRelaxedAlternativeText,
   getExpectationMeaning,
   compareRuns,
+  getPassRate,
+  hasEverPassed,
 } from "@/lib/contracts";
 import type {
   FailureCategory,
@@ -513,6 +515,35 @@ export default async function SurfaceRunsDetailPage({
                     </p>
                   ) : null;
                 })()}
+                {outcomesFileExists &&
+                  (() => {
+                    const passRate = getPassRate(surfaceId);
+                    const everPassed = hasEverPassed(surfaceId);
+                    const surfaceOutcomes = runSeries.history?.outcomes ?? [];
+                    if (surfaceOutcomes.length === 0) return null;
+                    if (passRate === null && everPassed === null) return null;
+                    return (
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          color: colors.neutral[600],
+                          marginBottom: "12px",
+                        }}
+                      >
+                        <strong style={{ fontFamily: "monospace" }}>Stability</strong>
+                        {passRate !== null && (
+                          <div style={{ marginTop: "4px" }}>
+                            {passRate.passed} of last {passRate.total} runs passed
+                          </div>
+                        )}
+                        {everPassed !== null && (
+                          <div style={{ marginTop: "4px" }}>
+                            This surface has {everPassed ? "" : "not "}ever passed
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 <h3
                   style={{
                     fontSize: "12px",
