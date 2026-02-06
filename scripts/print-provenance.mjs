@@ -84,7 +84,7 @@ let schemaChecksum = "schema not found";
 try {
   const schemaPath = join(
     workspaceRoot,
-    "interfacectl-tooling/packages/interfacectl-validator/dist/schema/surfaces.web.contract.schema.json",
+    "interfacectl-tooling/packages/interfacectl-validator/dist/schema/web.surface.contract.schema.json",
   );
   if (existsSync(schemaPath)) {
     const schemaContent = readFileSync(schemaPath);

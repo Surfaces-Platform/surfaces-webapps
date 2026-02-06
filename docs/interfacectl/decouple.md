@@ -59,7 +59,7 @@ Override with `--config <path>` or `SURFACES_CONFIG`.
 
 ## When the schema changes
 
-1. Update the source schema in the standalone repo (`packages/interfacectl-validator/src/schema/surfaces.web.contract.schema.json`).
+1. Update the source schema in the standalone repo (`packages/interfacectl-validator/src/schema/web.surface.contract.schema.json`).
 2. Re-run `pnpm -r run build` to copy the schema into `dist/schema/`.
 3. Bump versions via changesets and publish new packages.
 4. Consume the new version in the Surfaces monorepo (`pnpm add -D @surfaces/interfacectl-cli@<new version>`).

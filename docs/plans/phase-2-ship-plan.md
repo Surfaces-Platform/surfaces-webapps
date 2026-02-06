@@ -11,7 +11,7 @@
 **Note:** Any contract schema changes referenced here are implemented in interfacectl and consumed by surfaces-webapps. This document does not define or modify schema semantics.
 
 ### 1. Schema change verified
-- **File:** `packages/interfacectl-validator/src/schema/surfaces.web.contract.schema.json`
+- **File:** `packages/interfacectl-validator/src/schema/web.surface.contract.schema.json`
 - **Change:** Additive only — `surfaces[].owner` as optional string
 - **Verification:** `pnpm install && pnpm test && pnpm run build` ✅
 
@@ -25,7 +25,7 @@ git pull
 git checkout -b feat/schema-surface-owner
 
 # Stage schema source only (do not commit dist)
-git add packages/interfacectl-validator/src/schema/surfaces.web.contract.schema.json
+git add packages/interfacectl-validator/src/schema/web.surface.contract.schema.json
 
 git commit -m "feat(schema): add optional surface owner"
 git push -u origin feat/schema-surface-owner
@@ -72,7 +72,7 @@ git commit -m "chore: bump interfacectl submodule for owner schema"
 
 | Requirement | Files | Status |
 |-------------|-------|--------|
-| **1. Owner** | `contracts/surfaces.web.contract.schema.json`, `contracts/surfaces.web.contract.json`, `apps/surfaceops-web/app/contracts/page.tsx`, `apps/surfaceops-web/app/contracts/[surfaceId]/page.tsx` | ✅ |
+| **1. Owner** | `contracts/web.surface.contract.schema.json`, `contracts/surfaces.web.contract.json`, `apps/surfaceops-web/app/contracts/page.tsx`, `apps/surfaceops-web/app/contracts/[surfaceId]/page.tsx` | ✅ |
 | **2. Change awareness** | `apps/surfaceops-web/lib/contracts.ts` (`getLastContractChange`, `getLastExtractionRun`), detail page | ✅ |
 | **3. Repeated outcomes** | `apps/surfaceops-web/lib/contracts.ts` (`loadValidationOutcomes`), list + detail UI dots | ✅ |
 | **4. Public vs auth** | `apps/surfaceops-web/app/(overview)/page.tsx` — copy only, no auth | ✅ |

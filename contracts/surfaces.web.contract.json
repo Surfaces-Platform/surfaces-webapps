@@ -1,5 +1,5 @@
 {
-  "$schema": "./surfaces.web.contract.schema.json",
+  "$schema": "./web.surface.contract.schema.json",
   "contractId": "surfaces.web",
   "version": "0.1.0",
   "description": "Interface expectations shared across InterfaceCTL, SurfaceOps, and Surfaces web experiences.",
