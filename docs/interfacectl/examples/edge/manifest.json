@@ -1,0 +1,16 @@
+{
+  "contractId": "surfaces.web",
+  "version": "0.1.0",
+  "surfaceId": "surfaces-web",
+  "layout": {
+    "maxContentWidth": 1120
+  },
+  "motion": {
+    "allowedDurationsMs": [
+      120
+    ],
+    "allowedTimingFunctions": [
+      "linear"
+    ]
+  }
+}

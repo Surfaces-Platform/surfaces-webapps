@@ -65,5 +65,12 @@ for project_info in "${PROJECTS[@]}"; do
   echo "  Target: $target"
   echo "  Deployment ID: $deployment_id"
   echo "  Created: $created"
+
+  # Adaptive route probe (edge contract enforcement demo)
+  if [ -n "$url" ]; then
+    probe_url="$url/adaptive/test?section=hero"
+    probe_resp=$(curl -s -o /dev/null -w "%{http_code}" "$probe_url")
+    echo "  Adaptive probe ($probe_url): HTTP $probe_resp"
+  fi
   echo ""
 done
