@@ -82,7 +82,8 @@ export default function Home() {
             variants={fadeUpVariants}
             className="flex gap-6"
           >
-            <button
+            <a
+              href="#demos"
               style={{
                 fontSize: '14px',
                 fontWeight: 600,
@@ -92,12 +93,14 @@ export default function Home() {
                 border: 'none',
                 borderRadius: '6px',
                 cursor: 'pointer',
+                textDecoration: 'none',
                 transition: 'all var(--contract-motion-duration) var(--contract-motion-timing)'
               }}
             >
-              Explore the system
-            </button>
-            <button
+              See the demos
+            </a>
+            <a
+              href="#docs"
               style={{
                 fontSize: '14px',
                 fontWeight: 600,
@@ -107,12 +110,57 @@ export default function Home() {
                 border: `1px solid ${colors.neutral[200]}`,
                 borderRadius: '6px',
                 cursor: 'pointer',
+                textDecoration: 'none',
                 transition: 'all var(--contract-motion-duration) var(--contract-motion-timing)'
               }}
             >
               Read the philosophy
-            </button>
+            </a>
           </motion.div>
+        </motion.section>
+
+        {/* Section 1.5 - Demos */}
+        <motion.section 
+          id="demos"
+          data-contract-section="landing.demos"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={staggerContainer}
+          className="py-24"
+          style={{ borderTop: `1px solid ${colors.neutral[200]}` }}
+        >
+          <motion.h2 
+            variants={fadeUpVariants}
+            style={{ fontSize: '20px', fontWeight: 600, marginBottom: '24px' }}
+          >
+            Demonstrate all three enforcement points
+          </motion.h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <motion.div variants={fadeUpVariants} className="p-6 rounded-[6px]" style={{ backgroundColor: colors.neutral[0], border: `1px solid ${colors.neutral[200]}` }}>
+              <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>Generation time</h3>
+              <p style={{ fontSize: '14px', lineHeight: 1.6, marginBottom: '12px' }}>
+                Run the contract validator against code and generated UI before merge.
+              </p>
+              <a href="/demos/generation" style={{ fontWeight: 600, textDecoration: 'none', color: colors.structure.primary }}>Open generation demo →</a>
+            </motion.div>
+
+            <motion.div variants={fadeUpVariants} className="p-6 rounded-[6px]" style={{ backgroundColor: colors.neutral[0], border: `1px solid ${colors.neutral[200]}` }}>
+              <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>CI/CD gating</h3>
+              <p style={{ fontSize: '14px', lineHeight: 1.6, marginBottom: '12px' }}>
+                Block drift in pipelines and emit artifacts for SurfaceOps visibility.
+              </p>
+              <a href="/demos/ci" style={{ fontWeight: 600, textDecoration: 'none', color: colors.structure.primary }}>Open CI/CD demo →</a>
+            </motion.div>
+
+            <motion.div variants={fadeUpVariants} className="p-6 rounded-[6px]" style={{ backgroundColor: colors.neutral[0], border: `1px solid ${colors.neutral[200]}` }}>
+              <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>Adaptive runtime</h3>
+              <p style={{ fontSize: '14px', lineHeight: 1.6, marginBottom: '12px' }}>
+                Edge middleware enforces the contract before adaptive UI changes render.
+              </p>
+              <a href="/adaptive/test?section=hero" style={{ fontWeight: 600, textDecoration: 'none', color: colors.structure.primary }}>Open adaptive demo →</a>
+            </motion.div>
+          </div>
         </motion.section>
 
         {/* Section 2 - The Problem */}

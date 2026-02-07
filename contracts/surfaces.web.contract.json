@@ -66,13 +66,14 @@
     },
     {
       "id": "surfaces-web",
-      "displayName": "Surfaces Web",
-      "type": "web",
-      "requiredSections": [
-        "landing.hero",
-        "landing.guidance",
-        "landing.actions"
-      ],
+    "displayName": "Surfaces Web",
+    "type": "web",
+    "requiredSections": [
+      "landing.hero",
+      "landing.demos",
+      "landing.guidance",
+      "landing.actions"
+    ],
       "allowedFonts": [
         "var(--font-geist-sans)",
         "var(--font-inter)",
@@ -125,16 +126,21 @@
     }
   ],
   "sections": [
-    {
-      "id": "landing.hero",
-      "intent": "primary-intro",
-      "description": "Primary hero section introducing the surface intent."
-    },
-    {
-      "id": "landing.guidance",
-      "intent": "supporting-guidance",
-      "description": "Supplemental copy guiding users to next actions."
-    },
+  {
+    "id": "landing.hero",
+    "intent": "primary-intro",
+    "description": "Primary hero section introducing the surface intent."
+  },
+  {
+    "id": "landing.demos",
+    "intent": "enforcement-demos",
+    "description": "Links to generation-time, CI/CD, and adaptive runtime enforcement demos."
+  },
+  {
+    "id": "landing.guidance",
+    "intent": "supporting-guidance",
+    "description": "Supplemental copy guiding users to next actions."
+  },
     {
       "id": "landing.actions",
       "intent": "primary-actions",
