@@ -114,6 +114,55 @@ generateHTML({
 });
 ```
 
+## Reference adapter snippets (ready to copy)
+
+Cursor / Lovable (Node/TS):
+```typescript
+import contract from "../contracts/surfaces.web.contract.json";
+
+export function applyContract(surfaceId: string, css: string) {
+  const surface = contract.surfaces.find(s => s.id === surfaceId);
+  if (!surface) throw new Error(`Unknown surface ${surfaceId}`);
+  const violations: Array<{rule: string; policy: string; evidence: any}> = [];
+
+  // raw color check
+  const policy = contract.color?.rawValues?.policy ?? "off";
+  if (policy !== "off" && /(rgb|hsl)a?\\(/i.test(css)) {
+    violations.push({ rule: "color.rawValues", policy, evidence: { value: "raw literal in CSS" } });
+  }
+
+  const strictHit = violations.some(v => v.policy === "strict");
+  return {
+    allowed: !strictHit,
+    provenance: { surfaceId, contractId: contract.contractId, version: contract.version },
+    violations
+  };
+}
+```
+
+Figma plugin scaffold (manifest-driven):
+```javascript
+import contract from "../contracts/surfaces.web.contract.json";
+
+function validateNode(node) {
+  const policy = contract.color.rawValues.policy;
+  if (policy !== "off" && node.fills?.some(fill => fill.type === "SOLID" && fill.opacity < 1)) {
+    return [{ rule: "color.rawValues", policy, evidence: { nodeId: node.id } }];
+  }
+  return [];
+}
+```
+
+Make / template engines (provenance injection):
+```handlebars
+<!doctype html>
+<html data-contract="{{contractId}}" data-surface="{{surfaceId}}" data-version="{{version}}">
+  <body class="contract-container">
+    {{!-- generator must ensure required containers and token usage --}}
+  </body>
+</html>
+```
+
 ## Future Extensions
 
 Additional correctness dimensions will reuse the same policy + maturity pattern:
@@ -123,4 +172,3 @@ Additional correctness dimensions will reuse the same policy + maturity pattern:
 - **State transitions**: `state.policy`, `state.allowedTransitions`
 
 Generators should anticipate this extensibility when implementing contract consumption.
-

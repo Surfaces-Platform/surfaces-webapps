@@ -15,4 +15,6 @@ All enforcement meaning remains owned by interfacectl.
 - [decouple.md](./decouple.md) — Why interfacectl is a standalone repo and how releases work
 - [generator-consumption.md](./generator-consumption.md) — How generators consume contracts
 - [phase-4-reference.md](./phase-4-reference.md) — Pointer to interfacectl Phase 4 (runtime consumption)
+- [runtime-edge.md](./runtime-edge.md) — Runtime/edge enforcement guide with adapter stubs
+- [surfaceops-visibility.md](./surfaceops-visibility.md) — Spec stub for showing validation runs in SurfaceOps
 - [TESTING.md](./TESTING.md) — Contract validator test checklist

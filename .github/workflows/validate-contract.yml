@@ -38,15 +38,31 @@ jobs:
       - name: Build interfacectl
         run: pnpm run interfacectl:build
       
+      - name: Build edge manifest
+        run: pnpm examples:build-manifest
+      
+      - name: Edge validator smoke test
+        run: pnpm examples:test-edge
+      
       - name: Show CLI provenance
         run: pnpm cli:where:ci
+
+      - name: Ensure artifacts directory
+        run: mkdir -p artifacts
       
       - name: Validate interface contract
         run: |
           node "$INTERFACECTL_BIN" validate \
             --workspace-root . \
             --contract ./contracts/surfaces.web.contract.json \
-            --format json
+            --format json \
+            --out ./artifacts/interfacectl-report.json
+
+      - name: Upload validation artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: interfacectl-report
+          path: artifacts/interfacectl-report.json
       
       - name: Generate contract (surfaces-web)
         run: pnpm run generate:contract

@@ -121,6 +121,55 @@ jobs:
 
 Failures produce deterministic CLI output with remediation guidance; block the merge until resolved.
 
+### Turnkey CI templates
+
+GitHub Actions (copy-paste):
+```yaml
+name: interface-contract
+on: [pull_request]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec interfacectl validate --root . --contract contracts/surfaces.web.contract.json --format json --out ./artifacts/interfacectl-report.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: interfacectl-report
+          path: artifacts/interfacectl-report.json
+```
+
+GitLab CI (copy-paste):
+```yaml
+interface_contract:
+  image: node:20
+  stage: test
+  script:
+    - corepack enable
+    - pnpm install --frozen-lockfile
+    - pnpm exec interfacectl validate --root . --contract contracts/surfaces.web.contract.json --format json --out interfacectl-report.json
+  artifacts:
+    paths:
+      - interfacectl-report.json
+  allow_failure: false
+```
+
+### Exit-code & troubleshooting matrix
+
+| Exit code | Meaning | Usual fixes |
+|-----------|---------|-------------|
+| 0 | Success | — |
+| 1 | Violations found | Follow file/line in output; fix raw colors, missing containers, motion duration mismatch, etc. |
+| 2 | Config/IO error | Check `--root`, `--contract`, `interfacectl.config.json` path, missing files, JSON parse errors. |
+| >2 | Unexpected error | Ensure CLI built/installed; rerun with `--format json`; open an issue with report payload. |
+
+Tips: keep `interfacectl.config.json` in repo root; pin Node 18/20; add `--surface <id>` for narrow runs; store JSON artifact so SurfaceOps (future) can ingest it.
+
 ## Surface authoring checklist
 
 1. Wrap top-level content in `.contract-container` and honour `--contract-max-width`.
@@ -205,5 +254,4 @@ A typical progression for a new rule:
 4. **Enable enforcement** (`policy: "strict"`) - Block violations when confidence is high
 
 This model allows Surfaces to enforce correctness gradually, reducing risk while building developer trust in the validation system.
-
 
