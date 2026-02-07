@@ -26,7 +26,8 @@ export default function Contracts() {
           { label: 'Contracts', href: '/contracts' },
           { label: 'interfacectl', href: '/interfacectl' },
           { label: 'Guides', href: '/guides' },
-          { label: 'Reference', href: '/reference/validation-boundaries' }
+          { label: 'Reference', href: '/reference/validation-boundaries' },
+          { label: 'Shell boundary', href: '/reference/shell-boundary' }
         ]}
         utilities={[
           { label: 'GitHub', href: '#github' }

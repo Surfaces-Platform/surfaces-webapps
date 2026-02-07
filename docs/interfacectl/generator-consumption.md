@@ -6,6 +6,17 @@ This document defines how code generators (AI tools, scaffolding utilities, temp
 
 Generators should focus on the following contract sections that define correctness constraints:
 
+### Shell Ownership Boundary (new)
+
+- **`shell.owns`**: Shell-owned primitives (e.g., `nav`, `header`, `sidebar`, `authWrapper`, `appChrome`). Generators **must not emit** these inside surfaces.
+- **`shell.contentSlot`**: Identifier for the shell’s content mount point (frame name or DOM id).
+- **`surface.mustNotEmit`**: Optional per-surface ban list. If absent, default to `shell.owns`.
+
+Generator enforcement patterns:
+- **Figma Make**: Lock frames matching `shell.owns`; expose only the `contentSlot` frame for editing/export. Preflight blocks added frames whose names/roles match the ban list.
+- **Lovable / LLM UI builders**: Include `mustNotEmit` in system prompt + scaffold; run post-gen structural lint to reject banned primitives before returning artifacts.
+- **Agentic coder / template engines**: Read `shell` + `mustNotEmit` before generation; block imports/components that match the ban list; snapshot test surfaces mounted in a mocked shell to ensure single nav/header.
+
 ### Layout Invariants
 
 - **`surfaces[].layout.maxContentWidth`**: Maximum content width in pixels (enforced via static analysis)

@@ -6,6 +6,15 @@ The following Vercel settings should be used when deploying `surfaces-dev` to ma
 
 ### Project Settings
 
+Local/sandbox note: Turbopack may fail in this environment (port binding + blocked font fetch). Use webpack locally:
+
+```
+pnpm exec next build --webpack
+```
+
+JetBrains Mono is loaded via a `<link>` tag in `app/layout.tsx` to avoid `next/font` network fetches.
+
+
 - **Framework Preset**: Next.js
 - **Root Directory**: `apps/surfaces-dev`
 - **Build Command**: (Leave as default - Next.js auto-detection)
