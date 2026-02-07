@@ -1,0 +1,33 @@
+{
+  "contractId": "surfaces.test",
+  "version": "1.0.0",
+  "surfaces": [
+    {
+      "id": "foo-web",
+      "displayName": "Foo Web",
+      "type": "web",
+      "domain": "www.foo.com",
+      "requiredSections": ["main.hero"],
+      "allowedFonts": ["var(--font-foo)"],
+      "layout": { "maxContentWidth": 1200 }
+    },
+    {
+      "id": "bar-web",
+      "displayName": "Bar Web",
+      "type": "web",
+      "domain": "app.bar.com",
+      "requiredSections": ["main.hero"],
+      "allowedFonts": ["var(--font-bar)"],
+      "layout": { "maxContentWidth": 1200 }
+    }
+  ],
+  "sections": [
+    { "id": "main.hero", "intent": "hero", "description": "Hero" }
+  ],
+  "constraints": {
+    "motion": {
+      "allowedDurationsMs": [120],
+      "allowedTimingFunctions": ["linear"]
+    }
+  }
+}

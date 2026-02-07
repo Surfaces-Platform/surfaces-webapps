@@ -9,9 +9,11 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-CONTRACT="$REPO_ROOT/contracts/surfaces.web.contract.json"
+CONTRACT="${CONTRACT_OVERRIDE:-$REPO_ROOT/contracts/surfaces.web.contract.json}"
 
-if [ -n "$1" ]; then
+if [ -n "$PROJECTS_OVERRIDE" ]; then
+  IFS=',' read -r -a PROJECTS <<< "$PROJECTS_OVERRIDE"
+elif [ -n "$1" ]; then
   PROJECTS=("$1")
 else
   if [ ! -f "$CONTRACT" ]; then

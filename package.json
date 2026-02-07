@@ -29,7 +29,8 @@
     "type-check:surfaceops": "pnpm --filter surfaceops-web type-check",
     "type-check:interfacectl": "pnpm --filter interfacectl-web type-check",
     "type-check:surfaces-dev": "pnpm --filter surfaces-dev type-check",
-    "test": "pnpm --filter surfaceops-web test"
+    "test:scripts": "node --test scripts/__tests__/vercel-monitoring.test.mjs",
+    "test": "pnpm --filter surfaceops-web test && pnpm run test:scripts"
   },
   "devDependencies": {
     "@surfaces/interfacectl-cli": "workspace:*",
