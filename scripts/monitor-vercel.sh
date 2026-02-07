@@ -7,23 +7,27 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-CONTRACT="$REPO_ROOT/contracts/surfaces.web.contract.json"
+CONTRACT="${CONTRACT_OVERRIDE:-$REPO_ROOT/contracts/surfaces.web.contract.json}"
 
-if [ ! -f "$CONTRACT" ]; then
-  echo "Contract not found: $CONTRACT"
-  exit 1
+if [ -n "$PROJECTS_OVERRIDE" ]; then
+  IFS=',' read -r -a PROJECTS <<< "$PROJECTS_OVERRIDE"
+else
+  if [ ! -f "$CONTRACT" ]; then
+    echo "Contract not found: $CONTRACT"
+    exit 1
+  fi
+
+  if ! command -v jq &>/dev/null; then
+    echo "jq is required. Install with: brew install jq"
+    exit 1
+  fi
+
+  # Build name:url pairs from contract (name = domain without www)
+  PROJECTS=()
+  while IFS= read -r line; do
+    [ -n "$line" ] && PROJECTS+=("$line")
+  done < <(jq -r '.surfaces[] | "\(.domain | ltrimstr("www.")):https://\(.domain)"' "$CONTRACT")
 fi
-
-if ! command -v jq &>/dev/null; then
-  echo "jq is required. Install with: brew install jq"
-  exit 1
-fi
-
-# Build name:url pairs from contract (name = domain without www)
-PROJECTS=()
-while IFS= read -r line; do
-  [ -n "$line" ] && PROJECTS+=("$line")
-done < <(jq -r '.surfaces[] | "\(.domain | ltrimstr("www.")):https://\(.domain)"' "$CONTRACT")
 
 echo "=== Vercel Deployment Status Monitor ==="
 echo "Timestamp: $(date '+%Y-%m-%d %H:%M:%S %Z')"
@@ -35,7 +39,7 @@ for project_info in "${PROJECTS[@]}"; do
   
   output=$(vercel inspect "$url" 2>&1)
   
-  status=$(echo "$output" | grep "status" | sed -n 's/.*status[[:space:]]*●[[:space:]]*\([A-Za-z]*\).*/\1/p' | head -1)
+  status=$(echo "$output" | grep "status" | sed -n 's/.*status[[:space:]]*[^[:space:]]*[[:space:]]*\([A-Za-z]*\).*/\1/p' | head -1)
   [ -z "$status" ] && status="Unknown"
   
   created=$(echo "$output" | grep "created" | sed -n 's/.*created[[:space:]]*\([^[]*\).*/\1/p' | head -1)
