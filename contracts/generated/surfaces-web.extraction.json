@@ -8,10 +8,13 @@
     "hasShell": true,
     "routes": [
       "/",
+      "/adaptive/[...slug]",
       "/auth/callback",
       "/auth/login",
       "/auth/logout",
-      "/auth/session"
+      "/auth/session",
+      "/demos/ci",
+      "/demos/generation"
     ]
   },
   "surfaceId": "surfaces-web",
