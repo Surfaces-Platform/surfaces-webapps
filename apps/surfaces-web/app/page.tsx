@@ -75,7 +75,7 @@ export default function Home() {
               maxWidth: '600px'
             }}
           >
-            Interface contracts enforced at generation time and runtime. Behavior stays predictable and accountable.
+            Interface contracts enforced at generation time, CI/CD time, and runtime (edge/on-device). Behavior stays predictable and accountable.
           </motion.p>
           
           <motion.div 
@@ -140,7 +140,7 @@ export default function Home() {
             <motion.div variants={fadeUpVariants} className="p-6 rounded-[6px]" style={{ backgroundColor: colors.neutral[0], border: `1px solid ${colors.neutral[200]}` }}>
               <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>Generation time</h3>
               <p style={{ fontSize: '14px', lineHeight: 1.6, marginBottom: '12px' }}>
-                Run the contract validator against code and generated UI before merge.
+                Run contract-aware generation with pre-emit guardrails (e.g., block shell-owned navigation) and validate before merge.
               </p>
               <a href="/demos/generation" style={{ fontWeight: 600, textDecoration: 'none', color: colors.structure.primary }}>Open generation demo →</a>
             </motion.div>
@@ -148,7 +148,7 @@ export default function Home() {
             <motion.div variants={fadeUpVariants} className="p-6 rounded-[6px]" style={{ backgroundColor: colors.neutral[0], border: `1px solid ${colors.neutral[200]}` }}>
               <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>CI/CD gating</h3>
               <p style={{ fontSize: '14px', lineHeight: 1.6, marginBottom: '12px' }}>
-                Block drift in pipelines and emit artifacts for SurfaceOps visibility.
+                Block drift in pipelines (including shell-owned primitive violations) and emit artifacts for SurfaceOps visibility.
               </p>
               <a href="/demos/ci" style={{ fontWeight: 600, textDecoration: 'none', color: colors.structure.primary }}>Open CI/CD demo →</a>
             </motion.div>
@@ -156,7 +156,7 @@ export default function Home() {
             <motion.div variants={fadeUpVariants} className="p-6 rounded-[6px]" style={{ backgroundColor: colors.neutral[0], border: `1px solid ${colors.neutral[200]}` }}>
               <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>Adaptive runtime</h3>
               <p style={{ fontSize: '14px', lineHeight: 1.6, marginBottom: '12px' }}>
-                Edge middleware enforces the contract before adaptive UI changes render.
+                Edge/on-device middleware enforces the contract (including shell-owned primitives) before adaptive UI changes render.
               </p>
               <a href="/adaptive/test?section=hero" style={{ fontWeight: 600, textDecoration: 'none', color: colors.structure.primary }}>Open adaptive demo →</a>
             </motion.div>
@@ -180,7 +180,7 @@ export default function Home() {
             </motion.div>
             <motion.div variants={fadeUpVariants} className="col-span-7 col-start-6">
               <p style={{ fontSize: '14px', fontWeight: 400, lineHeight: 1.6 }}>
-                Agents generate and adapt interfaces. Without bounded adaptation, behavior becomes unpredictable. Drift follows. Invariants break. Accountability erodes. Contracts enforce boundaries at generation time and runtime, keeping behavior aligned with intent.
+                Agents generate and adapt interfaces. Without bounded adaptation, behavior becomes unpredictable. Drift follows. Invariants break. Accountability erodes. Contracts enforce boundaries at generation time, CI/CD time, and runtime (edge/on-device), keeping behavior aligned with intent.
               </p>
             </motion.div>
           </div>
@@ -203,7 +203,7 @@ export default function Home() {
               Interfaces make decisions. They determine what users see, when they see it, and how the system responds. These decisions form behavioral contracts that hold across generation cycles, runtime adaptations, and edge personalization.
             </p>
             <p style={{ fontSize: '14px', fontWeight: 400, lineHeight: 1.6 }}>
-              Contracts define invariants and bounded adaptation. Surfaces enforces them at generation time and runtime. The difference is documented intent versus operational control.
+              Contracts define invariants and bounded adaptation. Surfaces enforces them at generation time, CI/CD time, and runtime (edge/on-device). The difference is documented intent versus operational control.
             </p>
           </motion.div>
         </motion.section>
@@ -365,7 +365,7 @@ export default function Home() {
                 Platform and infrastructure teams
               </h3>
               <p style={{ fontSize: '14px', lineHeight: 1.6, color: colors.neutral[600] }}>
-                Unbounded adaptation breaks invariants. Contracts enforce boundaries at generation time and runtime, preventing agent-proposed changes that violate intent.
+                Unbounded adaptation breaks invariants. Contracts enforce boundaries at generation time, CI/CD time, and runtime (edge/on-device), preventing agent-proposed changes that violate intent.
               </p>
             </motion.div>
 
@@ -374,7 +374,7 @@ export default function Home() {
                 Design system owners
               </h3>
               <p style={{ fontSize: '14px', lineHeight: 1.6, color: colors.neutral[600] }}>
-                Interface divergence creates unclear responsibility. Contracts enforce boundaries at generation time and runtime, making behavior predictable and accountable.
+                Interface divergence creates unclear responsibility. Contracts enforce boundaries at generation time, CI/CD time, and runtime (edge/on-device), making behavior predictable and accountable.
               </p>
             </motion.div>
 
@@ -383,7 +383,7 @@ export default function Home() {
                 AI and automation leaders
               </h3>
               <p style={{ fontSize: '14px', lineHeight: 1.6, color: colors.neutral[600] }}>
-                Agent-driven generation creates inconsistent behavior. Contracts enforce boundaries at generation time and runtime, keeping agent behavior aligned with intent.
+                Agent-driven generation creates inconsistent behavior. Contracts enforce boundaries at generation time, CI/CD time, and runtime (edge/on-device), keeping agent behavior aligned with intent.
               </p>
             </motion.div>
           </div>

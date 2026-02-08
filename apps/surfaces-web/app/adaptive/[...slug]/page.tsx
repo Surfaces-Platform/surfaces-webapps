@@ -1,12 +1,13 @@
 export const runtime = "edge";
 
-export default function AdaptiveTestPage({ params }: { params: { slug?: string[] } }) {
-  const path = params.slug?.join("/") || "(root)";
+export default async function AdaptiveTestPage({ params }: { params: Promise<{ slug?: string[] }> }) {
+  const { slug } = await params;
+  const path = slug?.join("/") || "(root)";
   return (
     <main className="contract-container" style={{ padding: "2rem" }}>
       <h1>Adaptive Test</h1>
       <p>
-        Middleware enforces contract on <code>/adaptive/*</code> routes. Pass a section and optional background via
+        Edge/on-device middleware enforces the contract (including shell-owned primitives) on <code>/adaptive/*</code> routes. Pass a section and optional background via
         query/header. Current path: <code>{path}</code>
       </p>
       <pre>

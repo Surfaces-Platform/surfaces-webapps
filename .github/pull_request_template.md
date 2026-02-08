@@ -2,7 +2,7 @@
 
 - [ ] I read "docs/strategy.md"
 - [ ] This PR strengthens the decision filter sentence
-- [ ] Enforcement timing is explicit: generation time, runtime, or both
+- [ ] Enforcement timing is explicit using docs/taxonomy.md: generation time, CI/CD time, runtime (edge), or a combination
 - [ ] Violation handling is defined: blocked, corrected, constrained, or signaled
 - [ ] This change does not introduce observability without an enforcement or refinement loop
 
