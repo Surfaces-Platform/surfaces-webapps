@@ -55,7 +55,7 @@ export default function RunsPage() {
       }}
     >
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "48px 24px" }}>
-        <nav
+        <div
           style={{
             fontSize: "12px",
             color: colors.neutral[600],
@@ -67,7 +67,7 @@ export default function RunsPage() {
           </Link>
           {" > "}
           <span style={{ color: colors.neutral[800] }}>Runs</span>
-        </nav>
+        </div>
         <h1
           style={{
             fontSize: "24px",

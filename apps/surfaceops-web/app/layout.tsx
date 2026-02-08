@@ -23,7 +23,9 @@ export default function RootLayout({
         className={`${inter.variable} antialiased font-sans`}
         style={{ fontFamily: 'var(--font-inter), Inter, sans-serif' }}
       >
-        {children}
+        <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+          <main style={{ flex: 1 }}>{children}</main>
+        </div>
       </body>
     </html>
   );

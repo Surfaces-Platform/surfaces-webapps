@@ -1,7 +1,6 @@
 import { getSession, getLogoutUrl } from "@surfaces/platform-auth";
 import { headers } from "next/headers";
 import Link from "next/link";
-import Navigation from "@surfaces/ui/components/Navigation";
 import { colors } from "@surfaces/ui/tokens/colors";
 
 function getLogoutHref(): string {
@@ -23,20 +22,6 @@ export default async function RunsLayout({
   if (!result.ok) {
     return (
       <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-        <Navigation
-          currentSurface="surfaceops"
-          currentContext={{ contentType: "operations", subject: "contracts" }}
-          sections={[
-            { label: "Overview", href: "/" },
-            { label: "Surfaces", href: "/contracts" },
-            { label: "Runs", href: "/contracts/runs" },
-          ]}
-          utilities={[
-            { label: "GitHub", href: "#github" },
-            { label: "Logout", href: logoutHref },
-          ]}
-          theme="light"
-        />
         <main style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
           <div style={{ textAlign: "center", maxWidth: 400 }}>
             <h2 style={{ fontSize: "18px", fontWeight: 600, marginBottom: 8 }}>Sign in to view runs</h2>
@@ -65,20 +50,6 @@ export default async function RunsLayout({
   }
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <Navigation
-        currentSurface="surfaceops"
-        currentContext={{ contentType: "operations", subject: "contracts" }}
-        sections={[
-          { label: "Overview", href: "/" },
-          { label: "Surfaces", href: "/contracts" },
-          { label: "Runs", href: "/contracts/runs" },
-        ]}
-        utilities={[
-          { label: "GitHub", href: "#github" },
-          { label: "Logout", href: logoutHref },
-        ]}
-        theme="light"
-      />
       <main style={{ flex: 1 }}>{children}</main>
     </div>
   );

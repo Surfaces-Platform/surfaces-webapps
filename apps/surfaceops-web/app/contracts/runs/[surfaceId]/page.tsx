@@ -265,7 +265,7 @@ export default async function SurfaceRunsDetailPage({
       }}
     >
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "48px 24px" }}>
-        <nav
+        <div
           style={{
             fontSize: "12px",
             color: colors.neutral[600],
@@ -281,7 +281,7 @@ export default async function SurfaceRunsDetailPage({
           </Link>
           {" > "}
           <span style={{ color: colors.neutral[800] }}>{surface.displayName}</span>
-        </nav>
+        </div>
 
         <h1
           style={{
