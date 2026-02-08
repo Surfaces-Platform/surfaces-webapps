@@ -24,7 +24,7 @@ type Manifest = {
 
 const manifest = manifestJson as Manifest;
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const proposedBackground = req.headers.get("x-proposed-bg") || "";
   const sectionId = req.nextUrl.searchParams.get("section") || "";
 
