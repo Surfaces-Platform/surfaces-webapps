@@ -3,13 +3,6 @@
   "contractId": "surfaces.web",
   "version": "0.1.0",
   "description": "Interface expectations shared across InterfaceCTL, SurfaceOps, and Surfaces web experiences.",
-  "shell": {
-    "owns": [
-      "navigation",
-      "footer",
-      "auth-shell"
-    ]
-  },
   "surfaces": [
     {
       "id": "interfacectl-web",

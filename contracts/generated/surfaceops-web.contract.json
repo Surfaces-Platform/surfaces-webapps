@@ -12,13 +12,6 @@
   },
   "contractId": "surfaceops-web.generated",
   "description": "Extracted from Next.js app (Phase 0).",
-  "shell": {
-    "owns": [
-      "navigation",
-      "footer",
-      "auth-shell"
-    ]
-  },
   "sections": [
     {
       "description": "Placeholder; sections not extracted in Phase 0.",
