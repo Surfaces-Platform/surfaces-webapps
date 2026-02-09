@@ -66,11 +66,16 @@ for project_info in "${PROJECTS[@]}"; do
   echo "  Deployment ID: $deployment_id"
   echo "  Created: $created"
 
-  # Adaptive route probe (edge contract enforcement demo)
+  # Adaptive route probe (edge contract enforcement demo). Best-effort only.
   if [ -n "$url" ]; then
     probe_url="$url/adaptive/test?section=hero"
-    probe_resp=$(curl -s -o /dev/null -w "%{http_code}" "$probe_url")
-    echo "  Adaptive probe ($probe_url): HTTP $probe_resp"
+    if command -v curl &>/dev/null; then
+      probe_resp=$(curl -s -m 5 -o /dev/null -w "%{http_code}" "$probe_url" || true)
+      [ -z "$probe_resp" ] && probe_resp="unreachable"
+      echo "  Adaptive probe ($probe_url): HTTP $probe_resp"
+    else
+      echo "  Adaptive probe ($probe_url): skipped (curl not installed)"
+    fi
   fi
   echo ""
 done

@@ -44,6 +44,9 @@ jobs:
       - name: Edge validator smoke test
         run: pnpm examples:test-edge
       
+      - name: Platform behavior e2e smoke test
+        run: pnpm test:platform-e2e
+      
       - name: Show CLI provenance
         run: pnpm cli:where:ci
 

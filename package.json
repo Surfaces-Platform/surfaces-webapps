@@ -33,6 +33,7 @@
     "type-check:interfacectl": "pnpm --filter interfacectl-web type-check",
     "type-check:surfaces-dev": "pnpm --filter surfaces-dev type-check",
     "test:scripts": "node --test scripts/__tests__/vercel-monitoring.test.mjs",
+    "test:platform-e2e": "node --test scripts/__tests__/platform-enforcement-e2e.test.mjs",
     "test": "pnpm --filter surfaceops-web test && pnpm run test:scripts"
   },
   "devDependencies": {
