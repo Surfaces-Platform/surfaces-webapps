@@ -1,5 +1,14 @@
 # Drift Discovery Report
 
+> Status: Archived (superseded)
+>
+> This document is historical incident context from January 15, 2026 and is not a source of truth.
+> For current contract and boundary behavior, use:
+> - `/Users/mike/SurfacesPlatform/surfaces-webapps/docs/interfacectl/contract-validation.md`
+> - `/Users/mike/SurfacesPlatform/surfaces-webapps/docs/interfacectl/shell-boundary.md`
+> - `/Users/mike/SurfacesPlatform/surfaces-webapps/contracts/surfaces.web.contract.json`
+> - `/Users/mike/SurfacesPlatform/surfaces-webapps/tools/interfacectl/packages/interfacectl-validator/src/schema/web.surface.contract.schema.json`
+
 ## Contract Intent Declaration
 
 **Contract File:** `surfaces.interface.contract.json`  
