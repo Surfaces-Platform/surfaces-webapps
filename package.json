@@ -4,8 +4,7 @@
   "type": "module",
   "scripts": {
     "prepare": "husky install",
-    "interfacectl:build": "cd tools/interfacectl && pnpm install --frozen-lockfile && pnpm run build && cd ../.. && node scripts/sync-contract-schema.mjs",
-    "schema:sync": "node scripts/sync-contract-schema.mjs",
+    "interfacectl:build": "cd tools/interfacectl && pnpm install --frozen-lockfile && pnpm run build",
     "interfacectl:bin": "echo tools/interfacectl/packages/interfacectl-cli/dist/index.js",
     "validate:contract": "./scripts/validate-contract.sh",
     "vercel:check": "./scripts/check-vercel-deployments.sh",
@@ -15,7 +14,7 @@
     "generate:contract:all": "./scripts/generate-all-contracts.sh",
     "validate:contract:text": "node tools/interfacectl/packages/interfacectl-cli/dist/index.js validate --root . --contract ./contracts/surfaces.web.contract.json --format text",
     "validate:contract:dev": "pnpm run interfacectl:build && ./scripts/validate-contract.sh",
-    "validate:local": "pnpm run schema:sync && node tools/interfacectl/packages/interfacectl-cli/dist/index.js validate --workspace-root . --contract ./contracts/surfaces.web.contract.json",
+    "validate:local": "node tools/interfacectl/packages/interfacectl-cli/dist/index.js validate --workspace-root . --contract ./contracts/surfaces.web.contract.json",
     "validate:ci": "pnpm run interfacectl:build && node scripts/print-provenance.mjs && node tools/interfacectl/packages/interfacectl-cli/dist/index.js validate --workspace-root . --contract ./contracts/surfaces.web.contract.json",
     "examples:build-manifest": "node docs/interfacectl/examples/edge/build-manifest.mjs",
     "examples:test-edge": "node docs/interfacectl/examples/edge/test-edge.mjs",

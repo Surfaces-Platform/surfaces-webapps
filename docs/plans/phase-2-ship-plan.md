@@ -72,7 +72,7 @@ git commit -m "chore: bump interfacectl submodule for owner schema"
 
 | Requirement | Files | Status |
 |-------------|-------|--------|
-| **1. Owner** | `contracts/web.surface.contract.schema.json`, `contracts/surfaces.web.contract.json`, `apps/surfaceops-web/app/contracts/page.tsx`, `apps/surfaceops-web/app/contracts/[surfaceId]/page.tsx` | ✅ |
+| **1. Owner** | `tools/interfacectl/packages/interfacectl-validator/src/schema/web.surface.contract.schema.json`, `contracts/surfaces.web.contract.json`, `apps/surfaceops-web/app/contracts/page.tsx`, `apps/surfaceops-web/app/contracts/[surfaceId]/page.tsx` | ✅ |
 | **2. Change awareness** | `apps/surfaceops-web/lib/contracts.ts` (`getLastContractChange`, `getLastExtractionRun`), detail page | ✅ |
 | **3. Repeated outcomes** | `apps/surfaceops-web/lib/contracts.ts` (`loadValidationOutcomes`), list + detail UI dots | ✅ |
 | **4. Public vs auth** | `apps/surfaceops-web/app/(overview)/page.tsx` — copy only, no auth | ✅ |

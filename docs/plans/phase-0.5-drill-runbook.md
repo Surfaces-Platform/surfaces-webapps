@@ -53,7 +53,7 @@ Create revert PRs (same order), or do a single revert per repo and merge quickly
 ### 1. surfaces-webapps revert
 
 1. Remove `expectsAuthRegisterRoute` from `contracts/surfaces.web.contract.json`
-2. Remove it from `contracts/web.surface.contract.schema.json`
+2. Remove it from `tools/interfacectl/packages/interfacectl-validator/src/schema/web.surface.contract.schema.json`
 3. Remove SurfaceOps logic in `apps/surfaceops-web/lib/contracts.ts`:
    - `PolicySurface.phase0` field
    - `computeValidationStatus` branch

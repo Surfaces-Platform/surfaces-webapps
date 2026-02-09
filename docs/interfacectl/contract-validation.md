@@ -3,7 +3,7 @@
 ## Canonical contract
 
 - **Source of truth**: [`contracts/surfaces.web.contract.json`](../../contracts/surfaces.web.contract.json)
-- **Schema**: [`contracts/web.surface.contract.schema.json`](../../contracts/web.surface.contract.schema.json)
+- **Schema**: [`tools/interfacectl/packages/interfacectl-validator/src/schema/web.surface.contract.schema.json`](../../tools/interfacectl/packages/interfacectl-validator/src/schema/web.surface.contract.schema.json)
 - **Guarantees**: surface enumerations, required section identifiers, allowed fonts, layout width, and motion constraints.
 
 The contract is versioned JSON—surfaces must conform to it but never redefine it. All validation logic derives exclusively from this file (and optional schema).
@@ -254,4 +254,3 @@ A typical progression for a new rule:
 4. **Enable enforcement** (`policy: "strict"`) - Block violations when confidence is high
 
 This model allows Surfaces to enforce correctness gradually, reducing risk while building developer trust in the validation system.
-

@@ -422,7 +422,7 @@ The contract schema (`web.surface.contract.schema.json`) does not include `allow
 
 **Schema Verification:**
 - **`allowedColors` in schema:** ✅ **TRUE** (found in schema file)
-- **Schema source updated:** ✅ Updated from `contracts/web.surface.contract.schema.json`
+- **Schema source updated:** ✅ Updated from `tools/interfacectl/packages/interfacectl-validator/src/schema/web.surface.contract.schema.json`
 
 **Contract Validated:** `contracts/surfaces.web.contract.json`
 
@@ -455,13 +455,13 @@ The contract schema (`web.surface.contract.schema.json`) does not include `allow
 ### Analysis
 
 **Issue Identified:**
-The validator's bundled schema (`interfacectl-tooling/packages/interfacectl-validator/src/schema/web.surface.contract.schema.json`) was missing the `allowedColors` property definition, even though the contract schema in `contracts/web.surface.contract.schema.json` contained it.
+The validator's bundled schema (`interfacectl-tooling/packages/interfacectl-validator/src/schema/web.surface.contract.schema.json`) was missing the `allowedColors` property definition, even though the canonical schema source already defined it.
 
 **Root Cause:**
 The schema file in the validator package was out of sync with the contract schema. The validator bundles its own copy of the schema, which must be kept in sync with the source contract schema.
 
 **Fix Applied:**
-1. Copied updated schema from `contracts/web.surface.contract.schema.json` to `interfacectl-tooling/packages/interfacectl-validator/src/schema/web.surface.contract.schema.json`
+1. Updated the canonical schema at `interfacectl-tooling/packages/interfacectl-validator/src/schema/web.surface.contract.schema.json`
 2. Cleaned dist outputs for both validator and CLI packages
 3. Rebuilt packages (validator → CLI)
 4. Schema now includes `allowedColors` property definition

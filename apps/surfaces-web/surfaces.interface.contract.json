@@ -1,5 +1,5 @@
 {
-  "$schema": "../contracts/web.surface.contract.schema.json",
+  "$schema": "../../tools/interfacectl/packages/interfacectl-validator/src/schema/web.surface.contract.schema.json",
   "contractId": "surfaces.interface",
   "version": "0.1.0",
   "description": "Interface intent declaration for Surfaces Web application - Page Frame contract for drift discovery.",
