@@ -34,6 +34,9 @@
         "footer",
         "auth-shell"
       ],
+      "shellOwnedPrimitiveAllowSources": [
+        "apps/surfaceops-web/app/layout.tsx"
+      ],
       "requiredSections": [
         "extracted.placeholder"
       ],

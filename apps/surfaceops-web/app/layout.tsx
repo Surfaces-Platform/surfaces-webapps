@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Navigation from "@surfaces/ui/components/Navigation";
 import "./globals.css";
 
 const inter = Inter({
@@ -24,6 +25,20 @@ export default function RootLayout({
         style={{ fontFamily: 'var(--font-inter), Inter, sans-serif' }}
       >
         <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+          <Navigation
+            currentSurface="surfaceops"
+            currentContext={{ contentType: "overview", subject: "contracts" }}
+            sections={[
+              { label: "Overview", href: "/" },
+              { label: "Surfaces", href: "/contracts" },
+              { label: "Runs", href: "/contracts/runs" },
+            ]}
+            utilities={[
+              { label: "GitHub", href: "#github" },
+              { label: "Login", href: "/auth/login" },
+            ]}
+            theme="light"
+          />
           <main style={{ flex: 1 }}>{children}</main>
         </div>
       </body>
