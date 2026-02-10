@@ -28,6 +28,19 @@ function runNode(args, cwd = repoRoot) {
   });
 }
 
+function buildValidExtractedFixture(surfaceId) {
+  return {
+    surfaceId,
+    appRoot: "/tmp",
+    extracted: {
+      authAware: true,
+      hasShell: true,
+      designSystemComponents: ["Button"],
+      routes: ["/auth/login", "/auth/callback", "/auth/session", "/auth/logout"],
+    },
+  };
+}
+
 test("runtime edge smoke examples remain healthy", () => {
   const buildManifest = runNode(["docs/interfacectl/examples/edge/build-manifest.mjs"]);
   assert.equal(buildManifest.status, 0, buildManifest.stderr || buildManifest.stdout);
@@ -41,6 +54,7 @@ test("ci validation commands remain healthy", () => {
   assert.ok(fs.existsSync(cliPath), `CLI not found at ${cliPath}`);
   const artifactsDir = fs.mkdtempSync(path.join(os.tmpdir(), "surfaces-e2e-artifacts-"));
   const reportPath = path.join(artifactsDir, "interfacectl-report.e2e.json");
+  const extractedPath = path.join(artifactsDir, "surfaces-web.extraction.json");
 
   const validate = runNode([
     cliPath,
@@ -60,13 +74,15 @@ test("ci validation commands remain healthy", () => {
   const report = JSON.parse(fs.readFileSync(reportPath, "utf8"));
   assert.equal(typeof report, "object");
 
+  fs.writeFileSync(extractedPath, JSON.stringify(buildValidExtractedFixture("surfaces-web"), null, 2));
+
   const validateExtracted = runNode([
     cliPath,
     "validate-extracted",
     "--contract",
     "./contracts/surfaces.web.contract.json",
     "--extracted",
-    "./contracts/generated/surfaces-web.extraction.json",
+    extractedPath,
     "--surface",
     "surfaces-web",
     "--exit-codes",
@@ -79,9 +95,7 @@ test("ci validation failure path emits non-zero exit and finding codes", async (
   assert.ok(fs.existsSync(cliPath), `CLI not found at ${cliPath}`);
   const tmpDir = await fsp.mkdtemp(path.join(os.tmpdir(), "surfaces-e2e-validate-extracted-"));
   const badExtractedPath = path.join(tmpDir, "surfaces-web.extraction.bad.json");
-
-  const extractedPath = path.join(repoRoot, "contracts/generated/surfaces-web.extraction.json");
-  const extracted = JSON.parse(await fsp.readFile(extractedPath, "utf8"));
+  const extracted = buildValidExtractedFixture("surfaces-web");
   // surfaces-web contract expects auth-aware in phase0; forcing false should trigger E2 mismatch.
   extracted.extracted = extracted.extracted || {};
   extracted.extracted.authAware = false;

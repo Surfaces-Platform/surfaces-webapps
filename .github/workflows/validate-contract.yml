@@ -119,6 +119,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build platform auth package
+        run: pnpm --filter @surfaces/platform-auth build
+
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium
 
