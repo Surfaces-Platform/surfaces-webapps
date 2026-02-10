@@ -15,7 +15,7 @@ export const metadata = {
 function OutcomeDots({
   outcomes,
 }: {
-  outcomes: ("pass" | "fail" | "unknown")[];
+  outcomes: ("pass" | "warn" | "fail" | "unknown")[];
 }) {
   return (
     <span style={{ display: "flex", gap: 4, alignItems: "center" }}>
@@ -30,6 +30,8 @@ function OutcomeDots({
             backgroundColor:
               o === "pass"
                 ? colors.contract.valid
+                : o === "warn"
+                  ? "#b45309"
                 : o === "fail"
                   ? colors.contract.invalid
                   : colors.neutral[400],
@@ -161,6 +163,39 @@ export default function RunsPage() {
                     color: colors.neutral[600],
                   }}
                 >
+                  Latest source
+                </th>
+                <th
+                  style={{
+                    padding: "12px 16px",
+                    textAlign: "left",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    color: colors.neutral[600],
+                  }}
+                >
+                  Last run time
+                </th>
+                <th
+                  style={{
+                    padding: "12px 16px",
+                    textAlign: "left",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    color: colors.neutral[600],
+                  }}
+                >
+                  Contract version
+                </th>
+                <th
+                  style={{
+                    padding: "12px 16px",
+                    textAlign: "left",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    color: colors.neutral[600],
+                  }}
+                >
                   Last contract change
                 </th>
                 <th
@@ -198,6 +233,8 @@ export default function RunsPage() {
                 const statusColor =
                   snapshot.status === "pass"
                     ? colors.contract?.valid ?? colors.neutral[600]
+                    : snapshot.status === "warn"
+                      ? "#b45309"
                     : snapshot.status === "fail"
                       ? colors.contract?.invalid ?? "#c00"
                       : colors.neutral[600];
@@ -286,6 +323,37 @@ export default function RunsPage() {
                       {snapshot.extractionCommit
                         ? `${snapshot.extractionCommit.hash} (${snapshot.extractionCommit.relativeTime})`
                         : "unknown"}
+                    </td>
+                    <td
+                      style={{
+                        padding: "12px 16px",
+                        fontSize: "12px",
+                        fontFamily: "monospace",
+                        color: colors.neutral[600],
+                        textTransform: "lowercase",
+                      }}
+                    >
+                      {snapshot.latestSource}
+                    </td>
+                    <td
+                      style={{
+                        padding: "12px 16px",
+                        fontSize: "12px",
+                        fontFamily: "monospace",
+                        color: colors.neutral[600],
+                      }}
+                    >
+                      {snapshot.latestRunAt}
+                    </td>
+                    <td
+                      style={{
+                        padding: "12px 16px",
+                        fontSize: "12px",
+                        fontFamily: "monospace",
+                        color: colors.neutral[600],
+                      }}
+                    >
+                      {snapshot.contractVersion}
                     </td>
                     <td
                       style={{

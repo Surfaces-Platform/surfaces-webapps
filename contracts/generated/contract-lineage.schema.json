@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Surfaces Contract Lineage",
+  "type": "object",
+  "required": ["schemaVersion", "surfaces"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "surfaces": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "lastRunId",
+          "lastRunAt",
+          "lastSource",
+          "lastStatus",
+          "contract",
+          "artifacts",
+          "findingCodes"
+        ],
+        "properties": {
+          "lastRunId": { "type": "string", "minLength": 1 },
+          "lastRunAt": { "type": "string", "format": "date-time" },
+          "lastSource": { "enum": ["bootstrap", "generation", "ci", "runtime"] },
+          "lastStatus": { "enum": ["pass", "warn", "fail", "unknown"] },
+          "contract": {
+            "type": "object",
+            "required": ["id", "version", "sha256"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "version": { "type": "string", "minLength": 1 },
+              "sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" }
+            },
+            "additionalProperties": false
+          },
+          "artifacts": {
+            "type": "object",
+            "properties": {
+              "extractionPath": { "type": "string" },
+              "reportPath": { "type": "string" }
+            },
+            "additionalProperties": false
+          },
+          "findingCodes": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

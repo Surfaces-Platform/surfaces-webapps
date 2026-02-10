@@ -129,7 +129,7 @@ function NextStepsSection({ findings }: { findings: Phase0Finding[] }) {
 function OutcomeDots({
   outcomes,
 }: {
-  outcomes: ("pass" | "fail" | "unknown")[];
+  outcomes: ("pass" | "warn" | "fail" | "unknown")[];
 }) {
   return (
     <span style={{ display: "flex", gap: 4, alignItems: "center" }}>
@@ -144,6 +144,8 @@ function OutcomeDots({
             backgroundColor:
               o === "pass"
                 ? colors.contract.valid
+                : o === "warn"
+                  ? "#b45309"
                 : o === "fail"
                   ? colors.contract.invalid
                   : colors.neutral[400],

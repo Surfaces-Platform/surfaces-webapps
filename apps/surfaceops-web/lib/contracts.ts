@@ -305,10 +305,62 @@ export function getDriftLabelText(label: DriftLabelDisplay): string {
 }
 
 const VALIDATION_OUTCOMES_PATH = join(CONTRACTS_DIR, "generated", "validation-outcomes.json");
+const CONTRACT_RUNS_PATH = join(CONTRACTS_DIR, "generated", "contract-runs.json");
+const CONTRACT_LINEAGE_PATH = join(CONTRACTS_DIR, "generated", "contract-lineage.json");
 const MAX_OUTCOMES = 5;
 const AUTH_ROUTES = ["/auth/login", "/auth/callback", "/auth/session", "/auth/logout"];
 
-export type ValidationOutcome = "pass" | "fail" | "unknown";
+export type ValidationOutcome = "pass" | "warn" | "fail" | "unknown";
+export type RunSource = "bootstrap" | "generation" | "ci" | "runtime";
+
+export interface ContractRun {
+  runId: string;
+  createdAt: string;
+  surfaceId: string;
+  source: RunSource;
+  contract: {
+    id: string;
+    version: string;
+    sha256: string;
+  };
+  artifacts: {
+    extractionPath?: string;
+    reportPath?: string;
+  };
+  status: ValidationOutcome;
+  findingCodes: string[];
+  summary: {
+    errorCount: number;
+    warnCount: number;
+  };
+}
+
+export interface ContractRunsDocument {
+  schemaVersion: number;
+  runs: ContractRun[];
+}
+
+export interface ContractLineageRecord {
+  lastRunId: string;
+  lastRunAt: string;
+  lastSource: RunSource;
+  lastStatus: ValidationOutcome;
+  contract: {
+    id: string;
+    version: string;
+    sha256: string;
+  };
+  artifacts: {
+    extractionPath?: string;
+    reportPath?: string;
+  };
+  findingCodes: string[];
+}
+
+export interface ContractLineageDocument {
+  schemaVersion: number;
+  surfaces: Record<string, ContractLineageRecord>;
+}
 
 /** Phase 0 finding from validate-extracted logic. Same structure as interfacectl. */
 export interface Phase0Finding {
@@ -332,6 +384,67 @@ export type DriftLabelDisplay = DriftLabel | "failing";
 /** Whether validation-outcomes.json exists and has sufficient history for narrative labels. */
 export function validationOutcomesFileExists(): boolean {
   return existsSync(VALIDATION_OUTCOMES_PATH);
+}
+
+export function contractRunsFileExists(): boolean {
+  return existsSync(CONTRACT_RUNS_PATH);
+}
+
+export function loadContractRuns(): ContractRunsDocument {
+  if (!existsSync(CONTRACT_RUNS_PATH)) {
+    return { schemaVersion: 1, runs: [] };
+  }
+  try {
+    const raw = readFileSync(CONTRACT_RUNS_PATH, "utf-8");
+    const parsed = JSON.parse(raw) as ContractRunsDocument;
+    const runs = Array.isArray(parsed.runs) ? parsed.runs : [];
+    return {
+      schemaVersion: Number(parsed.schemaVersion || 1),
+      runs: runs
+        .filter((run) => run && typeof run === "object")
+        .sort((a, b) => {
+          const timeDiff = Date.parse(b.createdAt) - Date.parse(a.createdAt);
+          if (timeDiff !== 0) return timeDiff;
+          return String(b.runId).localeCompare(String(a.runId));
+        }),
+    };
+  } catch {
+    return { schemaVersion: 1, runs: [] };
+  }
+}
+
+export function loadContractLineage(): ContractLineageDocument {
+  if (!existsSync(CONTRACT_LINEAGE_PATH)) {
+    return { schemaVersion: 1, surfaces: {} };
+  }
+  try {
+    const raw = readFileSync(CONTRACT_LINEAGE_PATH, "utf-8");
+    const parsed = JSON.parse(raw) as ContractLineageDocument;
+    return {
+      schemaVersion: Number(parsed.schemaVersion || 1),
+      surfaces:
+        parsed.surfaces && typeof parsed.surfaces === "object"
+          ? parsed.surfaces
+          : {},
+    };
+  } catch {
+    return { schemaVersion: 1, surfaces: {} };
+  }
+}
+
+function normalizeRunStatus(status: unknown): ValidationOutcome {
+  return status === "pass" || status === "warn" || status === "fail" || status === "unknown"
+    ? status
+    : "unknown";
+}
+
+function runCodesToFindings(surfaceId: string, codes: string[]): Phase0Finding[] {
+  return codes.map((code) => ({
+    surfaceId,
+    code,
+    category: code.startsWith("phase0.") ? "E2" : "E0",
+    message: `Run finding code: ${code}`,
+  }));
 }
 
 /** Point of intervention for a finding (Phase 5). */
@@ -437,6 +550,23 @@ export function countSurfacesUsingExpectation(
 export function loadValidationOutcomes(
   contract: PolicyContract
 ): Record<string, ValidationOutcome[]> {
+  const runsDoc = loadContractRuns();
+  if (runsDoc.runs.length > 0) {
+    const bySurface: Record<string, ValidationOutcome[]> = {};
+    for (const surface of contract.surfaces) {
+      const outcomes = runsDoc.runs
+        .filter((run) => run.surfaceId === surface.id)
+        .map((run) => normalizeRunStatus(run.status))
+        .slice(0, MAX_OUTCOMES);
+      if (outcomes.length > 0) {
+        bySurface[surface.id] = outcomes;
+      }
+    }
+    if (Object.keys(bySurface).length > 0) {
+      return bySurface;
+    }
+  }
+
   let committed: Record<string, ValidationOutcome[]> = {};
   if (existsSync(VALIDATION_OUTCOMES_PATH)) {
     try {
@@ -445,7 +575,7 @@ export function loadValidationOutcomes(
       for (const [id, outcomes] of Object.entries(parsed)) {
         const valid = outcomes
           .filter((o): o is ValidationOutcome =>
-            o === "pass" || o === "fail" || o === "unknown"
+            o === "pass" || o === "warn" || o === "fail" || o === "unknown"
           )
           .slice(0, MAX_OUTCOMES);
         if (valid.length) committed[id] = valid;
@@ -484,7 +614,12 @@ export interface RunSnapshot {
   surfaceId: string;
   domain: string;
   status: ValidationOutcome;
+  latestSource: RunSource | "none";
+  latestRunAt: string;
+  latestRunId: string;
+  contractVersion: string;
   findings: Phase0Finding[];
+  findingCodes: string[];
   contractCommit: GitLogEntry | null;
   extractionCommit: GitLogEntry | null;
   contractTimestamp: string;
@@ -506,6 +641,41 @@ export interface SurfaceRunSeries {
   history?: {
     outcomes: ValidationOutcome[];
   };
+}
+
+export interface FindingCodeDelta {
+  newCodes: string[];
+  resolvedCodes: string[];
+}
+
+export interface SurfaceEvolution {
+  surfaceId: string;
+  runs: ContractRun[];
+  latestBySource: Partial<Record<RunSource, ContractRun>>;
+  findingDelta: FindingCodeDelta | null;
+}
+
+export interface RunStore {
+  loadRuns(): ContractRunsDocument;
+  loadLineage(): ContractLineageDocument;
+}
+
+export class JsonRunStore implements RunStore {
+  loadRuns(): ContractRunsDocument {
+    return loadContractRuns();
+  }
+  loadLineage(): ContractLineageDocument {
+    return loadContractLineage();
+  }
+}
+
+export class DbRunStore implements RunStore {
+  loadRuns(): ContractRunsDocument {
+    return { schemaVersion: 1, runs: [] };
+  }
+  loadLineage(): ContractLineageDocument {
+    return { schemaVersion: 1, surfaces: {} };
+  }
 }
 
 /**
@@ -591,9 +761,20 @@ export function getRunSnapshot(surfaceId: string): RunSnapshot | null {
     const surface = contract.surfaces.find((s) => s.id === surfaceId);
     if (!surface) return null;
 
+    const runsDoc = loadContractRuns();
+    const latestRun = runsDoc.runs.find((run) => run.surfaceId === surfaceId) || null;
     const extracted = loadExtraction(surfaceId);
-    const status = computeValidationStatus(surface, extracted);
-    const findings = computeFindings(surface, extracted);
+    const extractedStatus = computeValidationStatus(surface, extracted);
+    const extractedFindings = computeFindings(surface, extracted);
+    const status = latestRun ? normalizeRunStatus(latestRun.status) : extractedStatus;
+    const findingCodes =
+      latestRun && Array.isArray(latestRun.findingCodes)
+        ? latestRun.findingCodes
+        : extractedFindings.map((f) => f.code);
+    const findings =
+      latestRun && findingCodes.length > 0
+        ? runCodesToFindings(surfaceId, findingCodes)
+        : extractedFindings;
     const contractCommit = getLastContractChange();
     const extractionCommit = getLastExtractionRun(surfaceId);
     const buildMetadata = getBuildMetadata();
@@ -613,7 +794,12 @@ export function getRunSnapshot(surfaceId: string): RunSnapshot | null {
       surfaceId,
       domain: surface.domain ?? surface.id,
       status,
+      latestSource: latestRun?.source ?? "none",
+      latestRunAt: latestRun?.createdAt ?? "unknown",
+      latestRunId: latestRun?.runId ?? "unknown",
+      contractVersion: latestRun?.contract?.version ?? contract.version ?? "unknown",
       findings,
+      findingCodes,
       contractCommit,
       extractionCommit,
       contractTimestamp: contractCommit?.relativeTime ?? "unknown",
@@ -668,6 +854,40 @@ export function getSurfaceRunSeries(
     surfaceId,
     snapshots: [snapshot],
     history: surfaceOutcomes ? { outcomes: surfaceOutcomes } : undefined,
+  };
+}
+
+export function getLatestRunBySource(
+  surfaceId: string,
+  source: RunSource
+): ContractRun | null {
+  const runsDoc = loadContractRuns();
+  return runsDoc.runs.find((run) => run.surfaceId === surfaceId && run.source === source) || null;
+}
+
+function computeFindingCodeDelta(runs: ContractRun[]): FindingCodeDelta | null {
+  if (runs.length < 2) return null;
+  const latest = new Set(runs[0].findingCodes || []);
+  const previous = new Set(runs[1].findingCodes || []);
+  return {
+    newCodes: [...latest].filter((code) => !previous.has(code)).sort(),
+    resolvedCodes: [...previous].filter((code) => !latest.has(code)).sort(),
+  };
+}
+
+export function getSurfaceEvolution(surfaceId: string): SurfaceEvolution {
+  const runsDoc = loadContractRuns();
+  const runs = runsDoc.runs.filter((run) => run.surfaceId === surfaceId);
+  const latestBySource: Partial<Record<RunSource, ContractRun>> = {};
+  for (const source of ["bootstrap", "generation", "ci", "runtime"] as RunSource[]) {
+    const latest = runs.find((run) => run.source === source);
+    if (latest) latestBySource[source] = latest;
+  }
+  return {
+    surfaceId,
+    runs,
+    latestBySource,
+    findingDelta: computeFindingCodeDelta(runs),
   };
 }
 

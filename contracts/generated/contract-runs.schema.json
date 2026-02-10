@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Surfaces Contract Runs",
+  "type": "object",
+  "required": ["schemaVersion", "runs"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "runs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "runId",
+          "createdAt",
+          "surfaceId",
+          "source",
+          "contract",
+          "artifacts",
+          "status",
+          "findingCodes",
+          "summary"
+        ],
+        "properties": {
+          "runId": { "type": "string", "minLength": 1 },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "surfaceId": { "type": "string", "minLength": 1 },
+          "source": { "enum": ["bootstrap", "generation", "ci", "runtime"] },
+          "contract": {
+            "type": "object",
+            "required": ["id", "version", "sha256"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "version": { "type": "string", "minLength": 1 },
+              "sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" }
+            },
+            "additionalProperties": false
+          },
+          "artifacts": {
+            "type": "object",
+            "properties": {
+              "extractionPath": { "type": "string" },
+              "reportPath": { "type": "string" }
+            },
+            "additionalProperties": false
+          },
+          "status": { "enum": ["pass", "warn", "fail", "unknown"] },
+          "findingCodes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "summary": {
+            "type": "object",
+            "required": ["errorCount", "warnCount"],
+            "properties": {
+              "errorCount": { "type": "integer", "minimum": 0 },
+              "warnCount": { "type": "integer", "minimum": 0 }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

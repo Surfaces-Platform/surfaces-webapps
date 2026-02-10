@@ -18,6 +18,7 @@ import {
   getPassRate,
   hasEverPassed,
   countSurfacesUsingExpectation,
+  getSurfaceEvolution,
 } from "@/lib/contracts";
 import type {
   FailureCategory,
@@ -215,7 +216,7 @@ function NextStepsSection({ findings }: { findings: Phase0Finding[] }) {
 function OutcomeDots({
   outcomes,
 }: {
-  outcomes: ("pass" | "fail" | "unknown")[];
+  outcomes: ("pass" | "warn" | "fail" | "unknown")[];
 }) {
   return (
     <span style={{ display: "flex", gap: 4, alignItems: "center" }}>
@@ -230,6 +231,8 @@ function OutcomeDots({
             backgroundColor:
               o === "pass"
                 ? colors.contract.valid
+                : o === "warn"
+                  ? "#b45309"
                 : o === "fail"
                   ? colors.contract.invalid
                   : colors.neutral[400],
@@ -252,6 +255,7 @@ export default async function SurfaceRunsDetailPage({
   if (!runSeries) notFound();
 
   const latestSnapshot = runSeries.snapshots[0];
+  const evolution = getSurfaceEvolution(surfaceId);
   const groupedFindings = groupFindingsByCategory(latestSnapshot.findings);
   const outcomesFileExists = validationOutcomesFileExists();
 
@@ -343,8 +347,64 @@ export default async function SurfaceRunsDetailPage({
                 margin: 0,
               }}
             >
-              From validation-outcomes.json. Detailed historical runs are not yet stored.
+              Derived from contract-runs.json when available, otherwise validation-outcomes.json.
             </p>
+          </section>
+        )}
+
+        {evolution.runs.length > 0 && (
+          <section
+            style={{
+              marginBottom: "24px",
+              padding: "16px",
+              backgroundColor: colors.neutral[0],
+              border: `1px solid ${colors.neutral[200]}`,
+              borderRadius: "6px",
+            }}
+          >
+            <h2
+              style={{
+                fontSize: "14px",
+                fontWeight: 600,
+                marginBottom: "12px",
+                fontFamily: "monospace",
+              }}
+            >
+              Evolution timeline
+            </h2>
+            <div style={{ fontSize: "12px", color: colors.neutral[800], fontFamily: "monospace" }}>
+              {evolution.runs.slice(0, 8).map((run) => (
+                <div key={run.runId} style={{ marginBottom: "6px" }}>
+                  {run.createdAt} · {run.source} · {run.status} · {run.contract.version}
+                  {run.findingCodes.length > 0 ? ` · ${run.findingCodes.join(", ")}` : ""}
+                </div>
+              ))}
+            </div>
+            {evolution.findingDelta && (
+              <div
+                style={{
+                  marginTop: "12px",
+                  paddingTop: "12px",
+                  borderTop: `1px solid ${colors.neutral[200]}`,
+                  fontSize: "12px",
+                  color: colors.neutral[600],
+                  fontFamily: "monospace",
+                }}
+              >
+                <div>
+                  New codes:{" "}
+                  {evolution.findingDelta.newCodes.length > 0
+                    ? evolution.findingDelta.newCodes.join(", ")
+                    : "none"}
+                </div>
+                <div>
+                  Resolved codes:{" "}
+                  {evolution.findingDelta.resolvedCodes.length > 0
+                    ? evolution.findingDelta.resolvedCodes.join(", ")
+                    : "none"}
+                </div>
+              </div>
+            )}
           </section>
         )}
 
@@ -383,6 +443,8 @@ export default async function SurfaceRunsDetailPage({
                   color:
                     latestSnapshot.status === "pass"
                       ? colors.contract.valid
+                      : latestSnapshot.status === "warn"
+                        ? "#b45309"
                       : latestSnapshot.status === "fail"
                         ? colors.contract.invalid
                         : colors.neutral[600],
@@ -390,6 +452,15 @@ export default async function SurfaceRunsDetailPage({
               >
                 {latestSnapshot.status}
               </span>
+            </div>
+            <div style={{ marginBottom: "8px" }}>
+              Source: <span style={{ fontFamily: "monospace" }}>{latestSnapshot.latestSource}</span>
+            </div>
+            <div style={{ marginBottom: "8px" }}>
+              Run time: <span style={{ fontFamily: "monospace" }}>{latestSnapshot.latestRunAt}</span>
+            </div>
+            <div style={{ marginBottom: "8px" }}>
+              Contract version: <span style={{ fontFamily: "monospace" }}>{latestSnapshot.contractVersion}</span>
             </div>
             <div style={{ marginBottom: "8px" }}>
               Contract commit:{" "}

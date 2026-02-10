@@ -77,6 +77,9 @@ jobs:
             --extracted ./contracts/generated/surfaces-web.extraction.json \
             --surface surfaces-web \
             --exit-codes v2
+
+      - name: Validate run artifacts schema
+        run: pnpm run validate:run-artifacts
       
       - name: Check generated contract drift
         run: |
