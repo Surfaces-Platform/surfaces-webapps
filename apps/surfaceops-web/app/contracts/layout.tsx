@@ -1,20 +1,12 @@
-import { getSession, getLogoutUrl } from "@surfaces/platform-auth";
+import { getSession } from "@surfaces/platform-auth";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { colors } from "@surfaces/ui/tokens/colors";
-
-function getLogoutHref(): string {
-  const base = process.env.OIDC_POST_LOGOUT_REDIRECT_URI ?? "http://localhost:3001/";
-  const origin = new URL(base).origin;
-  const logoutUrl = getLogoutUrl({ returnTo: `${origin}/auth/logout/complete` });
-  return logoutUrl || "/auth/logout?global=1";
-}
 
 export default async function ContractsLayout({
   children,
 }: { children: React.ReactNode }) {
   const bypassAuth = process.env.SURFACEOPS_TEST_BYPASS_AUTH === "1";
-  const logoutHref = getLogoutHref();
   if (!bypassAuth) {
     const headersList = await headers();
     const req = new Request("http://localhost", {
