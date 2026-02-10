@@ -6,7 +6,9 @@ import { colors } from "@surfaces/ui/tokens/colors";
 export default async function RunsLayout({
   children,
 }: { children: React.ReactNode }) {
-  const bypassAuth = process.env.SURFACEOPS_TEST_BYPASS_AUTH === "1";
+  const bypassAuth =
+    process.env.SURFACEOPS_TEST_BYPASS_AUTH === "1" &&
+    process.env.NODE_ENV !== "production";
   if (!bypassAuth) {
     const headersList = await headers();
     const req = new Request("http://localhost", {
