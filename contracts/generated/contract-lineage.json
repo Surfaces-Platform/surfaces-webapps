@@ -1,18 +1,4 @@
 {
   "schemaVersion": 1,
-  "surfaces": {
-    "surfaces-web": {
-      "lastRunId": "497bfef5-f754-4e03-9429-600e5bb992c8",
-      "lastRunAt": "2026-02-10T18:49:06.818Z",
-      "lastSource": "runtime",
-      "lastStatus": "pass",
-      "contract": {
-        "id": "surfaces.web",
-        "version": "0.1.0",
-        "sha256": "75d4e9daa6af79ed70077417d953c08298092d703b03275f2bb937d44559b747"
-      },
-      "artifacts": {},
-      "findingCodes": []
-    }
-  }
+  "surfaces": {}
 }

@@ -1,9 +1,13 @@
 import { execSync } from "child_process";
-import { readFileSync, existsSync } from "fs";
-import { join } from "path";
+import { createHash, randomUUID } from "crypto";
+import { readFileSync, existsSync, mkdirSync, readdirSync, renameSync, writeFileSync } from "fs";
+import { dirname, join, resolve } from "path";
 
-const CONTRACTS_DIR = join(process.cwd(), "..", "..", "contracts");
+const CONTRACTS_DIR = process.env.SURFACEOPS_CONTRACTS_DIR
+  ? resolve(process.env.SURFACEOPS_CONTRACTS_DIR)
+  : join(process.cwd(), "..", "..", "contracts");
 const WORKSPACE_ROOT = join(CONTRACTS_DIR, "..");
+const GENERATED_DIR = join(CONTRACTS_DIR, "generated");
 
 export interface GitLogEntry {
   hash: string;
@@ -95,6 +99,28 @@ export interface ExtractedSurface {
     routes?: string[];
   };
   warnings?: { code: string; message: string }[];
+  onboarding?: {
+    sourceUrl?: string;
+    authMode?: "none" | "browser-session";
+    extractMode?: "remote-url" | "local-root";
+    profileName?: string;
+    profileDomain?: string;
+    startedAt?: string;
+    completedAt?: string;
+    detection?: {
+      adapter?: string;
+      framework?: string;
+      profile?: string;
+    };
+  };
+}
+
+export interface ActivatedSurface {
+  id: string;
+  displayName: string;
+  domain?: string;
+  owner?: string;
+  inPolicyContract: boolean;
 }
 
 export function loadPolicyContract(): PolicyContract {
@@ -105,12 +131,83 @@ export function loadPolicyContract(): PolicyContract {
 
 export function loadExtraction(surfaceId: string): ExtractedSurface | null {
   try {
-    const path = join(CONTRACTS_DIR, "generated", `${surfaceId}.extraction.json`);
+    const path = join(GENERATED_DIR, `${surfaceId}.extraction.json`);
     const raw = readFileSync(path, "utf-8");
     return JSON.parse(raw) as ExtractedSurface;
   } catch {
     return null;
   }
+}
+
+function listExtractionSurfaceIds(): string[] {
+  if (!existsSync(GENERATED_DIR)) return [];
+  const ids = readdirSync(GENERATED_DIR)
+    .map((file) => {
+      const match = file.match(/^(.+)\.extraction\.json$/);
+      return match ? match[1] : null;
+    })
+    .filter((id): id is string => Boolean(id));
+  return [...new Set(ids)].sort();
+}
+
+function readHostFromSourceUrl(sourceUrl?: string): string | undefined {
+  if (!sourceUrl) return undefined;
+  try {
+    return new URL(sourceUrl).origin;
+  } catch {
+    return undefined;
+  }
+}
+
+const SENSITIVE_QUERY_KEY = /(token|cookie|session|secret|key|jwt|auth|code|state)/i;
+
+function sanitizeSourceUrl(rawUrl: string): string {
+  try {
+    const parsed = new URL(rawUrl);
+    for (const key of [...parsed.searchParams.keys()]) {
+      if (SENSITIVE_QUERY_KEY.test(key)) {
+        parsed.searchParams.set(key, "REDACTED");
+      }
+    }
+    parsed.hash = "";
+    return parsed.toString();
+  } catch {
+    return rawUrl;
+  }
+}
+
+export function loadActivatedSurfaces(): ActivatedSurface[] {
+  const policy = loadPolicyContract();
+  const policyMap = new Map(policy.surfaces.map((surface) => [surface.id, surface] as const));
+  const lineage = loadContractLineage();
+  const fromLineage = Object.keys(lineage.surfaces);
+  const fromExtraction = listExtractionSurfaceIds();
+  const activatedIds = [...new Set([...fromLineage, ...fromExtraction])].sort();
+
+  return activatedIds.map((id) => {
+    const policySurface = policyMap.get(id);
+    const extraction = loadExtraction(id);
+    const onboardingUrl = extraction?.onboarding?.sourceUrl;
+    const derivedDomain = readHostFromSourceUrl(onboardingUrl);
+    return {
+      id,
+      displayName:
+        policySurface?.displayName ??
+        id
+          .split("-")
+          .filter(Boolean)
+          .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+          .join(" "),
+      domain: policySurface?.domain ?? derivedDomain,
+      owner: policySurface?.owner,
+      inPolicyContract: Boolean(policySurface),
+    };
+  });
+}
+
+export function getPolicyMembership(surfaceId: string): { inPolicyContract: boolean } {
+  const contract = loadPolicyContract();
+  return { inPolicyContract: contract.surfaces.some((surface) => surface.id === surfaceId) };
 }
 
 export function computeValidationStatus(
@@ -304,9 +401,9 @@ export function getDriftLabelText(label: DriftLabelDisplay): string {
   return texts[label];
 }
 
-const VALIDATION_OUTCOMES_PATH = join(CONTRACTS_DIR, "generated", "validation-outcomes.json");
-const CONTRACT_RUNS_PATH = join(CONTRACTS_DIR, "generated", "contract-runs.json");
-const CONTRACT_LINEAGE_PATH = join(CONTRACTS_DIR, "generated", "contract-lineage.json");
+const VALIDATION_OUTCOMES_PATH = join(GENERATED_DIR, "validation-outcomes.json");
+const CONTRACT_RUNS_PATH = join(GENERATED_DIR, "contract-runs.json");
+const CONTRACT_LINEAGE_PATH = join(GENERATED_DIR, "contract-lineage.json");
 const MAX_OUTCOMES = 5;
 const AUTH_ROUTES = ["/auth/login", "/auth/callback", "/auth/session", "/auth/logout"];
 
@@ -360,6 +457,45 @@ export interface ContractLineageRecord {
 export interface ContractLineageDocument {
   schemaVersion: number;
   surfaces: Record<string, ContractLineageRecord>;
+}
+
+export interface OnboardingExtractRequest {
+  url: string;
+  surfaceName?: string;
+  surfaceId?: string;
+  authMode?: "none" | "browser-session";
+  extractMode?: "remote-url" | "local-root";
+}
+
+export interface OnboardingExtractResponse {
+  state: "pending" | "auth_required" | "extracting" | "completed" | "failed";
+  surfaceId?: string;
+  runId?: string;
+  status?: ValidationOutcome;
+  inPolicyContract?: boolean;
+  extraction?: {
+    adapter: string;
+    framework: string;
+    profile: string;
+    reportPath: string;
+    contractPath: string;
+  };
+  error?: string;
+}
+
+export interface OnboardingValidationResult {
+  ok: boolean;
+  errors: string[];
+}
+
+export interface OnboardingArtifactsDraft {
+  surfaceId: string;
+  contractPath: string;
+  reportPath: string;
+  contract: Record<string, unknown>;
+  extraction: ExtractedSurface;
+  runDraft: Omit<ContractRun, "runId">;
+  lineageDraft: Omit<ContractLineageRecord, "lastRunId">;
 }
 
 /** Phase 0 finding from validate-extracted logic. Same structure as interfacectl. */
@@ -432,10 +568,263 @@ export function loadContractLineage(): ContractLineageDocument {
   }
 }
 
+function stableJson(value: unknown): string {
+  return JSON.stringify(value, null, 2);
+}
+
+function writeJsonAtomic(filePath: string, payload: unknown): void {
+  mkdirSync(dirname(filePath), { recursive: true });
+  const tempPath = `${filePath}.tmp`;
+  writeFileSync(tempPath, `${stableJson(payload)}\n`, "utf-8");
+  renameSync(tempPath, filePath);
+}
+
 function normalizeRunStatus(status: unknown): ValidationOutcome {
   return status === "pass" || status === "warn" || status === "fail" || status === "unknown"
     ? status
     : "unknown";
+}
+
+export function getRecentRunOutcomes(surfaceId: string, limit: number = 5): ValidationOutcome[] {
+  const runsDoc = loadContractRuns();
+  const outcomes = runsDoc.runs
+    .filter((run) => run.surfaceId === surfaceId)
+    .map((run) => normalizeRunStatus(run.status))
+    .slice(0, limit);
+  return outcomes;
+}
+
+function summarizeStatus(status: ValidationOutcome, findingCodes: string[]): { errorCount: number; warnCount: number } {
+  return {
+    errorCount: status === "fail" ? Math.max(1, findingCodes.length) : 0,
+    warnCount: status === "warn" ? Math.max(1, findingCodes.length) : 0,
+  };
+}
+
+function normalizeSurfaceId(raw: string): string {
+  return raw
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function suggestSurfaceIdFromUrl(rawUrl: string): string {
+  const parsed = new URL(rawUrl);
+  const host = parsed.hostname.replace(/^www\./, "").replace(/\./g, "-");
+  const pathToken = parsed.pathname
+    .split("/")
+    .map((part) => part.trim())
+    .filter(Boolean)[0];
+  return normalizeSurfaceId([host, pathToken].filter(Boolean).join("-")) || "surface";
+}
+
+function suggestSurfaceName(surfaceId: string): string {
+  return surfaceId
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function toRelativeRootPath(pathname: string): string {
+  return pathname.startsWith(WORKSPACE_ROOT) ? pathname.slice(WORKSPACE_ROOT.length + 1) : pathname;
+}
+
+export function validateOnboardingRequest(request: OnboardingExtractRequest): OnboardingValidationResult {
+  const errors: string[] = [];
+  if (!request.url || request.url.trim().length === 0) {
+    errors.push("URL is required.");
+  } else {
+    try {
+      // Validate URL format only. Sanitization handled separately.
+      // eslint-disable-next-line no-new
+      new URL(request.url);
+    } catch {
+      errors.push("URL must be valid.");
+    }
+  }
+  if (request.surfaceId !== undefined && normalizeSurfaceId(request.surfaceId).length === 0) {
+    errors.push("Surface id override resolves to an empty value.");
+  }
+  return { ok: errors.length === 0, errors };
+}
+
+export function buildOnboardingArtifacts(request: OnboardingExtractRequest): OnboardingArtifactsDraft {
+  const parsed = new URL(request.url);
+  const sanitizedSourceUrl = sanitizeSourceUrl(parsed.toString());
+  const surfaceId = normalizeSurfaceId(request.surfaceId ?? suggestSurfaceIdFromUrl(parsed.toString()));
+  const surfaceName = request.surfaceName?.trim() || suggestSurfaceName(surfaceId);
+  const authMode = request.authMode === "browser-session" ? "browser-session" : "none";
+  const extractMode = request.extractMode === "local-root" ? "local-root" : "remote-url";
+  const startedAt = new Date().toISOString();
+  const completedAt = new Date().toISOString();
+  const contractPath = join(GENERATED_DIR, `${surfaceId}.contract.json`);
+  const reportPath = join(GENERATED_DIR, `${surfaceId}.extraction.json`);
+
+  const contract = {
+    $schema:
+      "https://contracts.surfaces.local/web.surface.contract.schema.json",
+    contractId: `${surfaceId}.generated`,
+    version: "0.1.0",
+    description: "Generated by SurfaceOps onboarding bootstrap.",
+    surfaces: [
+      {
+        id: surfaceId,
+        displayName: surfaceName,
+        type: "web",
+        domain: parsed.origin,
+        requiredSections: ["extracted.placeholder"],
+        allowedFonts: ["sans-serif"],
+        layout: { maxContentWidth: 1120 },
+      },
+    ],
+    sections: [
+      {
+        id: "extracted.placeholder",
+        intent: "extracted",
+        description: "Placeholder; sections are not inferred during URL onboarding bootstrap.",
+      },
+    ],
+    constraints: {
+      motion: {
+        allowedDurationsMs: [120],
+        allowedTimingFunctions: ["linear"],
+      },
+    },
+    x_extracted: {
+      routes: [parsed.pathname || "/"],
+      hasShell: false,
+      designSystemComponents: [],
+      authAware: authMode === "browser-session",
+    },
+    x_onboarding: {
+      sourceUrl: sanitizedSourceUrl,
+      mode: "bootstrap",
+    },
+  };
+  const warnings = [
+    {
+      code: "remote-url.bootstrap-only",
+      message:
+        "Onboarding URL mode creates bootstrap extraction metadata only. Run full extraction from repository source when available.",
+    },
+  ];
+  const extraction: ExtractedSurface = {
+    surfaceId,
+    appRoot: parsed.origin,
+    warnings,
+    extracted: {
+      routes: [parsed.pathname || "/"],
+      hasShell: false,
+      designSystemComponents: [],
+      authAware: authMode === "browser-session",
+    },
+    onboarding: {
+      sourceUrl: sanitizedSourceUrl,
+      authMode,
+      extractMode,
+      startedAt,
+      completedAt,
+      detection: {
+        adapter: "remote-url-bootstrap",
+        framework: "unknown",
+        profile: "bootstrap",
+      },
+    },
+  };
+
+  const canonicalContract = loadPolicyContract();
+  const contractRaw = readFileSync(join(CONTRACTS_DIR, "surfaces.web.contract.json"), "utf-8");
+  const contractSha = createHash("sha256").update(contractRaw).digest("hex");
+  const findingCodes = ["extract.remote-url.bootstrap-only"];
+  const createdAt = new Date().toISOString();
+  const runDraft: Omit<ContractRun, "runId"> = {
+    createdAt,
+    surfaceId,
+    source: "bootstrap",
+    contract: {
+      id: canonicalContract.contractId || "unknown",
+      version: canonicalContract.version || "unknown",
+      sha256: contractSha,
+    },
+    artifacts: {
+      extractionPath: toRelativeRootPath(contractPath),
+      reportPath: toRelativeRootPath(reportPath),
+    },
+    status: "warn",
+    findingCodes,
+    summary: summarizeStatus("warn", findingCodes),
+  };
+  const lineageDraft: Omit<ContractLineageRecord, "lastRunId"> = {
+    lastRunAt: createdAt,
+    lastSource: runDraft.source,
+    lastStatus: runDraft.status,
+    contract: runDraft.contract,
+    artifacts: runDraft.artifacts,
+    findingCodes: runDraft.findingCodes,
+  };
+
+  return {
+    surfaceId,
+    contractPath,
+    reportPath,
+    contract,
+    extraction,
+    runDraft,
+    lineageDraft,
+  };
+}
+
+export function runOnboardingExtraction(request: OnboardingExtractRequest): OnboardingExtractResponse {
+  try {
+    const validation = validateOnboardingRequest(request);
+    if (!validation.ok) {
+      return { state: "failed", error: validation.errors.join(" ") };
+    }
+    const draft = buildOnboardingArtifacts(request);
+    writeJsonAtomic(draft.contractPath, draft.contract);
+    writeJsonAtomic(draft.reportPath, draft.extraction);
+
+    const runsDoc = loadContractRuns();
+    const lineageDoc = loadContractLineage();
+    const runId = randomUUID();
+    const run: ContractRun = { ...draft.runDraft, runId };
+    runsDoc.runs = [...runsDoc.runs.filter((entry) => entry.runId !== run.runId), run].sort((a, b) => {
+      const timeDiff = Date.parse(b.createdAt) - Date.parse(a.createdAt);
+      if (timeDiff !== 0) return timeDiff;
+      return String(b.runId).localeCompare(String(a.runId));
+    });
+    lineageDoc.surfaces[draft.surfaceId] = {
+      ...draft.lineageDraft,
+      lastRunId: runId,
+    };
+    writeJsonAtomic(CONTRACT_RUNS_PATH, runsDoc);
+    writeJsonAtomic(CONTRACT_LINEAGE_PATH, lineageDoc);
+    const membership = getPolicyMembership(draft.surfaceId);
+
+    return {
+      state: "completed",
+      surfaceId: draft.surfaceId,
+      runId,
+      status: run.status,
+      inPolicyContract: membership.inPolicyContract,
+      extraction: {
+        adapter: draft.extraction.onboarding?.detection?.adapter || "remote-url-bootstrap",
+        framework: draft.extraction.onboarding?.detection?.framework || "unknown",
+        profile: draft.extraction.onboarding?.detection?.profile || "bootstrap",
+        reportPath: toRelativeRootPath(draft.reportPath),
+        contractPath: toRelativeRootPath(draft.contractPath),
+      },
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unexpected onboarding failure.";
+    return {
+      state: "failed",
+      error: sanitizeSourceUrl(message),
+    };
+  }
 }
 
 function runCodesToFindings(surfaceId: string, codes: string[]): Phase0Finding[] {
@@ -759,13 +1148,11 @@ export function getRunSnapshot(surfaceId: string): RunSnapshot | null {
   try {
     const contract = loadPolicyContract();
     const surface = contract.surfaces.find((s) => s.id === surfaceId);
-    if (!surface) return null;
-
     const runsDoc = loadContractRuns();
     const latestRun = runsDoc.runs.find((run) => run.surfaceId === surfaceId) || null;
     const extracted = loadExtraction(surfaceId);
-    const extractedStatus = computeValidationStatus(surface, extracted);
-    const extractedFindings = computeFindings(surface, extracted);
+    const extractedStatus = surface ? computeValidationStatus(surface, extracted) : "unknown";
+    const extractedFindings = surface ? computeFindings(surface, extracted) : [];
     const status = latestRun ? normalizeRunStatus(latestRun.status) : extractedStatus;
     const findingCodes =
       latestRun && Array.isArray(latestRun.findingCodes)
@@ -786,13 +1173,23 @@ export function getRunSnapshot(surfaceId: string): RunSnapshot | null {
       : null;
 
     // Previous run findings (current contract + previous extraction) for run-to-run comparison
-    const previousRunFindings = previousExtraction
+    const previousRunFindings = surface && previousExtraction
       ? computeFindings(surface, previousExtraction)
       : null;
 
+    const fallbackDomain = (() => {
+      const sourceUrl = extracted?.onboarding?.sourceUrl;
+      if (!sourceUrl) return surfaceId;
+      try {
+        return new URL(sourceUrl).origin;
+      } catch {
+        return surfaceId;
+      }
+    })();
+
     return {
       surfaceId,
-      domain: surface.domain ?? surface.id,
+      domain: surface?.domain ?? fallbackDomain,
       status,
       latestSource: latestRun?.source ?? "none",
       latestRunAt: latestRun?.createdAt ?? "unknown",
@@ -848,12 +1245,12 @@ export function getSurfaceRunSeries(
 
   const contract = loadPolicyContract();
   const outcomes = loadValidationOutcomes(contract);
-  const surfaceOutcomes = outcomes[surfaceId];
+  const surfaceOutcomes = outcomes[surfaceId] ?? getRecentRunOutcomes(surfaceId, limit);
 
   return {
     surfaceId,
     snapshots: [snapshot],
-    history: surfaceOutcomes ? { outcomes: surfaceOutcomes } : undefined,
+    history: surfaceOutcomes.length > 0 ? { outcomes: surfaceOutcomes } : undefined,
   };
 }
 

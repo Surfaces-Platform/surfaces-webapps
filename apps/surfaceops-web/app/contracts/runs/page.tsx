@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   loadPolicyContract,
+  loadActivatedSurfaces,
   getRunSnapshot,
   loadValidationOutcomes,
   validationOutcomesFileExists,
@@ -44,8 +45,15 @@ function OutcomeDots({
 
 export default function RunsPage() {
   const contract = loadPolicyContract();
+  const activatedSurfaces = loadActivatedSurfaces();
   const outcomes = loadValidationOutcomes(contract);
   const outcomesFileExists = validationOutcomesFileExists();
+  const rows = activatedSurfaces
+    .map((surface) => ({
+      surface,
+      snapshot: getRunSnapshot(surface.id),
+    }))
+    .filter((entry) => entry.snapshot !== null);
 
   return (
     <div
@@ -88,6 +96,23 @@ export default function RunsPage() {
         >
           Contract validation runs and findings history
         </p>
+
+        {rows.length === 0 && (
+          <div
+            style={{
+              backgroundColor: colors.neutral[0],
+              border: `1px solid ${colors.neutral[200]}`,
+              borderRadius: "6px",
+              padding: "20px",
+              marginBottom: "16px",
+            }}
+          >
+            <div style={{ fontSize: "16px", fontWeight: 600, marginBottom: "6px" }}>No runs yet</div>
+            <div style={{ fontSize: "14px", color: colors.neutral[600] }}>
+              Generate your first contract to create an onboarding run.
+            </div>
+          </div>
+        )}
 
         <div
           style={{
@@ -225,8 +250,7 @@ export default function RunsPage() {
               </tr>
             </thead>
             <tbody>
-              {contract.surfaces.map((surface) => {
-                const snapshot = getRunSnapshot(surface.id);
+              {rows.map(({ surface, snapshot }) => {
                 if (!snapshot) return null;
 
                 const surfaceOutcomes = outcomes[surface.id] ?? [snapshot.status];

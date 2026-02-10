@@ -6,14 +6,12 @@ import { POST } from "@/app/v1/ingest/events/route";
 
 const DATABASE_URL = process.env.DATABASE_URL;
 const FIXTURE_PATH = path.join(process.cwd(), "fixtures", "v1", "ingest", "diff.min.json");
+const describeWithDb = DATABASE_URL ? describe : describe.skip;
 
-describe("POST /v1/ingest/events idempotency", () => {
+describeWithDb("POST /v1/ingest/events idempotency", () => {
   let pool: Pool;
 
   beforeAll(async () => {
-    if (!DATABASE_URL) {
-      throw new Error("DATABASE_URL must be set for ingest tests");
-    }
     pool = new Pool({ connectionString: DATABASE_URL });
     // Run migrations so events table exists
     const migrationsDir = path.join(process.cwd(), "migrations");

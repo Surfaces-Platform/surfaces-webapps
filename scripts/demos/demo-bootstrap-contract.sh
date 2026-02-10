@@ -1,5 +1,5 @@
 #!/bin/bash
-# Demo 0: Bootstrap contract artifacts from surface source
+# Demo 0: Bootstrap contract artifacts from surface source (concise E2E)
 
 set -euo pipefail
 
@@ -25,9 +25,7 @@ for arg in "$@"; do
 done
 
 step() { echo "[STEP] $*"; }
-expect() { echo "[EXPECT] $*"; }
-result() { echo "[RESULT] $*"; }
-warn() { echo "[WARN] $*"; }
+ok() { echo "[OK] $*"; }
 fail() { echo "[FAIL] $*" >&2; exit 1; }
 
 emit_run() {
@@ -57,7 +55,7 @@ trap 'rm -rf "$tmp_dir"' EXIT
 if [ "$PROMOTE_BOOTSTRAP" = "1" ]; then
   boot_contract="$REPO_ROOT/contracts/generated/$SURFACE_ID.contract.json"
   boot_extraction="$REPO_ROOT/contracts/generated/$SURFACE_ID.extraction.json"
-  result "Promote mode enabled: writing bootstrap artifacts to contracts/generated/"
+  ok "Promote mode enabled: writing artifacts to contracts/generated/"
 else
   boot_contract="$tmp_dir/$SURFACE_ID.contract.json"
   boot_extraction="$tmp_dir/$SURFACE_ID.extraction.json"
@@ -66,13 +64,12 @@ fi
 if [ "$SKIP_BUILD" != "1" ]; then
   step "Build interfacectl CLI"
   "$PNPM_BIN" run interfacectl:build
-  result "CLI build complete"
+  ok "CLI build complete"
 else
-  warn "Skipping CLI build (SKIP_BUILD=1)"
+  ok "Skipping CLI build (SKIP_BUILD=1)"
 fi
 
 step "Bootstrap contract artifacts from source app"
-expect "generate-contract writes fresh contract + extraction artifacts"
 "$NODE_BIN" "$CLI_PATH" generate-contract \
   --app-root "$APP_ROOT" \
   --surface "$SURFACE_ID" \
@@ -81,36 +78,55 @@ expect "generate-contract writes fresh contract + extraction artifacts"
 
 [ -f "$boot_contract" ] || fail "Bootstrapped contract artifact missing: $boot_contract"
 [ -f "$boot_extraction" ] || fail "Bootstrapped extraction artifact missing: $boot_extraction"
-
-result "Bootstrapped artifacts created"
-
-echo "  Contract: $boot_contract"
-echo "  Extraction: $boot_extraction"
+ok "Bootstrapped artifacts created"
+echo "  contract:   $boot_contract"
+echo "  extraction: $boot_extraction"
 
 step "Validate extracted bootstrap artifact against canonical contract"
-expect "validate-extracted exits 0 for current source"
 "$NODE_BIN" "$CLI_PATH" validate-extracted \
   --contract "$CONTRACT_PATH" \
   --extracted "$boot_extraction" \
   --surface "$SURFACE_ID" \
   --exit-codes v2
-result "Bootstrap extraction is compliant with canonical contract"
+ok "Bootstrap extraction complies with canonical contract"
 
-emit_run "pass" "" "$boot_extraction"
-result "Bootstrap run event emitted to contracts/generated/contract-runs.json"
-
-step "Show bootstrap summary"
 summary="$($NODE_BIN -e '
 const fs = require("fs");
-const contractPath = process.argv[1];
-const extractionPath = process.argv[2];
-const contract = JSON.parse(fs.readFileSync(contractPath, "utf8"));
-const extraction = JSON.parse(fs.readFileSync(extractionPath, "utf8"));
-const sections = Array.isArray(contract.sections) ? contract.sections.length : 0;
-const routes = Array.isArray(extraction.extracted?.routes) ? extraction.extracted.routes.length : 0;
-const ds = Array.isArray(extraction.extracted?.designSystemComponents) ? extraction.extracted.designSystemComponents.length : 0;
-console.log(JSON.stringify({contractId: contract.contractId, surfaceId: extraction.surfaceId, sectionCount: sections, routeCount: routes, designSystemComponentCount: ds}, null, 2));
-' "$boot_contract" "$boot_extraction")"
+const extractionPath = process.argv[1];
+const payload = JSON.parse(fs.readFileSync(extractionPath, "utf8"));
+const warnings = Array.isArray(payload.warnings) ? payload.warnings : [];
+const codeCounts = {};
+for (const w of warnings) {
+  const code = String(w && w.code ? w.code : "unknown");
+  codeCounts[code] = (codeCounts[code] || 0) + 1;
+}
+const adapter = payload.adapter || payload.extracted?.adapter || {};
+const templates = payload.extracted?.designSystemTemplates || {};
+const warningCodes = Object.keys(codeCounts).sort();
+const warningCodeCsv = warningCodes.join(",");
+console.log(JSON.stringify({
+  surfaceId: payload.surfaceId || "unknown",
+  adapterFramework: adapter.framework || "unknown",
+  adapterId: adapter.id || "unknown",
+  adapterDetection: adapter.detection || "unknown",
+  templateFramework: templates.framework || "unknown",
+  templateProfile: templates.profile || "unknown",
+  warningCount: warnings.length,
+  warningCodeCsv,
+  warningCodeSummary: codeCounts,
+}, null, 2));
+' "$boot_extraction")"
+
+warning_count="$($NODE_BIN -e 'const s=JSON.parse(process.argv[1]); console.log(String(s.warningCount || 0));' "$summary")"
+warning_codes="$($NODE_BIN -e 'const s=JSON.parse(process.argv[1]); console.log(s.warningCodeCsv || "");' "$summary")"
+run_status="pass"
+if [ "$warning_count" != "0" ]; then
+  run_status="warn"
+fi
+emit_run "$run_status" "$warning_codes" "$boot_extraction"
+ok "Bootstrap run event emitted (status=$run_status)"
+
+step "Summary"
 printf '%s\n' "$summary"
 
-result "Demo complete: contract bootstrapping from surface source proved"
+ok "Demo complete: bootstrap proved"

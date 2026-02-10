@@ -1,11 +1,13 @@
 import Link from "next/link";
 import {
-  loadPolicyContract,
   loadExtraction,
   computeValidationStatus,
-  loadValidationOutcomes,
+  loadPolicyContract,
+  loadActivatedSurfaces,
+  getRecentRunOutcomes,
 } from "@/lib/contracts";
 import { colors } from "@surfaces/ui/tokens/colors";
+import { OnboardingForm } from "./_components/onboarding-form";
 
 function OutcomeDots({
   outcomes,
@@ -39,7 +41,34 @@ function OutcomeDots({
 
 export default function ContractsPage() {
   const contract = loadPolicyContract();
-  const outcomes = loadValidationOutcomes(contract);
+  const activatedSurfaces = loadActivatedSurfaces();
+
+  if (activatedSurfaces.length === 0) {
+    return (
+      <div
+        className="min-h-screen w-full"
+        style={{
+          backgroundColor: colors.neutral[50],
+          fontFamily: "Inter, sans-serif",
+          color: colors.neutral[900],
+        }}
+      >
+        <div style={{ maxWidth: 680, margin: "0 auto", padding: "72px 24px" }}>
+          <h1 style={{ fontSize: "28px", fontWeight: 700, marginBottom: "8px" }}>No contracts yet</h1>
+          <p
+            style={{
+              fontSize: "14px",
+              color: colors.neutral[600],
+              marginBottom: "28px",
+            }}
+          >
+            Start onboarding by generating your first contract from a surface URL.
+          </p>
+          <OnboardingForm />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -71,16 +100,23 @@ export default function ContractsPage() {
         </p>
 
         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-          {contract.surfaces.map((surface) => {
+          {activatedSurfaces.map((surface) => {
+            const policySurface = contract.surfaces.find((item) => item.id === surface.id);
             const extracted = loadExtraction(surface.id);
-            const status = computeValidationStatus(surface, extracted);
-            const surfaceOutcomes = outcomes[surface.id] ?? [status];
+            const status = policySurface
+              ? computeValidationStatus(policySurface, extracted)
+              : getRecentRunOutcomes(surface.id, 1)[0] ?? "unknown";
+            const recentOutcomes = getRecentRunOutcomes(surface.id, 5);
+            const surfaceOutcomes = recentOutcomes.length > 0 ? recentOutcomes : [status];
             const statusColor =
               status === "pass"
                 ? colors.contract?.valid ?? colors.neutral[600]
                 : status === "fail"
                   ? colors.contract?.invalid ?? "#c00"
                   : colors.neutral[600];
+            const href = surface.inPolicyContract
+              ? `/contracts/${surface.id}`
+              : `/contracts/runs/${surface.id}`;
             return (
               <li
                 key={surface.id}
@@ -93,7 +129,7 @@ export default function ContractsPage() {
                 }}
               >
                 <Link
-                  href={`/contracts/${surface.id}`}
+                  href={href}
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
@@ -104,7 +140,7 @@ export default function ContractsPage() {
                 >
                   <div>
                     <div style={{ fontWeight: 600 }}>
-                      {surface.displayName}
+                      {surface.displayName || surface.id}
                       {surface.owner?.trim() ? (
                         <span
                           style={{

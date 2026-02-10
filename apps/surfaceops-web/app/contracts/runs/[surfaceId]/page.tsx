@@ -19,6 +19,7 @@ import {
   hasEverPassed,
   countSurfacesUsingExpectation,
   getSurfaceEvolution,
+  loadActivatedSurfaces,
 } from "@/lib/contracts";
 import type {
   FailureCategory,
@@ -35,7 +36,16 @@ export async function generateMetadata({
 }) {
   const { surfaceId } = await params;
   const contract = loadPolicyContract();
-  const surface = contract.surfaces.find((s) => s.id === surfaceId);
+  const activated = loadActivatedSurfaces().find((s) => s.id === surfaceId);
+  const surface = contract.surfaces.find((s) => s.id === surfaceId) ?? (activated
+    ? ({
+        id: activated.id,
+        displayName: activated.displayName,
+        type: "web",
+        domain: activated.domain,
+        owner: activated.owner,
+      } satisfies PolicySurface)
+    : undefined);
   return {
     title: surface ? `Runs: ${surface.displayName} | SurfaceOps` : "Runs | SurfaceOps",
   };
@@ -248,8 +258,18 @@ export default async function SurfaceRunsDetailPage({
 }: { params: Promise<{ surfaceId: string }> }) {
   const { surfaceId } = await params;
   const contract = loadPolicyContract();
-  const surface = contract.surfaces.find((s) => s.id === surfaceId);
+  const activated = loadActivatedSurfaces().find((s) => s.id === surfaceId);
+  const surface = contract.surfaces.find((s) => s.id === surfaceId) ?? (activated
+    ? ({
+        id: activated.id,
+        displayName: activated.displayName,
+        type: "web",
+        domain: activated.domain,
+        owner: activated.owner,
+      } satisfies PolicySurface)
+    : undefined);
   if (!surface) notFound();
+  const inPolicyContract = Boolean(contract.surfaces.find((s) => s.id === surfaceId));
 
   const runSeries = getSurfaceRunSeries(surfaceId);
   if (!runSeries) notFound();
@@ -316,6 +336,24 @@ export default async function SurfaceRunsDetailPage({
         >
           Operational responsibility: {getOperationalResponsibility(surface.owner)}
         </p>
+        {!inPolicyContract && (
+          <div
+            style={{
+              marginBottom: "24px",
+              padding: "12px 14px",
+              borderRadius: "8px",
+              border: `1px solid ${colors.neutral[200]}`,
+              backgroundColor: colors.neutral[0],
+              fontSize: "13px",
+              color: colors.neutral[600],
+            }}
+          >
+            <div style={{ fontWeight: 600, marginBottom: "4px" }}>
+              Activated (not yet in canonical policy)
+            </div>
+            <div>Promote to canonical policy via contract workflow.</div>
+          </div>
+        )}
 
         {outcomesFileExists && runSeries.history && (
           <section

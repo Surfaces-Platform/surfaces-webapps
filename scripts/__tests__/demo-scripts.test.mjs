@@ -183,10 +183,10 @@ function runScript(scriptPath, sandbox, env = {}) {
 test("demo-generation script enforces fail then pass", () => {
   const sandbox = makeSandbox();
   const script = path.join(sandbox.dir, "scripts", "demos", "demo-generation.sh");
-  const result = runScript(script, sandbox, { SHOW_BROWSER_HINTS: "0" });
+  const result = runScript(script, sandbox);
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.match(result.stdout, /shell-owned-primitive-emitted/);
-  assert.match(result.stdout, /Demo complete: generation-time enforcement fail->pass proved/);
+  assert.match(result.stdout, /Demo complete: generation fail->pass proved/);
   const runs = JSON.parse(
     fs.readFileSync(path.join(sandbox.dir, "contracts", "generated", "contract-runs.json"), "utf8")
   );
@@ -207,8 +207,8 @@ test("demo-bootstrap-contract script bootstraps and validates extraction", () =>
   });
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.match(result.stdout, /Promote mode enabled/);
-  assert.match(result.stdout, /Bootstrap extraction is compliant with canonical contract/);
-  assert.match(result.stdout, /Demo complete: contract bootstrapping from surface source proved/);
+  assert.match(result.stdout, /Bootstrap extraction complies with canonical contract/);
+  assert.match(result.stdout, /Demo complete: bootstrap proved/);
   const lineage = JSON.parse(
     fs.readFileSync(path.join(sandbox.dir, "contracts", "generated", "contract-lineage.json"), "utf8")
   );
@@ -220,7 +220,6 @@ test("demo-ci-surfaceops script asserts CI failure code and recovers", () => {
   const script = path.join(sandbox.dir, "scripts", "demos", "demo-ci-surfaceops.sh");
   const result = runScript(script, sandbox, {
     SKIP_BUILD: "1",
-    SKIP_SURFACEOPS_CHECK: "1",
     NODE_BIN: "node",
     PNPM_BIN: "pnpm",
   });
@@ -228,7 +227,7 @@ test("demo-ci-surfaceops script asserts CI failure code and recovers", () => {
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.match(result.stdout, /phase0.authPosture.mismatch/);
   assert.match(result.stdout, /Canonical extracted artifact passes/);
-  assert.match(result.stdout, /Demo complete: CI\/CD gating with SurfaceOps correlation proved/);
+  assert.match(result.stdout, /Demo complete: CI\/CD fail->pass with SurfaceOps correlation proved/);
   const runs = JSON.parse(
     fs.readFileSync(path.join(sandbox.dir, "contracts", "generated", "contract-runs.json"), "utf8")
   );
@@ -243,14 +242,13 @@ test("demo-runtime-surfaceops script asserts runtime 422 and 200 paths", () => {
   const script = path.join(sandbox.dir, "scripts", "demos", "demo-runtime-surfaceops.sh");
   const result = runScript(script, sandbox, {
     CURL_BIN: "curl",
-    SKIP_SURFACEOPS_CHECK: "1",
-    AUTO_START_SURFACES: "0",
   });
 
   assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.match(result.stdout, /Ensure apps are running: pnpm dev:surfaces and pnpm dev:surfaceops/);
   assert.match(result.stdout, /sections.required/);
   assert.match(result.stdout, /color.rawValues/);
-  assert.match(result.stdout, /Demo complete: runtime edge gating with SurfaceOps correlation proved/);
+  assert.match(result.stdout, /Demo complete: runtime gating with SurfaceOps correlation proved/);
   const runs = JSON.parse(
     fs.readFileSync(path.join(sandbox.dir, "contracts", "generated", "contract-runs.json"), "utf8")
   );

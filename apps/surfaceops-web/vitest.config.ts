@@ -5,6 +5,12 @@ export default defineConfig({
   test: {
     environment: "node",
     globals: false,
+    include: [
+      "tests/**/*.test.ts",
+    ],
+    exclude: [
+      "**/tests/onboarding-browser-smoke.test.mjs",
+    ],
   },
   resolve: {
     alias: {

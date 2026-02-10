@@ -1,5 +1,5 @@
 #!/bin/bash
-# Demo 1: Generation-time contract enforcement (visual terminal proof)
+# Demo 1: Generation-time contract enforcement (concise E2E)
 
 set -euo pipefail
 
@@ -12,11 +12,9 @@ GUARD_PATH="${GUARD_PATH:-$REPO_ROOT/tools/interfacectl/tools/check-generation-b
 RUN_EMITTER_PATH="${RUN_EMITTER_PATH:-$REPO_ROOT/scripts/lib/contract-runs.mjs}"
 SURFACE_ID="${SURFACE_ID:-surfaces-web}"
 SURFACES_WEB_URL="${SURFACES_WEB_URL:-http://localhost:3000}"
-SHOW_BROWSER_HINTS="${SHOW_BROWSER_HINTS:-1}"
 
 step() { echo "[STEP] $*"; }
-expect() { echo "[EXPECT] $*"; }
-result() { echo "[RESULT] $*"; }
+ok() { echo "[OK] $*"; }
 fail() { echo "[FAIL] $*" >&2; exit 1; }
 
 emit_run() {
@@ -59,7 +57,6 @@ cat > "$bad_descriptor" <<'JSON'
 ]
 JSON
 
-expect "Generation boundary guard exits with code 2 and reports shell-owned-primitive-emitted"
 set +e
 bad_output="$($NODE_BIN "$GUARD_PATH" --contract "$CONTRACT_PATH" --descriptor "$bad_descriptor" 2>&1)"
 bad_status=$?
@@ -69,7 +66,7 @@ printf '%s\n' "$bad_output"
 [ "$bad_status" -eq 2 ] || fail "Expected guard exit code 2 for bad descriptor, got $bad_status"
 printf '%s' "$bad_output" | grep -q "shell-owned-primitive-emitted" || fail "Expected shell-owned-primitive-emitted marker in guard output"
 emit_run "fail" "shell-owned-primitive-emitted"
-result "Bad descriptor correctly blocked (exit code 2)"
+ok "Bad descriptor blocked (exit=2)"
 
 step "Create temporary descriptor with allowlisted shell source"
 cat > "$good_descriptor" <<'JSON'
@@ -87,7 +84,6 @@ cat > "$good_descriptor" <<'JSON'
 ]
 JSON
 
-expect "Generation boundary guard exits with code 0"
 set +e
 good_output="$($NODE_BIN "$GUARD_PATH" --contract "$CONTRACT_PATH" --descriptor "$good_descriptor" 2>&1)"
 good_status=$?
@@ -96,12 +92,8 @@ printf '%s\n' "$good_output"
 
 [ "$good_status" -eq 0 ] || fail "Expected guard exit code 0 for allowlisted descriptor, got $good_status"
 emit_run "pass" ""
-result "Allowlisted descriptor passes generation guard"
+ok "Allowlisted descriptor passed"
 
-if [ "$SHOW_BROWSER_HINTS" = "1" ]; then
-  echo
-  step "Optional visual page"
-  echo "Open generation demo page: $SURFACES_WEB_URL/demos/generation"
-fi
+echo "Open generation demo page: $SURFACES_WEB_URL/demos/generation"
 
-result "Demo complete: generation-time enforcement fail->pass proved"
+ok "Demo complete: generation fail->pass proved"

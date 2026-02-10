@@ -40,12 +40,16 @@
     "type-check:interfacectl": "pnpm --filter interfacectl-web type-check",
     "type-check:surfaces-dev": "pnpm --filter surfaces-dev type-check",
     "test:scripts": "node --test scripts/__tests__/vercel-monitoring.test.mjs scripts/__tests__/demo-scripts.test.mjs scripts/__tests__/run-artifacts.test.mjs",
+    "test:onboarding:smoke:headless": "node --test scripts/__tests__/onboarding-smoke.test.mjs",
+    "test:onboarding:smoke:browser": "node --test apps/surfaceops-web/tests/onboarding-browser-smoke.test.mjs",
+    "test:onboarding:smoke": "pnpm run test:onboarding:smoke:headless && pnpm run test:onboarding:smoke:browser",
     "test:platform-e2e": "node --test scripts/__tests__/platform-enforcement-e2e.test.mjs",
     "test": "pnpm --filter surfaceops-web test && pnpm run test:scripts"
   },
   "devDependencies": {
     "@surfaces/interfacectl-cli": "workspace:*",
     "@surfaces/interfacectl-validator": "workspace:*",
+    "@playwright/test": "^1.51.1",
     "@types/node": "^20.14.9",
     "husky": "^9.0.11",
     "lint-staged": "^15.2.10",
