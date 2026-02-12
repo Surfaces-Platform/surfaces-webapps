@@ -99,6 +99,34 @@ export default function ContractsPage() {
           {contract.contractId} v{contract.version}
         </p>
 
+        <div
+          style={{
+            marginBottom: "20px",
+            padding: "14px 16px",
+            borderRadius: "8px",
+            border: `1px solid ${colors.neutral[200]}`,
+            backgroundColor: colors.neutral[0],
+          }}
+        >
+          <div style={{ fontSize: "13px", color: colors.neutral[600], marginBottom: "8px" }}>
+            New in dogfood
+          </div>
+          <Link
+            href="/contracts/governance"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              textDecoration: "none",
+              color: colors.neutral[900],
+              fontSize: "14px",
+              fontWeight: 600,
+            }}
+          >
+            Open Governance Workspace
+          </Link>
+        </div>
+
         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
           {activatedSurfaces.map((surface) => {
             const policySurface = contract.surfaces.find((item) => item.id === surface.id);

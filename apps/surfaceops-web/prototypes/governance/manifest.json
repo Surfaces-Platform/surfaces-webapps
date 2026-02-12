@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "activePrototypeId": "p0002",
+  "prototypes": [
+    {
+      "id": "p0001",
+      "title": "Governance Workspace Baseline",
+      "createdAt": "2026-02-12T00:00:00.000Z",
+      "status": "archived",
+      "summary": "Initial dogfood governance workspace with visual contract authoring, structured/JSON sync, and simulation.",
+      "sourcePaths": [
+        "apps/surfaceops-web/app/contracts/governance"
+      ],
+      "seedContractPath": "apps/surfaceops-web/prototypes/governance/p0001/contract.seed.json",
+      "extractionPaths": {
+        "contract": "apps/surfaceops-web/prototypes/governance/p0001/extraction/surfaces-web.contract.json",
+        "report": "apps/surfaceops-web/prototypes/governance/p0001/extraction/surfaces-web.extraction.json"
+      },
+      "notesPath": "apps/surfaceops-web/prototypes/governance/p0001/notes.md"
+    },
+    {
+      "id": "p0002",
+      "title": "Designer Canvas + Compare",
+      "createdAt": "2026-02-12T02:24:33.893Z",
+      "status": "active",
+      "summary": "Preview-first contract shaping with extraction diff actions",
+      "sourcePaths": [
+        "apps/surfaceops-web/app/contracts/governance"
+      ],
+      "seedContractPath": "apps/surfaceops-web/prototypes/governance/p0002/contract.seed.json",
+      "extractionPaths": {
+        "contract": "apps/surfaceops-web/prototypes/governance/p0002/extraction/surfaces-web.contract.json",
+        "report": "apps/surfaceops-web/prototypes/governance/p0002/extraction/surfaces-web.extraction.json"
+      },
+      "notesPath": "apps/surfaceops-web/prototypes/governance/p0002/notes.md"
+    }
+  ]
+}
