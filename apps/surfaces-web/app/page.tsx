@@ -1,14 +1,18 @@
 'use client';
 
 import { motion } from 'motion/react';
-import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import Navigation from '@surfaces/ui/components/Navigation';
 import { colors } from '@surfaces/ui/tokens/colors';
 import { fadeUpVariants, staggerContainer } from '@surfaces/ui/utils/motion';
 
 export default function Home() {
-  const searchParams = useSearchParams();
-  const simulateDuplicateNav = searchParams.get('simulateDuplicateNav') === '1';
+  const [simulateDuplicateNav, setSimulateDuplicateNav] = useState(false);
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    setSimulateDuplicateNav(searchParams.get('simulateDuplicateNav') === '1');
+  }, []);
 
   const handleSurfaceChange = (surface: 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev') => {
     // Handle surface change - could use router for Next.js navigation
