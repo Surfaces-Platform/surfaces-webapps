@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "prototypeId": "p0004",
+  "baselines": [
+    {
+      "targetUrl": "http://localhost:3000/",
+      "contract": {
+        "surface": "app",
+        "version": "0.1.0",
+        "layout": {
+          "allowedPatterns": {
+            "singleColumn": "allowed",
+            "sidebarContent": "required",
+            "dashboardGrid": "forbidden",
+            "wizardFlow": "allowed"
+          },
+          "maxContentWidth": 1120,
+          "requireGlobalHeader": true,
+          "requirePageContainer": true
+        },
+        "navigation": {
+          "types": {
+            "topNav": "allowed",
+            "sideNav": "required",
+            "tabs": "allowed"
+          },
+          "maxDepth": 1,
+          "disallowDuplicateNavigation": true,
+          "requireSinglePrimaryNav": true
+        },
+        "generation": {
+          "mustUseDesignTokens": false,
+          "forbidNewLayoutPrimitives": true,
+          "forbidAdditionalNavLayer": true,
+          "structuralChangesRequireReview": true,
+          "autoCorrectMinorDeviation": true
+        },
+        "drift": {
+          "detectionMode": "onCommit",
+          "severityThreshold": "warning",
+          "autoFixPolicy": "safeOnly"
+        }
+      },
+      "requiredSections": [
+        "landing.hero",
+        "landing.demos",
+        "landing.guidance",
+        "landing.actions"
+      ],
+      "sourceSnapshotCapturedAt": "2026-02-14T04:44:50.193Z",
+      "createdAt": "2026-02-13T06:12:40.946Z",
+      "updatedAt": "2026-02-14T04:44:51.659Z"
+    },
+    {
+      "targetUrl": "https://surfaces.systems/",
+      "contract": {
+        "surface": "app",
+        "version": "0.1.0",
+        "layout": {
+          "allowedPatterns": {
+            "singleColumn": "allowed",
+            "sidebarContent": "required",
+            "dashboardGrid": "forbidden",
+            "wizardFlow": "allowed"
+          },
+          "maxContentWidth": 1120,
+          "requireGlobalHeader": true,
+          "requirePageContainer": true
+        },
+        "navigation": {
+          "types": {
+            "topNav": "allowed",
+            "sideNav": "required",
+            "tabs": "allowed"
+          },
+          "maxDepth": 1,
+          "disallowDuplicateNavigation": true,
+          "requireSinglePrimaryNav": true
+        },
+        "generation": {
+          "mustUseDesignTokens": false,
+          "forbidNewLayoutPrimitives": true,
+          "forbidAdditionalNavLayer": true,
+          "structuralChangesRequireReview": true,
+          "autoCorrectMinorDeviation": true
+        },
+        "drift": {
+          "detectionMode": "onCommit",
+          "severityThreshold": "warning",
+          "autoFixPolicy": "safeOnly"
+        }
+      },
+      "requiredSections": [
+        "landing.hero",
+        "landing.demos",
+        "landing.guidance",
+        "landing.actions"
+      ],
+      "sourceSnapshotCapturedAt": "2026-02-13T06:07:14.865Z",
+      "createdAt": "2026-02-13T05:43:04.408Z",
+      "updatedAt": "2026-02-13T06:07:18.424Z"
+    }
+  ]
+}

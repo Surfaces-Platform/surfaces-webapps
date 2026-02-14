@@ -1,11 +1,15 @@
 'use client';
 
 import { motion } from 'motion/react';
+import { useSearchParams } from 'next/navigation';
 import Navigation from '@surfaces/ui/components/Navigation';
 import { colors } from '@surfaces/ui/tokens/colors';
 import { fadeUpVariants, staggerContainer } from '@surfaces/ui/utils/motion';
 
 export default function Home() {
+  const searchParams = useSearchParams();
+  const simulateDuplicateNav = searchParams.get('simulateDuplicateNav') === '1';
+
   const handleSurfaceChange = (surface: 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev') => {
     // Handle surface change - could use router for Next.js navigation
     console.log('Surface change:', surface);
@@ -39,6 +43,23 @@ export default function Home() {
         theme="light"
         onSurfaceChange={handleSurfaceChange}
       />
+
+      {simulateDuplicateNav ? (
+        <nav
+          aria-label="Simulation duplicate primary navigation"
+          data-contract-simulation="duplicate-primary-nav"
+          style={{
+            padding: '8px 24px',
+            borderBottom: `1px dashed ${colors.neutral[200]}`,
+            backgroundColor: colors.neutral[0],
+            fontSize: '12px'
+          }}
+        >
+          <a href="#simulation-nav" style={{ color: colors.structure.primary, textDecoration: 'none' }}>
+            Simulation nav
+          </a>
+        </nav>
+      ) : null}
       
       <div className="contract-container" data-contract="page-container">
         

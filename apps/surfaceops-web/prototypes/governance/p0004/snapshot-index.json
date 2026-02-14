@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "prototypeId": "p0004",
+  "snapshotIds": [
+    "20260213T041949874Z",
+    "20260213T042044593Z",
+    "20260213T042046462Z",
+    "20260213T042155006Z",
+    "20260213T050902197Z",
+    "20260213T051338934Z",
+    "20260213T052019947Z",
+    "20260213T052842192Z",
+    "20260213T052845612Z",
+    "20260213T052848119Z"
+  ],
+  "entries": {
+    "20260213T041949874Z": {
+      "snapshotId": "20260213T041949874Z",
+      "createdAt": "2026-02-13T04:19:49.874Z",
+      "filePath": "snapshots/20260213T041949874Z.extraction.json"
+    },
+    "20260213T042044593Z": {
+      "snapshotId": "20260213T042044593Z",
+      "createdAt": "2026-02-13T04:20:44.593Z",
+      "filePath": "snapshots/20260213T042044593Z.extraction.json"
+    },
+    "20260213T042046462Z": {
+      "snapshotId": "20260213T042046462Z",
+      "createdAt": "2026-02-13T04:20:46.462Z",
+      "filePath": "snapshots/20260213T042046462Z.extraction.json"
+    },
+    "20260213T042155006Z": {
+      "snapshotId": "20260213T042155006Z",
+      "createdAt": "2026-02-13T04:21:55.007Z",
+      "filePath": "snapshots/20260213T042155006Z.extraction.json"
+    },
+    "20260213T050902197Z": {
+      "snapshotId": "20260213T050902197Z",
+      "createdAt": "2026-02-13T05:09:02.198Z",
+      "filePath": "snapshots/20260213T050902197Z.extraction.json"
+    },
+    "20260213T051338934Z": {
+      "snapshotId": "20260213T051338934Z",
+      "createdAt": "2026-02-13T05:13:38.935Z",
+      "filePath": "snapshots/20260213T051338934Z.extraction.json"
+    },
+    "20260213T052019947Z": {
+      "snapshotId": "20260213T052019947Z",
+      "createdAt": "2026-02-13T05:20:19.948Z",
+      "filePath": "snapshots/20260213T052019947Z.extraction.json"
+    },
+    "20260213T052842192Z": {
+      "snapshotId": "20260213T052842192Z",
+      "createdAt": "2026-02-13T05:28:42.193Z",
+      "filePath": "snapshots/20260213T052842192Z.extraction.json"
+    },
+    "20260213T052845612Z": {
+      "snapshotId": "20260213T052845612Z",
+      "createdAt": "2026-02-13T05:28:45.612Z",
+      "filePath": "snapshots/20260213T052845612Z.extraction.json"
+    },
+    "20260213T052848119Z": {
+      "snapshotId": "20260213T052848119Z",
+      "createdAt": "2026-02-13T05:28:48.120Z",
+      "filePath": "snapshots/20260213T052848119Z.extraction.json"
+    }
+  },
+  "latestSnapshotId": "20260213T052848119Z",
+  "baselineSnapshotId": "20260213T041949874Z"
+}

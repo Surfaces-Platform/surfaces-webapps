@@ -2,55 +2,49 @@
 
 import React from "react";
 import styles from "./governance.module.css";
-import { ExtractionDiffPanel } from "./extraction-diff-panel";
-import { FindingsPanel } from "./findings-panel";
 import { JsonContractView } from "./json-contract-view";
 import { StructuredContractView } from "./structured-contract-view";
-import type { ExtractionDiffItem } from "../_lib/prototype-diff";
 
 type PanelTab = "structured" | "json";
 
-export function ContractPanel({ diffItems }: { diffItems: ExtractionDiffItem[] }) {
+export function ContractPanel({
+  onClose,
+}: {
+  onClose: () => void;
+}) {
   const [tab, setTab] = React.useState<PanelTab>("structured");
 
   return (
-    <section className={`${styles.panel} ${styles.split}`}>
-      <div>
-        <div className={styles.panelHeader}>
-          <div>
-            <div className={styles.h1}>Contract Panel</div>
-            <div className={styles.small}>Structured and JSON contract views stay synchronized.</div>
-          </div>
+    <aside className={styles.drawer}>
+      <div className={styles.panelHeader}>
+        <div>
+          <div className={styles.h1}>Draft Contract</div>
+          <div className={styles.small}>Inspect and edit structured/JSON artifact on demand.</div>
         </div>
-
-        <div className={styles.tabs}>
-          <button
-            className={`${styles.tab} ${tab === "structured" ? styles.tabActive : ""}`}
-            onClick={() => setTab("structured")}
-          >
-            Structured
-          </button>
-          <button
-            className={`${styles.tab} ${tab === "json" ? styles.tabActive : ""}`}
-            onClick={() => setTab("json")}
-          >
-            JSON
-          </button>
-        </div>
-
-        <div className={styles.panelBody}>
-          <div className={styles.stack}>
-            {tab === "structured" && <StructuredContractView />}
-            {tab === "json" && <JsonContractView />}
-            <ExtractionDiffPanel items={diffItems} />
-            <FindingsPanel />
-          </div>
+        <button className={styles.tab} onClick={onClose}>
+          Close
+        </button>
+      </div>
+      <div className={styles.tabs}>
+        <button
+          className={`${styles.tab} ${tab === "structured" ? styles.tabActive : ""}`}
+          onClick={() => setTab("structured")}
+        >
+          Structured
+        </button>
+        <button
+          className={`${styles.tab} ${tab === "json" ? styles.tabActive : ""}`}
+          onClick={() => setTab("json")}
+        >
+          JSON
+        </button>
+      </div>
+      <div className={styles.panelBody}>
+        <div className={styles.stack}>
+          {tab === "structured" && <StructuredContractView />}
+          {tab === "json" && <JsonContractView />}
         </div>
       </div>
-
-      <div className={styles.footer}>
-        <div className={styles.small}>Impact simulation predicts violations if this surface is generated now.</div>
-      </div>
-    </section>
+    </aside>
   );
 }

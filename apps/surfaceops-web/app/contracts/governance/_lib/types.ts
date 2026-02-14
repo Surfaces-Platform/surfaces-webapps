@@ -63,3 +63,71 @@ export interface SimulationFinding {
   message: string;
   rulePath?: string;
 }
+
+export type GovernanceDecisionAction = "accept" | "reject" | "evolve";
+
+export interface GovernanceSnapshotIndexEntry {
+  snapshotId: string;
+  createdAt: string;
+  filePath: string;
+}
+
+export interface GovernanceSnapshotIndex {
+  schemaVersion: 1;
+  prototypeId: string;
+  snapshotIds: string[];
+  entries: Record<string, GovernanceSnapshotIndexEntry>;
+  latestSnapshotId: string | null;
+  baselineSnapshotId: string | null;
+}
+
+export interface GovernanceDecisionRecord {
+  decisionId: string;
+  snapshotId: string;
+  diffItemId: string;
+  action: GovernanceDecisionAction;
+  reason: string | null;
+  actor: string;
+  createdAt: string;
+}
+
+export interface GovernanceDecisionLog {
+  schemaVersion: 1;
+  prototypeId: string;
+  decisions: GovernanceDecisionRecord[];
+}
+
+export interface GovernanceApplyItemResult {
+  diffItemId: string;
+  status: "applied" | "skipped";
+  reason?: string;
+}
+
+export interface GovernanceApplyRecord {
+  applyId: string;
+  snapshotId: string;
+  actor: string;
+  createdAt: string;
+  items: GovernanceApplyItemResult[];
+}
+
+export interface GovernanceApplyLog {
+  schemaVersion: 1;
+  prototypeId: string;
+  applies: GovernanceApplyRecord[];
+}
+
+export interface GovernanceInspectorBaselineRecord {
+  targetUrl: string;
+  contract: SurfaceContract;
+  requiredSections: string[];
+  sourceSnapshotCapturedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GovernanceInspectorBaselineLog {
+  schemaVersion: 1;
+  prototypeId: string;
+  baselines: GovernanceInspectorBaselineRecord[];
+}

@@ -11,3 +11,7 @@ Useful commands:
 pnpm prototype:governance:new -- --title "..." --summary "..."
 pnpm prototype:governance:snapshot
 ```
+
+Inspector reference prompt:
+
+- `docs/prompts/governance-inspector-v1.md`

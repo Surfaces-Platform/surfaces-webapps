@@ -30,9 +30,64 @@ function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf-8"));
 }
 
+function writeJson(filePath, value) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf-8");
+}
+
 function copyFile(from, to) {
   fs.mkdirSync(path.dirname(to), { recursive: true });
   fs.copyFileSync(from, to);
+}
+
+function makeSnapshotId(now = new Date()) {
+  return now.toISOString().replace(/[-:]/g, "").replace(".", "").replace("Z", "Z");
+}
+
+function appendP0003Snapshot(root, selected, generatedReportPath) {
+  const prototypeDir = path.join(
+    root,
+    "apps",
+    "surfaceops-web",
+    "prototypes",
+    "governance",
+    selected.id,
+  );
+  const snapshotsDir = path.join(prototypeDir, "snapshots");
+  const indexPath = path.join(prototypeDir, "snapshot-index.json");
+
+  fs.mkdirSync(snapshotsDir, { recursive: true });
+  const index = fs.existsSync(indexPath)
+    ? readJson(indexPath)
+    : {
+        schemaVersion: 1,
+        prototypeId: selected.id,
+        snapshotIds: [],
+        entries: {},
+        latestSnapshotId: null,
+        baselineSnapshotId: null,
+      };
+
+  let snapshotId = makeSnapshotId(new Date());
+  while (index.entries[snapshotId]) {
+    snapshotId = makeSnapshotId(new Date(Date.now() + 1));
+  }
+  const createdAt = new Date().toISOString();
+  const snapshotPath = path.join(snapshotsDir, `${snapshotId}.extraction.json`);
+  fs.copyFileSync(generatedReportPath, snapshotPath);
+
+  index.snapshotIds.push(snapshotId);
+  index.entries[snapshotId] = {
+    snapshotId,
+    createdAt,
+    filePath: path.relative(prototypeDir, snapshotPath).replaceAll(path.sep, "/"),
+  };
+  index.latestSnapshotId = snapshotId;
+  if (!index.baselineSnapshotId) {
+    index.baselineSnapshotId = snapshotId;
+  }
+  writeJson(indexPath, index);
+  return { snapshotId, createdAt, indexPath };
 }
 
 function main() {
@@ -54,7 +109,15 @@ function main() {
   const selected = manifest.prototypes.find((p) => p.id === (requestedPrototype || manifest.activePrototypeId));
   if (!selected) fail(`Prototype not found: ${requestedPrototype || manifest.activePrototypeId}`);
 
-  const cliPath = path.join(root, "tools", "interfacectl", "packages", "interfacectl-cli", "dist", "index.js");
+  const cliPath = path.join(
+    root,
+    "tools",
+    "interfacectl",
+    "packages",
+    "interfacectl-cli",
+    "dist",
+    "index.js",
+  );
   if (!fs.existsSync(cliPath)) fail(`interfacectl CLI not built: ${cliPath}`);
 
   const generatedContractPath = path.join(root, "contracts", "generated", "surfaces-web.contract.json");
@@ -81,18 +144,21 @@ function main() {
   copyFile(generatedContractPath, path.join(root, selected.extractionPaths.contract));
   copyFile(generatedReportPath, path.join(root, selected.extractionPaths.report));
 
-  console.log(
-    JSON.stringify(
-      {
-        ok: true,
-        prototypeId: selected.id,
-        contractPath: selected.extractionPaths.contract,
-        reportPath: selected.extractionPaths.report,
-      },
-      null,
-      2,
-    ),
-  );
+  const payload = {
+    ok: true,
+    prototypeId: selected.id,
+    contractPath: selected.extractionPaths.contract,
+    reportPath: selected.extractionPaths.report,
+  };
+
+  if (selected.id === "p0004") {
+    const snapshot = appendP0003Snapshot(root, selected, generatedReportPath);
+    payload.snapshotId = snapshot.snapshotId;
+    payload.snapshotCreatedAt = snapshot.createdAt;
+    payload.snapshotIndexPath = path.relative(root, snapshot.indexPath).replaceAll(path.sep, "/");
+  }
+
+  console.log(JSON.stringify(payload, null, 2));
 }
 
 main();

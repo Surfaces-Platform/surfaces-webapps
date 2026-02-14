@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "prototypeId": "p0004",
+  "applies": [
+    {
+      "applyId": "apply-2026-02-13T042052113Z-1",
+      "snapshotId": "20260213T041949874Z",
+      "actor": "local-user",
+      "createdAt": "2026-02-13T04:20:52.113Z",
+      "items": []
+    }
+  ]
+}

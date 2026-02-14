@@ -1,6 +1,20 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
-import type { SurfaceContract } from "./types";
+import {
+  ensureGovernancePersistence,
+  readApplyLog,
+  readContractDraft,
+  readDecisionLog,
+  readSnapshotExtraction,
+  readSnapshotIndex,
+} from "./governance-persistence";
+import type {
+  GovernanceApplyRecord,
+  GovernanceDecisionRecord,
+  GovernanceSnapshotIndex,
+  SurfaceContract,
+} from "./types";
+import { resolveWorkspaceRoot } from "./workspace-root";
 
 export type PrototypeStatus = "active" | "archived" | "experimental";
 
@@ -30,40 +44,36 @@ export interface GovernancePrototypeSelection {
   manifest: GovernancePrototypeManifest;
   selected: GovernancePrototypeEntry;
   seedContract: SurfaceContract;
+  draftContract: SurfaceContract;
   extractionContract: unknown;
   extractionReport: unknown;
-  latestExtractionReport: unknown;
+  selectedSnapshotId: string;
+  selectedSnapshotCreatedAt: string;
+  selectedSnapshotReport: unknown;
+  baselineSnapshotId: string;
+  baselineSnapshotReport: unknown;
+  snapshotTimeline: Array<{ snapshotId: string; createdAt: string }>;
+  snapshotIndex: GovernanceSnapshotIndex | null;
+  decisions: GovernanceDecisionRecord[];
+  applies: GovernanceApplyRecord[];
   latestExtractionUpdatedAt: string;
   requestedPrototypeId: string | null;
+  requestedSnapshotId: string | null;
   usedFallback: boolean;
+  canWrite: boolean;
 }
+
+type ExtractionShape = {
+  extracted?: {
+    routes?: unknown[];
+    designSystemComponents?: unknown[];
+    authAware?: boolean;
+  };
+};
 
 function readJson<T>(filePath: string): T {
   const raw = readFileSync(filePath, "utf-8");
   return JSON.parse(raw) as T;
-}
-
-function resolveWorkspaceRoot(): string {
-  const cwd = process.cwd();
-  const candidates = [
-    cwd,
-    path.resolve(cwd, ".."),
-    path.resolve(cwd, "..", ".."),
-  ];
-  for (const candidate of candidates) {
-    const manifestPath = path.join(
-      candidate,
-      "apps",
-      "surfaceops-web",
-      "prototypes",
-      "governance",
-      "manifest.json",
-    );
-    if (existsSync(manifestPath)) {
-      return candidate;
-    }
-  }
-  throw new Error("Could not resolve workspace root for governance prototype registry.");
 }
 
 function validateManifest(manifest: GovernancePrototypeManifest): void {
@@ -88,8 +98,30 @@ function validateManifest(manifest: GovernancePrototypeManifest): void {
   }
 }
 
+function fallbackSelection(
+  selectedExtractionReport: unknown,
+): {
+  selectedSnapshotId: string;
+  selectedSnapshotCreatedAt: string;
+  selectedSnapshotReport: unknown;
+  baselineSnapshotId: string;
+  baselineSnapshotReport: unknown;
+  snapshotTimeline: Array<{ snapshotId: string; createdAt: string }>;
+} {
+  const now = new Date().toISOString();
+  return {
+    selectedSnapshotId: "seed-snapshot",
+    selectedSnapshotCreatedAt: now,
+    selectedSnapshotReport: selectedExtractionReport,
+    baselineSnapshotId: "seed-snapshot",
+    baselineSnapshotReport: selectedExtractionReport,
+    snapshotTimeline: [{ snapshotId: "seed-snapshot", createdAt: now }],
+  };
+}
+
 export function loadGovernancePrototypeSelection(
   requestedPrototypeId: string | null,
+  requestedSnapshotId: string | null,
 ): GovernancePrototypeSelection {
   const workspaceRoot = resolveWorkspaceRoot();
   const manifestPath = path.join(
@@ -122,23 +154,85 @@ export function loadGovernancePrototypeSelection(
     "surfaces-web.extraction.json",
   );
   const hasLatestExtraction = existsSync(latestExtractionPath);
-  const latestExtractionReport = hasLatestExtraction
-    ? readJson<unknown>(latestExtractionPath)
-    : selectedExtractionReport;
   const latestExtractionUpdatedAt = hasLatestExtraction
     ? statSync(latestExtractionPath).mtime.toISOString()
     : "snapshot-only";
+
+  const canWrite = selected.id === "p0004";
+  let snapshotIndex: GovernanceSnapshotIndex | null = null;
+  let decisions: GovernanceDecisionRecord[] = [];
+  let applies: GovernanceApplyRecord[] = [];
+  let draftContract = readJson<SurfaceContract>(seedContractPath);
+  let selectedSnapshotId: string;
+  let selectedSnapshotCreatedAt: string;
+  let selectedSnapshotReport: unknown;
+  let baselineSnapshotId: string;
+  let baselineSnapshotReport: unknown;
+  let snapshotTimeline: Array<{ snapshotId: string; createdAt: string }>;
+
+  if (canWrite) {
+    const paths = ensureGovernancePersistence(workspaceRoot, selected);
+    snapshotIndex = readSnapshotIndex(paths.snapshotIndexPath);
+    decisions = readDecisionLog(paths.decisionsPath).decisions;
+    applies = readApplyLog(paths.appliesPath).applies;
+    draftContract = readContractDraft(paths.draftContractPath);
+
+    const defaultSelectedSnapshotId = snapshotIndex.latestSnapshotId ?? snapshotIndex.baselineSnapshotId;
+    if (!defaultSelectedSnapshotId) {
+      throw new Error("No snapshots available for p0004.");
+    }
+    const selectedId =
+      requestedSnapshotId && snapshotIndex.entries[requestedSnapshotId]
+        ? requestedSnapshotId
+        : defaultSelectedSnapshotId;
+    const baselineId = snapshotIndex.baselineSnapshotId ?? selectedId;
+    const selectedEntry = snapshotIndex.entries[selectedId];
+    if (!selectedEntry) {
+      throw new Error(`Snapshot not found: ${selectedId}`);
+    }
+    selectedSnapshotId = selectedId;
+    selectedSnapshotCreatedAt = selectedEntry.createdAt;
+    selectedSnapshotReport = readSnapshotExtraction(paths.prototypeDir, snapshotIndex, selectedId);
+    baselineSnapshotId = baselineId;
+    baselineSnapshotReport = readSnapshotExtraction(paths.prototypeDir, snapshotIndex, baselineId);
+    snapshotTimeline = [...snapshotIndex.snapshotIds]
+      .reverse()
+      .map((snapshotId) => ({
+        snapshotId,
+        createdAt: snapshotIndex!.entries[snapshotId]?.createdAt ?? "",
+      }))
+      .filter((entry) => Boolean(entry.createdAt));
+  } else {
+    const fallback = fallbackSelection(selectedExtractionReport);
+    selectedSnapshotId = fallback.selectedSnapshotId;
+    selectedSnapshotCreatedAt = fallback.selectedSnapshotCreatedAt;
+    selectedSnapshotReport = fallback.selectedSnapshotReport;
+    baselineSnapshotId = fallback.baselineSnapshotId;
+    baselineSnapshotReport = fallback.baselineSnapshotReport;
+    snapshotTimeline = fallback.snapshotTimeline;
+  }
 
   return {
     workspaceRoot,
     manifest,
     selected,
     requestedPrototypeId,
+    requestedSnapshotId,
     usedFallback,
     seedContract: readJson<SurfaceContract>(seedContractPath),
+    draftContract,
     extractionContract: readJson<unknown>(extractionContractPath),
-    extractionReport: selectedExtractionReport,
-    latestExtractionReport,
+    extractionReport: selectedExtractionReport as ExtractionShape,
+    selectedSnapshotId,
+    selectedSnapshotCreatedAt,
+    selectedSnapshotReport,
+    baselineSnapshotId,
+    baselineSnapshotReport,
+    snapshotTimeline,
+    snapshotIndex,
+    decisions,
+    applies,
     latestExtractionUpdatedAt,
+    canWrite,
   };
 }

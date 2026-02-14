@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "activePrototypeId": "p0002",
+  "activePrototypeId": "p0004",
   "prototypes": [
     {
       "id": "p0001",
@@ -22,7 +22,7 @@
       "id": "p0002",
       "title": "Designer Canvas + Compare",
       "createdAt": "2026-02-12T02:24:33.893Z",
-      "status": "active",
+      "status": "archived",
       "summary": "Preview-first contract shaping with extraction diff actions",
       "sourcePaths": [
         "apps/surfaceops-web/app/contracts/governance"
@@ -33,6 +33,38 @@
         "report": "apps/surfaceops-web/prototypes/governance/p0002/extraction/surfaces-web.extraction.json"
       },
       "notesPath": "apps/surfaceops-web/prototypes/governance/p0002/notes.md"
+    },
+    {
+      "id": "p0003",
+      "title": "Persistent Governance Workflow",
+      "createdAt": "2026-02-13T00:31:47.306Z",
+      "status": "archived",
+      "summary": "Snapshot timeline, persistent decisions, and draft evolution",
+      "sourcePaths": [
+        "apps/surfaceops-web/app/contracts/governance"
+      ],
+      "seedContractPath": "apps/surfaceops-web/prototypes/governance/p0003/contract.seed.json",
+      "extractionPaths": {
+        "contract": "apps/surfaceops-web/prototypes/governance/p0003/extraction/surfaces-web.contract.json",
+        "report": "apps/surfaceops-web/prototypes/governance/p0003/extraction/surfaces-web.extraction.json"
+      },
+      "notesPath": "apps/surfaceops-web/prototypes/governance/p0003/notes.md"
+    },
+    {
+      "id": "p0004",
+      "title": "Task-First Governance UX",
+      "createdAt": "2026-02-13T04:15:32.432Z",
+      "status": "active",
+      "summary": "Editor-first workflow with progressive disclosure",
+      "sourcePaths": [
+        "apps/surfaceops-web/app/contracts/governance"
+      ],
+      "seedContractPath": "apps/surfaceops-web/prototypes/governance/p0004/contract.seed.json",
+      "extractionPaths": {
+        "contract": "apps/surfaceops-web/prototypes/governance/p0004/extraction/surfaces-web.contract.json",
+        "report": "apps/surfaceops-web/prototypes/governance/p0004/extraction/surfaces-web.extraction.json"
+      },
+      "notesPath": "apps/surfaceops-web/prototypes/governance/p0004/notes.md"
     }
   ]
 }

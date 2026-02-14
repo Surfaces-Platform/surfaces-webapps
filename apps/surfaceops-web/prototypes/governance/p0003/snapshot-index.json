@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "prototypeId": "p0003",
+  "snapshotIds": [
+    "20260213T003656856Z",
+    "20260213T003757456Z"
+  ],
+  "entries": {
+    "20260213T003656856Z": {
+      "snapshotId": "20260213T003656856Z",
+      "createdAt": "2026-02-13T00:36:56.856Z",
+      "filePath": "snapshots/20260213T003656856Z.extraction.json"
+    },
+    "20260213T003757456Z": {
+      "snapshotId": "20260213T003757456Z",
+      "createdAt": "2026-02-13T00:37:57.457Z",
+      "filePath": "snapshots/20260213T003757456Z.extraction.json"
+    }
+  },
+  "latestSnapshotId": "20260213T003757456Z",
+  "baselineSnapshotId": "20260213T003656856Z"
+}
