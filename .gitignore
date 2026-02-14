@@ -9,3 +9,4 @@ scratch/secrets/
 .next/
 .vercel
 .env*.local
+artifacts/
