@@ -1,0 +1,73 @@
+{
+  "contractId": "surfaces.web",
+  "version": "0.1.0",
+  "surfaceId": "surfaces-web",
+  "layout": {
+    "maxContentWidth": 1120
+  },
+  "color": {
+    "sourceOfTruth": {
+      "type": "tokens",
+      "tokenNamespaces": [
+        "--color-",
+        "--background",
+        "--foreground"
+      ]
+    },
+    "rawValues": {
+      "policy": "strict",
+      "allowlist": [
+        "#052e16",
+        "#0b1220",
+        "#0f172a",
+        "#0f1e1a",
+        "#101827",
+        "#14532d",
+        "#16a34a",
+        "#172033",
+        "#172554",
+        "#1d4ed8",
+        "#1e293b",
+        "#1e3a8a",
+        "#1e40af",
+        "#334155",
+        "#422006",
+        "#450a0a",
+        "#451a03",
+        "#475569",
+        "#60a5fa",
+        "#64748b",
+        "#78350f",
+        "#7f1d1d",
+        "#93a0ba",
+        "#93c5fd",
+        "#94a3b8",
+        "#bbf7d0",
+        "#bfdbfe",
+        "#ca8a04",
+        "#cbd5e1",
+        "#dbe6ff",
+        "#dc2626",
+        "#e2e8f0",
+        "#eff6ff",
+        "#f1f5f9",
+        "#f8fafc",
+        "#fde68a",
+        "#fecaca",
+        "#ffffff",
+        "rgba(15, 23, 42, 0.3)",
+        "rgba(15, 23, 42, 0.45)",
+        "rgba(255, 255, 255, 0.8)"
+      ],
+      "denylist": []
+    }
+  },
+  "motion": {
+    "allowedDurationsMs": [
+      120
+    ],
+    "allowedTimingFunctions": [
+      "linear"
+    ]
+  }
+}
