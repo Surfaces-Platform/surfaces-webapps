@@ -1,0 +1,57 @@
+{
+  "$schema": "https://contracts.surfaces.local/web.surface.contract.schema.json",
+  "color": {
+    "rawValues": {
+      "allowlist": [],
+      "denylist": [],
+      "policy": "off"
+    },
+    "sourceOfTruth": {
+      "type": "none"
+    }
+  },
+  "constraints": {
+    "motion": {
+      "allowedDurationsMs": [
+        120
+      ],
+      "allowedTimingFunctions": [
+        "linear"
+      ]
+    }
+  },
+  "contractId": "reference-target-web.generated",
+  "description": "Extracted from Next.js app (Phase 0).",
+  "sections": [
+    {
+      "description": "Placeholder; sections not extracted in Phase 0.",
+      "id": "extracted.placeholder",
+      "intent": "extracted"
+    }
+  ],
+  "surfaces": [
+    {
+      "allowedFonts": [
+        "sans-serif"
+      ],
+      "displayName": "Reference Target Web",
+      "id": "reference-target-web",
+      "layout": {
+        "maxContentWidth": 1120
+      },
+      "requiredSections": [
+        "extracted.placeholder"
+      ],
+      "type": "web"
+    }
+  ],
+  "version": "0.1.0",
+  "x_extracted": {
+    "authAware": false,
+    "designSystemComponents": [],
+    "hasShell": true,
+    "routes": [
+      "/"
+    ]
+  }
+}

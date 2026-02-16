@@ -9,6 +9,8 @@ import { deriveInspectorBaselineFromSnapshot } from "../_lib/baseline";
 import type {
   InspectorCategory,
   InspectorDomSnapshot,
+  ReliabilityReason,
+  ReliabilityTier,
   InspectorTargetBaselineRecord,
   InspectorViolation,
 } from "../_lib/types";
@@ -18,6 +20,11 @@ import {
   normalizeInspectorRouteInput,
   type InspectorPanelState,
 } from "../_lib/url-state";
+import type {
+  InspectorTargetMode,
+  InspectorTargetProfile,
+  InspectorTargetProfileId,
+} from "../_lib/target-registry";
 import styles from "./inspector.module.css";
 
 type TelemetryStatus = "connecting" | "ready" | "unsupported";
@@ -31,7 +38,9 @@ type InspectorWorkspaceProps = {
   baselineSnapshotId: string;
   routeOptions: string[];
   selectedRoute: string;
-  previewBaseUrl: string;
+  targetProfiles: InspectorTargetProfile[];
+  initialTargetMode: InspectorTargetMode;
+  initialTargetProfileId: InspectorTargetProfileId;
   canWrite: boolean;
   latestExtractionUpdatedAt: string;
   contractDraft: SurfaceContract;
@@ -54,15 +63,11 @@ const CATEGORY_ORDER: Array<InspectorCategory> = [
 
 const PANEL_WIDTH_KEY = "surfaceops.governance.inspector.panelWidth";
 const TARGET_ROUTE_STORAGE_PREFIX = "surfaceops.governance.inspector.targetRoute.";
+const TARGET_MODE_STORAGE_PREFIX = "surfaceops.governance.inspector.targetMode.";
+const TARGET_PROFILE_STORAGE_PREFIX = "surfaceops.governance.inspector.targetProfile.";
 
 function clampPanelWidth(value: number): number {
   return Math.min(720, Math.max(300, value));
-}
-
-function severityRank(value: InspectorViolation["severity"]): number {
-  if (value === "blocking") return 0;
-  if (value === "warning") return 1;
-  return 2;
 }
 
 function categoryLabel(category: InspectorCategory): string {
@@ -88,6 +93,21 @@ function formatIsoTime(value: string | null | undefined): string {
   return parsed.toISOString();
 }
 
+function reliabilityReasonLabel(reason: ReliabilityReason): string {
+  if (reason === "byo_target") return "BYO URL";
+  if (reason === "telemetry_unavailable") return "Telemetry unavailable";
+  if (reason === "missing_marker_fidelity") return "Missing marker fidelity";
+  if (reason === "baseline_unavailable") return "Baseline unavailable";
+  return reason;
+}
+
+function hasMarkerFidelity(snapshot: InspectorDomSnapshot | null): boolean {
+  if (!snapshot) return false;
+  return snapshot.nodes.some(
+    (node) => Boolean(node.attributes["data-contract"] || node.attributes["data-contract-section"]),
+  );
+}
+
 export function InspectorWorkspace({
   prototypeOptions,
   selectedPrototypeId,
@@ -96,7 +116,9 @@ export function InspectorWorkspace({
   baselineSnapshotId,
   routeOptions,
   selectedRoute,
-  previewBaseUrl,
+  targetProfiles,
+  initialTargetMode,
+  initialTargetProfileId,
   canWrite,
   latestExtractionUpdatedAt,
   contractDraft,
@@ -127,6 +149,9 @@ export function InspectorWorkspace({
   const [debugOpen, setDebugOpen] = React.useState(false);
   const [lastHandshakeAt, setLastHandshakeAt] = React.useState<string | null>(null);
   const [routeInput, setRouteInput] = React.useState(selectedRoute);
+  const [targetMode, setTargetMode] = React.useState<InspectorTargetMode>(initialTargetMode);
+  const [targetProfileId, setTargetProfileId] =
+    React.useState<InspectorTargetProfileId>(initialTargetProfileId);
   const [lastTelemetryRefreshAt, setLastTelemetryRefreshAt] = React.useState<string | null>(null);
   const [workflowBusy, setWorkflowBusy] = React.useState<
     "extract" | "snapshot" | "baseline" | null
@@ -140,18 +165,32 @@ export function InspectorWorkspace({
     () => normalizeInspectorRouteInput(selectedRoute),
     [selectedRoute],
   );
-  const hasTargetUrl = isAbsoluteHttpUrl(normalizedSelectedRoute);
+  const selectedTargetProfile = React.useMemo(
+    () =>
+      targetProfiles.find((profile) => profile.id === targetProfileId) ?? targetProfiles[0],
+    [targetProfiles, targetProfileId],
+  );
+  const isByoMode = targetMode === "byo";
+  const hasTargetUrl = isByoMode && isAbsoluteHttpUrl(normalizedSelectedRoute);
 
   const routeSelectOptions = React.useMemo(() => {
     const normalized = routeOptions.map((route) => normalizeInspectorRouteInput(route));
-    if (!normalized.includes(normalizedSelectedRoute)) {
+    if (!isAbsoluteHttpUrl(normalizedSelectedRoute) && !normalized.includes(normalizedSelectedRoute)) {
       normalized.unshift(normalizedSelectedRoute);
     }
-    return Array.from(new Set(normalized));
+    return Array.from(new Set(normalized.filter((route) => !isAbsoluteHttpUrl(route))));
   }, [routeOptions, normalizedSelectedRoute]);
 
   const targetStorageKey = React.useMemo(
     () => `${TARGET_ROUTE_STORAGE_PREFIX}${selectedPrototypeId}`,
+    [selectedPrototypeId],
+  );
+  const targetModeStorageKey = React.useMemo(
+    () => `${TARGET_MODE_STORAGE_PREFIX}${selectedPrototypeId}`,
+    [selectedPrototypeId],
+  );
+  const targetProfileStorageKey = React.useMemo(
+    () => `${TARGET_PROFILE_STORAGE_PREFIX}${selectedPrototypeId}`,
     [selectedPrototypeId],
   );
 
@@ -160,15 +199,33 @@ export function InspectorWorkspace({
   }, [normalizedSelectedRoute]);
 
   React.useEffect(() => {
+    setTargetMode(initialTargetMode);
+  }, [initialTargetMode]);
+
+  React.useEffect(() => {
+    setTargetProfileId(initialTargetProfileId);
+  }, [initialTargetProfileId]);
+
+  React.useEffect(() => {
     if (typeof window === "undefined") return;
-    if (!isAbsoluteHttpUrl(normalizedSelectedRoute)) return;
+    if (!isByoMode || !isAbsoluteHttpUrl(normalizedSelectedRoute)) return;
     window.localStorage.setItem(targetStorageKey, normalizedSelectedRoute);
-  }, [normalizedSelectedRoute, targetStorageKey]);
+  }, [isByoMode, normalizedSelectedRoute, targetStorageKey]);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(targetModeStorageKey, targetMode);
+  }, [targetMode, targetModeStorageKey]);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(targetProfileStorageKey, targetProfileId);
+  }, [targetProfileId, targetProfileStorageKey]);
 
   React.useEffect(() => {
     let cancelled = false;
     async function loadBaseline() {
-      if (!canWrite || !hasTargetUrl) {
+      if (!canWrite || !isByoMode || !hasTargetUrl) {
         setTargetBaseline(null);
         setBaselineStatus("idle");
         return;
@@ -212,41 +269,15 @@ export function InspectorWorkspace({
     return () => {
       cancelled = true;
     };
-  }, [canWrite, hasTargetUrl, selectedPrototypeId, normalizedSelectedRoute]);
-
-  React.useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (isAbsoluteHttpUrl(normalizedSelectedRoute)) return;
-    const storedRoute = window.localStorage.getItem(targetStorageKey);
-    if (!storedRoute) return;
-    const normalizedStored = normalizeInspectorRouteInput(storedRoute);
-    if (!isAbsoluteHttpUrl(normalizedStored)) return;
-    const query = buildInspectorQuery({
-      prototype: selectedPrototypeId,
-      snapshot: selectedSnapshotId,
-      route: normalizedStored,
-      panel: detailsOpen ? "details" : "default",
-      category: activeCategory === "all" ? undefined : activeCategory,
-    });
-    router.replace(`${pathname}?${query}`);
-  }, [
-    selectedPrototypeId,
-    selectedSnapshotId,
-    normalizedSelectedRoute,
-    detailsOpen,
-    activeCategory,
-    pathname,
-    router,
-    targetStorageKey,
-  ]);
+  }, [canWrite, isByoMode, hasTargetUrl, selectedPrototypeId, normalizedSelectedRoute]);
 
   const targetPreviewUrl = React.useMemo(() => {
-    if (isAbsoluteHttpUrl(normalizedSelectedRoute)) return normalizedSelectedRoute;
+    if (isByoMode && isAbsoluteHttpUrl(normalizedSelectedRoute)) return normalizedSelectedRoute;
     const routePath = normalizedSelectedRoute.startsWith("/")
       ? normalizedSelectedRoute
       : `/${normalizedSelectedRoute}`;
-    return new URL(routePath, previewBaseUrl).toString();
-  }, [previewBaseUrl, normalizedSelectedRoute]);
+    return new URL(routePath, selectedTargetProfile.baseUrl).toString();
+  }, [isByoMode, normalizedSelectedRoute, selectedTargetProfile.baseUrl]);
 
   const previewUrl = React.useMemo(() => {
     const params = new URLSearchParams();
@@ -255,11 +286,8 @@ export function InspectorWorkspace({
   }, [targetPreviewUrl]);
 
   const previewOrigin = React.useMemo(
-    () =>
-      typeof window !== "undefined"
-        ? window.location.origin
-        : new URL(previewBaseUrl).origin,
-    [previewBaseUrl],
+    () => (typeof window !== "undefined" ? window.location.origin : ""),
+    [],
   );
 
   React.useEffect(() => {
@@ -272,23 +300,66 @@ export function InspectorWorkspace({
   }, []);
 
   const activeContractDraft = React.useMemo(() => {
-    if (!hasTargetUrl || !canWrite) return contractDraft;
+    if (!isByoMode || !hasTargetUrl || !canWrite) return contractDraft;
     return targetBaseline?.contract ?? null;
-  }, [hasTargetUrl, canWrite, contractDraft, targetBaseline]);
+  }, [isByoMode, hasTargetUrl, canWrite, contractDraft, targetBaseline]);
 
   const activeRequiredSections = React.useMemo(() => {
-    if (!hasTargetUrl || !canWrite) return requiredSections;
+    if (!isByoMode || !hasTargetUrl || !canWrite) return requiredSections;
     return targetBaseline?.requiredSections ?? [];
-  }, [hasTargetUrl, canWrite, requiredSections, targetBaseline]);
+  }, [isByoMode, hasTargetUrl, canWrite, requiredSections, targetBaseline]);
 
   const violations = React.useMemo(() => {
     if (!snapshot || !activeContractDraft) return [];
+    const reliabilityReasons: ReliabilityReason[] = [];
+    const markerFidelity = hasMarkerFidelity(snapshot);
+
+    if (isByoMode) {
+      reliabilityReasons.push("byo_target");
+      if (canWrite && !targetBaseline) {
+        reliabilityReasons.push("baseline_unavailable");
+      }
+    }
+    if (!isByoMode && !markerFidelity) {
+      reliabilityReasons.push("missing_marker_fidelity");
+    }
+    if (telemetryStatus !== "ready") {
+      reliabilityReasons.push("telemetry_unavailable");
+    }
+
+    const tier: ReliabilityTier =
+      reliabilityReasons.length === 0 ? "full" : "degraded";
+
     return runInspectorChecks({
       contractDraft: activeContractDraft,
       domSnapshot: snapshot,
       requiredSections: activeRequiredSections,
+      reliabilityTier: tier,
+      reliabilityReasons: Array.from(new Set(reliabilityReasons)),
     });
-  }, [activeContractDraft, snapshot, activeRequiredSections]);
+  }, [
+    activeContractDraft,
+    snapshot,
+    activeRequiredSections,
+    isByoMode,
+    canWrite,
+    targetBaseline,
+    telemetryStatus,
+  ]);
+
+  const reliability = React.useMemo(() => {
+    const reasons: ReliabilityReason[] = [];
+    if (isByoMode) reasons.push("byo_target");
+    if (telemetryStatus !== "ready") reasons.push("telemetry_unavailable");
+    if (isByoMode && canWrite && !targetBaseline) reasons.push("baseline_unavailable");
+    if (!isByoMode && telemetryStatus === "ready" && !hasMarkerFidelity(snapshot)) {
+      reasons.push("missing_marker_fidelity");
+    }
+    return {
+      tier: reasons.length === 0 ? "full" : "degraded",
+      reasons: Array.from(new Set(reasons)),
+    } as { tier: ReliabilityTier; reasons: ReliabilityReason[] };
+  }, [isByoMode, telemetryStatus, canWrite, targetBaseline, snapshot]);
 
   const violationsByCategory = React.useMemo(() => {
     const map = new Map<InspectorCategory, InspectorViolation[]>();
@@ -333,12 +404,33 @@ export function InspectorWorkspace({
   const blockingCount = violations.filter((entry) => entry.severity === "blocking").length;
   const snapshotCount = snapshotOptions.length;
 
-  function replaceInspectorState(patch: Partial<Record<string, string | undefined>>) {
-    const nextRoute = normalizeInspectorRouteInput(patch.route ?? selectedRoute);
+  function replaceInspectorState(
+    patch: Partial<{
+      prototype: string;
+      snapshot: string;
+      route: string;
+      targetMode: InspectorTargetMode;
+      targetProfile: string;
+      violation: string;
+      node: string;
+      panel: "default" | "details";
+      category: string;
+    }>,
+  ) {
+    const nextMode = patch.targetMode ?? targetMode;
+    let nextRoute = normalizeInspectorRouteInput(patch.route ?? selectedRoute);
+    if (nextMode === "reference" && isAbsoluteHttpUrl(nextRoute)) {
+      nextRoute = selectedTargetProfile.defaultRoute;
+    }
+    if (nextMode === "byo" && !isAbsoluteHttpUrl(nextRoute)) {
+      nextRoute = selectedTargetProfile.baseUrl;
+    }
     const params = {
       prototype: selectedPrototypeId,
       snapshot: selectedSnapshotId,
       route: nextRoute,
+      targetMode,
+      targetProfile: targetProfileId,
       violation: selectedViolationId,
       node: selectedNodeId,
       panel: detailsOpen ? "details" : "default",
@@ -349,6 +441,11 @@ export function InspectorWorkspace({
       prototype: params.prototype ?? "p0004",
       snapshot: params.snapshot ?? "",
       route: normalizeInspectorRouteInput(params.route),
+      targetMode: params.targetMode === "byo" ? "byo" : "reference",
+      targetProfile:
+        params.targetProfile === "reference_customer_v1"
+          ? "reference_customer_v1"
+          : "reference_customer_v1",
       violation: params.violation,
       node: params.node,
       panel: params.panel === "details" ? "details" : "default",
@@ -374,7 +471,7 @@ export function InspectorWorkspace({
     if (!isAbsoluteHttpUrl(normalized)) {
       setWorkflowMessage({
         kind: "error",
-        text: "Enter a full target URL (example: https://surfaces.systems).",
+        text: "Enter a full target URL (example: https://example.com).",
       });
       return;
     }
@@ -383,14 +480,50 @@ export function InspectorWorkspace({
     }
     replaceInspectorState({
       route: normalized,
+      targetMode: "byo",
+      violation: undefined,
+      node: undefined,
+    });
+    setTargetMode("byo");
+    setWorkflowMessage({
+      kind: "info",
+      text: "BYO target set. Next: capture baseline from live telemetry.",
+    });
+  }
+
+  function setTargetModeAndRoute(nextMode: InspectorTargetMode) {
+    setTargetMode(nextMode);
+    if (nextMode === "reference") {
+      replaceInspectorState({
+        targetMode: "reference",
+        targetProfile: targetProfileId,
+        route: selectedTargetProfile.defaultRoute,
+        violation: undefined,
+        node: undefined,
+      });
+      setWorkflowMessage({
+        kind: "info",
+        text: `Using reference target ${selectedTargetProfile.baseUrl}.`,
+      });
+      return;
+    }
+
+    const storedRoute =
+      typeof window !== "undefined" ? window.localStorage.getItem(targetStorageKey) : null;
+    const nextByoRoute = isAbsoluteHttpUrl(normalizeInspectorRouteInput(storedRoute ?? ""))
+      ? normalizeInspectorRouteInput(storedRoute ?? "")
+      : selectedTargetProfile.baseUrl;
+    setRouteInput(nextByoRoute);
+    replaceInspectorState({
+      targetMode: "byo",
+      targetProfile: targetProfileId,
+      route: nextByoRoute,
       violation: undefined,
       node: undefined,
     });
     setWorkflowMessage({
       kind: "info",
-      text: isAbsoluteHttpUrl(normalized)
-        ? "Target URL set. Next: capture baseline from live telemetry."
-        : `Target route set. Next: run extract and generate snapshot for ${selectedPrototypeId}.`,
+      text: "BYO mode enabled. Set a target URL and capture baseline.",
     });
   }
 
@@ -645,45 +778,121 @@ export function InspectorWorkspace({
     <main className={styles.root}>
       <header className={styles.topbar}>
         <div className={styles.workflowRail}>
-          <div className={`${styles.workflowStep} ${hasTargetUrl ? styles.workflowStepDone : styles.workflowStepActive}`}>
+          <div
+            className={`${styles.workflowStep} ${
+              isByoMode ? (hasTargetUrl ? styles.workflowStepDone : styles.workflowStepActive) : styles.workflowStepDone
+            }`}
+          >
             <div className={styles.workflowStepNumber}>1</div>
             <div className={styles.workflowStepBody}>
-              <div className={styles.workflowStepTitle}>Set target URL</div>
+              <div className={styles.workflowStepTitle}>Select inspection target</div>
               <div className={styles.workflowStepMeta}>
-                {hasTargetUrl
-                  ? normalizedSelectedRoute
-                  : "Define the surface URL that this inspection session should monitor."}
+                {isByoMode
+                  ? hasTargetUrl
+                    ? normalizedSelectedRoute
+                    : "Bring your own URL for exploratory checks."
+                  : `Reference target ${selectedTargetProfile.label} (${selectedTargetProfile.baseUrl}).`}
               </div>
               <div className={styles.workflowRow}>
-                <input
-                  className={styles.input}
-                  value={routeInput}
-                  onChange={(event) => setRouteInput(event.target.value)}
-                  placeholder="https://surfaces.systems"
-                />
-                <button className={styles.action} onClick={setTargetRoute}>
-                  Set target
-                </button>
+                <label className={styles.labelInline}>
+                  Mode
+                  <select
+                    className={styles.select}
+                    value={targetMode}
+                    onChange={(event) =>
+                      setTargetModeAndRoute(event.target.value === "byo" ? "byo" : "reference")
+                    }
+                  >
+                    <option value="reference">Reference target</option>
+                    <option value="byo">Bring your own URL</option>
+                  </select>
+                </label>
+                <label className={styles.labelInline}>
+                  Profile
+                  <select
+                    className={styles.select}
+                    value={targetProfileId}
+                    onChange={(event) => {
+                      const nextProfileId = event.target.value as InspectorTargetProfileId;
+                      setTargetProfileId(nextProfileId);
+                      const nextProfile =
+                        targetProfiles.find((profile) => profile.id === nextProfileId) ??
+                        targetProfiles[0];
+                      const nextRoute =
+                        targetMode === "reference" ? nextProfile.defaultRoute : normalizedSelectedRoute;
+                      replaceInspectorState({
+                        targetProfile: nextProfileId,
+                        route: nextRoute,
+                        violation: undefined,
+                        node: undefined,
+                      });
+                    }}
+                  >
+                    {targetProfiles.map((profile) => (
+                      <option key={profile.id} value={profile.id}>
+                        {profile.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
               </div>
+              {isByoMode ? (
+                <div className={styles.workflowRow}>
+                  <input
+                    className={styles.input}
+                    value={routeInput}
+                    onChange={(event) => setRouteInput(event.target.value)}
+                    placeholder="https://example.com"
+                  />
+                  <button className={styles.action} onClick={setTargetRoute}>
+                    Set BYO target
+                  </button>
+                </div>
+              ) : (
+                <div className={styles.workflowRow}>
+                  <label className={styles.labelInline}>
+                    Reference route
+                    <select
+                      className={styles.select}
+                      value={normalizedSelectedRoute}
+                      onChange={(event) =>
+                        replaceInspectorState({
+                          route: normalizeInspectorRouteInput(event.target.value),
+                          violation: undefined,
+                          node: undefined,
+                        })
+                      }
+                    >
+                      {routeSelectOptions.map((route) => (
+                        <option key={route} value={route}>
+                          {route}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              )}
             </div>
           </div>
 
           <div className={styles.workflowStep}>
             <div className={styles.workflowStepNumber}>2</div>
             <div className={styles.workflowStepBody}>
-              {hasTargetUrl ? (
+              {isByoMode ? (
                 <>
                   <div className={styles.workflowStepTitle}>Capture target baseline contract</div>
                   <div className={styles.workflowStepMeta}>
                     {!canWrite
-                      ? "Baseline capture is available only for p0004."
-                      : targetBaseline
-                      ? `Baseline captured ${formatIsoTime(
-                          targetBaseline.updatedAt,
-                        )} from telemetry ${formatIsoTime(targetBaseline.sourceSnapshotCapturedAt)}.`
-                      : baselineStatus === "loading"
-                        ? "Loading baseline for this target URL..."
-                        : "Capture baseline from current telemetry before monitoring drift."}
+                      ? "Baseline capture is available only for writable prototypes."
+                      : !hasTargetUrl
+                        ? "Set a valid target URL before capturing baseline."
+                        : targetBaseline
+                          ? `Baseline captured ${formatIsoTime(
+                              targetBaseline.updatedAt,
+                            )} from telemetry ${formatIsoTime(targetBaseline.sourceSnapshotCapturedAt)}.`
+                          : baselineStatus === "loading"
+                            ? "Loading baseline for this target URL..."
+                            : "Capture baseline from current telemetry before monitoring drift."}
                   </div>
                   <div className={styles.workflowRow}>
                     <button
@@ -691,6 +900,7 @@ export function InspectorWorkspace({
                       onClick={captureTargetBaseline}
                       disabled={
                         !canWrite ||
+                        !hasTargetUrl ||
                         telemetryStatus !== "ready" ||
                         !snapshot ||
                         workflowBusy !== null
@@ -741,11 +951,11 @@ export function InspectorWorkspace({
               <div className={styles.workflowStepTitle}>Reload and monitor violations over time</div>
               <div className={styles.workflowStepMeta}>
                 Telemetry {telemetryStatus}.{" "}
-                {hasTargetUrl
+                {isByoMode
                   ? targetBaseline
-                    ? `Target baseline ready (${formatIsoTime(targetBaseline.updatedAt)}).`
-                    : "Target baseline pending."
-                  : `Baseline ${baselineSnapshotId}. History ${snapshotCount} snapshots.`}
+                    ? `BYO baseline ready (${formatIsoTime(targetBaseline.updatedAt)}).`
+                    : "BYO baseline pending."
+                  : `Reference baseline snapshot ${baselineSnapshotId}. History ${snapshotCount} snapshots.`}
               </div>
               <div className={styles.workflowRow}>
                 <button
@@ -753,7 +963,7 @@ export function InspectorWorkspace({
                   onClick={reloadTelemetry}
                   disabled={telemetryStatus !== "ready"}
                 >
-                  Reload target surface
+                  Reload surface
                 </button>
                 <span className={styles.badge}>
                   Last reload {formatIsoTime(lastTelemetryRefreshAt ?? lastHandshakeAt)}
@@ -775,7 +985,12 @@ export function InspectorWorkspace({
                     `${pathname}?${buildInspectorQuery({
                       prototype: event.target.value,
                       snapshot: "",
-                      route: "/",
+                      route:
+                        targetMode === "reference"
+                          ? selectedTargetProfile.defaultRoute
+                          : selectedTargetProfile.baseUrl,
+                      targetMode,
+                      targetProfile: targetProfileId,
                       panel: detailsOpen ? "details" : "default",
                     })}`,
                   )
@@ -809,34 +1024,17 @@ export function InspectorWorkspace({
                 ))}
               </select>
             </label>
-
-            <label className={styles.label}>
-              Route
-              <select
-                className={styles.select}
-                value={normalizedSelectedRoute}
-                onChange={(event) =>
-                  replaceInspectorState({
-                    route: normalizeInspectorRouteInput(event.target.value),
-                    violation: undefined,
-                    node: undefined,
-                  })
-                }
-              >
-                {routeSelectOptions.map((route) => (
-                  <option key={route} value={route}>
-                    {route}
-                  </option>
-                ))}
-              </select>
-            </label>
           </div>
 
           <div className={styles.summary}>
             <span className={styles.badge}>Needs review {unresolvedCount}</span>
             <span className={styles.badge}>Blocking {blockingCount}</span>
             <span className={styles.badge}>
-              Publish {blockingCount === 0 && (!hasTargetUrl || Boolean(targetBaseline)) ? "ready" : "blocked"}
+              Reliability {reliability.tier === "full" ? "full" : "degraded"}
+            </span>
+            <span className={styles.badge}>
+              Publish{" "}
+              {blockingCount === 0 && (!isByoMode || Boolean(targetBaseline)) ? "ready" : "blocked"}
             </span>
             <button
               className={styles.action}
@@ -864,9 +1062,17 @@ export function InspectorWorkspace({
             {workflowMessage.text}
           </div>
         )}
-        {hasTargetUrl && canWrite && !targetBaseline && baselineStatus !== "loading" && (
+        {isByoMode && hasTargetUrl && canWrite && !targetBaseline && baselineStatus !== "loading" && (
           <div className={`${styles.workflowNotice} ${styles.workflowNoticeInfo}`}>
             No baseline exists for this target URL yet. Capture baseline to start violation tracking.
+          </div>
+        )}
+        {reliability.tier === "degraded" && (
+          <div className={`${styles.workflowNotice} ${styles.workflowNoticeInfo}`}>
+            Heuristic mode active. Marker-dependent blocking checks are downgraded to warnings.
+            {reliability.reasons.length > 0
+              ? ` Reason: ${reliability.reasons.map(reliabilityReasonLabel).join(", ")}.`
+              : ""}
           </div>
         )}
       </header>
@@ -889,7 +1095,8 @@ export function InspectorWorkspace({
           </div>
           {telemetryStatus === "unsupported" && (
             <div className={styles.warning}>
-              Preview telemetry unavailable. Ensure `surfaces-web` is running with inspector instrumentation.
+              Preview telemetry unavailable. Ensure the target surface can execute the inspector
+              bridge and provide a DOM snapshot.
             </div>
           )}
         </div>
@@ -904,8 +1111,18 @@ export function InspectorWorkspace({
         <aside className={styles.panel}>
           <div className={styles.panelHeader}>
             <h2>Contract Violations</h2>
-            <span className={styles.badge}>{filteredViolations.length}</span>
+            <div className={styles.panelHeaderMeta}>
+              <span className={styles.badge}>{filteredViolations.length}</span>
+              <span className={styles.badge}>
+                {reliability.tier === "full" ? "Full confidence" : "Degraded confidence"}
+              </span>
+            </div>
           </div>
+          {reliability.reasons.length > 0 && (
+            <div className={styles.reliabilityRow}>
+              {reliability.reasons.map((reason) => reliabilityReasonLabel(reason)).join(" • ")}
+            </div>
+          )}
 
           <div className={styles.categories}>
             <button
@@ -955,6 +1172,10 @@ export function InspectorWorkspace({
                   <div className={styles.rowTitle}>{violation.title}</div>
                   <div className={styles.rowMessage}>{violation.message}</div>
                   <div className={styles.rowPath}>{violation.rulePath}</div>
+                  <div className={styles.rowMeta}>
+                    {violation.confidence} confidence ·{" "}
+                    {violation.heuristic ? "heuristic" : "deterministic"}
+                  </div>
                 </button>
               );
             })}
@@ -974,9 +1195,9 @@ export function InspectorWorkspace({
             </button>
           </div>
           <div className={styles.detailsBody}>
-            <h4>{hasTargetUrl ? "Target Baseline Contract (JSON)" : "Draft Contract (JSON)"}</h4>
+            <h4>{isByoMode ? "Target Baseline Contract (JSON)" : "Draft Contract (JSON)"}</h4>
             <pre>{JSON.stringify(activeContractDraft ?? contractDraft, null, 2)}</pre>
-            {hasTargetUrl && (
+            {isByoMode && (
               <>
                 <h4>Target Baseline Status</h4>
                 <pre>

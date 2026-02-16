@@ -34,7 +34,7 @@ Decision filter sentence
 
 ## Surface impact
 - `surfaceops.ai`: primary surface for this prototype workflow.
-- `surfaces.systems`: remains extraction input via generated `surfaces-web.extraction.json`.
+- `surfaces.systems`: optional dogfood extraction input via generated `surfaces-web.extraction.json` (not product authority).
 - `interfacectl`: unchanged behavior; still used to generate extraction artifacts.
 
 ## Non-goals

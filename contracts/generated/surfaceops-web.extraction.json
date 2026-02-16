@@ -1,0 +1,48 @@
+{
+  "appRoot": "apps/surfaceops-web",
+  "extracted": {
+    "authAware": true,
+    "designSystemComponents": [
+      "Navigation"
+    ],
+    "hasShell": true,
+    "routes": [
+      "/",
+      "/api/onboarding/extract",
+      "/api/prototypes/governance/apply-accepted",
+      "/api/prototypes/governance/decision",
+      "/api/prototypes/governance/extract",
+      "/api/prototypes/governance/inspector-baseline",
+      "/api/prototypes/governance/inspector-bridge",
+      "/api/prototypes/governance/inspector-proxy",
+      "/api/prototypes/governance/snapshot",
+      "/auth/callback",
+      "/auth/login",
+      "/auth/logout",
+      "/auth/logout/complete",
+      "/auth/session",
+      "/contracts",
+      "/contracts/[surfaceId]",
+      "/contracts/governance",
+      "/contracts/governance/inspector",
+      "/contracts/runs",
+      "/contracts/runs/[surfaceId]",
+      "/v1/ingest/events"
+    ]
+  },
+  "surfaceId": "surfaceops-web",
+  "warnings": [
+    {
+      "code": "requiredSections.omitted",
+      "message": "requiredSections cannot be extracted from code in Phase 0; using placeholder."
+    },
+    {
+      "code": "allowedFonts.default",
+      "message": "allowedFonts cannot be extracted from code in Phase 0; using default."
+    },
+    {
+      "code": "layout.default",
+      "message": "layout.maxContentWidth cannot be extracted from code in Phase 0; using default."
+    }
+  ]
+}

@@ -1,6 +1,15 @@
 import { loadGovernancePrototypeSelection } from "../_lib/prototype-registry";
 import { InspectorWorkspace } from "./_components/inspector-workspace";
-import { normalizeInspectorRouteInput, readInspectorUrlState } from "./_lib/url-state";
+import {
+  isAbsoluteHttpUrl,
+  normalizeInspectorRouteInput,
+  readInspectorUrlState,
+} from "./_lib/url-state";
+import {
+  getInspectorTargetProfile,
+  listInspectorTargetProfiles,
+  resolveReferenceTargetBaseUrl,
+} from "./_lib/target-registry";
 
 function extractRoutes(value: unknown): string[] {
   const maybeRoutes = (
@@ -27,6 +36,8 @@ export default async function GovernanceInspectorPage({
     prototype?: string;
     snapshot?: string;
     route?: string;
+    targetMode?: string;
+    targetProfile?: string;
     violation?: string;
     node?: string;
     panel?: string;
@@ -40,6 +51,13 @@ export default async function GovernanceInspectorPage({
     requested.snapshot || null,
   );
 
+  const referenceBaseUrl = resolveReferenceTargetBaseUrl(
+    process.env.NEXT_PUBLIC_GOVERNANCE_REFERENCE_TARGET_URL ??
+      process.env.NEXT_PUBLIC_SURFACE_PREVIEW_BASE_URL,
+  );
+  const targetProfiles = listInspectorTargetProfiles(referenceBaseUrl);
+  const selectedTargetProfile = getInspectorTargetProfile(targetProfiles, requested.targetProfile);
+
   const routesFromSnapshot = extractRoutes(selection.selectedSnapshotReport);
   const routesFromExtraction = extractRoutes(selection.extractionReport);
   const routeOptions =
@@ -47,14 +65,24 @@ export default async function GovernanceInspectorPage({
       ? routesFromSnapshot
       : routesFromExtraction.length > 0
         ? routesFromExtraction
-        : ["/"];
+        : [selectedTargetProfile.defaultRoute];
   const normalizedRouteOptions = Array.from(
     new Set(routeOptions.map((route) => normalizeInspectorRouteInput(route))),
   );
-  const selectedRoute =
+
+  let selectedRoute =
     typeof params.route === "string" && params.route.trim().length > 0
       ? normalizeInspectorRouteInput(params.route)
-      : normalizedRouteOptions[0] ?? "/";
+      : requested.targetMode === "reference"
+        ? selectedTargetProfile.defaultRoute
+        : selectedTargetProfile.baseUrl;
+
+  if (requested.targetMode === "reference" && isAbsoluteHttpUrl(selectedRoute)) {
+    selectedRoute = selectedTargetProfile.defaultRoute;
+  }
+  if (requested.targetMode === "byo" && !isAbsoluteHttpUrl(selectedRoute)) {
+    selectedRoute = selectedTargetProfile.baseUrl;
+  }
 
   return (
     <InspectorWorkspace
@@ -68,7 +96,9 @@ export default async function GovernanceInspectorPage({
       baselineSnapshotId={selection.baselineSnapshotId}
       routeOptions={normalizedRouteOptions}
       selectedRoute={selectedRoute}
-      previewBaseUrl={process.env.NEXT_PUBLIC_SURFACE_PREVIEW_BASE_URL ?? "https://surfaces.systems"}
+      targetProfiles={targetProfiles}
+      initialTargetMode={requested.targetMode}
+      initialTargetProfileId={selectedTargetProfile.id}
       canWrite={selection.canWrite}
       latestExtractionUpdatedAt={selection.latestExtractionUpdatedAt}
       contractDraft={selection.draftContract}

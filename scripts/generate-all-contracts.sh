@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Generate extraction artifacts for all four surfaces.
+# Generate extraction artifacts for platform surfaces (plus reference target).
 # Run from repo root. Requires interfacectl CLI built (pnpm interfacectl:build).
 set -e
 
@@ -18,6 +18,7 @@ SURFACES=(
   "surfaceops-web:apps/surfaceops-web"
   "interfacectl-web:apps/interfacectl-web"
   "surfaces-dev:apps/surfaces-dev"
+  "reference-target-web:apps/reference-target-web"
 )
 
 mkdir -p "$OUT_DIR"

@@ -109,16 +109,19 @@ Observability feeds back into contract refinement. It does not replace enforceme
 ### System Surfaces
 All surfaces use the same contract model.
 
-- surfaces.systems  
-  Define and version interface contracts.
+- Customer surfaces (authoritative tenant context)  
+  Define and version interface contracts for their own products.
 
 - surfaceops.ai  
-  Collect signals from live systems to refine contracts.
+  Author governance policies, inspect violations, and refine contracts.
 
 - interfacectl.com  
   Execute, validate, and gate contracts in code and pipelines.
 
-Different surfaces, same enforcement semantics.
+- Reference target fixture (neutral demo tenant)  
+  Provides deterministic governance-inspector demos without dogfood ambiguity.
+
+Different surfaces, same enforcement semantics. Product authority stays with the customer contract state, not any single first-party website.
 
 ---
 

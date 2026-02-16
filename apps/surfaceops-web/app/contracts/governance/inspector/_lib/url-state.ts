@@ -1,9 +1,17 @@
+import {
+  getDefaultInspectorTargetProfileId,
+  type InspectorTargetMode,
+  type InspectorTargetProfileId,
+} from "./target-registry";
+
 export type InspectorPanelState = "default" | "details";
 
 export interface InspectorUrlState {
   prototype: string;
   snapshot: string;
   route: string;
+  targetMode: InspectorTargetMode;
+  targetProfile: InspectorTargetProfileId;
   violation?: string;
   node?: string;
   panel: InspectorPanelState;
@@ -28,10 +36,27 @@ export function normalizeInspectorRouteInput(value: string | undefined): string 
   return `/${trimmed.replace(/^\/+/, "")}`;
 }
 
+function readTargetMode(input: {
+  targetMode?: string;
+  route?: string;
+}): InspectorTargetMode {
+  if (input.targetMode === "reference") return "reference";
+  if (input.targetMode === "byo") return "byo";
+  const normalizedRoute = normalizeInspectorRouteInput(input.route);
+  return isAbsoluteHttpUrl(normalizedRoute) ? "byo" : "reference";
+}
+
+function readTargetProfileId(input: { targetProfile?: string }): InspectorTargetProfileId {
+  const defaultProfile = getDefaultInspectorTargetProfileId();
+  return input.targetProfile === defaultProfile ? defaultProfile : defaultProfile;
+}
+
 export function readInspectorUrlState(input: {
   prototype?: string;
   snapshot?: string;
   route?: string;
+  targetMode?: string;
+  targetProfile?: string;
   violation?: string;
   node?: string;
   panel?: string;
@@ -42,6 +67,8 @@ export function readInspectorUrlState(input: {
     prototype: input.prototype ?? "p0004",
     snapshot: input.snapshot ?? "",
     route: normalizedRoute,
+    targetMode: readTargetMode(input),
+    targetProfile: readTargetProfileId(input),
     violation: input.violation ?? undefined,
     node: input.node ?? undefined,
     panel: input.panel === "details" ? "details" : "default",
@@ -54,6 +81,8 @@ export function buildInspectorQuery(state: InspectorUrlState): string {
   params.set("prototype", state.prototype);
   if (state.snapshot) params.set("snapshot", state.snapshot);
   params.set("route", state.route);
+  params.set("targetMode", state.targetMode);
+  params.set("targetProfile", state.targetProfile);
   if (state.violation) params.set("violation", state.violation);
   if (state.node) params.set("node", state.node);
   if (state.panel === "details") params.set("panel", "details");

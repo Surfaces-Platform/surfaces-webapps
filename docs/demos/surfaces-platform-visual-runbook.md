@@ -52,3 +52,23 @@ pnpm run demo:runtime:surfaceops
    - confirm `pnpm dev:surfaceops` is running.
 3. CLI artifacts missing:
    - run `pnpm run interfacectl:build`.
+
+## Governance Inspector Demos (Reference Target)
+Run these with SurfaceOps and the neutral fixture:
+
+```bash
+pnpm dev:surfaceops
+pnpm dev:reference-target
+```
+
+Duplicate-nav regression scenario:
+
+```bash
+node scripts/demos/demo-governance-inspector.mjs --scenario duplicate-nav --headless
+```
+
+`nng.5.error-prevention` scenario (baseline guarded -> violating unguarded):
+
+```bash
+node scripts/demos/demo-governance-inspector.mjs --scenario nng5-error-prevention --headless
+```

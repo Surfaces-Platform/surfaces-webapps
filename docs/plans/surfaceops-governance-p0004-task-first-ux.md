@@ -28,7 +28,7 @@ Decision filter sentence
 ## Surface impact
 - `surfaceops.ai`: primary and only affected surface.
 - `interfacectl`: no behavior changes.
-- `surfaces.systems`: unchanged as extraction input.
+- `surfaces.systems`: optional dogfood extraction input; no canonical authority semantics.
 
 ## Non-goals
 - No runtime (edge) enforcement changes.

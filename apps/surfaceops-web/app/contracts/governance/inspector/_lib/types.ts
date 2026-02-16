@@ -11,6 +11,14 @@ export type InspectorCategory =
 
 export type InspectorSeverity = "blocking" | "warning" | "info";
 
+export type ReliabilityTier = "full" | "degraded";
+
+export type ReliabilityReason =
+  | "byo_target"
+  | "telemetry_unavailable"
+  | "missing_marker_fidelity"
+  | "baseline_unavailable";
+
 export interface InspectorNodeRect {
   top: number;
   left: number;
@@ -48,6 +56,8 @@ export interface InspectorViolation {
   message: string;
   rulePath: string;
   nodeIds: string[];
+  confidence: "high" | "medium";
+  heuristic: boolean;
 }
 
 export interface InspectorState {
@@ -61,11 +71,16 @@ export interface InspectorCheckContext {
   contractDraft: SurfaceContract;
   domSnapshot: InspectorDomSnapshot;
   requiredSections: string[];
+  reliabilityTier: ReliabilityTier;
+  reliabilityReasons: ReliabilityReason[];
 }
 
 export interface InspectorRulePlugin {
   id: string;
   category: InspectorCategory;
+  markerDependent?: boolean;
+  confidence: "high" | "medium";
+  heuristic: boolean;
   evaluate: (ctx: InspectorCheckContext) => InspectorViolation[];
 }
 

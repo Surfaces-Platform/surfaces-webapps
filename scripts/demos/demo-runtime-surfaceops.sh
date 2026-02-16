@@ -14,7 +14,7 @@ SURFACES_WEB_URL="${SURFACES_WEB_URL:-http://localhost:3000}"
 SURFACEOPS_URL="${SURFACEOPS_URL:-http://localhost:3001}"
 SURFACE_ID="${SURFACE_ID:-surfaces-web}"
 
-EDGE_MANIFEST_PATH="${EDGE_MANIFEST_PATH:-$REPO_ROOT/docs/interfacectl/examples/edge/manifest.json}"
+EDGE_MANIFEST_PATH="${EDGE_MANIFEST_PATH:-$REPO_ROOT/contracts/generated/surfaces-web.runtime-manifest.json}"
 
 step() { echo "[STEP] $*"; }
 ok() { echo "[OK] $*"; }

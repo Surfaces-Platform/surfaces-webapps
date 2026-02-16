@@ -16,3 +16,4 @@ The CLI is built from the `tools/interfacectl` submodule; run `pnpm run interfac
 
 - `*.contract.json` — Schema-valid contract with `x_extracted` (routes, hasShell, designSystemComponents, authAware).
 - `*.extraction.json` — Machine-readable report and warnings.
+- `*.runtime-manifest.json` — Runtime edge manifest derived from canonical contract (`contractId`, `version`, `surfaceId`, `layout`, `color`, `motion`).

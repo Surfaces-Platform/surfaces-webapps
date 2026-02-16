@@ -48,6 +48,33 @@ test("runtime edge smoke examples remain healthy", () => {
   const testEdge = runNode(["docs/interfacectl/examples/edge/test-edge.mjs"]);
   assert.equal(testEdge.status, 0, testEdge.stderr || testEdge.stdout);
   assert.match(testEdge.stdout, /edge tests passed/);
+
+  const validateEdgeModulePath = path.join(
+    repoRoot,
+    "docs",
+    "interfacectl",
+    "examples",
+    "edge",
+    "validate-edge.js",
+  );
+  return import(`file://${validateEdgeModulePath}`).then(({ validateEdgeChange }) => {
+    const mismatch = validateEdgeChange({
+      surfaceId: "unexpected-surface",
+      sectionId: "hero",
+      proposedStyles: { background: "var(--background)" },
+    });
+    assert.equal(mismatch.allowed, false);
+    assert.equal(mismatch.violations[0]?.rule, "surface.mismatch");
+
+    const ok = validateEdgeChange({
+      surfaceId: "surfaces-web",
+      sectionId: "hero",
+      proposedStyles: { background: "var(--background)" },
+    });
+    assert.ok(ok.contract?.id);
+    assert.ok(ok.contract?.version);
+    assert.equal(ok.contract?.surfaceId, "surfaces-web");
+  });
 });
 
 test("ci validation commands remain healthy", () => {
@@ -136,6 +163,10 @@ test("generation guard blocks disallowed primitives and allows shell sources", a
     version: "1.0.0",
     sections: [],
     constraints: { motion: { allowedDurationsMs: [120], allowedTimingFunctions: ["linear"] } },
+    color: {
+      sourceOfTruth: { type: "none" },
+      rawValues: { policy: "off", allowlist: [], denylist: [] },
+    },
     surfaces: [
       {
         id: "surfaceops-web",
@@ -172,4 +203,74 @@ test("generation guard blocks disallowed primitives and allows shell sources", a
 
   const goodRun = runNode([guardPath, "--contract", contractPath, "--descriptor", goodDescriptorPath]);
   assert.equal(goodRun.status, 0, goodRun.stderr || goodRun.stdout);
+});
+
+test("generation guard enforces color policy severity", async () => {
+  const tmpDir = await fsp.mkdtemp(path.join(os.tmpdir(), "surfaces-gen-guard-color-"));
+  const strictContractPath = path.join(tmpDir, "contract.strict.json");
+  const warnContractPath = path.join(tmpDir, "contract.warn.json");
+  const rawDescriptorPath = path.join(tmpDir, "descriptor.raw.json");
+  const tokenDescriptorPath = path.join(tmpDir, "descriptor.token.json");
+
+  const baseContract = {
+    contractId: "demo-color",
+    version: "1.0.0",
+    sections: [],
+    constraints: { motion: { allowedDurationsMs: [120], allowedTimingFunctions: ["linear"] } },
+    surfaces: [
+      {
+        id: "surfaces-web",
+        displayName: "Surfaces",
+        type: "web",
+        requiredSections: [],
+        allowedFonts: ["Inter"],
+        layout: { maxContentWidth: 1120 },
+      },
+    ],
+  };
+
+  const strictContract = {
+    ...baseContract,
+    color: {
+      sourceOfTruth: { type: "tokens", tokenNamespaces: ["--color-"] },
+      rawValues: { policy: "strict", allowlist: [], denylist: [] },
+    },
+  };
+  const warnContract = {
+    ...baseContract,
+    color: {
+      sourceOfTruth: { type: "tokens", tokenNamespaces: ["--color-"] },
+      rawValues: { policy: "warn", allowlist: [], denylist: [] },
+    },
+  };
+
+  const rawDescriptor = [
+    {
+      surfaceId: "surfaces-web",
+      colors: [{ value: "rgba(15, 23, 42, 0.3)", source: "apps/surfaces-web/app/page.tsx" }],
+    },
+  ];
+  const tokenDescriptor = [
+    {
+      surfaceId: "surfaces-web",
+      colors: [{ value: "var(--unexpected-token)", source: "apps/surfaces-web/app/page.tsx" }],
+    },
+  ];
+
+  await fsp.writeFile(strictContractPath, JSON.stringify(strictContract, null, 2));
+  await fsp.writeFile(warnContractPath, JSON.stringify(warnContract, null, 2));
+  await fsp.writeFile(rawDescriptorPath, JSON.stringify(rawDescriptor, null, 2));
+  await fsp.writeFile(tokenDescriptorPath, JSON.stringify(tokenDescriptor, null, 2));
+
+  const strictRun = runNode([guardPath, "--contract", strictContractPath, "--descriptor", rawDescriptorPath]);
+  assert.equal(strictRun.status, 2, strictRun.stderr || strictRun.stdout);
+  assert.match(strictRun.stderr, /color-policy-blocking detected/);
+
+  const warnRun = runNode([guardPath, "--contract", warnContractPath, "--descriptor", rawDescriptorPath]);
+  assert.equal(warnRun.status, 0, warnRun.stderr || warnRun.stdout);
+  assert.match(warnRun.stderr, /color-policy-warning detected/);
+
+  const namespaceRun = runNode([guardPath, "--contract", warnContractPath, "--descriptor", tokenDescriptorPath]);
+  assert.equal(namespaceRun.status, 0, namespaceRun.stderr || namespaceRun.stdout);
+  assert.match(namespaceRun.stderr, /color-policy-warning detected/);
 });

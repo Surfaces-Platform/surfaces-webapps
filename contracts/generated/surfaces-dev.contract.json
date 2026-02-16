@@ -1,0 +1,70 @@
+{
+  "$schema": "https://contracts.surfaces.local/web.surface.contract.schema.json",
+  "color": {
+    "rawValues": {
+      "allowlist": [],
+      "denylist": [],
+      "policy": "off"
+    },
+    "sourceOfTruth": {
+      "type": "none"
+    }
+  },
+  "constraints": {
+    "motion": {
+      "allowedDurationsMs": [
+        120
+      ],
+      "allowedTimingFunctions": [
+        "linear"
+      ]
+    }
+  },
+  "contractId": "surfaces-dev.generated",
+  "description": "Extracted from Next.js app (Phase 0).",
+  "sections": [
+    {
+      "description": "Placeholder; sections not extracted in Phase 0.",
+      "id": "extracted.placeholder",
+      "intent": "extracted"
+    }
+  ],
+  "surfaces": [
+    {
+      "allowedFonts": [
+        "sans-serif"
+      ],
+      "displayName": "Surfaces Dev",
+      "id": "surfaces-dev",
+      "layout": {
+        "maxContentWidth": 1120
+      },
+      "requiredSections": [
+        "extracted.placeholder"
+      ],
+      "type": "web"
+    }
+  ],
+  "version": "0.1.0",
+  "x_extracted": {
+    "authAware": true,
+    "designSystemComponents": [
+      "Navigation"
+    ],
+    "hasShell": true,
+    "routes": [
+      "/",
+      "/auth/callback",
+      "/auth/login",
+      "/auth/logout",
+      "/auth/session",
+      "/contracts",
+      "/get-started",
+      "/guides",
+      "/interfacectl",
+      "/interfacectl/exit-codes",
+      "/reference/shell-boundary",
+      "/reference/validation-boundaries"
+    ]
+  }
+}

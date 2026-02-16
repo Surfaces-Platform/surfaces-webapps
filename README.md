@@ -1,11 +1,12 @@
 # Surfaces Platform Web Monorepo
 
-This monorepo contains four Next.js web applications for the Surfaces Platform:
+This monorepo contains five Next.js web applications for the Surfaces Platform:
 
-- **surfaces-web** - Canonical source of interface truth (surfaces.systems) — auth-aware, public by default
+- **surfaces-web** - Company website and dogfood surface (surfaces.systems) — auth-aware, public by default
 - **surfaceops-web** - Operational enforcement and monitoring (surfaceops.ai) — auth required for app workflows
 - **interfacectl-web** - Executable interface control (interfacectl.com) — auth-aware, public by default
 - **surfaces-dev** - Developer documentation and reference (surfaces.dev) — auth-aware, public by default
+- **reference-target-web** - Neutral deterministic reference target for governance inspector demos
 
 ## Local Development
 
@@ -35,11 +36,16 @@ cd apps/interfacectl-web && pnpm dev
 pnpm dev:surfaces-dev
 # or
 cd apps/surfaces-dev && pnpm dev
+
+# Run reference-target-web on port 3004
+pnpm dev:reference-target
+# or
+cd apps/reference-target-web && pnpm dev
 ```
 
 ### Running All Apps
 
-To run all four apps concurrently:
+To run all apps concurrently:
 
 ```bash
 pnpm dev:all
@@ -59,6 +65,9 @@ pnpm dev:interfacectl # http://localhost:3002
 
 # Terminal 4
 pnpm dev:surfaces-dev # http://localhost:3003
+
+# Terminal 5
+pnpm dev:reference-target # http://localhost:3004
 ```
 
 ### Local Development URLs
@@ -67,6 +76,7 @@ pnpm dev:surfaces-dev # http://localhost:3003
 - SurfaceOps: http://localhost:3001
 - InterfaceCTL: http://localhost:3002
 - Surfaces.dev: http://localhost:3003
+- Reference target: http://localhost:3004
 
 ## Auth posture
 
@@ -80,6 +90,7 @@ When deployed, each app runs on its own domain:
 - SurfaceOps: https://surfaceops.ai
 - InterfaceCTL: https://interfacectl.com
 - Surfaces.dev: https://surfaces.dev
+- Reference target: configured via `NEXT_PUBLIC_GOVERNANCE_REFERENCE_TARGET_URL`
 
 The Navigation component automatically detects the environment and routes to the correct domains in production, or localhost ports in development.
 
@@ -91,6 +102,7 @@ You can customize the development URLs by setting environment variables in each 
 - `NEXT_PUBLIC_SURFACEOPS_URL` - Default: `http://localhost:3001`
 - `NEXT_PUBLIC_INTERFACECTL_URL` - Default: `http://localhost:3002`
 - `NEXT_PUBLIC_SURFACES_DEV_URL` - Default: `http://localhost:3003`
+- `NEXT_PUBLIC_GOVERNANCE_REFERENCE_TARGET_URL` - Default (dev): `http://localhost:3004`
 
 These can be set in `.env.local` files in each app directory.
 
@@ -201,7 +213,8 @@ surfaces-webapps/
 │   ├── surfaces-web/        # Surfaces landing page
 │   ├── surfaceops-web/      # SurfaceOps landing page
 │   ├── interfacectl-web/    # InterfaceCTL landing page
-│   └── surfaces-dev/        # Developer documentation
+│   ├── surfaces-dev/        # Developer documentation
+│   └── reference-target-web/ # Governance reference fixture
 ├── packages/
 │   └── ui/                  # Shared UI components
 │       ├── components/      # Navigation, etc.
@@ -210,4 +223,3 @@ surfaces-webapps/
 └── contracts/               # Interface contracts
 
 ```
-

@@ -1,6 +1,7 @@
 import { GovernanceWorkspace } from "./_components/governance-workspace";
 import { buildExtractionDiff } from "./_lib/prototype-diff";
 import { loadGovernancePrototypeSelection } from "./_lib/prototype-registry";
+import { resolveReferenceTargetBaseUrl } from "./inspector/_lib/target-registry";
 
 export default async function GovernancePage({
   searchParams,
@@ -37,6 +38,10 @@ export default async function GovernancePage({
     selection.selectedSnapshotReport as Record<string, unknown>,
     Object.fromEntries(latestDecisionByDiff),
   );
+  const previewBaseUrl = resolveReferenceTargetBaseUrl(
+    process.env.NEXT_PUBLIC_GOVERNANCE_REFERENCE_TARGET_URL ??
+      process.env.NEXT_PUBLIC_SURFACE_PREVIEW_BASE_URL,
+  );
 
   return (
     <GovernanceWorkspace
@@ -50,7 +55,7 @@ export default async function GovernancePage({
       selectedPrototypeTitle={selection.selected.title}
       selectedPrototypeStatus={selection.selected.status}
       previewRoutes={previewRoutes}
-      previewBaseUrl={process.env.NEXT_PUBLIC_SURFACE_PREVIEW_BASE_URL ?? "https://surfaces.systems"}
+      previewBaseUrl={previewBaseUrl}
       diffItems={diffItems}
       latestExtractionUpdatedAt={selection.latestExtractionUpdatedAt}
       canWrite={selection.canWrite}

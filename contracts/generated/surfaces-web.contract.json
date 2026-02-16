@@ -1,5 +1,15 @@
 {
   "$schema": "https://contracts.surfaces.local/web.surface.contract.schema.json",
+  "color": {
+    "rawValues": {
+      "allowlist": [],
+      "denylist": [],
+      "policy": "off"
+    },
+    "sourceOfTruth": {
+      "type": "none"
+    }
+  },
   "constraints": {
     "motion": {
       "allowedDurationsMs": [

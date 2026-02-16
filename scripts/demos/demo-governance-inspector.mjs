@@ -81,10 +81,41 @@ async function waitForTelemetryReady(page, timeoutMs = 45000) {
   throw new Error("Telemetry did not reach ready state.");
 }
 
-function withSimulationFlag(targetBaseUrl, enabled) {
+async function waitForLocatorCount(locator, expectedCount, timeoutMs = 15000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      if ((await locator.count()) === expectedCount) {
+        return;
+      }
+    } catch {
+      // Locator not stable yet.
+    }
+    await delay(250);
+  }
+  throw new Error(`Locator count did not reach ${expectedCount} within timeout.`);
+}
+
+function withSimulationFlags(targetBaseUrl, flags) {
   const url = new URL(targetBaseUrl);
-  url.searchParams.set("simulateDuplicateNav", enabled ? "1" : "0");
+  for (const [key, value] of Object.entries(flags)) {
+    url.searchParams.set(key, value);
+  }
   return url.toString();
+}
+
+function buildInspectorUrl({
+  inspectorBaseUrl,
+  prototypeId,
+  targetMode,
+  route,
+}) {
+  const inspectorUrl = new URL(inspectorBaseUrl);
+  inspectorUrl.searchParams.set("prototype", prototypeId);
+  inspectorUrl.searchParams.set("targetMode", targetMode);
+  inspectorUrl.searchParams.set("targetProfile", "reference_customer_v1");
+  inspectorUrl.searchParams.set("route", route);
+  return inspectorUrl;
 }
 
 async function run() {
@@ -92,29 +123,62 @@ async function run() {
     parseArg("--inspector-url", process.env.SURFACEOPS_INSPECTOR_URL) ??
     "http://localhost:3001/contracts/governance/inspector";
   const targetBaseUrl =
-    parseArg("--target-url", process.env.SURFACEOPS_TARGET_URL_BASE) ?? "http://localhost:3000/";
+    parseArg(
+      "--target-url",
+      process.env.SURFACEOPS_REFERENCE_TARGET_URL ??
+        process.env.SURFACEOPS_TARGET_URL_BASE ??
+        process.env.NEXT_PUBLIC_GOVERNANCE_REFERENCE_TARGET_URL,
+    ) ?? "http://localhost:3004/";
   const prototypeId = parseArg("--prototype", process.env.SURFACEOPS_PROTOTYPE) ?? "p0004";
   const slowMo = Number(parseArg("--slow-mo", "250"));
   const headless = hasFlag("--headless");
   const keepOpen = hasFlag("--keep-open");
   const record = hasFlag("--record");
   const narrated = hasFlag("--narrated");
+  const scenario = parseArg("--scenario", "duplicate-nav");
   const narrationShortMs = positiveNumberOr(parseArg("--narration-short-ms", "1800"), 1800);
   const narrationLongMs = positiveNumberOr(parseArg("--narration-long-ms", "3200"), 3200);
 
-  const baselineTarget = withSimulationFlag(targetBaseUrl, false);
-  const violatingTarget = withSimulationFlag(targetBaseUrl, true);
+  if (!["duplicate-nav", "nng5-error-prevention"].includes(scenario)) {
+    throw new Error(
+      `Unsupported --scenario "${scenario}". Use duplicate-nav or nng5-error-prevention.`,
+    );
+  }
+
+  const targetOrigin = new URL(targetBaseUrl).origin;
+  const baselineRoute =
+    scenario === "duplicate-nav"
+      ? withSimulationFlags(targetBaseUrl, { simulateDuplicateNav: "0" })
+      : "/?simulateDestructiveWithConfirm=1";
+  const violatingRoute =
+    scenario === "duplicate-nav"
+      ? withSimulationFlags(targetBaseUrl, { simulateDuplicateNav: "1" })
+      : "/?simulateDestructiveWithoutGuard=1";
+  const targetMode = scenario === "duplicate-nav" ? "byo" : "reference";
+  const violationTitlePattern =
+    scenario === "duplicate-nav"
+      ? /Duplicate navigation detected/i
+      : /Destructive action missing guard/i;
+  const expectedRulePath =
+    scenario === "duplicate-nav"
+      ? /navigation\.disallowDuplicateNavigation/i
+      : /nng\.5\.error-prevention/i;
+  const scenarioSummary =
+    scenario === "duplicate-nav"
+      ? "duplicate-nav violations are visible"
+      : "nng.5 error-prevention violation is visible";
+
   const videoDir = path.resolve(process.cwd(), "artifacts", "governance-inspector-demo");
   if (record) {
     fs.mkdirSync(videoDir, { recursive: true });
   }
 
   console.log("[demo] waiting for local servers...");
-  await waitForHttp("http://localhost:3000");
+  await waitForHttp(targetOrigin);
   await waitForHttp("http://localhost:3001/contracts/governance/inspector");
   await narration(
     narrated,
-    "We are connected to both apps. Step 1 is loading inspector with the baseline target (no simulated drift).",
+    "We are connected to both apps. Step 1 is loading inspector with the baseline target state.",
     narrationLongMs,
   );
 
@@ -126,12 +190,18 @@ async function run() {
   const page = await context.newPage();
   const video = page.video();
 
-  const inspectorUrl = new URL(inspectorBaseUrl);
-  inspectorUrl.searchParams.set("prototype", prototypeId);
-  inspectorUrl.searchParams.set("route", baselineTarget);
-  const violatingInspectorUrl = new URL(inspectorBaseUrl);
-  violatingInspectorUrl.searchParams.set("prototype", prototypeId);
-  violatingInspectorUrl.searchParams.set("route", violatingTarget);
+  const inspectorUrl = buildInspectorUrl({
+    inspectorBaseUrl,
+    prototypeId,
+    targetMode,
+    route: baselineRoute,
+  });
+  const violatingInspectorUrl = buildInspectorUrl({
+    inspectorBaseUrl,
+    prototypeId,
+    targetMode,
+    route: violatingRoute,
+  });
 
   console.log(`[demo] open inspector at ${inspectorUrl.toString()}`);
   await page.goto(inspectorUrl.toString(), { waitUntil: "domcontentloaded" });
@@ -149,11 +219,13 @@ async function run() {
   await page.getByText(/Baseline ready/i).first().waitFor({ timeout: 20000 });
   await narration(
     narrated,
-    "Baseline is captured. Now we switch to a target URL variant that simulates duplicate primary navigation.",
+    scenario === "duplicate-nav"
+      ? "Baseline is captured. Now we switch to a target URL variant that simulates duplicate primary navigation."
+      : "Baseline is captured. Now we switch to a route variant that simulates an unguarded destructive action.",
     narrationLongMs,
   );
 
-  console.log("[demo] switch target to duplicate-nav simulation");
+  console.log(`[demo] switch target to ${scenario} simulation`);
   await page.goto(violatingInspectorUrl.toString(), { waitUntil: "domcontentloaded" });
 
   await waitForTelemetryReady(page);
@@ -166,19 +238,47 @@ async function run() {
   console.log("[demo] reload telemetry and wait for violations");
   await reloadButton.click();
 
-  const duplicateViolation = page.getByRole("button", { name: /Duplicate navigation detected/i }).first();
-  await duplicateViolation.waitFor({ timeout: 20000 });
-  await duplicateViolation.click();
+  const selectedViolation = page.getByRole("button", { name: violationTitlePattern }).first();
+  await selectedViolation.waitFor({ timeout: 20000 });
+  await selectedViolation.click();
+  await page.getByText(expectedRulePath).first().waitFor({ timeout: 15000 });
 
-  await page.getByText(/Needs review 2/i).first().waitFor({ timeout: 15000 });
-  await page.getByText(/Blocking 2/i).first().waitFor({ timeout: 15000 });
-  await narration(
-    narrated,
-    "Violation list is now populated with two blocking navigation failures, and selection is linked back to canvas highlights.",
-    narrationLongMs,
-  );
+  if (scenario === "duplicate-nav") {
+    await page.getByText(/Needs review 2/i).first().waitFor({ timeout: 15000 });
+    await page.getByText(/Blocking 2/i).first().waitFor({ timeout: 15000 });
+    await narration(
+      narrated,
+      "Violation list is now populated with two blocking navigation failures, and selection is linked back to canvas highlights.",
+      narrationLongMs,
+    );
+  } else {
+    await narration(
+      narrated,
+      "Violation list now includes the unguarded destructive action and the selected item shows rulePath nng.5.error-prevention.",
+      narrationLongMs,
+    );
 
-  console.log("[demo] simulation complete: duplicate-nav violations are visible");
+    await narration(
+      narrated,
+      "Now we recover by returning to the guarded baseline route and reloading telemetry.",
+      narrationShortMs,
+    );
+    console.log("[demo] switch target back to guarded baseline route");
+    await page.goto(inspectorUrl.toString(), { waitUntil: "domcontentloaded" });
+    await waitForTelemetryReady(page);
+    const recoveryReloadButton = await waitForEnabled(
+      page.getByRole("button", { name: "Reload target surface" }),
+    );
+    await recoveryReloadButton.click();
+    await waitForLocatorCount(
+      page.getByRole("button", { name: violationTitlePattern }).first(),
+      0,
+      20000,
+    );
+    console.log("[demo] recovery check passed: nng.5 violation cleared");
+  }
+
+  console.log(`[demo] simulation complete: ${scenarioSummary}`);
 
   if (keepOpen) {
     console.log("[demo] keeping browser open for manual walkthrough. Press Ctrl+C to stop.");

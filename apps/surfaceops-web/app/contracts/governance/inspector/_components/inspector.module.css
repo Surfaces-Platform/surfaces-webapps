@@ -97,6 +97,14 @@
   color: #93a0ba;
 }
 
+.labelInline {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: #93a0ba;
+}
+
 .select {
   background: #0b1220;
   color: #e2e8f0;
@@ -242,11 +250,26 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
 }
 
 .panelHeader h2 {
   margin: 0;
   font-size: 15px;
+}
+
+.panelHeaderMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.reliabilityRow {
+  padding: 8px 10px;
+  border-bottom: 1px solid #1f2a44;
+  font-size: 12px;
+  color: #93a0ba;
 }
 
 .categories {
@@ -351,6 +374,11 @@
   font-size: 11px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
   color: #93a0ba;
+}
+
+.rowMeta {
+  font-size: 11px;
+  color: #64748b;
 }
 
 .empty {

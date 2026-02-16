@@ -20,5 +20,16 @@ const ok = validateEdgeChange({
   proposedStyles: { background: "var(--background)" },
 });
 assert(ok.allowed, "valid change should be allowed");
+assert(ok.contract?.id, "contract id should be present");
+assert(ok.contract?.version, "contract version should be present");
+assert(ok.contract?.surfaceId === "surfaces-web", "contract surfaceId should match");
+
+const mismatch = validateEdgeChange({
+  surfaceId: "unexpected-surface",
+  sectionId: "hero",
+  proposedStyles: { background: "var(--background)" },
+});
+assert(!mismatch.allowed, "surface mismatch should block");
+assert(mismatch.violations?.[0]?.rule === "surface.mismatch", "surface mismatch should emit rule");
 
 console.log("edge tests passed");

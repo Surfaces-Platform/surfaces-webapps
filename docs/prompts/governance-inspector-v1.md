@@ -11,7 +11,8 @@ Goal:
 - Use progressive disclosure: show only information necessary for current task.
 
 Scope:
-- Target only `surfaces-web` in v1.
+- Default to a neutral reference target profile (`reference_customer_v1`) in v1.
+- Keep BYO URL support with explicit degraded reliability messaging.
 - Implement as a new route under `/contracts/governance`.
 - Keep existing governance prototype routes untouched.
 - Keep existing persistence APIs; do not change persistence schemas.
@@ -22,6 +23,7 @@ Technical requirements:
 - Add overlay/highlight labels inside preview.
 - Add categorized violations list with drag-resizable panel (persist width).
 - Support URL state for prototype, snapshot, route, selected violation, selected element.
+- Include URL state for `targetMode=reference|byo` and `targetProfile`.
 
 UX constraints:
 - No top metadata dump.
@@ -32,5 +34,6 @@ UX constraints:
 Acceptance:
 - Bidirectional selection works reliably.
 - Violations are categorized and synchronized with canvas highlights.
+- Reliability tier is visible (`full` vs `degraded`) with explicit reasons in BYO mode.
 - Layout is stable and responsive within constraints.
 - Existing `/contracts` and `/contracts/runs` flows remain unaffected.
