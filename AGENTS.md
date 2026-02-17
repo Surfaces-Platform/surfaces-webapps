@@ -14,3 +14,9 @@ Before proposing code changes, ensure the plan explicitly states:
 - which lifecycle context(s) the change affects
 - which artifacts are used in each context
 - which tools enforce decisions in each context
+
+When work in this repo requires changes to `interfacectl`, follow this cross-repo workflow:
+- make code changes in the sibling repo at `../interfacectl` (do not implement `interfacectl` code inside this repo)
+- run relevant tests in `../interfacectl` for the changed behavior
+- open/update the `interfacectl` PR first and capture its branch name and commit SHA
+- in the `surfaces-webapps` PR, link the `interfacectl` PR and document dependency order/blocking status

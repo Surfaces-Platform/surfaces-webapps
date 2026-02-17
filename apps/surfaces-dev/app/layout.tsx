@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "surfaces.dev - Developer documentation for Surfaces",
-  description: "surfaces.dev is the developer interface for Surfaces: docs, specs, schemas, examples, and CLI semantics.",
+  title: "surfaces.dev - Contract Enforcement Quick Starts",
+  description: "Generation, integration, and runtime quick starts for enforcing the Surfaces web contract with AI UI tools.",
 };
 
 export default function RootLayout({

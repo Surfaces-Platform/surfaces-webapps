@@ -2,6 +2,12 @@
 
 This document defines how code generators (AI tools, scaffolding utilities, template engines) should consume Surfaces interface contracts to produce compliant output.
 
+Related adapter docs:
+
+- [AI Generator Adapter Quick Start](./ai-generator-adapter-quickstart.md)
+- [AI Generator Adapter API](./ai-generator-adapter-api.md)
+- [AI Tool Playbooks](./ai-tool-playbooks.md)
+
 ## Contract Subset for Generators
 
 Generators should focus on the following contract sections that define correctness constraints:

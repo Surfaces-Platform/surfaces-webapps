@@ -1,14 +1,12 @@
 {
   "$schema": "https://contracts.surfaces.local/web.surface.contract.schema.json",
   "color": {
-    "rawValues": {
-      "allowlist": [],
-      "denylist": [],
-      "policy": "off"
-    },
-    "sourceOfTruth": {
-      "type": "none"
-    }
+    "allowedValues": [
+      "var(--background)",
+      "var(--foreground)",
+      "var(--surface)"
+    ],
+    "policy": "warn"
   },
   "constraints": {
     "motion": {
@@ -59,12 +57,18 @@
       "/auth/logout",
       "/auth/session",
       "/contracts",
+      "/generation",
       "/get-started",
       "/guides",
+      "/guides/ai-generator-adapter-quick-start",
+      "/guides/ai-tool-playbooks",
+      "/integration",
       "/interfacectl",
       "/interfacectl/exit-codes",
+      "/reference/generation-adapter-api",
       "/reference/shell-boundary",
-      "/reference/validation-boundaries"
+      "/reference/validation-boundaries",
+      "/runtime"
     ]
   }
 }

@@ -11,13 +11,16 @@
   "exports": {
     ".": "./src/index.ts",
     "./components": "./src/components/index.ts",
+    "./components/Icon": "./src/components/Icon.tsx",
     "./components/Navigation": "./src/components/Navigation.tsx",
+    "./icons": "./src/icons/index.ts",
     "./tokens": "./src/tokens/index.ts",
     "./tokens/colors": "./src/tokens/colors.ts",
     "./utils": "./src/utils/index.ts",
     "./utils/motion": "./src/utils/motion.ts"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "motion": "^12.23.24",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
@@ -32,4 +35,3 @@
     "typescript": "^5"
   }
 }
-

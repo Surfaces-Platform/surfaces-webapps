@@ -2,6 +2,12 @@
 
 This page explains how contract fields encode the layout boundary between shell-owned primitives and surface-owned content, and how generators must enforce it across tools (Figma Make, Lovable/LLM builders, agentic coders).
 
+Related adapter docs:
+
+- [AI Generator Adapter Quick Start](./ai-generator-adapter-quickstart.md)
+- [AI Generator Adapter API](./ai-generator-adapter-api.md)
+- [AI Tool Playbooks](./ai-tool-playbooks.md)
+
 ## Contract fields
 
 - `shell.owns` (array): Shell-owned primitives (e.g., `nav`, `header`, `sidebar`, `authWrapper`, `appChrome`). Generators must not emit these inside surfaces.

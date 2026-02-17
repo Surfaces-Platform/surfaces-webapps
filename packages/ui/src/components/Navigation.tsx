@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { ChevronDownIcon } from '../icons';
+import { Icon } from './Icon';
 
 interface NavigationSection {
   label: string;
@@ -353,7 +355,7 @@ export default function Navigation({
                currentSurface === 'surfaceops' ? 'surfaceops.ai' : 
                currentSurface === 'surfaces-dev' ? 'surfaces.dev' :
                'interfacectl.com'}
-              <span style={{ fontSize: '10px' }}>▾</span>
+              <Icon icon={ChevronDownIcon} size={14} decorative />
             </button>
 
             <AnimatePresence>
@@ -513,4 +515,3 @@ export default function Navigation({
     </nav>
   );
 }
-
