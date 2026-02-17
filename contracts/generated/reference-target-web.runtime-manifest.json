@@ -1,0 +1,28 @@
+{
+  "contractId": "reference-target-web.generated",
+  "version": "0.1.0",
+  "surfaceId": "reference-target-web",
+  "layout": {
+    "maxContentWidth": 1120
+  },
+  "color": {
+    "allowedValues": [
+      "#f9fbff",
+      "#fdfefe",
+      "rgba(255, 255, 255, 0.94)",
+      "var(--bg)",
+      "var(--muted)",
+      "var(--surface)",
+      "var(--text)"
+    ],
+    "policy": "warn"
+  },
+  "motion": {
+    "allowedDurationsMs": [
+      120
+    ],
+    "allowedTimingFunctions": [
+      "linear"
+    ]
+  }
+}

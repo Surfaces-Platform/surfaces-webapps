@@ -5,7 +5,8 @@
     "designSystemComponents": [],
     "hasShell": true,
     "routes": [
-      "/"
+      "/",
+      "/adaptive/[...slug]"
     ]
   },
   "surfaceId": "reference-target-web",
@@ -21,6 +22,10 @@
     {
       "code": "layout.default",
       "message": "layout.maxContentWidth cannot be extracted from code in Phase 0; using default."
+    },
+    {
+      "code": "color-seed.motion.none-detected",
+      "message": "Descriptor warning during color seed: No motion declarations detected for surface \"reference-target-web\"."
     }
   ]
 }

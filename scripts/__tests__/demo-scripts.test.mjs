@@ -40,14 +40,23 @@ function makeSandbox() {
   fs.mkdirSync(path.join(dir, "contracts", "generated"), { recursive: true });
   fs.writeFileSync(path.join(dir, "contracts", "surfaces.web.contract.json"), JSON.stringify({ ok: true }, null, 2));
   fs.writeFileSync(
+    path.join(dir, "contracts", "generated", "reference-target-web.contract.json"),
+    JSON.stringify({ surfaces: [{ id: "reference-target-web" }] }, null, 2)
+  );
+  fs.writeFileSync(
     path.join(dir, "contracts", "generated", "surfaces-web.extraction.json"),
     JSON.stringify({ extracted: { authAware: true } }, null, 2)
+  );
+  fs.writeFileSync(
+    path.join(dir, "contracts", "generated", "reference-target-web.extraction.json"),
+    JSON.stringify({ surfaceId: "reference-target-web", extracted: { authAware: false } }, null, 2)
   );
 
   fs.mkdirSync(path.join(dir, "tools", "interfacectl", "tools"), { recursive: true });
   fs.mkdirSync(path.join(dir, "tools", "interfacectl", "packages", "interfacectl-cli", "dist"), {
     recursive: true,
   });
+  fs.mkdirSync(path.join(dir, "apps", "reference-target-web"), { recursive: true });
 
   writeExecutable(
     path.join(dir, "tools", "interfacectl", "tools", "check-generation-boundaries.mjs"),
@@ -116,8 +125,8 @@ if (cmd === "generate-contract") {
 if (cmd === "validate-extracted") {
   const extracted = value("--extracted") || "";
   if (extracted.includes(".bad.")) {
-    console.log(JSON.stringify({ ok: false, findings: [{ code: "phase0.authPosture.mismatch" }] }));
-    process.exit(30);
+    console.log(JSON.stringify({ ok: false, findings: [{ code: "phase0.load.extracted" }] }));
+    process.exit(10);
   }
   console.log(JSON.stringify({ ok: true, findings: [] }));
   process.exit(0);
@@ -145,7 +154,7 @@ const url = args[args.length - 1] || "";
 const writeIdx = args.indexOf("-w");
 if (writeIdx >= 0) {
   if (url.includes("/auth/session")) { process.stdout.write("200"); process.exit(0); }
-  if (url.includes("localhost:3000")) { process.stdout.write("200"); process.exit(0); }
+  if (url.includes("localhost:3000") || url.includes("localhost:3004")) { process.stdout.write("200"); process.exit(0); }
   process.stdout.write("000");
   process.exit(0);
 }
@@ -158,7 +167,7 @@ if (url.includes("/adaptive/test") && !url.includes("section=")) {
   body = JSON.stringify({ violations: [{ rule: "sections.required" }] });
 } else if (header.includes("rgba(")) {
   code = 422;
-  body = JSON.stringify({ violations: [{ rule: "color.rawValues" }] });
+  body = JSON.stringify({ violations: [{ rule: "color.disallowed" }] });
 }
 const statusText = code === 200 ? "OK" : "Unprocessable Entity";
 process.stdout.write("HTTP/1.1 " + code + " " + statusText + "\\r\\ncontent-type: application/json\\r\\n\\r\\n" + body);
@@ -212,7 +221,7 @@ test("demo-bootstrap-contract script bootstraps and validates extraction", () =>
   const lineage = JSON.parse(
     fs.readFileSync(path.join(sandbox.dir, "contracts", "generated", "contract-lineage.json"), "utf8")
   );
-  assert.equal(lineage.surfaces["surfaces-web"].lastSource, "bootstrap");
+  assert.equal(lineage.surfaces["reference-target-web"].lastSource, "bootstrap");
 });
 
 test("demo-ci-surfaceops script asserts CI failure code and recovers", () => {
@@ -225,7 +234,7 @@ test("demo-ci-surfaceops script asserts CI failure code and recovers", () => {
   });
 
   assert.equal(result.status, 0, result.stderr || result.stdout);
-  assert.match(result.stdout, /phase0.authPosture.mismatch/);
+  assert.match(result.stdout, /phase0.load.extracted/);
   assert.match(result.stdout, /Canonical extracted artifact passes/);
   assert.match(result.stdout, /Demo complete: CI\/CD fail->pass with SurfaceOps correlation proved/);
   const runs = JSON.parse(
@@ -245,9 +254,9 @@ test("demo-runtime-surfaceops script asserts runtime 422 and 200 paths", () => {
   });
 
   assert.equal(result.status, 0, result.stderr || result.stdout);
-  assert.match(result.stdout, /Ensure apps are running: pnpm dev:surfaces and pnpm dev:surfaceops/);
+  assert.match(result.stdout, /Ensure apps are running: pnpm dev:reference-target and pnpm dev:surfaceops/);
   assert.match(result.stdout, /sections.required/);
-  assert.match(result.stdout, /color.rawValues/);
+  assert.match(result.stdout, /color.disallowed/);
   assert.match(result.stdout, /Demo complete: runtime gating with SurfaceOps correlation proved/);
   const runs = JSON.parse(
     fs.readFileSync(path.join(sandbox.dir, "contracts", "generated", "contract-runs.json"), "utf8")

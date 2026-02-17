@@ -1,14 +1,16 @@
 {
   "$schema": "https://contracts.surfaces.local/web.surface.contract.schema.json",
   "color": {
-    "rawValues": {
-      "allowlist": [],
-      "denylist": [],
-      "policy": "off"
-    },
-    "sourceOfTruth": {
-      "type": "none"
-    }
+    "allowedValues": [
+      "#f9fbff",
+      "#fdfefe",
+      "rgba(255, 255, 255, 0.94)",
+      "var(--bg)",
+      "var(--muted)",
+      "var(--surface)",
+      "var(--text)"
+    ],
+    "policy": "warn"
   },
   "constraints": {
     "motion": {
@@ -51,7 +53,8 @@
     "designSystemComponents": [],
     "hasShell": true,
     "routes": [
-      "/"
+      "/",
+      "/adaptive/[...slug]"
     ]
   }
 }

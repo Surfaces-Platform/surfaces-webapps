@@ -23,11 +23,17 @@ function ensureColorPolicy(color) {
   if (!color || typeof color !== "object") {
     throw new Error("Contract is missing required top-level color policy.");
   }
-  if (!color.sourceOfTruth) {
-    throw new Error("Contract color policy must include sourceOfTruth.");
+  if (
+    color.policy !== "off" &&
+    color.policy !== "warn" &&
+    color.policy !== "strict"
+  ) {
+    throw new Error(
+      "Contract color policy must include policy (off|warn|strict).",
+    );
   }
-  if (!color.rawValues) {
-    throw new Error("Contract color policy must include rawValues.");
+  if (!Array.isArray(color.allowedValues)) {
+    throw new Error("Contract color policy must include allowedValues array.");
   }
 }
 

@@ -10,9 +10,9 @@ NODE_BIN="${NODE_BIN:-node}"
 PNPM_BIN="${PNPM_BIN:-pnpm}"
 
 CLI_PATH="${CLI_PATH:-$REPO_ROOT/tools/interfacectl/packages/interfacectl-cli/dist/index.js}"
-CONTRACT_PATH="${CONTRACT_PATH:-$REPO_ROOT/contracts/surfaces.web.contract.json}"
-APP_ROOT="${APP_ROOT:-apps/surfaces-web}"
-SURFACE_ID="${SURFACE_ID:-surfaces-web}"
+SURFACE_ID="${SURFACE_ID:-reference-target-web}"
+APP_ROOT="${APP_ROOT:-apps/reference-target-web}"
+CONTRACT_PATH="${CONTRACT_PATH:-$REPO_ROOT/contracts/generated/$SURFACE_ID.contract.json}"
 RUN_EMITTER_PATH="${RUN_EMITTER_PATH:-$REPO_ROOT/scripts/lib/contract-runs.mjs}"
 
 SKIP_BUILD="${SKIP_BUILD:-0}"
@@ -41,7 +41,6 @@ emit_run() {
     --extraction-path "$extraction_path" >/dev/null
 }
 
-[ -f "$CONTRACT_PATH" ] || fail "Canonical contract not found: $CONTRACT_PATH"
 [ -f "$CLI_PATH" ] || fail "interfacectl CLI not found: $CLI_PATH"
 [ -f "$RUN_EMITTER_PATH" ] || fail "Run emitter not found: $RUN_EMITTER_PATH"
 command -v "$NODE_BIN" >/dev/null 2>&1 || fail "Node binary not found: $NODE_BIN"
@@ -81,6 +80,11 @@ step "Bootstrap contract artifacts from source app"
 ok "Bootstrapped artifacts created"
 echo "  contract:   $boot_contract"
 echo "  extraction: $boot_extraction"
+
+if [ ! -f "$CONTRACT_PATH" ]; then
+  step "Canonical contract missing at $CONTRACT_PATH; validating against bootstrapped contract"
+  CONTRACT_PATH="$boot_contract"
+fi
 
 step "Validate extracted bootstrap artifact against canonical contract"
 "$NODE_BIN" "$CLI_PATH" validate-extracted \

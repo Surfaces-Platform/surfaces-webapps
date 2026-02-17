@@ -10,11 +10,11 @@ CURL_BIN="${CURL_BIN:-curl}"
 NODE_BIN="${NODE_BIN:-node}"
 RUN_EMITTER_PATH="${RUN_EMITTER_PATH:-$REPO_ROOT/scripts/lib/contract-runs.mjs}"
 
-SURFACES_WEB_URL="${SURFACES_WEB_URL:-http://localhost:3000}"
+REFERENCE_TARGET_URL="${REFERENCE_TARGET_URL:-http://localhost:3004}"
 SURFACEOPS_URL="${SURFACEOPS_URL:-http://localhost:3001}"
-SURFACE_ID="${SURFACE_ID:-surfaces-web}"
+SURFACE_ID="${SURFACE_ID:-reference-target-web}"
 
-EDGE_MANIFEST_PATH="${EDGE_MANIFEST_PATH:-$REPO_ROOT/contracts/generated/surfaces-web.runtime-manifest.json}"
+EDGE_MANIFEST_PATH="${EDGE_MANIFEST_PATH:-$REPO_ROOT/contracts/generated/reference-target-web.runtime-manifest.json}"
 
 step() { echo "[STEP] $*"; }
 ok() { echo "[OK] $*"; }
@@ -46,7 +46,7 @@ const fs = require("fs");
 const p = process.argv[1];
 try {
   const m = JSON.parse(fs.readFileSync(p, "utf8"));
-  const policy = m?.color?.rawValues?.policy;
+  const policy = m?.color?.policy;
   if (policy === "strict" || policy === "warn" || policy === "off") {
     console.log(policy);
   } else {
@@ -59,7 +59,7 @@ try {
 }
 
 step "Precondition"
-echo "Ensure apps are running: pnpm dev:surfaces and pnpm dev:surfaceops"
+echo "Ensure apps are running: pnpm dev:reference-target and pnpm dev:surfaceops"
 
 probe() {
   local label="$1"
@@ -100,7 +100,7 @@ probe() {
 }
 
 probe "Missing section should be blocked" \
-  "$SURFACES_WEB_URL/adaptive/test" \
+  "$REFERENCE_TARGET_URL/adaptive/test" \
   "422" \
   "sections.required" \
   "sections.required"
@@ -108,15 +108,15 @@ probe "Missing section should be blocked" \
 raw_color_policy="$(detect_raw_color_policy)"
 if [ "$raw_color_policy" = "strict" ]; then
   probe "Raw color proposal should be blocked (policy=strict)" \
-    "$SURFACES_WEB_URL/adaptive/test?section=hero" \
+    "$REFERENCE_TARGET_URL/adaptive/test?section=hero" \
     "422" \
-    "color.rawValues" \
-    "color.rawValues" \
+    "color.disallowed" \
+    "color.disallowed" \
     "x-proposed-bg: rgba(15, 23, 42, 0.3)"
 else
   step "Raw color policy is '$raw_color_policy' (non-blocking)"
   probe "Raw color proposal should be allowed (policy=$raw_color_policy)" \
-    "$SURFACES_WEB_URL/adaptive/test?section=hero" \
+    "$REFERENCE_TARGET_URL/adaptive/test?section=hero" \
     "200" \
     "Adaptive Test" \
     "" \
@@ -124,13 +124,13 @@ else
 fi
 
 probe "Valid adaptive request should pass" \
-  "$SURFACES_WEB_URL/adaptive/test?section=hero" \
+  "$REFERENCE_TARGET_URL/adaptive/test?section=hero" \
   "200" \
   "Adaptive Test" \
   ""
 
 step "Visual segment"
-echo "Open adaptive page: $SURFACES_WEB_URL/adaptive/test?section=hero"
+echo "Open adaptive page: $REFERENCE_TARGET_URL/adaptive/test?section=hero"
 echo "Open SurfaceOps runs detail: $SURFACEOPS_URL/contracts/runs/$SURFACE_ID"
 
 ok "Demo complete: runtime gating with SurfaceOps correlation proved"

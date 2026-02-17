@@ -18,6 +18,7 @@ Start these before running demos:
 pnpm install
 pnpm run interfacectl:build
 pnpm dev:surfaces
+pnpm dev:reference-target
 pnpm dev:surfaceops
 ```
 
@@ -28,9 +29,9 @@ pnpm run demo:all:visual
 ```
 
 ## Expected outputs checklist
-1. Bootstrap: contract/extraction generated, `validate-extracted` passes, run event emitted (`bootstrap`, `pass|warn`).
+1. Bootstrap: contract/extraction generated for `reference-target-web`, `validate-extracted` passes, run event emitted (`bootstrap`, `pass|warn`).
 2. Generation: intentional guard failure (`shell-owned-primitive-emitted`) followed by pass.
-3. CI/CD: intentional `phase0.authPosture.mismatch` failure (exit 30) followed by canonical pass.
+3. CI/CD: intentional malformed extraction failure (`phase0.load.extracted`, exit 10) followed by canonical pass.
 4. Runtime: section-missing blocked, raw-color probe policy-aware (`strict=>422` else `200`), valid request passes.
 
 ## Optional step-by-step commands
@@ -43,14 +44,18 @@ pnpm run demo:runtime:surfaceops
 
 ## SurfaceOps pages
 - Runs list: `http://localhost:3001/contracts/runs`
-- Surface detail: `http://localhost:3001/contracts/runs/surfaces-web`
+- Surface detail (bootstrap): `http://localhost:3001/contracts/runs/reference-target-web`
+- Surface detail (generation): `http://localhost:3001/contracts/runs/surfaces-web`
+- Surface detail (ci/runtime): `http://localhost:3001/contracts/runs/reference-target-web`
 
 ## Troubleshooting
 1. `surfaces-web` not reachable:
    - confirm `pnpm dev:surfaces` is running.
-2. `surfaceops-web` not reachable:
+2. `reference-target-web` not reachable:
+   - confirm `pnpm dev:reference-target` is running.
+3. `surfaceops-web` not reachable:
    - confirm `pnpm dev:surfaceops` is running.
-3. CLI artifacts missing:
+4. CLI artifacts missing:
    - run `pnpm run interfacectl:build`.
 
 ## Governance Inspector Demos (Reference Target)

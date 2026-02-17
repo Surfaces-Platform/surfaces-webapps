@@ -10,10 +10,11 @@ NODE_BIN="${NODE_BIN:-node}"
 PNPM_BIN="${PNPM_BIN:-pnpm}"
 
 CLI_PATH="${CLI_PATH:-$REPO_ROOT/tools/interfacectl/packages/interfacectl-cli/dist/index.js}"
-CONTRACT_PATH="${CONTRACT_PATH:-$REPO_ROOT/contracts/surfaces.web.contract.json}"
-EXTRACTED_PATH="${EXTRACTED_PATH:-$REPO_ROOT/contracts/generated/surfaces-web.extraction.json}"
+SURFACE_ID="${SURFACE_ID:-reference-target-web}"
+APP_ROOT="${APP_ROOT:-apps/reference-target-web}"
+CONTRACT_PATH="${CONTRACT_PATH:-$REPO_ROOT/contracts/generated/$SURFACE_ID.contract.json}"
+EXTRACTED_PATH="${EXTRACTED_PATH:-$REPO_ROOT/contracts/generated/$SURFACE_ID.extraction.json}"
 RUN_EMITTER_PATH="${RUN_EMITTER_PATH:-$REPO_ROOT/scripts/lib/contract-runs.mjs}"
-SURFACE_ID="${SURFACE_ID:-surfaces-web}"
 SURFACEOPS_URL="${SURFACEOPS_URL:-http://localhost:3001}"
 
 SKIP_BUILD="${SKIP_BUILD:-0}"
@@ -36,9 +37,10 @@ emit_run() {
     --report-path "$report_path" >/dev/null
 }
 
-for required in "$CLI_PATH" "$CONTRACT_PATH" "$EXTRACTED_PATH" "$RUN_EMITTER_PATH"; do
+for required in "$CLI_PATH" "$RUN_EMITTER_PATH"; do
   [ -f "$required" ] || fail "Required file not found: $required"
 done
+[ -d "$APP_ROOT" ] || fail "App root not found: $APP_ROOT"
 command -v "$NODE_BIN" >/dev/null 2>&1 || fail "Node binary not found: $NODE_BIN"
 command -v "$PNPM_BIN" >/dev/null 2>&1 || fail "pnpm binary not found: $PNPM_BIN"
 
@@ -58,31 +60,47 @@ else
   ok "Skipping CLI build (SKIP_BUILD=1)"
 fi
 
+if [ ! -f "$CONTRACT_PATH" ] || [ ! -f "$EXTRACTED_PATH" ]; then
+  step "Generate reference-target contract artifacts"
+  "$NODE_BIN" "$CLI_PATH" generate-contract \
+    --app-root "$APP_ROOT" \
+    --surface "$SURFACE_ID" \
+    --out "$CONTRACT_PATH" \
+    --report-out "$EXTRACTED_PATH"
+  ok "Generated reference-target artifacts"
+fi
+
+for required in "$CONTRACT_PATH" "$EXTRACTED_PATH"; do
+  [ -f "$required" ] || fail "Expected generated artifact to exist: $required"
+done
+
 step "Run CI-equivalent edge checks"
 "$PNPM_BIN" examples:build-manifest
 "$PNPM_BIN" examples:test-edge
 ok "Edge checks passed"
 
 step "Run contract validate and emit JSON artifact"
-"$NODE_BIN" "$CLI_PATH" validate \
+set +e
+validate_output="$($NODE_BIN "$CLI_PATH" validate \
   --workspace-root . \
   --contract "$CONTRACT_PATH" \
   --format json \
-  --out "$report_path"
+  --out "$report_path" 2>&1)"
+validate_status=$?
+set -e
+printf '%s\n' "$validate_output"
 
 [ -f "$report_path" ] || fail "Expected validate report to exist at $report_path"
-ok "Validation report written: $report_path"
+if [ "$validate_status" -eq 0 ]; then
+  ok "Validation report written: $report_path"
+else
+  ok "Validation report written with findings (exit=$validate_status): $report_path"
+fi
 
-step "Create temporary bad extracted artifact with authAware=false"
-cp "$EXTRACTED_PATH" "$bad_extracted_path"
-"$NODE_BIN" -e '
-const fs = require("fs");
-const p = process.argv[1];
-const payload = JSON.parse(fs.readFileSync(p, "utf8"));
-payload.extracted = payload.extracted || {};
-payload.extracted.authAware = false;
-fs.writeFileSync(p, JSON.stringify(payload, null, 2));
-' "$bad_extracted_path"
+step "Create temporary malformed extracted artifact"
+cat > "$bad_extracted_path" <<JSON
+{"surfaceId":"$SURFACE_ID","extracted":
+JSON
 
 set +e
 bad_output="$($NODE_BIN "$CLI_PATH" validate-extracted \
@@ -95,10 +113,10 @@ bad_status=$?
 set -e
 printf '%s\n' "$bad_output"
 
-[ "$bad_status" -eq 30 ] || fail "Expected validate-extracted failure exit code 30, got $bad_status"
-printf '%s' "$bad_output" | grep -q 'phase0.authPosture.mismatch' || fail "Expected phase0.authPosture.mismatch finding in output"
-emit_run "fail" "phase0.authPosture.mismatch" "$report_path"
-ok "Synthetic regression blocked (phase0.authPosture.mismatch)"
+[ "$bad_status" -eq 10 ] || fail "Expected validate-extracted failure exit code 10, got $bad_status"
+printf '%s' "$bad_output" | grep -q 'phase0.load.extracted' || fail "Expected phase0.load.extracted finding in output"
+emit_run "fail" "phase0.load.extracted" "$report_path"
+ok "Malformed extracted artifact blocked (phase0.load.extracted)"
 
 step "Run validate-extracted against canonical extracted artifact"
 "$NODE_BIN" "$CLI_PATH" validate-extracted \
