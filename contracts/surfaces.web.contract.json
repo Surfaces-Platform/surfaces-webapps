@@ -1,160 +1,54 @@
 {
   "$schema": "../tools/interfacectl/packages/interfacectl-validator/src/schema/web.surface.contract.schema.json",
-  "contractId": "surfaces.web",
-  "version": "0.1.0",
-  "description": "Interface expectations shared across InterfaceCTL, SurfaceOps, and Surfaces web experiences.",
-  "surfaces": [
-    {
-      "id": "interfacectl-web",
-      "displayName": "InterfaceCTL Web",
-      "type": "web",
-      "requiredSections": [
-        "landing.hero",
-        "landing.guidance",
-        "landing.actions"
-      ],
-      "allowedFonts": [
-        "var(--font-geist-mono)",
-        "JetBrains Mono",
-        "monospace",
-        "var(--font-geist-sans)",
-        "Arial",
-        "Helvetica",
-        "sans-serif"
-      ],
-      "layout": {
-        "maxContentWidth": 1120
-      },
-      "domain": "www.interfacectl.com",
-      "phase0": {
-        "authPosture": "auth-aware",
-        "requiresShell": true,
-        "expectsAuthRoutes": true,
-        "expectsDesignSystem": true
-      },
-      "owner": ""
-    },
-    {
-      "id": "surfaceops-web",
-      "displayName": "SurfaceOps Web",
-      "type": "web",
-      "requiredSections": [
-        "landing.hero",
-        "landing.guidance",
-        "landing.actions"
-      ],
-      "allowedFonts": [
-        "var(--font-geist-sans)",
-        "var(--font-inter)",
-        "Inter",
-        "var(--font-geist-mono)",
-        "Arial",
-        "Helvetica",
-        "sans-serif"
-      ],
-      "layout": {
-        "maxContentWidth": 1120
-      },
-      "domain": "www.surfaceops.ai",
-      "phase0": {
-        "authPosture": "auth-aware",
-        "requiresShell": true,
-        "expectsAuthRoutes": true,
-        "expectsDesignSystem": true
-      },
-      "owner": "",
-      "mustNotEmit": [
-        "navigation",
-        "footer",
-        "auth-shell"
-      ],
-      "shellOwnedPrimitiveAllowSources": [
-        "apps/surfaceops-web/app/layout.tsx"
-      ]
-    },
-    {
-      "id": "surfaces-web",
-      "displayName": "Surfaces Web",
-      "type": "web",
-      "requiredSections": [
-        "landing.hero",
-        "landing.demos",
-        "landing.guidance",
-        "landing.actions"
-      ],
-      "allowedFonts": [
-        "var(--font-geist-sans)",
-        "var(--font-inter)",
-        "Inter",
-        "var(--font-geist-mono)",
-        "Arial",
-        "Helvetica",
-        "sans-serif"
-      ],
-      "layout": {
-        "maxContentWidth": 1120
-      },
-      "domain": "www.surfaces.systems",
-      "phase0": {
-        "authPosture": "auth-aware",
-        "requiresShell": true,
-        "expectsAuthRoutes": true,
-        "expectsDesignSystem": true
-      },
-      "owner": ""
-    },
-    {
-      "id": "surfaces-dev",
-      "displayName": "Surfaces Dev",
-      "type": "web",
-      "requiredSections": [
-        "landing.hero",
-        "landing.actions"
-      ],
-      "allowedFonts": [
-        "var(--font-geist-mono)",
-        "JetBrains Mono",
-        "monospace",
-        "var(--font-geist-sans)",
-        "Arial",
-        "Helvetica",
-        "sans-serif"
-      ],
-      "layout": {
-        "maxContentWidth": 1120
-      },
-      "domain": "www.surfaces.dev",
-      "phase0": {
-        "authPosture": "auth-aware",
-        "requiresShell": true,
-        "expectsAuthRoutes": true,
-        "expectsDesignSystem": true
-      },
-      "owner": ""
-    }
-  ],
-  "sections": [
-    {
-      "id": "landing.hero",
-      "intent": "primary-intro",
-      "description": "Primary hero section introducing the surface intent."
-    },
-    {
-      "id": "landing.demos",
-      "intent": "enforcement-demos",
-      "description": "Links to generation-time, CI/CD, and adaptive runtime enforcement demos."
-    },
-    {
-      "id": "landing.guidance",
-      "intent": "supporting-guidance",
-      "description": "Supplemental copy guiding users to next actions."
-    },
-    {
-      "id": "landing.actions",
-      "intent": "primary-actions",
-      "description": "Primary calls-to-action for the surface."
-    }
-  ],
+  "color": {
+    "allowedValues": [
+      "#052e16",
+      "#0b1220",
+      "#0f172a",
+      "#0f1e1a",
+      "#101827",
+      "#14532d",
+      "#16a34a",
+      "#172033",
+      "#172554",
+      "#1d4ed8",
+      "#1e293b",
+      "#1e3a8a",
+      "#1e40af",
+      "#334155",
+      "#422006",
+      "#450a0a",
+      "#451a03",
+      "#475569",
+      "#60a5fa",
+      "#64748b",
+      "#78350f",
+      "#7f1d1d",
+      "#93a0ba",
+      "#93c5fd",
+      "#94a3b8",
+      "#bbf7d0",
+      "#bfdbfe",
+      "#ca8a04",
+      "#cbd5e1",
+      "#dbe6ff",
+      "#dc2626",
+      "#e2e8f0",
+      "#eff6ff",
+      "#f1f5f9",
+      "#f8fafc",
+      "#fde68a",
+      "#fecaca",
+      "#ffffff",
+      "rgba(15, 23, 42, 0.3)",
+      "rgba(15, 23, 42, 0.45)",
+      "rgba(255, 255, 255, 0.8)",
+      "var(--background)",
+      "var(--foreground)",
+      "var(--surface)"
+    ],
+    "policy": "strict"
+  },
   "constraints": {
     "motion": {
       "allowedDurationsMs": [
@@ -165,61 +59,159 @@
       ]
     }
   },
-  "color": {
-    "sourceOfTruth": {
-      "type": "tokens",
-      "tokenNamespaces": [
-        "--color-",
-        "--background",
-        "--foreground"
-      ]
+  "contractId": "surfaces.web",
+  "description": "Interface expectations shared across InterfaceCTL, SurfaceOps, and Surfaces web experiences.",
+  "sections": [
+    {
+      "description": "Primary hero section introducing the surface intent.",
+      "id": "landing.hero",
+      "intent": "primary-intro"
     },
-    "rawValues": {
-      "policy": "strict",
-      "allowlist": [
-        "#052e16",
-        "#0b1220",
-        "#0f172a",
-        "#0f1e1a",
-        "#101827",
-        "#14532d",
-        "#16a34a",
-        "#172033",
-        "#172554",
-        "#1d4ed8",
-        "#1e293b",
-        "#1e3a8a",
-        "#1e40af",
-        "#334155",
-        "#422006",
-        "#450a0a",
-        "#451a03",
-        "#475569",
-        "#60a5fa",
-        "#64748b",
-        "#78350f",
-        "#7f1d1d",
-        "#93a0ba",
-        "#93c5fd",
-        "#94a3b8",
-        "#bbf7d0",
-        "#bfdbfe",
-        "#ca8a04",
-        "#cbd5e1",
-        "#dbe6ff",
-        "#dc2626",
-        "#e2e8f0",
-        "#eff6ff",
-        "#f1f5f9",
-        "#f8fafc",
-        "#fde68a",
-        "#fecaca",
-        "#ffffff",
-        "rgba(15, 23, 42, 0.3)",
-        "rgba(15, 23, 42, 0.45)",
-        "rgba(255, 255, 255, 0.8)"
-      ],
-      "denylist": []
+    {
+      "description": "Links to generation-time, CI/CD, and adaptive runtime enforcement demos.",
+      "id": "landing.demos",
+      "intent": "enforcement-demos"
+    },
+    {
+      "description": "Supplemental copy guiding users to next actions.",
+      "id": "landing.guidance",
+      "intent": "supporting-guidance"
+    },
+    {
+      "description": "Primary calls-to-action for the surface.",
+      "id": "landing.actions",
+      "intent": "primary-actions"
     }
-  }
+  ],
+  "surfaces": [
+    {
+      "allowedFonts": [
+        "var(--font-geist-mono)",
+        "JetBrains Mono",
+        "monospace",
+        "var(--font-geist-sans)",
+        "Arial",
+        "Helvetica",
+        "sans-serif"
+      ],
+      "displayName": "InterfaceCTL Web",
+      "domain": "www.interfacectl.com",
+      "id": "interfacectl-web",
+      "layout": {
+        "maxContentWidth": 1120
+      },
+      "owner": "",
+      "phase0": {
+        "authPosture": "auth-aware",
+        "expectsAuthRoutes": true,
+        "expectsDesignSystem": true,
+        "requiresShell": true
+      },
+      "requiredSections": [
+        "landing.hero",
+        "landing.guidance",
+        "landing.actions"
+      ],
+      "type": "web"
+    },
+    {
+      "allowedFonts": [
+        "var(--font-geist-sans)",
+        "var(--font-inter)",
+        "Inter",
+        "var(--font-geist-mono)",
+        "Arial",
+        "Helvetica",
+        "sans-serif"
+      ],
+      "displayName": "SurfaceOps Web",
+      "domain": "www.surfaceops.ai",
+      "id": "surfaceops-web",
+      "layout": {
+        "maxContentWidth": 1120
+      },
+      "mustNotEmit": [
+        "navigation",
+        "footer",
+        "auth-shell"
+      ],
+      "owner": "",
+      "phase0": {
+        "authPosture": "auth-aware",
+        "expectsAuthRoutes": true,
+        "expectsDesignSystem": true,
+        "requiresShell": true
+      },
+      "requiredSections": [
+        "landing.hero",
+        "landing.guidance",
+        "landing.actions"
+      ],
+      "shellOwnedPrimitiveAllowSources": [
+        "apps/surfaceops-web/app/layout.tsx"
+      ],
+      "type": "web"
+    },
+    {
+      "allowedFonts": [
+        "var(--font-geist-sans)",
+        "var(--font-inter)",
+        "Inter",
+        "var(--font-geist-mono)",
+        "Arial",
+        "Helvetica",
+        "sans-serif"
+      ],
+      "displayName": "Surfaces Web",
+      "domain": "www.surfaces.systems",
+      "id": "surfaces-web",
+      "layout": {
+        "maxContentWidth": 1120
+      },
+      "owner": "",
+      "phase0": {
+        "authPosture": "auth-aware",
+        "expectsAuthRoutes": true,
+        "expectsDesignSystem": true,
+        "requiresShell": true
+      },
+      "requiredSections": [
+        "landing.hero",
+        "landing.demos",
+        "landing.guidance",
+        "landing.actions"
+      ],
+      "type": "web"
+    },
+    {
+      "allowedFonts": [
+        "var(--font-geist-mono)",
+        "JetBrains Mono",
+        "monospace",
+        "var(--font-geist-sans)",
+        "Arial",
+        "Helvetica",
+        "sans-serif"
+      ],
+      "displayName": "Surfaces Dev",
+      "domain": "www.surfaces.dev",
+      "id": "surfaces-dev",
+      "layout": {
+        "maxContentWidth": 1120
+      },
+      "owner": "",
+      "phase0": {
+        "authPosture": "auth-aware",
+        "expectsAuthRoutes": true,
+        "expectsDesignSystem": true,
+        "requiresShell": true
+      },
+      "requiredSections": [
+        "landing.hero",
+        "landing.actions"
+      ],
+      "type": "web"
+    }
+  ],
+  "version": "0.1.0"
 }
