@@ -26,6 +26,14 @@
     {
       "code": "color-seed.motion.none-detected",
       "message": "Descriptor warning during color seed: No motion declarations detected for surface \"reference-target-web\"."
+    },
+    {
+      "code": "icon-seed.motion.none-detected",
+      "message": "Descriptor warning during icon seed: No motion declarations detected for surface \"reference-target-web\"."
+    },
+    {
+      "code": "icon-seed.none-detected",
+      "message": "Icon source policy was not seeded from extraction because no icon sources were detected."
     }
   ]
 }

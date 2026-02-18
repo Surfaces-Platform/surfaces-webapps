@@ -78,7 +78,7 @@ Response codes:
 ## Troubleshooting
 
 - `400`/exit `10`: invalid adapter request shape, bad descriptor JSON, missing contract, or unknown surface.
-- `422`/exit `30`: strict policy hit (`color.rawValues`, shell-owned primitive emission, or other error finding).
+- `422`/exit `30`: strict policy hit (`color.disallowed`, `icon.source-disallowed`, shell-owned primitive emission, or other error finding).
 - Descriptor-mode promotion gaps: add CI fallback with full workspace validation before merge/deploy.
 
 ## Next docs

@@ -264,8 +264,8 @@ Rules are configured via policy fields that control how violations are handled:
 The contract demonstrates each state:
 
 - **Informational (`"off"`)**: Currently not demonstrated in contract, but available for future rules
-- **Warning (`"warn"`)**: `color.rawValues.policy: "warn"` - Raw color literals trigger warnings but don't block validation
-- **Enforcement (`"strict"`)**: Available but not yet used in contract; can be applied when ready
+- **Warning (`"warn"`)**: `surfaces[*].icons.policy: "warn"` - Disallowed icon sources are surfaced without blocking
+- **Enforcement (`"strict"`)**: `color.policy: "strict"` - Non-allowlisted color values are blocking
 
 ### Graduation Criteria
 

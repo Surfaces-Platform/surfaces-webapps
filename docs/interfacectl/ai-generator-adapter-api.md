@@ -55,7 +55,7 @@ Field notes:
   },
   "findings": [
     {
-      "code": "color.rawValues|color.token.namespace|shell-owned-primitive-emitted|...",
+      "code": "color.disallowed|icon.source-disallowed|shell-owned-primitive-emitted|...",
       "severity": "error|warning",
       "policy": "strict|warn|off",
       "message": "human-readable",

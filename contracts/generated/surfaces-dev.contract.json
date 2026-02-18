@@ -33,6 +33,12 @@
         "sans-serif"
       ],
       "displayName": "Surfaces Dev",
+      "icons": {
+        "allowedSources": [
+          "@heroicons/react/24/outline"
+        ],
+        "policy": "warn"
+      },
       "id": "surfaces-dev",
       "layout": {
         "maxContentWidth": 1120

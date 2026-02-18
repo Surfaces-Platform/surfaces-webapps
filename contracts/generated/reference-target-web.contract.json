@@ -37,6 +37,10 @@
         "sans-serif"
       ],
       "displayName": "Reference Target Web",
+      "icons": {
+        "allowedSources": [],
+        "policy": "warn"
+      },
       "id": "reference-target-web",
       "layout": {
         "maxContentWidth": 1120

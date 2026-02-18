@@ -148,7 +148,8 @@ First blocking failure may short-circuit for latency, but response must still in
 Required v1 codes to handle explicitly:
 - `shell-owned-primitive-emitted`
 - `sections.required`
-- `color.rawValues`
+- `color.disallowed`
+- `icon.source-disallowed`
 - `phase0.authPosture.mismatch`
 - `phase0.authRoutes.missing`
 
