@@ -91,6 +91,50 @@ Environment fallbacks:
 - ✖ violations: drift details with actionable metadata
 - Stable exit codes (0 success, 1 violations, 2 configuration/IO errors)
 
+## Web icon source policy visibility
+
+Icon-source findings are lifecycle-specific in this increment. Use the phase terms from `docs/taxonomy.md` and treat `CI/CD time` workspace validation as authoritative.
+
+### Lifecycle matrix
+
+| Lifecycle phase | Current behavior |
+|---|---|
+| `Generation time` | Descriptor-mode adapter checks are visibility-oriented and do not currently enforce icon-source policy. |
+| `CI/CD time` | Workspace-mode adapter and `interfacectl validate` are authoritative for icon-source findings (`icon.source-disallowed`). |
+| `Runtime (edge)` | Icon-source policy is not enforced at runtime in this increment. |
+
+### Visibility and outcomes
+
+- `icon.source-disallowed` appears in validate findings when icon policy is configured and a disallowed source is detected.
+- Policy `warn` keeps status non-blocking (`warn`).
+- Policy `strict` yields blocking status (`block` in adapter wrappers, exit `30` with `--exit-codes v2`).
+
+Minimal finding sample:
+
+```json
+{
+  "code": "icon.source-disallowed",
+  "severity": "warning",
+  "surface": "surfaces-web",
+  "message": "Icon source is not allowed by contract policy."
+}
+```
+
+### Commands (repo root)
+
+```bash
+# Workspace-mode adapter check (CI/CD-time authoritative path)
+pnpm run adapter:validate-generation -- --tool codex --surface surfaces-web --mode workspace --workspace-root . --contract ./contracts/surfaces.web.contract.json
+
+# Direct CLI validate with deterministic v2 exit codes
+node tools/interfacectl/packages/interfacectl-cli/dist/index.js validate --workspace-root . --contract ./contracts/surfaces.web.contract.json --format json --exit-codes v2
+```
+
+### Prerequisites
+
+- `tools/interfacectl` must be on an icon-policy-capable revision.
+- Contract must define per-surface icon policy blocks (`surfaces[*].icons`) for icon-source checks to emit findings.
+
 ## CI integration
 
 Add the validation step to CI pipelines after installing the CLI dependency. Example GitHub Actions workflow:

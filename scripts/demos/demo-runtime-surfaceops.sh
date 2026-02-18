@@ -123,6 +123,14 @@ else
     "x-proposed-bg: rgba(15, 23, 42, 0.3)"
 fi
 
+probe "Icon source proposal should remain non-blocking in this increment" \
+  "$REFERENCE_TARGET_URL/adaptive/test?section=hero" \
+  "200" \
+  "Adaptive Test" \
+  "" \
+  "x-proposed-icon-source: lucide-react"
+ok "Runtime icon-source enforcement is not active in this increment (informational probe only)"
+
 probe "Valid adaptive request should pass" \
   "$REFERENCE_TARGET_URL/adaptive/test?section=hero" \
   "200" \

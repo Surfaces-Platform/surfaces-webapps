@@ -30,9 +30,9 @@ pnpm run demo:all:visual
 
 ## Expected outputs checklist
 1. Bootstrap: contract/extraction generated for `reference-target-web`, `validate-extracted` passes, run event emitted (`bootstrap`, `pass|warn`).
-2. Generation: intentional guard failure (`shell-owned-primitive-emitted`) followed by pass.
-3. CI/CD: intentional malformed extraction failure (`phase0.load.extracted`, exit 10) followed by canonical pass.
-4. Runtime: section-missing blocked, raw-color probe policy-aware (`strict=>422` else `200`), valid request passes.
+2. Generation: intentional guard failure (`shell-owned-primitive-emitted`) followed by pass, plus icon-input visibility probe that confirms no generation-time icon enforcement.
+3. CI/CD: icon policy segment shows `icon.source-disallowed` as warn (`exit 0`) then strict (`exit 20`), followed by malformed extraction failure (`phase0.load.extracted`, exit 10) and canonical pass.
+4. Runtime: section-missing blocked, raw-color probe policy-aware (`strict=>422` else `200`), icon-source header remains non-blocking, valid request passes.
 
 ## Optional step-by-step commands
 ```bash

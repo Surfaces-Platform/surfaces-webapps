@@ -19,10 +19,14 @@ export default async function AdaptiveReferencePage({
           Current path: <code>{path}</code>
         </p>
         <pre>
-{`curl -i -H "x-proposed-bg: rgba(15, 23, 42, 0.3)" "http://localhost:3004/adaptive/test?section=hero"`}
+{`curl -i -H "x-proposed-bg: rgba(15, 23, 42, 0.3)" "http://localhost:3004/adaptive/test?section=hero"
+curl -i -H "x-proposed-icon-source: lucide-react" "http://localhost:3004/adaptive/test?section=hero"`}
         </pre>
         <p className="heroText">
           Missing <code>section</code> yields 422 with a <code>sections.required</code> violation.
+        </p>
+        <p className="heroText">
+          Icon-source policy is not runtime-enforced in this increment; icon proposals remain informational here and are authoritative at CI/CD time.
         </p>
       </section>
     </main>

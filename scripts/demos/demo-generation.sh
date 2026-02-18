@@ -40,6 +40,7 @@ trap 'rm -rf "$tmp_dir"' EXIT
 
 bad_descriptor="$tmp_dir/descriptor.bad.json"
 good_descriptor="$tmp_dir/descriptor.good.json"
+icon_descriptor="$tmp_dir/descriptor.icon.json"
 
 step "Create temporary descriptor with banned shell-owned primitive from a non-allowlisted source"
 cat > "$bad_descriptor" <<'JSON'
@@ -93,6 +94,32 @@ printf '%s\n' "$good_output"
 [ "$good_status" -eq 0 ] || fail "Expected guard exit code 0 for allowlisted descriptor, got $good_status"
 emit_run "pass" ""
 ok "Allowlisted descriptor passed"
+
+step "Create temporary descriptor with icon source input (visibility only at generation time)"
+cat > "$icon_descriptor" <<'JSON'
+[
+  {
+    "surfaceId": "surfaces-web",
+    "primitives": [],
+    "icons": [
+      {
+        "value": "lucide-react",
+        "source": "apps/surfaces-web/app/demos/generation/page.tsx"
+      }
+    ]
+  }
+]
+JSON
+
+set +e
+icon_output="$($NODE_BIN "$GUARD_PATH" --contract "$CONTRACT_PATH" --descriptor "$icon_descriptor" 2>&1)"
+icon_status=$?
+set -e
+printf '%s\n' "$icon_output"
+
+[ "$icon_status" -eq 0 ] || fail "Expected guard exit code 0 for icon descriptor (generation guard does not enforce icons), got $icon_status"
+ok "Icon source input accepted by generation guard (no icon-source enforcement at generation time)"
+echo "[INFO] Icon-source policy enforcement is deferred to CI/CD time workspace validation in this increment."
 
 echo "Open generation demo page: $SURFACES_WEB_URL/demos/generation"
 

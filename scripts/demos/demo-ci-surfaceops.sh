@@ -37,6 +37,29 @@ emit_run() {
     --report-path "$report_path" >/dev/null
 }
 
+assert_icon_finding() {
+  local report_path="$1"
+  local expected_severity="$2"
+
+  "$NODE_BIN" -e '
+const fs = require("fs");
+const reportPath = process.argv[1];
+const expectedSeverity = process.argv[2];
+const payload = JSON.parse(fs.readFileSync(reportPath, "utf8"));
+const findings = Array.isArray(payload.findings) ? payload.findings : [];
+const finding = findings.find((entry) => entry.code === "icon.source-disallowed");
+if (!finding) {
+  console.error("icon.source-disallowed finding missing");
+  process.exit(1);
+}
+if (finding.severity !== expectedSeverity) {
+  console.error(`Expected severity ${expectedSeverity}, found ${finding.severity}`);
+  process.exit(2);
+}
+console.log(`icon.source-disallowed (${finding.severity})`);
+' "$report_path" "$expected_severity" >/dev/null
+}
+
 for required in "$CLI_PATH" "$RUN_EMITTER_PATH"; do
   [ -f "$required" ] || fail "Required file not found: $required"
 done
@@ -51,6 +74,13 @@ trap 'rm -rf "$tmp_dir"' EXIT
 
 report_path="$tmp_dir/interfacectl-report.demo.json"
 bad_extracted_path="$tmp_dir/${SURFACE_ID}.extraction.bad.json"
+icon_fixture_root="$tmp_dir/icon-fixture"
+icon_surface_id="icon-demo-web"
+icon_app_root="$icon_fixture_root/apps/$icon_surface_id"
+icon_warn_contract_path="$icon_fixture_root/contracts/icon.warn.contract.json"
+icon_strict_contract_path="$icon_fixture_root/contracts/icon.strict.contract.json"
+icon_warn_report_path="$tmp_dir/interfacectl-report.icon.warn.json"
+icon_strict_report_path="$tmp_dir/interfacectl-report.icon.strict.json"
 
 if [ "$SKIP_BUILD" != "1" ]; then
   step "Build interfacectl CLI"
@@ -96,6 +126,150 @@ if [ "$validate_status" -eq 0 ]; then
 else
   ok "Validation report written with findings (exit=$validate_status): $report_path"
 fi
+
+step "Create temporary icon fixture workspace for authoritative CI/CD icon checks"
+mkdir -p "$icon_app_root/app" "$icon_fixture_root/contracts"
+
+cat > "$icon_app_root/app/page.tsx" <<'TSX'
+import { House } from "lucide-react";
+
+export default function IconDemoPage() {
+  return (
+    <main className="contract-container">
+      <section data-contract-section="landing.hero">
+        <House />
+        <h1>Icon Demo Fixture</h1>
+      </section>
+    </main>
+  );
+}
+TSX
+
+cat > "$icon_app_root/app/globals.css" <<'CSS'
+:root {
+  --contract-max-width: 1120px;
+}
+CSS
+
+cat > "$icon_warn_contract_path" <<'JSON'
+{
+  "contractId": "icon-demo.warn",
+  "version": "0.1.0",
+  "surfaces": [
+    {
+      "id": "icon-demo-web",
+      "displayName": "Icon Demo Web",
+      "type": "web",
+      "requiredSections": ["landing.hero"],
+      "allowedFonts": ["sans-serif"],
+      "layout": {
+        "maxContentWidth": 1120,
+        "requiredContainers": ["contract-container"]
+      },
+      "icons": {
+        "policy": "warn",
+        "allowedSources": ["@heroicons/react/24/outline"]
+      }
+    }
+  ],
+  "sections": [
+    {
+      "id": "landing.hero",
+      "intent": "primary-intro",
+      "description": "Icon fixture section."
+    }
+  ],
+  "constraints": {
+    "motion": {
+      "allowedDurationsMs": [120],
+      "allowedTimingFunctions": ["linear"]
+    }
+  },
+  "color": {
+    "policy": "off",
+    "allowedValues": []
+  }
+}
+JSON
+
+cat > "$icon_strict_contract_path" <<'JSON'
+{
+  "contractId": "icon-demo.strict",
+  "version": "0.1.0",
+  "surfaces": [
+    {
+      "id": "icon-demo-web",
+      "displayName": "Icon Demo Web",
+      "type": "web",
+      "requiredSections": ["landing.hero"],
+      "allowedFonts": ["sans-serif"],
+      "layout": {
+        "maxContentWidth": 1120,
+        "requiredContainers": ["contract-container"]
+      },
+      "icons": {
+        "policy": "strict",
+        "allowedSources": ["@heroicons/react/24/outline"]
+      }
+    }
+  ],
+  "sections": [
+    {
+      "id": "landing.hero",
+      "intent": "primary-intro",
+      "description": "Icon fixture section."
+    }
+  ],
+  "constraints": {
+    "motion": {
+      "allowedDurationsMs": [120],
+      "allowedTimingFunctions": ["linear"]
+    }
+  },
+  "color": {
+    "policy": "off",
+    "allowedValues": []
+  }
+}
+JSON
+
+step "Run icon policy validate in warn mode (expected non-blocking visibility)"
+set +e
+icon_warn_output="$($NODE_BIN "$CLI_PATH" validate \
+  --workspace-root "$icon_fixture_root" \
+  --contract "$icon_warn_contract_path" \
+  --surface "$icon_surface_id" \
+  --format json \
+  --out "$icon_warn_report_path" \
+  --exit-codes v2 2>&1)"
+icon_warn_status=$?
+set -e
+printf '%s\n' "$icon_warn_output"
+
+[ -f "$icon_warn_report_path" ] || fail "Expected icon warn report to exist at $icon_warn_report_path"
+[ "$icon_warn_status" -eq 0 ] || fail "Expected icon warn validate exit code 0, got $icon_warn_status"
+assert_icon_finding "$icon_warn_report_path" "warning" || fail "Expected warning-level icon.source-disallowed finding"
+emit_run "warn" "icon.source-disallowed" "$icon_warn_report_path"
+ok "Icon warn finding confirmed: icon.source-disallowed (warning, exit=0)"
+
+step "Run icon policy validate in strict mode (expected blocking)"
+set +e
+icon_strict_output="$($NODE_BIN "$CLI_PATH" validate \
+  --workspace-root "$icon_fixture_root" \
+  --contract "$icon_strict_contract_path" \
+  --surface "$icon_surface_id" \
+  --format json \
+  --out "$icon_strict_report_path" \
+  --exit-codes v2 2>&1)"
+icon_strict_status=$?
+set -e
+printf '%s\n' "$icon_strict_output"
+
+[ -f "$icon_strict_report_path" ] || fail "Expected icon strict report to exist at $icon_strict_report_path"
+[ "$icon_strict_status" -eq 20 ] || fail "Expected icon strict validate exit code 20, got $icon_strict_status"
+assert_icon_finding "$icon_strict_report_path" "error" || fail "Expected error-level icon.source-disallowed finding"
+emit_run "fail" "icon.source-disallowed" "$icon_strict_report_path"
+ok "Icon strict finding confirmed: icon.source-disallowed (error, exit=20)"
 
 step "Create temporary malformed extracted artifact"
 cat > "$bad_extracted_path" <<JSON

@@ -17,7 +17,7 @@ export default function RuntimeQuickStartPage() {
       activeTab="runtime"
       contextLabel="Runtime Quick Start"
       title="Enforce Contract Policy At Runtime"
-      summary="Use runtime checks to block strict violations in live adaptive flows while still reporting warning-level diagnostics for review and cleanup."
+      summary="Use this Runtime (edge) flow to block strict live adaptive violations while still reporting warning-level diagnostics for review and cleanup."
       steps={[
         {
           title: 'Generate runtime manifest.',
@@ -36,6 +36,10 @@ export default function RuntimeQuickStartPage() {
           detail: 'Capture warnings (for example token namespace mismatch) without blocking traffic.'
         },
         {
+          title: 'Keep icon policy enforcement at earlier lifecycle points.',
+          detail: 'Icon-source policy is not enforced at Runtime (edge) in this increment; rely on Generation time + CI/CD time checks.'
+        },
+        {
           title: 'Include contract provenance in violation payloads.',
           detail: 'Return contractId, version, and surfaceId for each runtime decision.'
         }
@@ -45,7 +49,8 @@ export default function RuntimeQuickStartPage() {
       notes={[
         'Runtime should block strict-policy findings only.',
         'Warn findings remain visible for remediation and policy hygiene.',
-        'Runtime checks complement generation + integration checks, not replace them.'
+        'Runtime checks complement Generation time + CI/CD time checks, not replace them.',
+        'Icon-source policy (`icon.source-disallowed`) is currently visible in integration/CI validation paths, not Runtime (edge).'
       ]}
       actions={
         <NextContextLinks
