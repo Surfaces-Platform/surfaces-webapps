@@ -13,6 +13,7 @@ All tools consume the same adapter verdict contract:
 Canonical policy source remains:
 
 - `contracts/surfaces.web.contract.json`
+- `contracts/generated/reference-target-web.contract.json` for `reference-target-web` demos
 
 Descriptor parity rollout source:
 
@@ -62,7 +63,7 @@ For hosted tools without guaranteed in-product blocking:
 ```bash
 pnpm run adapter:validate-generation -- \
   --tool codex \
-  --surface reference-target-web \
+  --surface surfaces-web \
   --mode workspace \
   --workspace-root /absolute/path/to/workspace \
   --contract /absolute/path/to/contracts/surfaces.web.contract.json

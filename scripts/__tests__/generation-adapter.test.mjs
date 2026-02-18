@@ -703,6 +703,31 @@ test("CLI wrapper: descriptor mode emits pass, warn, block with expected exit co
   assert.equal(blockPayload.status, "block");
 });
 
+test("CLI wrapper: accepts standalone -- separator token", () => {
+  const sandbox = makeAdapterSandbox();
+
+  const result = runCli(
+    [
+      "--",
+      "--tool",
+      "codex",
+      "--surface",
+      "pass-web",
+      "--mode",
+      "descriptor",
+      "--descriptor-path",
+      sandbox.descriptorPaths.pass,
+      "--contract",
+      sandbox.contractPath,
+    ],
+    sandbox,
+  );
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const payload = parseResponse(result.stdout, result.stderr);
+  assert.equal(payload.status, "pass");
+});
+
 test("CLI wrapper: descriptor parity is enforced for reference-target and not for non-enforced surfaces", () => {
   const sandbox = makeAdapterSandbox();
 

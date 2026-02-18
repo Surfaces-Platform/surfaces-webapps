@@ -4,9 +4,10 @@ This quick start shows how to integrate a single Surfaces Generation Adapter wit
 
 ## Purpose
 
-The adapter evaluates generated UI against the canonical contract at:
+The adapter evaluates generated UI against the contract path you provide:
 
-- `contracts/surfaces.web.contract.json`
+- `contracts/surfaces.web.contract.json` for canonical product surfaces
+- `contracts/generated/reference-target-web.contract.json` for `reference-target-web` demos
 
 It returns a consistent verdict contract:
 
@@ -16,7 +17,7 @@ It returns a consistent verdict contract:
 
 ## 5-step integration flow
 
-1. Load the canonical contract.
+1. Load the target surface contract.
 2. Send generated output to the adapter in `workspace` or `descriptor` mode.
 3. Run generation guard checks (shell-owned primitives + phased descriptor parity checks).
 4. In `workspace` mode, also run `interfacectl validate`.
@@ -28,9 +29,9 @@ It returns a consistent verdict contract:
 pnpm run adapter:validate-generation -- \
   --tool codex \
   --surface reference-target-web \
-  --mode workspace \
-  --workspace-root /absolute/path/to/workspace \
-  --contract /absolute/path/to/contracts/surfaces.web.contract.json
+  --mode descriptor \
+  --descriptor-path /absolute/path/to/reference-target-descriptor.json \
+  --contract /absolute/path/to/contracts/generated/reference-target-web.contract.json
 ```
 
 Exit semantics:
@@ -44,6 +45,7 @@ Exit semantics:
 Endpoint:
 
 - `POST /surfaces.validateGeneration`
+- Start the server with a matching contract (`--contract contracts/generated/reference-target-web.contract.json` for `reference-target-web`).
 
 Request (conceptual):
 

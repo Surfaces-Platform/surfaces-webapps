@@ -39,6 +39,7 @@ Field notes:
 - `mode=descriptor` requires `descriptor`.
 - `descriptor[].icons` is optional but recommended when icon policy is enabled.
 - If `contractPath` is omitted, adapter defaults to `contracts/surfaces.web.contract.json`.
+- For `reference-target-web`, set `contractPath` to `contracts/generated/reference-target-web.contract.json`.
 
 ## Response schema
 

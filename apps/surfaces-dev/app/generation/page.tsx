@@ -1,7 +1,8 @@
 import QuickStartSurfacePage, { NextContextLinks } from '../_components/QuickStartSurfacePage';
 
-const generationSnippet = `# 1) Start the adapter service
-pnpm run adapter:serve-generation
+const generationSnippet = `# 1) Start the adapter service (reference-target contract)
+pnpm run adapter:serve-generation -- \\
+  --contract /Users/mike/SurfacesPlatform/surfaces-webapps/contracts/generated/reference-target-web.contract.json
 
 # 2) Submit generated descriptor output
 curl -sS -X POST http://127.0.0.1:7777/surfaces.validateGeneration \\
@@ -59,7 +60,7 @@ export default function GenerationQuickStartPage() {
         'Descriptor parity is phased by surface; initial enforcement starts with reference-target-web.',
         'For non-enforced surfaces, keep CI fallback as the authoritative promotion gate.',
         'Use CI fallback later if your generator cannot hard-block inside its own UI.',
-        'Canonical policy remains contracts/surfaces.web.contract.json.'
+        'Use the contract for your target surface: contracts/generated/reference-target-web.contract.json for reference-target demos, contracts/surfaces.web.contract.json for canonical surfaces.'
       ]}
       actions={
         <NextContextLinks

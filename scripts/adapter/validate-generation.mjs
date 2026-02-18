@@ -25,6 +25,9 @@ function parseArgs(argv) {
   const args = {};
   for (let i = 0; i < argv.length; i += 1) {
     const key = argv[i];
+    if (key === "--") {
+      continue;
+    }
     if (key === "--help" || key === "-h") {
       args.help = true;
       continue;

@@ -3,7 +3,7 @@ import QuickStartSurfacePage, { NextContextLinks } from '../_components/QuickSta
 const integrationSnippet = `# Local/CI hard gate command
 pnpm run adapter:validate-generation -- \\
   --tool codex \\
-  --surface reference-target-web \\
+  --surface surfaces-web \\
   --mode workspace \\
   --workspace-root /Users/mike/SurfacesPlatform/surfaces-webapps \\
   --contract /Users/mike/SurfacesPlatform/surfaces-webapps/contracts/surfaces.web.contract.json
@@ -48,7 +48,7 @@ export default function IntegrationQuickStartPage() {
         },
         {
           title: 'Pin canonical contract path.',
-          detail: 'Always point to contracts/surfaces.web.contract.json so all tools evaluate the same policy.'
+          detail: 'Use contracts/surfaces.web.contract.json for canonical surfaces; use contracts/generated/reference-target-web.contract.json for reference-target demos.'
         },
         {
           title: 'Store adapter findings with build artifacts.',
