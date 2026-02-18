@@ -11,7 +11,12 @@ pnpm run adapter:validate-generation -- \\
 # Exit behavior:
 # 0  => pass or warn
 # 30 => block (fail CI)
-# 10 => malformed request / missing contract`;
+# 10 => malformed request / missing contract
+#
+# Icon policy behavior in workspace mode:
+# icon.source-disallowed + policy=warn   => status=warn, exit 0
+# icon.source-disallowed + policy=strict => status=block, exit 30
+# CI validation findings are stored at artifacts/interfacectl-report.json`;
 
 export default function IntegrationQuickStartPage() {
   return (
@@ -19,7 +24,7 @@ export default function IntegrationQuickStartPage() {
       activeTab="integration"
       contextLabel="Integration Quick Start"
       title="Integrate Adapter Enforcement Into Tooling And CI"
-      summary="Use this flow to connect generation-time checks to your promotion pipeline so hosted tools remain enforceable even when they cannot hard-block in-product."
+      summary="Use this flow at CI/CD time to connect Generation time checks to promotion gates so hosted tools remain enforceable even when they cannot hard-block in-product."
       steps={[
         {
           title: 'Pick execution mode.',
@@ -28,6 +33,10 @@ export default function IntegrationQuickStartPage() {
         {
           title: 'Map verdict behavior in tool UX.',
           detail: 'Block publish on block, surface warnings on warn, allow pass.'
+        },
+        {
+          title: 'Review icon findings in workspace mode.',
+          detail: 'When configured, `icon.source-disallowed` is surfaced here; warn policy stays non-blocking, strict policy blocks.'
         },
         {
           title: 'Add CI fallback gate.',
@@ -46,8 +55,10 @@ export default function IntegrationQuickStartPage() {
       snippet={integrationSnippet}
       notes={[
         'workspace mode runs generation guard plus interfacectl validate.',
+        'Icon-source policy visibility is authoritative at CI/CD time via workspace validation in this increment.',
         'descriptor mode is visibility-first; do not promote solely on descriptor-mode pass/warn.',
-        'Hosted tools should call HTTP endpoint and still rely on CI hard gate for final promotion.'
+        'Hosted tools should call HTTP endpoint and still rely on CI hard gate for final promotion.',
+        'In CI, inspect uploaded artifact artifacts/interfacectl-report.json for full findings.'
       ]}
       actions={
         <NextContextLinks

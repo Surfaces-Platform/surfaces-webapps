@@ -24,7 +24,7 @@ export default function GenerationQuickStartPage() {
       activeTab="generation"
       contextLabel="Generation Quick Start"
       title="Run Contract Enforcement During AI UI Generation"
-      summary="Use this flow when Lovable or Figma Make produces new UI and you want an immediate contract verdict before integration or release."
+      summary="Use this flow at Generation time when Lovable or Figma Make produces new UI and you want immediate policy visibility before CI/CD time promotion."
       steps={[
         {
           title: 'Start adapter service.',
@@ -39,6 +39,10 @@ export default function GenerationQuickStartPage() {
           detail: 'Use POST /surfaces.validateGeneration with tool, mode=descriptor, and descriptor array.'
         },
         {
+          title: 'Treat descriptor mode as visibility-first.',
+          detail: 'Generation time descriptor checks currently do not enforce icon source policy (`icon.source-disallowed`).'
+        },
+        {
           title: 'Read status and findings.',
           detail: 'pass continues, warn continues with visibility, block stops and requires regeneration/fix.'
         },
@@ -51,6 +55,7 @@ export default function GenerationQuickStartPage() {
       snippet={generationSnippet}
       notes={[
         'Descriptor mode checks generation boundaries only (no full workspace validation).',
+        'Icon-source policy decisions are authoritative in CI/CD time workspace validation, not descriptor mode in this increment.',
         'Use CI fallback later if your generator cannot hard-block inside its own UI.',
         'Canonical policy remains contracts/surfaces.web.contract.json.'
       ]}

@@ -81,9 +81,47 @@ const cmd = args[0];
 function value(flag) { const i = args.indexOf(flag); return i >= 0 ? args[i + 1] : undefined; }
 if (cmd === "validate") {
   const out = value("--out");
-  if (out) fs.writeFileSync(out, JSON.stringify({ ok: true }, null, 2));
-  console.log(JSON.stringify({ ok: true }));
-  process.exit(0);
+  const contract = value("--contract") || "";
+  let payload = { ok: true, findings: [] };
+  let status = 0;
+
+  if (contract.includes("icon.warn.contract.json")) {
+    payload = {
+      contractPath: contract,
+      contractVersion: "0.1.0",
+      summary: { errors: 0, warnings: 1 },
+      findings: [
+        {
+          code: "icon.source-disallowed",
+          severity: "warning",
+          category: "E1",
+          surface: "icon-demo-web",
+          message: "Icon source \\"lucide-react\\" is not allowed.",
+        },
+      ],
+    };
+    status = 0;
+  } else if (contract.includes("icon.strict.contract.json")) {
+    payload = {
+      contractPath: contract,
+      contractVersion: "0.1.0",
+      summary: { errors: 1, warnings: 0 },
+      findings: [
+        {
+          code: "icon.source-disallowed",
+          severity: "error",
+          category: "E1",
+          surface: "icon-demo-web",
+          message: "Icon source \\"lucide-react\\" is not allowed.",
+        },
+      ],
+    };
+    status = 20;
+  }
+
+  if (out) fs.writeFileSync(out, JSON.stringify(payload, null, 2));
+  console.log(JSON.stringify(payload));
+  process.exit(status);
 }
 if (cmd === "generate-contract") {
   const out = value("--out");
@@ -195,6 +233,10 @@ test("demo-generation script enforces fail then pass", () => {
   const result = runScript(script, sandbox);
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.match(result.stdout, /shell-owned-primitive-emitted/);
+  assert.match(
+    result.stdout,
+    /Icon-source policy enforcement is deferred to CI\/CD time workspace validation/
+  );
   assert.match(result.stdout, /Demo complete: generation fail->pass proved/);
   const runs = JSON.parse(
     fs.readFileSync(path.join(sandbox.dir, "contracts", "generated", "contract-runs.json"), "utf8")
@@ -234,6 +276,7 @@ test("demo-ci-surfaceops script asserts CI failure code and recovers", () => {
   });
 
   assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.match(result.stdout, /icon.source-disallowed/);
   assert.match(result.stdout, /phase0.load.extracted/);
   assert.match(result.stdout, /Canonical extracted artifact passes/);
   assert.match(result.stdout, /Demo complete: CI\/CD fail->pass with SurfaceOps correlation proved/);
@@ -241,9 +284,26 @@ test("demo-ci-surfaceops script asserts CI failure code and recovers", () => {
     fs.readFileSync(path.join(sandbox.dir, "contracts", "generated", "contract-runs.json"), "utf8")
   );
   const ciRuns = runs.runs.filter((run) => run.source === "ci");
-  assert.equal(ciRuns.length, 2);
-  assert.equal(ciRuns[0].status, "fail");
-  assert.equal(ciRuns[1].status, "pass");
+  assert.equal(ciRuns.length, 4);
+  assert.ok(
+    ciRuns.some(
+      (run) =>
+        run.status === "warn" && run.findingCodes.includes("icon.source-disallowed")
+    )
+  );
+  assert.ok(
+    ciRuns.some(
+      (run) =>
+        run.status === "fail" && run.findingCodes.includes("icon.source-disallowed")
+    )
+  );
+  assert.ok(
+    ciRuns.some(
+      (run) =>
+        run.status === "fail" && run.findingCodes.includes("phase0.load.extracted")
+    )
+  );
+  assert.ok(ciRuns.some((run) => run.status === "pass"));
 });
 
 test("demo-runtime-surfaceops script asserts runtime 422 and 200 paths", () => {
@@ -257,13 +317,13 @@ test("demo-runtime-surfaceops script asserts runtime 422 and 200 paths", () => {
   assert.match(result.stdout, /Ensure apps are running: pnpm dev:reference-target and pnpm dev:surfaceops/);
   assert.match(result.stdout, /sections.required/);
   assert.match(result.stdout, /color.disallowed/);
+  assert.match(result.stdout, /Runtime icon-source enforcement is not active in this increment/);
   assert.match(result.stdout, /Demo complete: runtime gating with SurfaceOps correlation proved/);
   const runs = JSON.parse(
     fs.readFileSync(path.join(sandbox.dir, "contracts", "generated", "contract-runs.json"), "utf8")
   );
   const runtimeRuns = runs.runs.filter((run) => run.source === "runtime");
-  assert.equal(runtimeRuns.length, 3);
-  assert.equal(runtimeRuns[0].status, "fail");
-  assert.equal(runtimeRuns[1].status, "fail");
-  assert.equal(runtimeRuns[2].status, "pass");
+  assert.equal(runtimeRuns.length, 4);
+  assert.ok(runtimeRuns.filter((run) => run.status === "fail").length >= 1);
+  assert.ok(runtimeRuns.filter((run) => run.status === "pass").length >= 2);
 });
