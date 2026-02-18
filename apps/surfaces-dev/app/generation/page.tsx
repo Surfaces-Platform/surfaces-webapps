@@ -14,7 +14,8 @@ curl -sS -X POST http://127.0.0.1:7777/surfaces.validateGeneration \\
     "descriptor":[{
       "surfaceId":"reference-target-web",
       "primitives":[],
-      "colors":[{"value":"var(--background)","source":"generated.css"}]
+      "colors":[{"value":"var(--background)","source":"generated.css"}],
+      "icons":[{"value":"@heroicons/react/24/outline","source":"generated.tsx"}]
     }]
   }'`;
 
@@ -32,15 +33,15 @@ export default function GenerationQuickStartPage() {
         },
         {
           title: 'Build descriptor payload from generated output.',
-          detail: 'Include surfaceId, emitted primitives, and every generated color value.'
+          detail: 'Include surfaceId, emitted primitives, generated color values, and icon import sources.'
         },
         {
           title: 'Send descriptor to the adapter endpoint.',
           detail: 'Use POST /surfaces.validateGeneration with tool, mode=descriptor, and descriptor array.'
         },
         {
-          title: 'Treat descriptor mode as visibility-first.',
-          detail: 'Generation time descriptor checks currently do not enforce icon source policy (`icon.source-disallowed`).'
+          title: 'Apply phased descriptor parity.',
+          detail: 'Descriptor mode enforces shell + color + icon policy for rollout-enabled surfaces (`contracts/generation-descriptor-parity.json`).'
         },
         {
           title: 'Read status and findings.',
@@ -55,7 +56,8 @@ export default function GenerationQuickStartPage() {
       snippet={generationSnippet}
       notes={[
         'Descriptor mode checks generation boundaries only (no full workspace validation).',
-        'Icon-source policy decisions are authoritative in CI/CD time workspace validation, not descriptor mode in this increment.',
+        'Descriptor parity is phased by surface; initial enforcement starts with reference-target-web.',
+        'For non-enforced surfaces, keep CI fallback as the authoritative promotion gate.',
         'Use CI fallback later if your generator cannot hard-block inside its own UI.',
         'Canonical policy remains contracts/surfaces.web.contract.json.'
       ]}

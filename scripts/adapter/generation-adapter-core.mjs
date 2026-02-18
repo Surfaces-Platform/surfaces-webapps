@@ -13,6 +13,14 @@ const DEFAULT_INTERFACECTL_CLI =
   "tools/interfacectl/packages/interfacectl-cli/dist/index.js";
 const DEFAULT_GENERATION_GUARD =
   "tools/interfacectl/tools/check-generation-boundaries.mjs";
+const DEFAULT_DESCRIPTOR_PARITY_CONFIG =
+  "contracts/generation-descriptor-parity.json";
+
+const PARITY_FINDING_CODES = new Set([
+  "color.disallowed",
+  "icon.source-disallowed",
+  "descriptor.icons.missing",
+]);
 
 const VALIDATE_CODE_MAP = {
   "color.raw-value.used": "color.rawValues",
@@ -33,11 +41,11 @@ export function isAdapterInputError(error) {
   return error instanceof AdapterInputError;
 }
 
-export function buildCoverage(mode) {
+export function buildCoverage(mode, detail = {}) {
   if (mode === "workspace") {
-    return { generationGuard: true, fullValidate: true };
+    return { generationGuard: true, fullValidate: true, ...detail };
   }
-  return { generationGuard: true, fullValidate: false };
+  return { generationGuard: true, fullValidate: false, ...detail };
 }
 
 export function computeStatusFromFindings(findings) {
@@ -166,11 +174,21 @@ function resolveRuntimePaths(request, options = {}) {
     process.env.SURFACES_ADAPTER_GENERATION_GUARD ??
     DEFAULT_GENERATION_GUARD;
 
+  const descriptorParityConfigInput =
+    options.descriptorParityConfigPath ??
+    process.env.SURFACES_ADAPTER_DESCRIPTOR_PARITY_CONFIG ??
+    DEFAULT_DESCRIPTOR_PARITY_CONFIG;
+
   return {
     cwd,
     contractPath,
     cliPath: resolvePathOrDefault(cliInput, undefined, cwd),
     guardPath: resolvePathOrDefault(guardInput, undefined, cwd),
+    descriptorParityConfigPath: resolvePathOrDefault(
+      descriptorParityConfigInput,
+      undefined,
+      cwd,
+    ),
     nodeBin: options.nodeBin ?? process.execPath,
     env: options.env ?? process.env,
   };
@@ -233,7 +251,7 @@ function cleanupTempPath(tempDir) {
   fs.rmSync(tempDir, { recursive: true, force: true });
 }
 
-function parseCsv(value) {
+function parseCsvList(value) {
   if (!value) return [];
   return String(value)
     .split(",")
@@ -241,7 +259,55 @@ function parseCsv(value) {
     .filter(Boolean);
 }
 
-function parseGuardFindings(output) {
+function normalizeGuardFinding(entry) {
+  if (!entry || typeof entry !== "object") {
+    return null;
+  }
+
+  const code =
+    typeof entry.code === "string" && entry.code.trim().length > 0
+      ? entry.code.trim()
+      : "";
+  if (!code) {
+    return null;
+  }
+
+  const severity = entry.severity === "error" ? "error" : "warning";
+  const policy = entry.policy === "strict" || entry.policy === "off" ? entry.policy : "warn";
+  const message =
+    typeof entry.message === "string" && entry.message.trim().length > 0
+      ? entry.message
+      : code;
+  const location =
+    entry.location && typeof entry.location === "object"
+      ? entry.location
+      : {};
+
+  return {
+    code,
+    severity,
+    policy,
+    message,
+    location: {
+      file: typeof location.file === "string" ? location.file : "",
+      line: Number.isInteger(location.line) ? location.line : 0,
+    },
+    evidence:
+      entry.evidence && typeof entry.evidence === "object" ? entry.evidence : {},
+  };
+}
+
+function parseGuardFindingsFromJson(payload) {
+  if (!payload || typeof payload !== "object") {
+    return [];
+  }
+  const findings = Array.isArray(payload.findings) ? payload.findings : [];
+  return findings
+    .map((entry) => normalizeGuardFinding(entry))
+    .filter((entry) => entry !== null);
+}
+
+function parseGuardFindingsFromText(output) {
   const findings = [];
   const lines = output.split(/\r?\n/);
   let section = "";
@@ -277,13 +343,13 @@ function parseGuardFindings(output) {
       const match = line.match(primitivePattern);
       if (!match) continue;
       const [, surfaceId, role, count, sourcesRaw, disallowedRaw] = match;
-      const sources = parseCsv(sourcesRaw);
-      const disallowedSources = parseCsv(disallowedRaw);
+      const sources = parseCsvList(sourcesRaw);
+      const disallowedSources = parseCsvList(disallowedRaw);
       findings.push({
         code: "shell-owned-primitive-emitted",
         severity: "error",
         policy: "strict",
-        message: `Shell-owned primitive \"${role}\" emitted for surface \"${surfaceId}\".`,
+        message: `Shell-owned primitive "${role}" emitted for surface "${surfaceId}".`,
         location: {
           file: disallowedSources[0] ?? sources[0] ?? "",
           line: 0,
@@ -345,6 +411,44 @@ function parseGuardFindings(output) {
   }
 
   return findings;
+}
+
+function parseGuardEvaluation(payload) {
+  const evaluation =
+    payload && payload.evaluation && typeof payload.evaluation === "object"
+      ? payload.evaluation
+      : {};
+  return {
+    shellBoundaryEvaluated: evaluation.shellBoundaryEvaluated !== false,
+    colorPolicyEvaluated: evaluation.colorPolicyEvaluated === true,
+    iconPolicyEvaluated: evaluation.iconPolicyEvaluated === true,
+  };
+}
+
+function loadDescriptorParitySurfaces(runtime, options = {}) {
+  if (Array.isArray(options.descriptorParitySurfaces)) {
+    return new Set(
+      options.descriptorParitySurfaces
+        .map((entry) => String(entry).trim())
+        .filter(Boolean),
+    );
+  }
+
+  const envOverride = runtime.env?.SURFACES_ADAPTER_DESCRIPTOR_PARITY_SURFACES;
+  if (typeof envOverride === "string" && envOverride.trim().length > 0) {
+    return new Set(parseCsvList(envOverride));
+  }
+
+  const configPath = runtime.descriptorParityConfigPath;
+  if (!configPath || !fs.existsSync(configPath)) {
+    return new Set();
+  }
+
+  const payload = readJsonFile(configPath, "descriptor parity config");
+  const enforced = Array.isArray(payload.enforcedSurfaces)
+    ? payload.enforcedSurfaces.map((entry) => String(entry).trim()).filter(Boolean)
+    : [];
+  return new Set(enforced);
 }
 
 function mapValidateCode(code) {
@@ -443,6 +547,11 @@ function runGenerationGuard(request, runtime) {
   let descriptorTempDir;
   let descriptorPath;
   const findings = [];
+  let evaluation = {
+    shellBoundaryEvaluated: true,
+    colorPolicyEvaluated: false,
+    iconPolicyEvaluated: false,
+  };
 
   try {
     if (request.mode === "descriptor") {
@@ -480,7 +589,7 @@ function runGenerationGuard(request, runtime) {
             exitCode: describe.status,
           },
         });
-        return findings;
+        return { findings, evaluation };
       }
     }
 
@@ -489,18 +598,34 @@ function runGenerationGuard(request, runtime) {
       runtime.contractPath,
       "--descriptor",
       descriptorPath,
+      "--format",
+      "json",
     ]);
 
-    const parsedFindings = parseGuardFindings(`${guard.stderr}\n${guard.stdout}`);
-    findings.push(...parsedFindings);
+    const payload =
+      parseJsonPayload(guard.stdout) ?? parseJsonPayload(guard.stderr);
+    const parsedFindings = parseGuardFindingsFromJson(payload);
+    const parsedFallback = parsedFindings.length
+      ? []
+      : parseGuardFindingsFromText(`${guard.stderr}\n${guard.stdout}`);
+    if (parsedFindings.length > 0) {
+      findings.push(...parsedFindings);
+      evaluation = parseGuardEvaluation(payload);
+    } else {
+      findings.push(...parsedFallback);
+    }
 
     if (guard.status === 1) {
+      const errorMessage =
+        payload?.error?.message ||
+        payload?.error ||
+        (guard.stderr || guard.stdout).trim();
       throw new AdapterInputError(
-        `Generation guard failed due to invalid input: ${(guard.stderr || guard.stdout).trim()}`,
+        `Generation guard failed due to invalid input: ${errorMessage || "unknown error"}`,
       );
     }
 
-    if (guard.status === 2 && parsedFindings.length === 0) {
+    if (guard.status === 2 && parsedFindings.length === 0 && parsedFallback.length === 0) {
       findings.push({
         code: "generation.guard.blocked",
         severity: "error",
@@ -531,7 +656,7 @@ function runGenerationGuard(request, runtime) {
       });
     }
 
-    return findings;
+    return { findings, evaluation };
   } finally {
     cleanupTempPath(descriptorTempDir);
   }
@@ -604,6 +729,7 @@ export async function runGenerationAdapter(requestInput, options = {}) {
 
   const request = normalizeAdapterRequest(requestInput);
   const runtime = resolveRuntimePaths(request, options);
+  const descriptorParitySurfaces = loadDescriptorParitySurfaces(runtime, options);
 
   ensureReadableFile(runtime.contractPath, "Contract");
   ensureReadableFile(runtime.guardPath, "Generation guard");
@@ -625,13 +751,30 @@ export async function runGenerationAdapter(requestInput, options = {}) {
     );
   }
 
+  const descriptorParityEnabled =
+    request.mode === "descriptor" && descriptorParitySurfaces.has(request.surfaceId);
+  const guardResult = runGenerationGuard(request, runtime);
   const findings = [];
-  findings.push(...runGenerationGuard(request, runtime));
+  const guardFindings = descriptorParityEnabled
+    ? guardResult.findings
+    : guardResult.findings.filter((finding) => !PARITY_FINDING_CODES.has(finding.code));
+  findings.push(...guardFindings);
 
   if (request.mode === "workspace") {
     findings.push(...runWorkspaceValidate(request, runtime));
   }
 
+  const coverage = buildCoverage(request.mode, {
+    shellBoundaryEvaluated: guardResult.evaluation.shellBoundaryEvaluated,
+    colorPolicyEvaluated:
+      descriptorParityEnabled || request.mode === "workspace"
+        ? guardResult.evaluation.colorPolicyEvaluated || request.mode === "workspace"
+        : false,
+    iconPolicyEvaluated:
+      descriptorParityEnabled || request.mode === "workspace"
+        ? guardResult.evaluation.iconPolicyEvaluated || request.mode === "workspace"
+        : false,
+  });
   const normalizedFindings = uniqueFindings(findings);
   const status = computeStatusFromFindings(normalizedFindings);
 
@@ -643,7 +786,7 @@ export async function runGenerationAdapter(requestInput, options = {}) {
       id: typeof contract.contractId === "string" ? contract.contractId : "unknown",
       version: typeof contract.version === "string" ? contract.version : "unknown",
     },
-    coverage: buildCoverage(request.mode),
+    coverage,
     findings: normalizedFindings,
     timings: {
       totalMs: Date.now() - startedAt,

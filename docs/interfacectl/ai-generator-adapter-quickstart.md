@@ -18,7 +18,7 @@ It returns a consistent verdict contract:
 
 1. Load the canonical contract.
 2. Send generated output to the adapter in `workspace` or `descriptor` mode.
-3. Run generation guard checks (shell-owned primitives + color policy).
+3. Run generation guard checks (shell-owned primitives + phased descriptor parity checks).
 4. In `workspace` mode, also run `interfacectl validate`.
 5. Use verdict and findings to decide regenerate/continue/block.
 
@@ -57,7 +57,8 @@ Request (conceptual):
     {
       "surfaceId": "reference-target-web",
       "primitives": [],
-      "colors": [{ "value": "var(--background)", "source": "generated.css" }]
+      "colors": [{ "value": "var(--background)", "source": "generated.css" }],
+      "icons": [{ "value": "@heroicons/react/24/outline", "source": "generated.tsx" }]
     }
   ]
 }
@@ -69,6 +70,19 @@ Response codes:
 - `422` with `status=block`
 - `400` for invalid request
 
+## Descriptor parity rollout
+
+Descriptor parity is phased by surface from:
+
+- `contracts/generation-descriptor-parity.json`
+
+Initial enforced surface:
+
+- `reference-target-web`
+
+For surfaces in `enforcedSurfaces`, descriptor mode evaluates shell + color + icon policy findings (`color.disallowed`, `icon.source-disallowed`, `descriptor.icons.missing`).
+For surfaces not yet listed, descriptor mode keeps legacy behavior for this increment.
+
 ## Verdict semantics
 
 - `block`: at least one strict/error finding exists.
@@ -79,7 +93,7 @@ Response codes:
 
 - `400`/exit `10`: invalid adapter request shape, bad descriptor JSON, missing contract, or unknown surface.
 - `422`/exit `30`: strict policy hit (`color.disallowed`, `icon.source-disallowed`, shell-owned primitive emission, or other error finding).
-- Descriptor-mode promotion gaps: add CI fallback with full workspace validation before merge/deploy.
+- Descriptor mode includes icon/color parity only for rollout-enabled surfaces. Keep CI fallback with full workspace validation before merge/deploy.
 
 ## Next docs
 

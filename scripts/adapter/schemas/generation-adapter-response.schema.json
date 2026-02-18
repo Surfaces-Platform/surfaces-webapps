@@ -49,6 +49,15 @@
         },
         "fullValidate": {
           "type": "boolean"
+        },
+        "shellBoundaryEvaluated": {
+          "type": "boolean"
+        },
+        "colorPolicyEvaluated": {
+          "type": "boolean"
+        },
+        "iconPolicyEvaluated": {
+          "type": "boolean"
         }
       }
     },

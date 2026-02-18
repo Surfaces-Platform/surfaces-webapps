@@ -163,6 +163,7 @@ process.exit(1);
 function makeAdapterSandbox() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "adapter-sandbox-"));
   const contractPath = path.join(dir, "contracts", "surfaces.web.contract.json");
+  const parityContractPath = path.join(dir, "contracts", "parity.contract.json");
   const cliPath = path.join(
     dir,
     "tools",
@@ -233,6 +234,66 @@ function makeAdapterSandbox() {
   };
 
   writeFile(contractPath, `${JSON.stringify(contract, null, 2)}\n`);
+  writeFile(
+    parityContractPath,
+    `${JSON.stringify(
+      {
+        contractId: "parity.contract",
+        version: "0.1.0",
+        sections: [],
+        constraints: {
+          motion: {
+            allowedDurationsMs: [120],
+            allowedTimingFunctions: ["linear"],
+          },
+        },
+        surfaces: [
+          {
+            id: "reference-target-web",
+            displayName: "Reference Target",
+            type: "web",
+            requiredSections: [],
+            allowedFonts: ["Inter"],
+            layout: { maxContentWidth: 1120 },
+            icons: {
+              policy: "strict",
+              allowedSources: ["@heroicons/react/24/outline"],
+            },
+          },
+          {
+            id: "warn-icon-web",
+            displayName: "Warn Icon",
+            type: "web",
+            requiredSections: [],
+            allowedFonts: ["Inter"],
+            layout: { maxContentWidth: 1120 },
+            icons: {
+              policy: "warn",
+              allowedSources: ["@heroicons/react/24/outline"],
+            },
+          },
+          {
+            id: "surfaces-web",
+            displayName: "Surfaces",
+            type: "web",
+            requiredSections: [],
+            allowedFonts: ["Inter"],
+            layout: { maxContentWidth: 1120 },
+            icons: {
+              policy: "strict",
+              allowedSources: ["@heroicons/react/24/outline"],
+            },
+          },
+        ],
+        color: {
+          policy: "strict",
+          allowedValues: ["var(--background)"],
+        },
+      },
+      null,
+      2,
+    )}\n`,
+  );
   writeFile(cliPath, buildMockCliScript());
   fs.chmodSync(cliPath, 0o755);
   writeFile(guardPath, fs.readFileSync(guardSourcePath, "utf8"));
@@ -247,6 +308,11 @@ function makeAdapterSandbox() {
     blockRaw: path.join(descriptorsDir, "block-raw.json"),
     blockPrimitive: path.join(descriptorsDir, "block-primitive.json"),
     reference: path.join(descriptorsDir, "reference-target.json"),
+    parityColorBlock: path.join(descriptorsDir, "parity-color-block.json"),
+    parityIconBlock: path.join(descriptorsDir, "parity-icon-block.json"),
+    parityWarnIcon: path.join(descriptorsDir, "parity-warn-icon.json"),
+    parityMissingIcons: path.join(descriptorsDir, "parity-missing-icons.json"),
+    parityLegacySurface: path.join(descriptorsDir, "parity-legacy-surface.json"),
   };
 
   writeFile(
@@ -317,6 +383,86 @@ function makeAdapterSandbox() {
           surfaceId: "reference-target-web",
           primitives: [],
           colors: [{ value: "var(--background)", source: "apps/reference-target-web/app/page.tsx" }],
+          icons: [{ value: "@heroicons/react/24/outline", source: "apps/reference-target-web/app/page.tsx" }],
+        },
+      ],
+      null,
+      2,
+    )}\n`,
+  );
+
+  writeFile(
+    descriptorPaths.parityColorBlock,
+    `${JSON.stringify(
+      [
+        {
+          surfaceId: "reference-target-web",
+          primitives: [],
+          colors: [{ value: "rgba(15, 23, 42, 0.3)", source: "generated.css" }],
+          icons: [{ value: "@heroicons/react/24/outline", source: "generated.tsx" }],
+        },
+      ],
+      null,
+      2,
+    )}\n`,
+  );
+
+  writeFile(
+    descriptorPaths.parityIconBlock,
+    `${JSON.stringify(
+      [
+        {
+          surfaceId: "reference-target-web",
+          primitives: [],
+          colors: [{ value: "var(--background)", source: "generated.css" }],
+          icons: [{ value: "lucide-react", source: "generated.tsx" }],
+        },
+      ],
+      null,
+      2,
+    )}\n`,
+  );
+
+  writeFile(
+    descriptorPaths.parityWarnIcon,
+    `${JSON.stringify(
+      [
+        {
+          surfaceId: "warn-icon-web",
+          primitives: [],
+          colors: [{ value: "var(--background)", source: "generated.css" }],
+          icons: [{ value: "lucide-react", source: "generated.tsx" }],
+        },
+      ],
+      null,
+      2,
+    )}\n`,
+  );
+
+  writeFile(
+    descriptorPaths.parityMissingIcons,
+    `${JSON.stringify(
+      [
+        {
+          surfaceId: "reference-target-web",
+          primitives: [],
+          colors: [{ value: "var(--background)", source: "generated.css" }],
+        },
+      ],
+      null,
+      2,
+    )}\n`,
+  );
+
+  writeFile(
+    descriptorPaths.parityLegacySurface,
+    `${JSON.stringify(
+      [
+        {
+          surfaceId: "surfaces-web",
+          primitives: [],
+          colors: [{ value: "rgba(15, 23, 42, 0.3)", source: "generated.css" }],
+          icons: [{ value: "lucide-react", source: "generated.tsx" }],
         },
       ],
       null,
@@ -327,13 +473,14 @@ function makeAdapterSandbox() {
   return {
     dir,
     contractPath,
+    parityContractPath,
     cliPath,
     guardPath,
     descriptorPaths,
   };
 }
 
-function runCli(args, sandbox) {
+function runCli(args, sandbox, env = {}) {
   const result = spawnSync("node", [cliWrapperPath, ...args], {
     cwd: repoRoot,
     encoding: "utf8",
@@ -341,6 +488,7 @@ function runCli(args, sandbox) {
       ...process.env,
       SURFACES_ADAPTER_INTERFACECTL_CLI: sandbox.cliPath,
       SURFACES_ADAPTER_GENERATION_GUARD: sandbox.guardPath,
+      ...env,
     },
   });
 
@@ -553,6 +701,133 @@ test("CLI wrapper: descriptor mode emits pass, warn, block with expected exit co
   assert.equal(block.status, 30, block.stderr || block.stdout);
   const blockPayload = parseResponse(block.stdout, block.stderr);
   assert.equal(blockPayload.status, "block");
+});
+
+test("CLI wrapper: descriptor parity is enforced for reference-target and not for non-enforced surfaces", () => {
+  const sandbox = makeAdapterSandbox();
+
+  const strictColor = runCli(
+    [
+      "--tool",
+      "codex",
+      "--surface",
+      "reference-target-web",
+      "--mode",
+      "descriptor",
+      "--descriptor-path",
+      sandbox.descriptorPaths.parityColorBlock,
+      "--contract",
+      sandbox.parityContractPath,
+    ],
+    sandbox,
+  );
+  assert.equal(strictColor.status, 30, strictColor.stderr || strictColor.stdout);
+  const strictColorPayload = parseResponse(strictColor.stdout, strictColor.stderr);
+  assert.equal(strictColorPayload.status, "block");
+  assert.ok(
+    strictColorPayload.findings.some((finding) => finding.code === "color.disallowed"),
+  );
+  assert.equal(strictColorPayload.coverage.colorPolicyEvaluated, true);
+
+  const strictIcon = runCli(
+    [
+      "--tool",
+      "codex",
+      "--surface",
+      "reference-target-web",
+      "--mode",
+      "descriptor",
+      "--descriptor-path",
+      sandbox.descriptorPaths.parityIconBlock,
+      "--contract",
+      sandbox.parityContractPath,
+    ],
+    sandbox,
+  );
+  assert.equal(strictIcon.status, 30, strictIcon.stderr || strictIcon.stdout);
+  const strictIconPayload = parseResponse(strictIcon.stdout, strictIcon.stderr);
+  assert.equal(strictIconPayload.status, "block");
+  assert.ok(
+    strictIconPayload.findings.some((finding) => finding.code === "icon.source-disallowed"),
+  );
+  assert.equal(strictIconPayload.coverage.iconPolicyEvaluated, true);
+
+  const warnIcon = runCli(
+    [
+      "--tool",
+      "codex",
+      "--surface",
+      "warn-icon-web",
+      "--mode",
+      "descriptor",
+      "--descriptor-path",
+      sandbox.descriptorPaths.parityWarnIcon,
+      "--contract",
+      sandbox.parityContractPath,
+    ],
+    sandbox,
+    {
+      SURFACES_ADAPTER_DESCRIPTOR_PARITY_SURFACES:
+        "reference-target-web,warn-icon-web",
+    },
+  );
+  assert.equal(warnIcon.status, 0, warnIcon.stderr || warnIcon.stdout);
+  const warnIconPayload = parseResponse(warnIcon.stdout, warnIcon.stderr);
+  assert.equal(warnIconPayload.status, "warn");
+  assert.ok(
+    warnIconPayload.findings.some((finding) => finding.code === "icon.source-disallowed"),
+  );
+
+  const missingIcons = runCli(
+    [
+      "--tool",
+      "codex",
+      "--surface",
+      "reference-target-web",
+      "--mode",
+      "descriptor",
+      "--descriptor-path",
+      sandbox.descriptorPaths.parityMissingIcons,
+      "--contract",
+      sandbox.parityContractPath,
+    ],
+    sandbox,
+  );
+  assert.equal(missingIcons.status, 30, missingIcons.stderr || missingIcons.stdout);
+  const missingIconsPayload = parseResponse(missingIcons.stdout, missingIcons.stderr);
+  assert.ok(
+    missingIconsPayload.findings.some((finding) => finding.code === "descriptor.icons.missing"),
+  );
+
+  const nonEnforcedSurface = runCli(
+    [
+      "--tool",
+      "codex",
+      "--surface",
+      "surfaces-web",
+      "--mode",
+      "descriptor",
+      "--descriptor-path",
+      sandbox.descriptorPaths.parityLegacySurface,
+      "--contract",
+      sandbox.parityContractPath,
+    ],
+    sandbox,
+  );
+  assert.equal(nonEnforcedSurface.status, 0, nonEnforcedSurface.stderr || nonEnforcedSurface.stdout);
+  const nonEnforcedPayload = parseResponse(nonEnforcedSurface.stdout, nonEnforcedSurface.stderr);
+  assert.equal(nonEnforcedPayload.status, "pass");
+  assert.equal(
+    nonEnforcedPayload.findings.some(
+      (finding) =>
+        finding.code === "color.disallowed" ||
+        finding.code === "icon.source-disallowed" ||
+        finding.code === "descriptor.icons.missing",
+    ),
+    false,
+  );
+  assert.equal(nonEnforcedPayload.coverage.colorPolicyEvaluated, false);
+  assert.equal(nonEnforcedPayload.coverage.iconPolicyEvaluated, false);
 });
 
 test("HTTP wrapper: 200 for pass/warn, 422 for block, 400 for invalid request", async () => {

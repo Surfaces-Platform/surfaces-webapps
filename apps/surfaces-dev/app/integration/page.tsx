@@ -31,6 +31,10 @@ export default function IntegrationQuickStartPage() {
           detail: 'Use workspace mode for local/CI promotion checks; use descriptor mode for hosted generator previews.'
         },
         {
+          title: 'Apply rollout parity rules.',
+          detail: 'Descriptor color/icon parity is enforced only for surfaces listed in contracts/generation-descriptor-parity.json.'
+        },
+        {
           title: 'Map verdict behavior in tool UX.',
           detail: 'Block publish on block, surface warnings on warn, allow pass.'
         },
@@ -55,8 +59,8 @@ export default function IntegrationQuickStartPage() {
       snippet={integrationSnippet}
       notes={[
         'workspace mode runs generation guard plus interfacectl validate.',
-        'Icon-source policy visibility is authoritative at CI/CD time via workspace validation in this increment.',
-        'descriptor mode is visibility-first; do not promote solely on descriptor-mode pass/warn.',
+        'CI/CD workspace validation remains the authoritative promotion gate, even when descriptor parity is enabled.',
+        'Descriptor mode parity is phased by surface; do not promote solely on descriptor-mode pass/warn.',
         'Hosted tools should call HTTP endpoint and still rely on CI hard gate for final promotion.',
         'In CI, inspect uploaded artifact artifacts/interfacectl-report.json for full findings.'
       ]}

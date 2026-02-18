@@ -20,7 +20,8 @@ Schema files in repo:
     {
       "surfaceId": "reference-target-web",
       "primitives": [],
-      "colors": []
+      "colors": [],
+      "icons": [{ "value": "@heroicons/react/24/outline", "source": "generated.tsx" }]
     }
   ],
   "contractPath": "/absolute/path/optional",
@@ -36,6 +37,7 @@ Field notes:
 
 - `mode=workspace` requires `workspaceRoot`.
 - `mode=descriptor` requires `descriptor`.
+- `descriptor[].icons` is optional but recommended when icon policy is enabled.
 - If `contractPath` is omitted, adapter defaults to `contracts/surfaces.web.contract.json`.
 
 ## Response schema
@@ -51,7 +53,10 @@ Field notes:
   },
   "coverage": {
     "generationGuard": true,
-    "fullValidate": true
+    "fullValidate": true,
+    "shellBoundaryEvaluated": true,
+    "colorPolicyEvaluated": true,
+    "iconPolicyEvaluated": true
   },
   "findings": [
     {
@@ -82,6 +87,20 @@ Coverage semantics:
 
 - `mode=workspace` sets `coverage.fullValidate=true`.
 - `mode=descriptor` sets `coverage.fullValidate=false` (generation guard only).
+- `coverage.shellBoundaryEvaluated` indicates shell ownership boundary checks were evaluated.
+- `coverage.colorPolicyEvaluated` indicates descriptor color policy parity checks were evaluated for this surface.
+- `coverage.iconPolicyEvaluated` indicates descriptor icon policy parity checks were evaluated for this surface.
+
+## Descriptor parity rollout controls
+
+Adapter rollout config defaults to:
+
+- `contracts/generation-descriptor-parity.json`
+
+Override options:
+
+- `SURFACES_ADAPTER_DESCRIPTOR_PARITY_CONFIG` (path override)
+- `SURFACES_ADAPTER_DESCRIPTOR_PARITY_SURFACES` (comma-separated surface IDs)
 
 ## Error model
 
