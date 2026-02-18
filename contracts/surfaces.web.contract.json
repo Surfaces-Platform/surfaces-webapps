@@ -97,6 +97,12 @@
       "displayName": "InterfaceCTL Web",
       "domain": "www.interfacectl.com",
       "id": "interfacectl-web",
+      "icons": {
+        "allowedSources": [
+          "@heroicons/react/24/outline"
+        ],
+        "policy": "warn"
+      },
       "layout": {
         "maxContentWidth": 1120
       },
@@ -127,6 +133,12 @@
       "displayName": "SurfaceOps Web",
       "domain": "www.surfaceops.ai",
       "id": "surfaceops-web",
+      "icons": {
+        "allowedSources": [
+          "@heroicons/react/24/outline"
+        ],
+        "policy": "warn"
+      },
       "layout": {
         "maxContentWidth": 1120
       },
@@ -165,6 +177,12 @@
       "displayName": "Surfaces Web",
       "domain": "www.surfaces.systems",
       "id": "surfaces-web",
+      "icons": {
+        "allowedSources": [
+          "@heroicons/react/24/outline"
+        ],
+        "policy": "warn"
+      },
       "layout": {
         "maxContentWidth": 1120
       },
@@ -196,6 +214,12 @@
       "displayName": "Surfaces Dev",
       "domain": "www.surfaces.dev",
       "id": "surfaces-dev",
+      "icons": {
+        "allowedSources": [
+          "@heroicons/react/24/outline"
+        ],
+        "policy": "warn"
+      },
       "layout": {
         "maxContentWidth": 1120
       },

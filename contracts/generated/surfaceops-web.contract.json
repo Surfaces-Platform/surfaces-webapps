@@ -72,6 +72,12 @@
         "sans-serif"
       ],
       "displayName": "Surfaceops Web",
+      "icons": {
+        "allowedSources": [
+          "@heroicons/react/24/outline"
+        ],
+        "policy": "warn"
+      },
       "id": "surfaceops-web",
       "layout": {
         "maxContentWidth": 1120

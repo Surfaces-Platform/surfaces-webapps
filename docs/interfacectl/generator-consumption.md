@@ -10,182 +10,179 @@ Related adapter docs:
 
 ## Contract Subset for Generators
 
-Generators should focus on the following contract sections that define correctness constraints:
+Generators should consume the contract fields that define correctness constraints.
 
-### Shell Ownership Boundary (new)
+### Shell Ownership Boundary
 
-- **`shell.owns`**: Shell-owned primitives (e.g., `nav`, `header`, `sidebar`, `authWrapper`, `appChrome`). Generators **must not emit** these inside surfaces.
-- **`shell.contentSlot`**: Identifier for the shell’s content mount point (frame name or DOM id).
+- **`shell.owns`**: Shell-owned primitives (for example `nav`, `header`, `sidebar`, `authWrapper`, `appChrome`).
+- **`shell.contentSlot`**: Identifier for the shell content mount point.
 - **`surface.mustNotEmit`**: Optional per-surface ban list. If absent, default to `shell.owns`.
 
 Generator enforcement patterns:
-- **Figma Make**: Lock frames matching `shell.owns`; expose only the `contentSlot` frame for editing/export. Preflight blocks added frames whose names/roles match the ban list.
-- **Lovable / LLM UI builders**: Include `mustNotEmit` in system prompt + scaffold; run post-gen structural lint to reject banned primitives before returning artifacts.
-- **Agentic coder / template engines**: Read `shell` + `mustNotEmit` before generation; block imports/components that match the ban list; snapshot test surfaces mounted in a mocked shell to ensure single nav/header.
+- **Figma Make**: lock shell-owned frames; expose only content slot.
+- **Lovable/LLM builders**: include `mustNotEmit` in prompts and reject banned primitives post-generation.
+- **Agentic coders/template engines**: block banned imports/components before output.
 
 ### Layout Invariants
 
-- **`surfaces[].layout.maxContentWidth`**: Maximum content width in pixels (enforced via static analysis)
-- **`surfaces[].layout.requiredContainers`**: Required container selectors (defaults to `["contract-container"]` if omitted)
+- **`surfaces[].layout.maxContentWidth`**: maximum content width in pixels.
+- **`surfaces[].layout.requiredContainers`**: required container selectors (defaults to `contract-container` when omitted).
 
-### Color Source of Truth
+### Unified Color Policy
 
-- **`color.sourceOfTruth.type`**: `"tokens"` or `"none"` - Whether colors must come from tokens
-- **`color.sourceOfTruth.tokenNamespaces`**: Allowed CSS variable namespace prefixes (e.g., `["--color-", "--background"]`)
+- **`color.policy`**: `"off" | "warn" | "strict"`.
+- **`color.allowedValues`**: exact allowlist of canonical color values.
 
-### Color Raw Value Policy
+Interpretation:
+- `off`: do not evaluate color values.
+- `warn`: report non-allowlisted colors as warnings.
+- `strict`: report non-allowlisted colors as blocking errors.
 
-- **`color.rawValues.policy`**: `"off"` | `"warn"` | `"strict"` - How raw color literals are handled
-- **`color.rawValues.allowlist`**: Explicitly allowed raw color values (hex, rgb, hsl)
-- **`color.rawValues.denylist`**: Explicitly forbidden raw color values
+### Per-Surface Icon Source Policy
+
+- **`surfaces[].icons.policy`**: `"off" | "warn" | "strict"`.
+- **`surfaces[].icons.allowedSources`**: allowlist of import sources (for example `@heroicons/react/24/outline`, `lucide-react`).
+
+Interpretation:
+- `off`: do not evaluate icon sources.
+- `warn`: report disallowed icon sources as warnings.
+- `strict`: report disallowed icon sources as blocking errors.
 
 ### Motion Constraints
 
-- **`constraints.motion.allowedDurationsMs`**: Valid animation/transition durations in milliseconds
-- **`constraints.motion.allowedTimingFunctions`**: Valid timing function names
+- **`constraints.motion.allowedDurationsMs`**: allowed transition/animation durations.
+- **`constraints.motion.allowedTimingFunctions`**: allowed timing function names.
 
-## Interpretation Rules
+## Policy Interpretation Rules
 
-Generators must interpret policy levels consistently:
+- **`strict`**: hard constraint, block generation output that violates it.
+- **`warn`**: soft constraint, surface the finding but allow continuation.
+- **`off`**: informational/no evaluation.
 
-### Policy Interpretation
-
-- **`policy: "strict"`** → Hard constraint: Generators **must** enforce the rule. Generated code that violates strict policies will fail validation.
-- **`policy: "warn"`** → Soft preference: Generators **should** surface warnings but violations are non-blocking. Use for guidance during generation.
-- **`policy: "off"`** → Ignore: No validation is performed. Generators may treat this as informational only.
-
-### Conflict Resolution
-
-- **Denylist overrides allowlist**: If a value appears in both, denylist takes precedence
-- **Strict overrides warn**: If multiple policies apply, strict is enforced
-- **Most specific rule wins**: Surface-level overrides apply over contract-level defaults
+Conflict handling:
+- Most specific surface rule wins over broader defaults.
+- If any finding is strict/error, adapter status is `block`.
 
 ## Provenance Requirements
 
-**Note:** This milestone documents provenance requirements but does not yet enforce them. This avoids prematurely constraining generation workflows.
+Generated output should carry:
+- `surfaceId`
+- `contractId`
+- `contract version`
 
-Generated output should include metadata indicating:
-
-- **Surface ID**: Which surface the code targets (from `surfaces[].id`)
-- **Contract version**: Contract version used for generation (from `version`)
-- **Contract ID**: Contract identifier (from `contractId`)
-
-### Embedding Provenance
-
-Generators should embed this metadata in generated code via:
-
-- **HTML comments**: `<!-- Generated for surface: surfaces-web, contract: surfaces.web@0.1.0 -->`
-- **Data attributes**: `<html data-contract="surfaces.web" data-surface="surfaces-web" data-version="0.1.0">`
-- **JavaScript comments**: `// Generated from surfaces.web@0.1.0 for surfaces-web`
-- **CSS comments**: `/* Generated from surfaces.web@0.1.0 for surfaces-web */`
+Embedding patterns:
+- HTML comments: `<!-- Generated for surfaces-web from surfaces.web@0.1.0 -->`
+- Data attributes: `data-contract`, `data-surface`, `data-version`
+- Source comments in generated TS/CSS files.
 
 ## Validation
 
-Generated UI is validated **exactly the same way as human-written UI** via `pnpm validate:ci`.
+Generated UI is validated through the same path as human-authored UI:
 
-### No Special Casing
+1. Generate output from contract.
+2. Run `pnpm validate:ci` (or adapter workspace mode).
+3. Fix findings using emitted file/location metadata.
 
-- Generated code must pass the same validation rules as hand-written code
-- No different validation paths or exceptions for generated content
-- Violations attribute to the generator's surface without ambiguity
-
-### Validation Workflow
-
-1. Generator produces output conforming to contract rules
-2. Generated code is committed to the surface repository
-3. `pnpm validate:ci` runs the same static analysis on generated and human-written code
-4. Violations are reported with location metadata (file, line, property)
-5. Generator or developer fixes violations following remediation guidance
+No alternate rule path exists for generated content.
 
 ## Example Generator Flow
 
 ```typescript
-// Pseudo-code example
 const contract = loadContract("contracts/surfaces.web.contract.json");
-const surface = contract.surfaces.find(s => s.id === "surfaces-web");
+const surface = contract.surfaces.find((s) => s.id === "surfaces-web");
+if (!surface) throw new Error("Unknown surface");
 
-// Enforce strict policies
-if (surface.layout.maxContentWidth) {
-  // Generator must respect maxContentWidth
-  generateLayoutContainer(surface.layout.maxContentWidth);
+// Respect layout invariants.
+generateLayoutContainer(surface.layout.maxContentWidth);
+
+// Enforce unified color policy.
+const colorPolicy = contract.color.policy;
+if (colorPolicy !== "off") {
+  validateColorsAgainstAllowlist(contract.color.allowedValues);
 }
 
-// Respect color token namespaces
-if (contract.color?.sourceOfTruth?.type === "tokens") {
-  const namespaces = contract.color.sourceOfTruth.tokenNamespaces;
-  // Generator must use tokens from allowed namespaces
-  generateColorTokens(namespaces);
+// Enforce icon source policy when configured on a surface.
+if (surface.icons && surface.icons.policy !== "off") {
+  validateIconImports(surface.icons.allowedSources, surface.icons.policy);
 }
 
-// Honor raw value policy
-if (contract.color?.rawValues?.policy === "strict") {
-  // Generator must not use raw color literals
-  // Must use tokens from allowed namespaces
-}
-
-// Embed provenance
-generateHTML({
+embedProvenance({
+  surfaceId: surface.id,
   contractId: contract.contractId,
   version: contract.version,
-  surfaceId: surface.id,
 });
 ```
 
-## Reference adapter snippets (ready to copy)
+## Reference Adapter Snippets
 
 Cursor / Lovable (Node/TS):
 ```typescript
 import contract from "../contracts/surfaces.web.contract.json";
 
-export function applyContract(surfaceId: string, css: string) {
-  const surface = contract.surfaces.find(s => s.id === surfaceId);
+export function applyContract(surfaceId: string, css: string, iconImports: string[]) {
+  const surface = contract.surfaces.find((s) => s.id === surfaceId);
   if (!surface) throw new Error(`Unknown surface ${surfaceId}`);
-  const violations: Array<{rule: string; policy: string; evidence: any}> = [];
 
-  // raw color check
-  const policy = contract.color?.rawValues?.policy ?? "off";
-  if (policy !== "off" && /(rgb|hsl)a?\\(/i.test(css)) {
-    violations.push({ rule: "color.rawValues", policy, evidence: { value: "raw literal in CSS" } });
+  const violations: Array<{ rule: string; policy: string; evidence: any }> = [];
+
+  if (contract.color.policy !== "off") {
+    const allowed = new Set(contract.color.allowedValues);
+    const rawColors = extractRawColors(css);
+    for (const color of rawColors) {
+      if (!allowed.has(color)) {
+        violations.push({ rule: "color.disallowed", policy: contract.color.policy, evidence: { value: color } });
+      }
+    }
   }
 
-  const strictHit = violations.some(v => v.policy === "strict");
+  if (surface.icons && surface.icons.policy !== "off") {
+    const allowedIcons = new Set(surface.icons.allowedSources);
+    for (const source of iconImports) {
+      if (!allowedIcons.has(source)) {
+        violations.push({ rule: "icon.source-disallowed", policy: surface.icons.policy, evidence: { source } });
+      }
+    }
+  }
+
+  const strictHit = violations.some((v) => v.policy === "strict");
   return {
     allowed: !strictHit,
     provenance: { surfaceId, contractId: contract.contractId, version: contract.version },
-    violations
+    violations,
   };
 }
 ```
 
-Figma plugin scaffold (manifest-driven):
+Figma plugin scaffold:
 ```javascript
 import contract from "../contracts/surfaces.web.contract.json";
 
-function validateNode(node) {
-  const policy = contract.color.rawValues.policy;
-  if (policy !== "off" && node.fills?.some(fill => fill.type === "SOLID" && fill.opacity < 1)) {
-    return [{ rule: "color.rawValues", policy, evidence: { nodeId: node.id } }];
+function validateNode(node, surfaceId) {
+  const surface = contract.surfaces.find((s) => s.id === surfaceId);
+  if (!surface) return [];
+
+  const violations = [];
+  const policy = contract.color.policy;
+  if (policy !== "off" && node.fills?.some((fill) => fill.type === "SOLID")) {
+    const value = toCssColor(node.fills[0]);
+    if (!contract.color.allowedValues.includes(value)) {
+      violations.push({ rule: "color.disallowed", policy, evidence: { nodeId: node.id, value } });
+    }
   }
-  return [];
+  return violations;
 }
 ```
 
-Make / template engines (provenance injection):
+Template engines (provenance injection):
 ```handlebars
 <!doctype html>
 <html data-contract="{{contractId}}" data-surface="{{surfaceId}}" data-version="{{version}}">
   <body class="contract-container">
-    {{!-- generator must ensure required containers and token usage --}}
+    {{!-- generator must satisfy layout/section/color/icon constraints --}}
   </body>
 </html>
 ```
 
 ## Future Extensions
 
-Additional correctness dimensions will reuse the same policy + maturity pattern:
-
-- **Accessibility**: `accessibility.policy`, `accessibility.rules`
-- **Interaction constraints**: `interactions.policy`, `interactions.allowedPatterns`
-- **State transitions**: `state.policy`, `state.allowedTransitions`
-
-Generators should anticipate this extensibility when implementing contract consumption.
+Additional correctness dimensions should reuse the same policy model (`off|warn|strict`) and deterministic findings contract.

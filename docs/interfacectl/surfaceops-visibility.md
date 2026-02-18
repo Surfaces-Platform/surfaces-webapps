@@ -15,7 +15,7 @@ Purpose: let SurfaceOps show the latest validation state without changing enforc
   "status": "pass|fail|warn",
   "violations": [
     {
-      "rule": "color.rawValues",
+      "rule": "color.disallowed",
       "policy": "warn",
       "file": "apps/surfaces-web/app/globals.css",
       "line": 34,

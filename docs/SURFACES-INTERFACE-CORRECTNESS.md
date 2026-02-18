@@ -7,7 +7,7 @@ A correct interface is one that meets shared expectations consistently across mu
 The contract specifies correctness across multiple dimensions:
 
 - **Layout:** Content width constraints, required container selectors
-- **Color:** Token namespace policies, raw value restrictions
+- **Color:** Unified allowlist policy (`color.policy`, `color.allowedValues`)
 - **Motion:** Allowed animation durations, timing functions
 - **Sections:** Required structural elements, content organization
 
@@ -40,7 +40,7 @@ Surfaces uses a three-tier maturity model to gradually evolve correctness rules 
 
 This lets you validate rules at low risk before making them blocking. Start with warnings, monitor false positives, refine allowlists, build team consensus—then graduate to strict enforcement when confidence is high.
 
-**Deprecation without breakage:** Old rules remain valid while new rules are adopted. The contract shows this with `allowedColors` → `color` policy migration: deprecation warnings clearly indicate what to remove and what to add, but old contracts continue to work during migration.
+**Policy-first evolution:** Enforcement behavior is encoded in policy values (`off|warn|strict`) and can be graduated safely without changing validator logic.
 
 **Policy-level encoding:** Enforcement changes happen in the contract, not in code. You can adjust strictness, add exceptions, or graduate rules without modifying validator logic or redeploying surfaces.
 
@@ -49,9 +49,9 @@ This lets you validate rules at low risk before making them blocking. Start with
 Consider a raw color literal violation:
 
 - **Detection:** `rgba(15, 23, 42, 0.3)` found in `apps/surfaceops-web/app/globals.css:34 (background)`
-- **Policy:** `color.rawValues.policy: "warn"` (non-blocking today)
-- **Remediation:** Replace with `var(--background)` or add to `rawValues.allowlist` if intentionally used
-- **Evolution:** When ready, graduate to `"strict"` to block raw values entirely
+- **Policy:** `color.policy: "strict"` (blocking today in canonical contract)
+- **Remediation:** Replace with an allowed token/value or add a deliberate exception to `color.allowedValues` when justified
+- **Evolution:** Use `warn` during initial rollout on new domains, then graduate to `strict` once false positives are near zero
 
 The entire workflow—detection, remediation, evolution—is traceable, automatic, and contract-driven.
 
@@ -77,4 +77,3 @@ A reader should understand Surfaces without ever seeing a color example. Color i
 Surfaces is interface correctness infrastructure—not a smarter style linter, not a design token manager, not a visual diff tool. It's the operational discipline that keeps multiple surfaces aligned to shared expectations, verified automatically, evolved safely.
 
 That's what "correct interface" means.
-

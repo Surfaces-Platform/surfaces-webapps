@@ -18,43 +18,16 @@ export function validateEdgeChange(change) {
     violations.push(makeViolation("sections.required", "strict", { sectionId: change.sectionId }));
   }
 
-  // Color raw values
-  if (manifest.color?.rawValues) {
-    const policy = manifest.color.rawValues.policy;
+  // Unified color policy (exact allowlist).
+  if (manifest.color) {
+    const policy = manifest.color.policy ?? "off";
     const value = change.proposedStyles?.background ?? "";
-    const allowlist = new Set(manifest.color.rawValues.allowlist ?? []);
-    const denylist = new Set(manifest.color.rawValues.denylist ?? []);
-    if (isRawColorLiteral(value)) {
-      if (denylist.has(value)) {
-        violations.push(makeViolation("color.rawValues.denylist", policy, {
-          property: "background",
-          value,
-        }));
-      } else if (policy !== "off" && !allowlist.has(value)) {
-        violations.push(makeViolation("color.rawValues", policy, {
-          property: "background",
-          value
-        }));
-      }
-    }
-  }
-
-  if (manifest.color?.sourceOfTruth?.type === "tokens") {
-    const value = change.proposedStyles?.background ?? "";
-    const tokenNamespaces = manifest.color.sourceOfTruth.tokenNamespaces ?? [];
-    const varName = extractCssVarName(value);
-    if (varName && tokenNamespaces.length > 0) {
-      const hasAllowedNamespace = tokenNamespaces.some((namespace) =>
-        varName.startsWith(namespace),
-      );
-      if (!hasAllowedNamespace) {
-        violations.push(makeViolation("color.token.namespace", "warn", {
-          property: "background",
-          value,
-          tokenName: varName,
-          tokenNamespaces,
-        }));
-      }
+    const allowlist = new Set(manifest.color.allowedValues ?? []);
+    if (policy !== "off" && isRawColorLiteral(value) && !allowlist.has(value)) {
+      violations.push(makeViolation("color.disallowed", policy, {
+        property: "background",
+        value
+      }));
     }
   }
 
@@ -73,11 +46,6 @@ function isRawColorLiteral(value = "") {
   if (/^rgba?\s*\(/.test(normalized)) return true;
   if (/^hsla?\s*\(/.test(normalized)) return true;
   return false;
-}
-
-function extractCssVarName(value = "") {
-  const match = value.match(/var\((--[^)]+)\)/);
-  return match ? match[1] : null;
 }
 
 function makeViolation(rule, policy, evidence) {

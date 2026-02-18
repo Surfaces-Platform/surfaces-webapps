@@ -33,6 +33,12 @@
         "sans-serif"
       ],
       "displayName": "Interfacectl Web",
+      "icons": {
+        "allowedSources": [
+          "@heroicons/react/24/outline"
+        ],
+        "policy": "warn"
+      },
       "id": "interfacectl-web",
       "layout": {
         "maxContentWidth": 1120
