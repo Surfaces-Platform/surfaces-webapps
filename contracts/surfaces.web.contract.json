@@ -181,7 +181,7 @@
         "allowedSources": [
           "@heroicons/react/24/outline"
         ],
-        "policy": "warn"
+        "policy": "strict"
       },
       "layout": {
         "maxContentWidth": 1120

@@ -34,6 +34,11 @@ Purpose: let SurfaceOps show the latest validation state without changing enforc
 - Contract version + diff link (if available).
 - Empty state when no artifacts yet.
 
+## Current canonical icon-policy semantics
+- `surfaces-web` icon-source violations are blocking (`icons.policy: "strict"`).
+- `interfacectl-web`, `surfaceops-web`, and `surfaces-dev` icon-source violations remain non-blocking (`icons.policy: "warn"`).
+- Runtime icon enforcement is still out of scope; these statuses come from CI/CD-time validation artifacts.
+
 ## Non-goals
 - No workflow actions (assign, mute, retry).
 - No runtime telemetry; this is build/CI only.
