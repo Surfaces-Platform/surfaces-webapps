@@ -18,6 +18,9 @@ RUN_EMITTER_PATH="${RUN_EMITTER_PATH:-$REPO_ROOT/scripts/lib/contract-runs.mjs}"
 SURFACEOPS_URL="${SURFACEOPS_URL:-http://localhost:3001}"
 
 SKIP_BUILD="${SKIP_BUILD:-0}"
+ICON_PILOT_MODE="${ICON_PILOT_MODE:-both}"
+ICON_PILOT_FIXTURE_SURFACE_ID="${ICON_PILOT_FIXTURE_SURFACE_ID:-icon-demo-web}"
+ICON_PILOT_OUTPUT_DIR="${ICON_PILOT_OUTPUT_DIR:-}"
 
 step() { echo "[STEP] $*"; }
 ok() { echo "[OK] $*"; }
@@ -60,12 +63,41 @@ console.log(`icon.source-disallowed (${finding.severity})`);
 ' "$report_path" "$expected_severity" >/dev/null
 }
 
+persist_icon_pilot_output() {
+  local mode="$1"
+  local report_path="$2"
+  local exit_code="$3"
+  local severity="$4"
+
+  [ -n "$ICON_PILOT_OUTPUT_DIR" ] || return 0
+  mkdir -p "$ICON_PILOT_OUTPUT_DIR"
+  cp "$report_path" "$ICON_PILOT_OUTPUT_DIR/icon.$mode.report.json"
+  "$NODE_BIN" -e '
+const fs = require("fs");
+const metaPath = process.argv[1];
+const mode = process.argv[2];
+const exitCode = Number(process.argv[3]);
+const severity = process.argv[4];
+const payload = {
+  mode,
+  exitCode,
+  findingCode: "icon.source-disallowed",
+  severity,
+};
+fs.writeFileSync(metaPath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+' "$ICON_PILOT_OUTPUT_DIR/icon.$mode.meta.json" "$mode" "$exit_code" "$severity"
+}
+
 for required in "$CLI_PATH" "$RUN_EMITTER_PATH"; do
   [ -f "$required" ] || fail "Required file not found: $required"
 done
 [ -d "$APP_ROOT" ] || fail "App root not found: $APP_ROOT"
 command -v "$NODE_BIN" >/dev/null 2>&1 || fail "Node binary not found: $NODE_BIN"
 command -v "$PNPM_BIN" >/dev/null 2>&1 || fail "pnpm binary not found: $PNPM_BIN"
+case "$ICON_PILOT_MODE" in
+warn|strict|both) ;;
+*) fail "ICON_PILOT_MODE must be one of: warn, strict, both (got: $ICON_PILOT_MODE)" ;;
+esac
 
 "$NODE_BIN" "$RUN_EMITTER_PATH" init --root "$REPO_ROOT" >/dev/null
 
@@ -75,12 +107,13 @@ trap 'rm -rf "$tmp_dir"' EXIT
 report_path="$tmp_dir/interfacectl-report.demo.json"
 bad_extracted_path="$tmp_dir/${SURFACE_ID}.extraction.bad.json"
 icon_fixture_root="$tmp_dir/icon-fixture"
-icon_surface_id="icon-demo-web"
+icon_surface_id="$ICON_PILOT_FIXTURE_SURFACE_ID"
 icon_app_root="$icon_fixture_root/apps/$icon_surface_id"
 icon_warn_contract_path="$icon_fixture_root/contracts/icon.warn.contract.json"
 icon_strict_contract_path="$icon_fixture_root/contracts/icon.strict.contract.json"
 icon_warn_report_path="$tmp_dir/interfacectl-report.icon.warn.json"
 icon_strict_report_path="$tmp_dir/interfacectl-report.icon.strict.json"
+ok "Icon pilot mode: $ICON_PILOT_MODE (fixture surface: $icon_surface_id)"
 
 if [ "$SKIP_BUILD" != "1" ]; then
   step "Build interfacectl CLI"
@@ -151,13 +184,13 @@ cat > "$icon_app_root/app/globals.css" <<'CSS'
 }
 CSS
 
-cat > "$icon_warn_contract_path" <<'JSON'
+cat > "$icon_warn_contract_path" <<JSON
 {
   "contractId": "icon-demo.warn",
   "version": "0.1.0",
   "surfaces": [
     {
-      "id": "icon-demo-web",
+      "id": "$icon_surface_id",
       "displayName": "Icon Demo Web",
       "type": "web",
       "requiredSections": ["landing.hero"],
@@ -192,13 +225,13 @@ cat > "$icon_warn_contract_path" <<'JSON'
 }
 JSON
 
-cat > "$icon_strict_contract_path" <<'JSON'
+cat > "$icon_strict_contract_path" <<JSON
 {
   "contractId": "icon-demo.strict",
   "version": "0.1.0",
   "surfaces": [
     {
-      "id": "icon-demo-web",
+      "id": "$icon_surface_id",
       "displayName": "Icon Demo Web",
       "type": "web",
       "requiredSections": ["landing.hero"],
@@ -233,43 +266,53 @@ cat > "$icon_strict_contract_path" <<'JSON'
 }
 JSON
 
-step "Run icon policy validate in warn mode (expected non-blocking visibility)"
-set +e
-icon_warn_output="$($NODE_BIN "$CLI_PATH" validate \
-  --workspace-root "$icon_fixture_root" \
-  --contract "$icon_warn_contract_path" \
-  --surface "$icon_surface_id" \
-  --format json \
-  --out "$icon_warn_report_path" \
-  --exit-codes v2 2>&1)"
-icon_warn_status=$?
-set -e
-printf '%s\n' "$icon_warn_output"
+if [ "$ICON_PILOT_MODE" = "warn" ] || [ "$ICON_PILOT_MODE" = "both" ]; then
+  step "Run icon policy validate in warn mode (expected non-blocking visibility)"
+  set +e
+  icon_warn_output="$($NODE_BIN "$CLI_PATH" validate \
+    --workspace-root "$icon_fixture_root" \
+    --contract "$icon_warn_contract_path" \
+    --surface "$icon_surface_id" \
+    --format json \
+    --out "$icon_warn_report_path" \
+    --exit-codes v2 2>&1)"
+  icon_warn_status=$?
+  set -e
+  printf '%s\n' "$icon_warn_output"
 
-[ -f "$icon_warn_report_path" ] || fail "Expected icon warn report to exist at $icon_warn_report_path"
-[ "$icon_warn_status" -eq 0 ] || fail "Expected icon warn validate exit code 0, got $icon_warn_status"
-assert_icon_finding "$icon_warn_report_path" "warning" || fail "Expected warning-level icon.source-disallowed finding"
-emit_run "warn" "icon.source-disallowed" "$icon_warn_report_path"
-ok "Icon warn finding confirmed: icon.source-disallowed (warning, exit=0)"
+  [ -f "$icon_warn_report_path" ] || fail "Expected icon warn report to exist at $icon_warn_report_path"
+  [ "$icon_warn_status" -eq 0 ] || fail "Expected icon warn validate exit code 0, got $icon_warn_status"
+  assert_icon_finding "$icon_warn_report_path" "warning" || fail "Expected warning-level icon.source-disallowed finding"
+  persist_icon_pilot_output "warn" "$icon_warn_report_path" "$icon_warn_status" "warning"
+  emit_run "warn" "icon.source-disallowed" "$icon_warn_report_path"
+  ok "Icon warn finding confirmed: icon.source-disallowed (warning, exit=0)"
+else
+  ok "Skipping icon warn pilot path (ICON_PILOT_MODE=$ICON_PILOT_MODE)"
+fi
 
-step "Run icon policy validate in strict mode (expected blocking)"
-set +e
-icon_strict_output="$($NODE_BIN "$CLI_PATH" validate \
-  --workspace-root "$icon_fixture_root" \
-  --contract "$icon_strict_contract_path" \
-  --surface "$icon_surface_id" \
-  --format json \
-  --out "$icon_strict_report_path" \
-  --exit-codes v2 2>&1)"
-icon_strict_status=$?
-set -e
-printf '%s\n' "$icon_strict_output"
+if [ "$ICON_PILOT_MODE" = "strict" ] || [ "$ICON_PILOT_MODE" = "both" ]; then
+  step "Run icon policy validate in strict mode (expected blocking)"
+  set +e
+  icon_strict_output="$($NODE_BIN "$CLI_PATH" validate \
+    --workspace-root "$icon_fixture_root" \
+    --contract "$icon_strict_contract_path" \
+    --surface "$icon_surface_id" \
+    --format json \
+    --out "$icon_strict_report_path" \
+    --exit-codes v2 2>&1)"
+  icon_strict_status=$?
+  set -e
+  printf '%s\n' "$icon_strict_output"
 
-[ -f "$icon_strict_report_path" ] || fail "Expected icon strict report to exist at $icon_strict_report_path"
-[ "$icon_strict_status" -eq 20 ] || fail "Expected icon strict validate exit code 20, got $icon_strict_status"
-assert_icon_finding "$icon_strict_report_path" "error" || fail "Expected error-level icon.source-disallowed finding"
-emit_run "fail" "icon.source-disallowed" "$icon_strict_report_path"
-ok "Icon strict finding confirmed: icon.source-disallowed (error, exit=20)"
+  [ -f "$icon_strict_report_path" ] || fail "Expected icon strict report to exist at $icon_strict_report_path"
+  [ "$icon_strict_status" -eq 20 ] || fail "Expected icon strict validate exit code 20, got $icon_strict_status"
+  assert_icon_finding "$icon_strict_report_path" "error" || fail "Expected error-level icon.source-disallowed finding"
+  persist_icon_pilot_output "strict" "$icon_strict_report_path" "$icon_strict_status" "error"
+  emit_run "fail" "icon.source-disallowed" "$icon_strict_report_path"
+  ok "Icon strict finding confirmed: icon.source-disallowed (error, exit=20)"
+else
+  ok "Skipping icon strict pilot path (ICON_PILOT_MODE=$ICON_PILOT_MODE)"
+fi
 
 step "Create temporary malformed extracted artifact"
 cat > "$bad_extracted_path" <<JSON

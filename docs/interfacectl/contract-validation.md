@@ -107,7 +107,7 @@ Icon-source findings are lifecycle-specific in this increment. Use the phase ter
 
 - `icon.source-disallowed` appears in validate findings when icon policy is configured and a disallowed source is detected.
 - Policy `warn` keeps status non-blocking (`warn`).
-- Policy `strict` yields blocking status (`block` in adapter wrappers, exit `30` with `--exit-codes v2`).
+- Policy `strict` yields blocking status (`block` in adapter wrappers, exit `20` for direct `validate --exit-codes v2`).
 
 Minimal finding sample:
 
@@ -124,11 +124,14 @@ Minimal finding sample:
 
 ```bash
 # Workspace-mode adapter check (CI/CD-time authoritative path)
-pnpm run adapter:validate-generation -- --tool codex --surface surfaces-web --mode workspace --workspace-root . --contract ./contracts/surfaces.web.contract.json
+pnpm run adapter:validate-generation --tool codex --surface surfaces-web --mode workspace --workspace-root . --contract ./contracts/surfaces.web.contract.json
 
 # Direct CLI validate with deterministic v2 exit codes
 node tools/interfacectl/packages/interfacectl-cli/dist/index.js validate --workspace-root . --contract ./contracts/surfaces.web.contract.json --format json --exit-codes v2
 ```
+
+Strict-pilot gate runbook:
+- [`docs/interfacectl/icon-strict-pilot.md`](./icon-strict-pilot.md)
 
 ### Prerequisites
 
@@ -287,6 +290,7 @@ Rules should progress through maturity levels when these conditions are met:
    - False positives are resolved
    - Developers trust the output
    - Migration path is documented
+   - Strict-pilot evidence is captured via [`icon-strict-pilot.md`](./icon-strict-pilot.md)
 
 ### Maturity Progression Example
 

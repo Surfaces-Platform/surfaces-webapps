@@ -67,3 +67,6 @@ Check timestamp observed during this verification run:
 - Keep icon policy in `warn` while monitoring new findings volume and false positives.
 - Define strict-graduation thresholds per surface (for example: sustained zero false positives + stable remediation cycle).
 - Promote surfaces individually to `icons.policy: "strict"` in separate, auditable PRs.
+- Use the reference-target pilot gate before canonical strict promotion:
+  - Runbook: [`docs/interfacectl/icon-strict-pilot.md`](../icon-strict-pilot.md)
+  - Command: `pnpm run pilot:icons:reference-target`

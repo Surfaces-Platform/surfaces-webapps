@@ -306,6 +306,105 @@ test("demo-ci-surfaceops script asserts CI failure code and recovers", () => {
   assert.ok(ciRuns.some((run) => run.status === "pass"));
 });
 
+test("demo-ci-surfaceops supports ICON_PILOT_MODE=warn", () => {
+  const sandbox = makeSandbox();
+  const script = path.join(sandbox.dir, "scripts", "demos", "demo-ci-surfaceops.sh");
+  const result = runScript(script, sandbox, {
+    SKIP_BUILD: "1",
+    NODE_BIN: "node",
+    PNPM_BIN: "pnpm",
+    ICON_PILOT_MODE: "warn",
+  });
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.match(result.stdout, /Icon warn finding confirmed/);
+  assert.match(result.stdout, /Skipping icon strict pilot path/);
+  assert.doesNotMatch(result.stdout, /Icon strict finding confirmed/);
+
+  const runs = JSON.parse(
+    fs.readFileSync(path.join(sandbox.dir, "contracts", "generated", "contract-runs.json"), "utf8")
+  );
+  const ciRuns = runs.runs.filter((run) => run.source === "ci");
+  assert.equal(ciRuns.length, 3);
+  assert.ok(
+    ciRuns.some(
+      (run) =>
+        run.status === "warn" && run.findingCodes.includes("icon.source-disallowed")
+    )
+  );
+  assert.ok(
+    ciRuns.some(
+      (run) =>
+        run.status === "fail" && run.findingCodes.includes("phase0.load.extracted")
+    )
+  );
+  assert.ok(ciRuns.some((run) => run.status === "pass"));
+  assert.equal(
+    ciRuns.some(
+      (run) =>
+        run.status === "fail" && run.findingCodes.includes("icon.source-disallowed")
+    ),
+    false
+  );
+});
+
+test("demo-ci-surfaceops supports ICON_PILOT_MODE=strict", () => {
+  const sandbox = makeSandbox();
+  const script = path.join(sandbox.dir, "scripts", "demos", "demo-ci-surfaceops.sh");
+  const result = runScript(script, sandbox, {
+    SKIP_BUILD: "1",
+    NODE_BIN: "node",
+    PNPM_BIN: "pnpm",
+    ICON_PILOT_MODE: "strict",
+  });
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.match(result.stdout, /Icon strict finding confirmed/);
+  assert.match(result.stdout, /Skipping icon warn pilot path/);
+  assert.doesNotMatch(result.stdout, /Icon warn finding confirmed/);
+
+  const runs = JSON.parse(
+    fs.readFileSync(path.join(sandbox.dir, "contracts", "generated", "contract-runs.json"), "utf8")
+  );
+  const ciRuns = runs.runs.filter((run) => run.source === "ci");
+  assert.equal(ciRuns.length, 3);
+  assert.ok(
+    ciRuns.some(
+      (run) =>
+        run.status === "fail" && run.findingCodes.includes("icon.source-disallowed")
+    )
+  );
+  assert.ok(
+    ciRuns.some(
+      (run) =>
+        run.status === "fail" && run.findingCodes.includes("phase0.load.extracted")
+    )
+  );
+  assert.ok(ciRuns.some((run) => run.status === "pass"));
+  assert.equal(
+    ciRuns.some(
+      (run) =>
+        run.status === "warn" && run.findingCodes.includes("icon.source-disallowed")
+    ),
+    false
+  );
+});
+
+test("demo-ci-surfaceops supports ICON_PILOT_FIXTURE_SURFACE_ID override", () => {
+  const sandbox = makeSandbox();
+  const script = path.join(sandbox.dir, "scripts", "demos", "demo-ci-surfaceops.sh");
+  const result = runScript(script, sandbox, {
+    SKIP_BUILD: "1",
+    NODE_BIN: "node",
+    PNPM_BIN: "pnpm",
+    ICON_PILOT_MODE: "warn",
+    ICON_PILOT_FIXTURE_SURFACE_ID: "custom-icon-web",
+  });
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.match(result.stdout, /fixture surface: custom-icon-web/);
+});
+
 test("demo-runtime-surfaceops script asserts runtime 422 and 200 paths", () => {
   const sandbox = makeSandbox();
   const script = path.join(sandbox.dir, "scripts", "demos", "demo-runtime-surfaceops.sh");
