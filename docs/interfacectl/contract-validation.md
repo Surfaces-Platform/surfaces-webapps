@@ -108,6 +108,7 @@ Icon-source findings are lifecycle-specific in this increment. Use the phase ter
 - `icon.source-disallowed` appears in validate findings when icon policy is configured and a disallowed source is detected.
 - Policy `warn` keeps status non-blocking (`warn`).
 - Policy `strict` yields blocking status (`block` in adapter wrappers, exit `20` for direct `validate --exit-codes v2`).
+- Canonical snapshot: `surfaces-web` is currently `icons.policy: "strict"`; `interfacectl-web`, `surfaceops-web`, and `surfaces-dev` remain `icons.policy: "warn"`.
 
 Minimal finding sample:
 
@@ -267,8 +268,8 @@ Rules are configured via policy fields that control how violations are handled:
 The contract demonstrates each state:
 
 - **Informational (`"off"`)**: Currently not demonstrated in contract, but available for future rules
-- **Warning (`"warn"`)**: `surfaces[*].icons.policy: "warn"` - Disallowed icon sources are surfaced without blocking
-- **Enforcement (`"strict"`)**: `color.policy: "strict"` - Non-allowlisted color values are blocking
+- **Warning (`"warn"`)**: `interfacectl-web`, `surfaceops-web`, and `surfaces-dev` use `icons.policy: "warn"` - Disallowed icon sources are surfaced without blocking
+- **Enforcement (`"strict"`)**: `surfaces-web.icons.policy: "strict"` (icon-source blocking) and `color.policy: "strict"` (non-allowlisted color values blocking)
 
 ### Graduation Criteria
 
