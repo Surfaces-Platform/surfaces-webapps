@@ -94,6 +94,31 @@ When deployed, each app runs on its own domain:
 
 The Navigation component automatically detects the environment and routes to the correct domains in production, or localhost ports in development.
 
+## Safe Vercel Project Linking
+
+To prevent accidental project creation or linking against the wrong Vercel project, use the guarded wrappers at repo root:
+
+```bash
+# Verify local .vercel/project.json files match canonical mappings
+pnpm vercel:project:check
+
+# Audit the full Vercel team scope against canonical + external allowlist
+pnpm vercel:project:audit
+
+# Relink one app to its canonical Vercel project
+pnpm vercel:project:link -- --app surfaceops-web
+
+# Pull env vars from the app's canonical Vercel project
+pnpm vercel:env:pull -- --app surfaceops-web --environment preview
+
+# Install/list integrations against the app's canonical project
+pnpm vercel:integration:add -- --app surfaceops-web --name neon
+pnpm vercel:integration:list -- --app surfaceops-web --integration neon
+```
+
+Canonical mappings live in `scripts/vercel/project-map.json` and are enforced by `scripts/vercel/safe-cli.mjs`.
+Projects in the same Vercel team but outside this repo can be approved under `allowedExternalProjects` in that map.
+
 ## Environment Variables (Optional)
 
 You can customize the development URLs by setting environment variables in each app:

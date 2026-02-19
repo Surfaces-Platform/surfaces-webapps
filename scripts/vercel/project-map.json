@@ -1,0 +1,30 @@
+{
+  "scopeSlug": "surfaces-platform",
+  "orgId": "team_Kw6YLfcGtRy40u9UEvifOh1r",
+  "allowedExternalProjects": [
+    "design-judgment-kit"
+  ],
+  "apps": {
+    "surfaces-web": {
+      "path": "apps/surfaces-web",
+      "projectName": "surfaces.systems",
+      "projectId": "prj_OUVQACOtbxirG40OCIse60iT5BTy"
+    },
+    "surfaceops-web": {
+      "path": "apps/surfaceops-web",
+      "projectName": "surfaceops.ai",
+      "projectId": "prj_XdoWhnZfG9hRJ2tiJZYJjHHAe6pg"
+    },
+    "interfacectl-web": {
+      "path": "apps/interfacectl-web",
+      "projectName": "interfacectl.com",
+      "projectId": "prj_uSiZoWKKmBegyjrjfJRovSw1TtY1"
+    },
+    "surfaces-dev": {
+      "path": "apps/surfaces-dev",
+      "projectName": "surfaces.dev",
+      "projectId": "prj_Xm7DqhUwGVsvt2sTgZamZvC6vQLK",
+      "requiredLocalLink": false
+    }
+  }
+}
