@@ -11,6 +11,7 @@ import {
   readSnapshotIndex,
 } from "../app/contracts/governance/_lib/governance-persistence";
 import { getDefaultWorkspaceId, normalizeWorkspaceId } from "../lib/workspace";
+import { resolveAdminDatabaseUrl } from "./_lib/database-url";
 
 type GovernancePrototypeEntry = {
   id: string;
@@ -57,9 +58,10 @@ async function main(): Promise<void> {
     typeof args["workspace-id"] === "string"
       ? normalizeWorkspaceId(args["workspace-id"])
       : getDefaultWorkspaceId();
+  const database = resolveAdminDatabaseUrl();
 
-  if (!process.env.DATABASE_URL) {
-    fail("DATABASE_URL is not set");
+  if (!database) {
+    fail("DATABASE_URL_UNPOOLED or DATABASE_URL is not set");
   }
 
   const manifestPath = path.join(
@@ -80,7 +82,7 @@ async function main(): Promise<void> {
     fail("Manifest has no prototypes");
   }
 
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const pool = new Pool({ connectionString: database.connectionString });
   const client = await pool.connect();
 
   let prototypeCount = 0;
@@ -274,7 +276,7 @@ async function main(): Promise<void> {
   }
 
   console.log(
-    `[backfill-governance-store] workspace=${workspaceId} prototypes=${prototypeCount} snapshots=${snapshotCount} decisions=${decisionCount} applies=${applyCount} baselines=${baselineCount}`,
+    `[backfill-governance-store] workspace=${workspaceId} prototypes=${prototypeCount} snapshots=${snapshotCount} decisions=${decisionCount} applies=${applyCount} baselines=${baselineCount} dbEnv=${database.source}`,
   );
 }
 
