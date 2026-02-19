@@ -10,8 +10,11 @@ const describeWithDb = DATABASE_URL ? describe : describe.skip;
 
 describeWithDb("POST /v1/ingest/events idempotency", () => {
   let pool: Pool;
+  const ingestKey = "test-ingest-key";
+  const originalIngestKey = process.env.SURFACEOPS_INGEST_KEY;
 
   beforeAll(async () => {
+    process.env.SURFACEOPS_INGEST_KEY = ingestKey;
     pool = new Pool({ connectionString: DATABASE_URL });
     // Run migrations so events table exists
     const migrationsDir = path.join(process.cwd(), "migrations");
@@ -23,6 +26,7 @@ describeWithDb("POST /v1/ingest/events idempotency", () => {
   });
 
   afterAll(async () => {
+    process.env.SURFACEOPS_INGEST_KEY = originalIngestKey;
     await pool?.end();
   });
 
@@ -36,7 +40,10 @@ describeWithDb("POST /v1/ingest/events idempotency", () => {
     const req = (payload: unknown) =>
       new Request("http://localhost/v1/ingest/events", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-SurfaceOps-Ingest-Key": ingestKey,
+        },
         body: JSON.stringify(payload),
       });
 
@@ -52,8 +59,8 @@ describeWithDb("POST /v1/ingest/events idempotency", () => {
 
     // 4) Query events table for event_id count
     const countResult = await pool.query(
-      "SELECT COUNT(*)::int AS count FROM events WHERE event_id = $1",
-      [eventId]
+      "SELECT COUNT(*)::int AS count FROM events WHERE workspace_id = $1 AND event_id = $2",
+      ["ws-min", eventId]
     );
     const count = countResult.rows[0]?.count ?? 0;
 

@@ -36,4 +36,6 @@ export interface IngestRejected {
 export interface IngestResponse {
   accepted: IngestAccepted[];
   rejected: IngestRejected[];
+  storeMode?: "db";
+  workspaceId?: string;
 }
