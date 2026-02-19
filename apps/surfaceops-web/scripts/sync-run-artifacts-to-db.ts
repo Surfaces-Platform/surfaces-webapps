@@ -6,6 +6,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { Pool } from "pg";
 import { getDefaultWorkspaceId, normalizeWorkspaceId } from "../lib/workspace";
+import { resolveAdminDatabaseUrl } from "./_lib/database-url";
 
 type RunSource = "bootstrap" | "generation" | "ci" | "runtime";
 type ValidationOutcome = "pass" | "warn" | "fail" | "unknown";
@@ -176,9 +177,10 @@ async function main(): Promise<void> {
     typeof args["workspace-id"] === "string"
       ? normalizeWorkspaceId(args["workspace-id"])
       : getDefaultWorkspaceId();
+  const database = resolveAdminDatabaseUrl();
 
-  if (!process.env.DATABASE_URL) {
-    fail("DATABASE_URL is not set");
+  if (!database) {
+    fail("DATABASE_URL_UNPOOLED or DATABASE_URL is not set");
   }
   if (!fs.existsSync(runsPath)) {
     fail(`Run artifacts not found: ${path.relative(repoRoot, runsPath)}`);
@@ -193,7 +195,7 @@ async function main(): Promise<void> {
       : []
   );
 
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const pool = new Pool({ connectionString: database.connectionString });
   const client = await pool.connect();
   let inserted = 0;
   let updated = 0;
@@ -278,7 +280,7 @@ async function main(): Promise<void> {
 
   const relativeRunsPath = path.relative(repoRoot, runsPath);
   console.log(
-    `[sync-run-artifacts-to-db] synced=${runs.length} inserted=${inserted} updated=${updated} source=${relativeRunsPath}`
+    `[sync-run-artifacts-to-db] synced=${runs.length} inserted=${inserted} updated=${updated} source=${relativeRunsPath} dbEnv=${database.source}`
   );
 }
 

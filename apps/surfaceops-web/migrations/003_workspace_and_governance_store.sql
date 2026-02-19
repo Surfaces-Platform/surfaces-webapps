@@ -1,6 +1,4 @@
 -- workspace hardening + governance store persistence
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-
 -- events uniqueness must be workspace-scoped
 ALTER TABLE events DROP CONSTRAINT IF EXISTS events_event_id_key;
 CREATE UNIQUE INDEX IF NOT EXISTS events_workspace_event_unique

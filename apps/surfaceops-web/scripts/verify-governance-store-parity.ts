@@ -11,6 +11,7 @@ import {
   readSnapshotIndex,
 } from "../app/contracts/governance/_lib/governance-persistence";
 import { getDefaultWorkspaceId, normalizeWorkspaceId } from "../lib/workspace";
+import { resolveAdminDatabaseUrl } from "./_lib/database-url";
 
 type GovernancePrototypeEntry = {
   id: string;
@@ -59,9 +60,10 @@ async function main(): Promise<void> {
     typeof args["workspace-id"] === "string"
       ? normalizeWorkspaceId(args["workspace-id"])
       : getDefaultWorkspaceId();
+  const database = resolveAdminDatabaseUrl();
 
-  if (!process.env.DATABASE_URL) {
-    fail("DATABASE_URL is not set");
+  if (!database) {
+    fail("DATABASE_URL_UNPOOLED or DATABASE_URL is not set");
   }
 
   const manifestPath = path.join(
@@ -81,7 +83,7 @@ async function main(): Promise<void> {
     fail("Manifest has no prototypes");
   }
 
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const pool = new Pool({ connectionString: database.connectionString });
   const mismatches: string[] = [];
 
   try {
@@ -172,14 +174,16 @@ async function main(): Promise<void> {
   }
 
   if (mismatches.length > 0) {
-    console.error(`[verify-governance-store-parity] workspace=${workspaceId} mismatches=${mismatches.length}`);
+    console.error(
+      `[verify-governance-store-parity] workspace=${workspaceId} mismatches=${mismatches.length} dbEnv=${database.source}`,
+    );
     for (const mismatch of mismatches) {
       console.error(`- ${mismatch}`);
     }
     process.exit(1);
   }
 
-  console.log(`[verify-governance-store-parity] workspace=${workspaceId} status=ok`);
+  console.log(`[verify-governance-store-parity] workspace=${workspaceId} status=ok dbEnv=${database.source}`);
 }
 
 main().catch((error) => {

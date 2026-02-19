@@ -13,6 +13,32 @@ pnpm setup:auth
 
 Then fill in `apps/surfaceops-web/.env.local` with values from Auth0 (OIDC_ISSUER, OIDC_CLIENT_ID, OIDC_CLIENT_SECRET, SESSION_SECRET). Add `http://localhost:3001/auth/callback` to Auth0 Allowed Callback URLs. See `docs/platform-auth/local-setup.md`.
 
+### Database (Postgres / Neon)
+
+`surfaceops-web` uses raw `pg` + SQL migrations.
+
+- Runtime app reads `DATABASE_URL` (pooled connection string in Neon).
+- Migration/admin scripts prefer `DATABASE_URL_UNPOOLED` and fall back to `DATABASE_URL`.
+
+Common commands:
+
+```bash
+# Migrations (prefer direct/unpooled URL)
+DATABASE_URL_UNPOOLED=postgres://... pnpm migrate
+
+# Backfill governance state into DB
+DATABASE_URL_UNPOOLED=postgres://... pnpm backfill:governance:db -- --workspace-id ws-local-default
+
+# Verify DB/FS parity for governance artifacts
+DATABASE_URL_UNPOOLED=postgres://... pnpm verify:governance:db-parity -- --workspace-id ws-local-default
+
+# Sync contract-runs artifacts into DB
+DATABASE_URL_UNPOOLED=postgres://... pnpm sync:run-artifacts:db -- --workspace-id ws-local-default
+```
+
+Provider-side rollout steps (Vercel Marketplace + Neon preview branching):
+`docs/neon-vercel-rollout.md`
+
 ### Run the dev server
 
 ```bash
