@@ -85,6 +85,19 @@ jobs:
 
       - name: Validate run artifacts schema
         run: pnpm run validate:run-artifacts
+
+      - name: Check promotion readiness
+        run: |
+          MODE="${PROMOTION_READINESS_MODE:-advisory}"
+          node scripts/check-promotion-readiness.mjs \
+            --mode "$MODE" \
+            --output ./artifacts/promotion-readiness.json
+
+      - name: Upload promotion readiness artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: promotion-readiness
+          path: artifacts/promotion-readiness.json
       
       - name: Check generated contract drift
         run: |

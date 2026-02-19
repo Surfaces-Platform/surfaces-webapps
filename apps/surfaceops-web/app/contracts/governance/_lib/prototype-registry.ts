@@ -1,12 +1,9 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
+import { getDefaultWorkspaceId, normalizeWorkspaceId } from "@/lib/workspace";
 import {
-  ensureGovernancePersistence,
-  readApplyLog,
-  readContractDraft,
-  readDecisionLog,
-  readSnapshotExtraction,
-  readSnapshotIndex,
+  loadGovernancePersistenceSelection,
+  type GovernanceStoreMetadata,
 } from "./governance-persistence";
 import type {
   GovernanceApplyRecord,
@@ -41,6 +38,7 @@ export interface GovernancePrototypeManifest {
 
 export interface GovernancePrototypeSelection {
   workspaceRoot: string;
+  workspaceId: string;
   manifest: GovernancePrototypeManifest;
   selected: GovernancePrototypeEntry;
   seedContract: SurfaceContract;
@@ -61,6 +59,7 @@ export interface GovernancePrototypeSelection {
   requestedSnapshotId: string | null;
   usedFallback: boolean;
   canWrite: boolean;
+  governanceStoreMeta: GovernanceStoreMetadata | null;
 }
 
 type ExtractionShape = {
@@ -119,10 +118,12 @@ function fallbackSelection(
   };
 }
 
-export function loadGovernancePrototypeSelection(
+export async function loadGovernancePrototypeSelection(
   requestedPrototypeId: string | null,
   requestedSnapshotId: string | null,
-): GovernancePrototypeSelection {
+  workspaceId: string = getDefaultWorkspaceId(),
+): Promise<GovernancePrototypeSelection> {
+  const resolvedWorkspaceId = normalizeWorkspaceId(workspaceId);
   const workspaceRoot = resolveWorkspaceRoot();
   const manifestPath = path.join(
     workspaceRoot,
@@ -169,39 +170,27 @@ export function loadGovernancePrototypeSelection(
   let baselineSnapshotId: string;
   let baselineSnapshotReport: unknown;
   let snapshotTimeline: Array<{ snapshotId: string; createdAt: string }>;
+  let governanceStoreMeta: GovernanceStoreMetadata | null = null;
 
   if (canWrite) {
-    const paths = ensureGovernancePersistence(workspaceRoot, selected);
-    snapshotIndex = readSnapshotIndex(paths.snapshotIndexPath);
-    decisions = readDecisionLog(paths.decisionsPath).decisions;
-    applies = readApplyLog(paths.appliesPath).applies;
-    draftContract = readContractDraft(paths.draftContractPath);
+    const state = await loadGovernancePersistenceSelection(
+      workspaceRoot,
+      selected,
+      requestedSnapshotId,
+      resolvedWorkspaceId,
+    );
 
-    const defaultSelectedSnapshotId = snapshotIndex.latestSnapshotId ?? snapshotIndex.baselineSnapshotId;
-    if (!defaultSelectedSnapshotId) {
-      throw new Error("No snapshots available for p0004.");
-    }
-    const selectedId =
-      requestedSnapshotId && snapshotIndex.entries[requestedSnapshotId]
-        ? requestedSnapshotId
-        : defaultSelectedSnapshotId;
-    const baselineId = snapshotIndex.baselineSnapshotId ?? selectedId;
-    const selectedEntry = snapshotIndex.entries[selectedId];
-    if (!selectedEntry) {
-      throw new Error(`Snapshot not found: ${selectedId}`);
-    }
-    selectedSnapshotId = selectedId;
-    selectedSnapshotCreatedAt = selectedEntry.createdAt;
-    selectedSnapshotReport = readSnapshotExtraction(paths.prototypeDir, snapshotIndex, selectedId);
-    baselineSnapshotId = baselineId;
-    baselineSnapshotReport = readSnapshotExtraction(paths.prototypeDir, snapshotIndex, baselineId);
-    snapshotTimeline = [...snapshotIndex.snapshotIds]
-      .reverse()
-      .map((snapshotId) => ({
-        snapshotId,
-        createdAt: snapshotIndex!.entries[snapshotId]?.createdAt ?? "",
-      }))
-      .filter((entry) => Boolean(entry.createdAt));
+    snapshotIndex = state.snapshotIndex;
+    decisions = state.decisions;
+    applies = state.applies;
+    draftContract = state.draftContract;
+    selectedSnapshotId = state.selectedSnapshotId;
+    selectedSnapshotCreatedAt = state.selectedSnapshotCreatedAt;
+    selectedSnapshotReport = state.selectedSnapshotReport;
+    baselineSnapshotId = state.baselineSnapshotId;
+    baselineSnapshotReport = state.baselineSnapshotReport;
+    snapshotTimeline = state.snapshotTimeline;
+    governanceStoreMeta = state.storeMeta;
   } else {
     const fallback = fallbackSelection(selectedExtractionReport);
     selectedSnapshotId = fallback.selectedSnapshotId;
@@ -214,6 +203,7 @@ export function loadGovernancePrototypeSelection(
 
   return {
     workspaceRoot,
+    workspaceId: resolvedWorkspaceId,
     manifest,
     selected,
     requestedPrototypeId,
@@ -234,5 +224,6 @@ export function loadGovernancePrototypeSelection(
     applies,
     latestExtractionUpdatedAt,
     canWrite,
+    governanceStoreMeta,
   };
 }

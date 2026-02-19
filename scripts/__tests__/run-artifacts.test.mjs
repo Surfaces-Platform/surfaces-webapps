@@ -31,6 +31,7 @@ test("validate-run-artifacts passes for valid files", () => {
         runs: [
           {
             runId: "run-1",
+            workspaceId: "ws-test",
             createdAt: "2026-02-09T00:00:00.000Z",
             surfaceId: "surfaces-web",
             source: "bootstrap",
@@ -93,7 +94,7 @@ test("validate-run-artifacts fails for invalid files", () => {
   const { dir, generated } = makeSandbox();
   fs.writeFileSync(
     path.join(generated, "contract-runs.json"),
-    JSON.stringify({ schemaVersion: 2, runs: [] }, null, 2)
+    JSON.stringify({ schemaVersion: 3, runs: [] }, null, 2)
   );
   fs.writeFileSync(
     path.join(generated, "contract-lineage.json"),
@@ -105,5 +106,126 @@ test("validate-run-artifacts fails for invalid files", () => {
     encoding: "utf8",
   });
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr || result.stdout, /schemaVersion must be 1/);
+  assert.match(result.stderr || result.stdout, /schemaVersion must be 1 or 2/);
+});
+
+test("validate-run-artifacts fails when runs are out of deterministic order", () => {
+  const { dir, generated } = makeSandbox();
+  fs.writeFileSync(
+    path.join(generated, "contract-runs.json"),
+    JSON.stringify(
+      {
+        schemaVersion: 1,
+        runs: [
+          {
+            runId: "run-b",
+            workspaceId: "ws-test",
+            createdAt: "2026-02-09T01:00:00.000Z",
+            surfaceId: "surfaces-web",
+            source: "ci",
+            contract: { id: "surfaces.web", version: "0.1.0", sha256: "a".repeat(64) },
+            artifacts: {},
+            status: "pass",
+            findingCodes: [],
+            summary: { errorCount: 0, warnCount: 0 },
+          },
+          {
+            runId: "run-a",
+            workspaceId: "ws-test",
+            createdAt: "2026-02-09T00:00:00.000Z",
+            surfaceId: "surfaces-web",
+            source: "ci",
+            contract: { id: "surfaces.web", version: "0.1.0", sha256: "a".repeat(64) },
+            artifacts: {},
+            status: "pass",
+            findingCodes: [],
+            summary: { errorCount: 0, warnCount: 0 },
+          },
+        ],
+      },
+      null,
+      2
+    )
+  );
+  fs.writeFileSync(
+    path.join(generated, "contract-lineage.json"),
+    JSON.stringify({ schemaVersion: 1, surfaces: {} }, null, 2)
+  );
+
+  const result = spawnSync("node", ["scripts/validate-run-artifacts.mjs"], {
+    cwd: dir,
+    encoding: "utf8",
+  });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr || result.stdout, /deterministic ascending order/);
+});
+
+test("validate-run-artifacts fails when lineage does not match latest run", () => {
+  const { dir, generated } = makeSandbox();
+  fs.writeFileSync(
+    path.join(generated, "contract-runs.json"),
+    JSON.stringify(
+      {
+        schemaVersion: 1,
+        runs: [
+          {
+            runId: "run-1",
+            workspaceId: "ws-test",
+            idempotencyKey: "idem-1",
+            ingestedAt: "2026-02-09T00:00:00.000Z",
+            createdAt: "2026-02-09T00:00:00.000Z",
+            surfaceId: "surfaces-web",
+            source: "ci",
+            contract: { id: "surfaces.web", version: "0.1.0", sha256: "a".repeat(64) },
+            artifacts: {},
+            status: "pass",
+            findingCodes: [],
+            summary: { errorCount: 0, warnCount: 0 },
+          },
+          {
+            runId: "run-2",
+            workspaceId: "ws-test",
+            createdAt: "2026-02-09T01:00:00.000Z",
+            surfaceId: "surfaces-web",
+            source: "runtime",
+            contract: { id: "surfaces.web", version: "0.1.0", sha256: "a".repeat(64) },
+            artifacts: {},
+            status: "warn",
+            findingCodes: ["x"],
+            summary: { errorCount: 0, warnCount: 1 },
+          },
+        ],
+      },
+      null,
+      2
+    )
+  );
+  fs.writeFileSync(
+    path.join(generated, "contract-lineage.json"),
+    JSON.stringify(
+      {
+        schemaVersion: 1,
+        surfaces: {
+          "surfaces-web": {
+            lastRunId: "run-1",
+            lastRunAt: "2026-02-09T00:00:00.000Z",
+            lastSource: "ci",
+            lastStatus: "pass",
+            contract: { id: "surfaces.web", version: "0.1.0", sha256: "a".repeat(64) },
+            artifacts: {},
+            findingCodes: [],
+          },
+        },
+      },
+      null,
+      2
+    )
+  );
+
+  const result = spawnSync("node", ["scripts/validate-run-artifacts.mjs"], {
+    cwd: dir,
+    encoding: "utf8",
+  });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr || result.stdout, /must match latest runId/);
 });

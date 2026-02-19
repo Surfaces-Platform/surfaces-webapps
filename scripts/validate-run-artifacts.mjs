@@ -34,19 +34,63 @@ function isSource(value) {
   return value === "bootstrap" || value === "generation" || value === "ci" || value === "runtime";
 }
 
+function compareRunOrder(a, b) {
+  const timeDiff = Date.parse(a.createdAt) - Date.parse(b.createdAt);
+  if (timeDiff !== 0) return timeDiff;
+  return String(a.runId).localeCompare(String(b.runId));
+}
+
 function validateRunsDoc(doc) {
   assert(doc && typeof doc === "object", "contract-runs.json must be an object");
-  assert(doc.schemaVersion === 1, "contract-runs.json schemaVersion must be 1");
+  assert(
+    doc.schemaVersion === 1 || doc.schemaVersion === 2,
+    "contract-runs.json schemaVersion must be 1 or 2"
+  );
   assert(Array.isArray(doc.runs), "contract-runs.json runs must be an array");
 
   const ids = new Set();
+  const runIds = new Set();
+  const idempotencyKeys = new Set();
+  const latestBySurface = new Map();
   for (const [index, run] of doc.runs.entries()) {
     const prefix = `contract-runs.json runs[${index}]`;
     assert(run && typeof run === "object", `${prefix} must be an object`);
+    const workspaceId = run.workspaceId ?? "ws-local-default";
+    assert(
+      typeof workspaceId === "string" && workspaceId.length > 0,
+      `${prefix}.workspaceId must be a non-empty string when present`
+    );
     assert(typeof run.runId === "string" && run.runId.length > 0, `${prefix}.runId must be a non-empty string`);
-    assert(!ids.has(run.runId), `${prefix}.runId must be unique (${run.runId})`);
-    ids.add(run.runId);
+    const runKey = `${workspaceId}:${run.runId}`;
+    assert(!ids.has(runKey), `${prefix}.runId must be unique per workspace (${run.runId})`);
+    ids.add(runKey);
+    runIds.add(run.runId);
+    if (index > 0) {
+      const previous = doc.runs[index - 1];
+      assert(
+        compareRunOrder(previous, run) <= 0,
+        `${prefix} must preserve deterministic ascending order by createdAt then runId`
+      );
+    }
     assert(typeof run.createdAt === "string" && !Number.isNaN(Date.parse(run.createdAt)), `${prefix}.createdAt must be ISO-8601`);
+    if (run.ingestedAt !== undefined) {
+      assert(
+        typeof run.ingestedAt === "string" && !Number.isNaN(Date.parse(run.ingestedAt)),
+        `${prefix}.ingestedAt must be ISO-8601 when present`
+      );
+    }
+    if (run.idempotencyKey !== undefined) {
+      assert(
+        typeof run.idempotencyKey === "string" && run.idempotencyKey.length > 0,
+        `${prefix}.idempotencyKey must be a non-empty string when present`
+      );
+      const idempotencyKey = `${workspaceId}:${run.idempotencyKey}`;
+      assert(
+        !idempotencyKeys.has(idempotencyKey),
+        `${prefix}.idempotencyKey must be unique per workspace (${run.idempotencyKey})`
+      );
+      idempotencyKeys.add(idempotencyKey);
+    }
     assert(typeof run.surfaceId === "string" && run.surfaceId.length > 0, `${prefix}.surfaceId must be a non-empty string`);
     assert(isSource(run.source), `${prefix}.source must be bootstrap|generation|ci|runtime`);
     assert(isStatus(run.status), `${prefix}.status must be pass|warn|fail|unknown`);
@@ -66,10 +110,17 @@ function validateRunsDoc(doc) {
     assert(run.summary && typeof run.summary === "object", `${prefix}.summary must be an object`);
     assert(typeof run.summary.errorCount === "number" && run.summary.errorCount >= 0, `${prefix}.summary.errorCount must be >= 0`);
     assert(typeof run.summary.warnCount === "number" && run.summary.warnCount >= 0, `${prefix}.summary.warnCount must be >= 0`);
+    latestBySurface.set(run.surfaceId, run);
   }
+
+  return {
+    ids,
+    runIds,
+    latestBySurface,
+  };
 }
 
-function validateLineageDoc(doc) {
+function validateLineageDoc(doc, runsValidation) {
   assert(doc && typeof doc === "object", "contract-lineage.json must be an object");
   assert(doc.schemaVersion === 1, "contract-lineage.json schemaVersion must be 1");
   assert(doc.surfaces && typeof doc.surfaces === "object" && !Array.isArray(doc.surfaces), "contract-lineage.json surfaces must be an object map");
@@ -94,12 +145,29 @@ function validateLineageDoc(doc) {
     }
     assert(Array.isArray(record.findingCodes), `${prefix}.findingCodes must be an array`);
     assert(record.findingCodes.every((code) => typeof code === "string"), `${prefix}.findingCodes entries must be strings`);
+    assert(
+      runsValidation.runIds.has(record.lastRunId),
+      `${prefix}.lastRunId must reference an existing run (${record.lastRunId})`
+    );
+    const latestRun = runsValidation.latestBySurface.get(surfaceId);
+    assert(Boolean(latestRun), `${prefix} must have at least one run for surface ${surfaceId}`);
+    assert(record.lastRunId === latestRun.runId, `${prefix}.lastRunId must match latest runId for ${surfaceId}`);
+    assert(record.lastRunAt === latestRun.createdAt, `${prefix}.lastRunAt must match latest run createdAt for ${surfaceId}`);
+    assert(record.lastSource === latestRun.source, `${prefix}.lastSource must match latest run source for ${surfaceId}`);
+    assert(record.lastStatus === latestRun.status, `${prefix}.lastStatus must match latest run status for ${surfaceId}`);
+  }
+
+  for (const surfaceId of runsValidation.latestBySurface.keys()) {
+    assert(
+      Object.prototype.hasOwnProperty.call(doc.surfaces, surfaceId),
+      `contract-lineage.json missing surface record for latest run surface ${surfaceId}`
+    );
   }
 }
 
 const runs = readJson(runsPath);
 const lineage = readJson(lineagePath);
-validateRunsDoc(runs);
-validateLineageDoc(lineage);
+const runsValidation = validateRunsDoc(runs);
+validateLineageDoc(lineage, runsValidation);
 
 console.log("[validate-run-artifacts] OK");

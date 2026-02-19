@@ -17,10 +17,15 @@ import {
   compareRuns,
   getPassRate,
   hasEverPassed,
+  getPerSourcePassRates,
+  getPerSourceRecurringFindings,
+  getPerSourceTimeToGreen,
   countSurfacesUsingExpectation,
   getSurfaceEvolution,
   loadActivatedSurfaces,
+  withStoreBackedRunDocuments,
 } from "@/lib/contracts";
+import { getWorkspaceIdFromCurrentRequest } from "@/lib/workspace-auth";
 import type {
   FailureCategory,
   Phase0Finding,
@@ -271,13 +276,40 @@ export default async function SurfaceRunsDetailPage({
   if (!surface) notFound();
   const inPolicyContract = Boolean(contract.surfaces.find((s) => s.id === surfaceId));
 
-  const runSeries = getSurfaceRunSeries(surfaceId);
+  const workspaceId = await getWorkspaceIdFromCurrentRequest();
+  const runData = await withStoreBackedRunDocuments(workspaceId, (meta) => {
+    const runSeries = getSurfaceRunSeries(surfaceId);
+    const evolution = getSurfaceEvolution(surfaceId);
+    const outcomesFileExists = validationOutcomesFileExists();
+    const perSourcePassRates = getPerSourcePassRates(surfaceId);
+    const perSourceRecurringFindings = getPerSourceRecurringFindings(surfaceId);
+    const perSourceTimeToGreen = getPerSourceTimeToGreen(surfaceId);
+    return {
+      runSeries,
+      evolution,
+      outcomesFileExists,
+      perSourcePassRates,
+      perSourceRecurringFindings,
+      perSourceTimeToGreen,
+      runStoreMeta: meta,
+    };
+  });
+
+  const runSeries = runData.runSeries;
   if (!runSeries) notFound();
 
   const latestSnapshot = runSeries.snapshots[0];
-  const evolution = getSurfaceEvolution(surfaceId);
+  const evolution = runData.evolution;
   const groupedFindings = groupFindingsByCategory(latestSnapshot.findings);
-  const outcomesFileExists = validationOutcomesFileExists();
+  const outcomesFileExists = runData.outcomesFileExists;
+
+  const formatDuration = (valueMs: number | null): string => {
+    if (valueMs === null) return "insufficient history";
+    const hours = valueMs / (1000 * 60 * 60);
+    if (hours < 1) return "<1h";
+    if (hours < 24) return `${Math.round(hours)}h`;
+    return `${Math.round(hours / 24)}d`;
+  };
 
   return (
     <div
@@ -336,6 +368,22 @@ export default async function SurfaceRunsDetailPage({
         >
           Operational responsibility: {getOperationalResponsibility(surface.owner)}
         </p>
+        {runData.runStoreMeta.fallbackUsed && (
+          <div
+            style={{
+              marginBottom: "24px",
+              border: `1px solid ${colors.neutral[200]}`,
+              borderRadius: "8px",
+              backgroundColor: colors.neutral[0],
+              padding: "10px 12px",
+              fontSize: "12px",
+              fontFamily: "monospace",
+              color: colors.neutral[600],
+            }}
+          >
+            RunStore fallback active ({runData.runStoreMeta.warning ?? "using JSON artifacts"}).
+          </div>
+        )}
         {!inPolicyContract && (
           <div
             style={{
@@ -354,6 +402,67 @@ export default async function SurfaceRunsDetailPage({
             <div>Promote to canonical policy via contract workflow.</div>
           </div>
         )}
+
+        <section
+          style={{
+            marginBottom: "24px",
+            padding: "16px",
+            backgroundColor: colors.neutral[0],
+            border: `1px solid ${colors.neutral[200]}`,
+            borderRadius: "6px",
+          }}
+        >
+          <h2
+            style={{
+              fontSize: "14px",
+              fontWeight: 600,
+              marginBottom: "12px",
+              fontFamily: "monospace",
+            }}
+          >
+            Per-source KPIs
+          </h2>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "12px" }}>
+            {(["bootstrap", "generation", "ci", "runtime"] as const).map((source) => {
+              const passRate = runData.perSourcePassRates.find((entry) => entry.source === source);
+              const recurring = runData.perSourceRecurringFindings.find(
+                (entry) => entry.source === source
+              );
+              const ttg = runData.perSourceTimeToGreen.find((entry) => entry.source === source);
+              return (
+                <div
+                  key={source}
+                  style={{
+                    border: `1px solid ${colors.neutral[100]}`,
+                    borderRadius: "6px",
+                    padding: "10px 12px",
+                    fontFamily: "monospace",
+                    fontSize: "12px",
+                    color: colors.neutral[600],
+                  }}
+                >
+                  <div style={{ marginBottom: "6px", textTransform: "uppercase", fontWeight: 600 }}>
+                    {source}
+                  </div>
+                  <div>
+                    pass rate:{" "}
+                    {passRate?.insufficientHistory
+                      ? "insufficient history"
+                      : `${passRate?.passed ?? 0}/${passRate?.total ?? 0}`}
+                  </div>
+                  <div>
+                    recurring:{" "}
+                    {recurring?.insufficientHistory
+                      ? "insufficient history"
+                      : recurring?.codes.map((code) => `${code.code}(${code.count})`).join(", ") ||
+                        "none"}
+                  </div>
+                  <div>time-to-green: {formatDuration(ttg?.latestMs ?? null)}</div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
 
         {outcomesFileExists && runSeries.history && (
           <section

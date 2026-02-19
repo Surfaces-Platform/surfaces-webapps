@@ -1,13 +1,26 @@
 import { execSync } from "child_process";
 import { createHash, randomUUID } from "crypto";
-import { readFileSync, existsSync, mkdirSync, readdirSync, renameSync, writeFileSync } from "fs";
+import {
+  readFileSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  renameSync,
+  rmdirSync,
+  writeFileSync,
+} from "fs";
 import { dirname, join, resolve } from "path";
+import { getPool } from "./db";
+import { getDefaultWorkspaceId, normalizeWorkspaceId } from "./workspace";
 
 const CONTRACTS_DIR = process.env.SURFACEOPS_CONTRACTS_DIR
   ? resolve(process.env.SURFACEOPS_CONTRACTS_DIR)
   : join(process.cwd(), "..", "..", "contracts");
 const WORKSPACE_ROOT = join(CONTRACTS_DIR, "..");
 const GENERATED_DIR = join(CONTRACTS_DIR, "generated");
+const RUN_STORE_LOCK_PATH = join(GENERATED_DIR, "contract-runs.lock");
+const RUN_STORE_LOCK_TIMEOUT_MS = 5_000;
+const RUN_STORE_LOCK_POLL_MS = 25;
 
 export interface GitLogEntry {
   hash: string;
@@ -412,6 +425,9 @@ export type RunSource = "bootstrap" | "generation" | "ci" | "runtime";
 
 export interface ContractRun {
   runId: string;
+  workspaceId: string;
+  idempotencyKey?: string;
+  ingestedAt?: string;
   createdAt: string;
   surfaceId: string;
   source: RunSource;
@@ -526,30 +542,124 @@ export function contractRunsFileExists(): boolean {
   return existsSync(CONTRACT_RUNS_PATH);
 }
 
-export function loadContractRuns(): ContractRunsDocument {
+let runDocumentOverride:
+  | { runs: ContractRunsDocument; lineage: ContractLineageDocument }
+  | null = null;
+
+function compareRunsAscending(a: ContractRun, b: ContractRun): number {
+  const timeDiff = Date.parse(a.createdAt) - Date.parse(b.createdAt);
+  if (timeDiff !== 0) return timeDiff;
+  return String(a.runId).localeCompare(String(b.runId));
+}
+
+function sortRunsAscending(runs: ContractRun[]): ContractRun[] {
+  return [...runs].sort(compareRunsAscending);
+}
+
+function sortRunsForDisplay(runs: ContractRun[]): ContractRun[] {
+  return sortRunsAscending(runs).reverse();
+}
+
+function normalizeContractRun(raw: unknown): ContractRun | null {
+  if (!raw || typeof raw !== "object") return null;
+  const run = raw as Record<string, unknown>;
+  if (typeof run.runId !== "string" || run.runId.length === 0) return null;
+  if (typeof run.createdAt !== "string" || Number.isNaN(Date.parse(run.createdAt))) return null;
+  if (typeof run.surfaceId !== "string" || run.surfaceId.length === 0) return null;
+  const source = run.source;
+  if (source !== "bootstrap" && source !== "generation" && source !== "ci" && source !== "runtime") {
+    return null;
+  }
+  const status = run.status;
+  if (status !== "pass" && status !== "warn" && status !== "fail" && status !== "unknown") {
+    return null;
+  }
+  const workspaceId = normalizeWorkspaceId(
+    typeof run.workspaceId === "string" ? run.workspaceId : getDefaultWorkspaceId()
+  );
+
+  const contract =
+    run.contract && typeof run.contract === "object"
+      ? (run.contract as Record<string, unknown>)
+      : {};
+  const artifacts =
+    run.artifacts && typeof run.artifacts === "object"
+      ? (run.artifacts as Record<string, unknown>)
+      : {};
+  const summary =
+    run.summary && typeof run.summary === "object"
+      ? (run.summary as Record<string, unknown>)
+      : {};
+
+  return {
+    runId: run.runId,
+    workspaceId,
+    idempotencyKey:
+      typeof run.idempotencyKey === "string" && run.idempotencyKey.length > 0
+        ? run.idempotencyKey
+        : undefined,
+    ingestedAt:
+      typeof run.ingestedAt === "string" && !Number.isNaN(Date.parse(run.ingestedAt))
+        ? run.ingestedAt
+        : undefined,
+    createdAt: run.createdAt,
+    surfaceId: run.surfaceId,
+    source,
+    contract: {
+      id: typeof contract.id === "string" && contract.id.length > 0 ? contract.id : "unknown",
+      version:
+        typeof contract.version === "string" && contract.version.length > 0
+          ? contract.version
+          : "unknown",
+      sha256:
+        typeof contract.sha256 === "string" && contract.sha256.length > 0
+          ? contract.sha256
+          : "unknown",
+    },
+    artifacts: {
+      extractionPath:
+        typeof artifacts.extractionPath === "string" ? artifacts.extractionPath : undefined,
+      reportPath: typeof artifacts.reportPath === "string" ? artifacts.reportPath : undefined,
+    },
+    status,
+    findingCodes: Array.isArray(run.findingCodes)
+      ? run.findingCodes.filter((entry): entry is string => typeof entry === "string")
+      : [],
+    summary: {
+      errorCount:
+        typeof summary.errorCount === "number" && summary.errorCount >= 0
+          ? summary.errorCount
+          : 0,
+      warnCount:
+        typeof summary.warnCount === "number" && summary.warnCount >= 0
+          ? summary.warnCount
+          : 0,
+    },
+  };
+}
+
+function loadContractRunsFromJson(): ContractRunsDocument {
   if (!existsSync(CONTRACT_RUNS_PATH)) {
-    return { schemaVersion: 1, runs: [] };
+    return { schemaVersion: 2, runs: [] };
   }
   try {
     const raw = readFileSync(CONTRACT_RUNS_PATH, "utf-8");
     const parsed = JSON.parse(raw) as ContractRunsDocument;
-    const runs = Array.isArray(parsed.runs) ? parsed.runs : [];
+    const runs = Array.isArray(parsed.runs)
+      ? parsed.runs
+          .map((run) => normalizeContractRun(run))
+          .filter((run): run is ContractRun => Boolean(run))
+      : [];
     return {
-      schemaVersion: Number(parsed.schemaVersion || 1),
-      runs: runs
-        .filter((run) => run && typeof run === "object")
-        .sort((a, b) => {
-          const timeDiff = Date.parse(b.createdAt) - Date.parse(a.createdAt);
-          if (timeDiff !== 0) return timeDiff;
-          return String(b.runId).localeCompare(String(a.runId));
-        }),
+      schemaVersion: Number(parsed.schemaVersion || 2),
+      runs: sortRunsForDisplay(runs),
     };
   } catch {
-    return { schemaVersion: 1, runs: [] };
+    return { schemaVersion: 2, runs: [] };
   }
 }
 
-export function loadContractLineage(): ContractLineageDocument {
+function loadContractLineageFromJson(): ContractLineageDocument {
   if (!existsSync(CONTRACT_LINEAGE_PATH)) {
     return { schemaVersion: 1, surfaces: {} };
   }
@@ -568,6 +678,47 @@ export function loadContractLineage(): ContractLineageDocument {
   }
 }
 
+export function loadContractRuns(): ContractRunsDocument {
+  if (runDocumentOverride) {
+    return {
+      schemaVersion: runDocumentOverride.runs.schemaVersion,
+      runs: sortRunsForDisplay(runDocumentOverride.runs.runs),
+    };
+  }
+  return loadContractRunsFromJson();
+}
+
+export function loadContractLineage(): ContractLineageDocument {
+  if (runDocumentOverride) {
+    return runDocumentOverride.lineage;
+  }
+  return loadContractLineageFromJson();
+}
+
+function withRunDocumentOverride<T>(
+  docs: { runs: ContractRunsDocument; lineage: ContractLineageDocument },
+  fn: () => T | Promise<T>
+): T | Promise<T> {
+  const previous = runDocumentOverride;
+  runDocumentOverride = docs;
+  let result: T | Promise<T>;
+  try {
+    result = fn();
+  } catch (error) {
+    runDocumentOverride = previous;
+    throw error;
+  }
+
+  if (result && typeof (result as Promise<unknown>).then === "function") {
+    return (result as Promise<T>).finally(() => {
+      runDocumentOverride = previous;
+    });
+  }
+
+  runDocumentOverride = previous;
+  return result;
+}
+
 function stableJson(value: unknown): string {
   return JSON.stringify(value, null, 2);
 }
@@ -577,6 +728,102 @@ function writeJsonAtomic(filePath: string, payload: unknown): void {
   const tempPath = `${filePath}.tmp`;
   writeFileSync(tempPath, `${stableJson(payload)}\n`, "utf-8");
   renameSync(tempPath, filePath);
+}
+
+function sleepMs(ms: number): void {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
+function acquireRunStoreLock(lockPath: string, timeoutMs: number = RUN_STORE_LOCK_TIMEOUT_MS): void {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      mkdirSync(lockPath);
+      return;
+    } catch (error) {
+      const code =
+        error && typeof error === "object" && "code" in error
+          ? String((error as { code?: string }).code)
+          : "";
+      if (code !== "EEXIST") {
+        throw error;
+      }
+      sleepMs(RUN_STORE_LOCK_POLL_MS);
+    }
+  }
+  throw new Error(`Timed out acquiring run-store lock: ${lockPath}`);
+}
+
+function releaseRunStoreLock(lockPath: string): void {
+  try {
+    rmdirSync(lockPath);
+  } catch (error) {
+    const code =
+      error && typeof error === "object" && "code" in error
+        ? String((error as { code?: string }).code)
+        : "";
+    if (code !== "ENOENT") {
+      throw error;
+    }
+  }
+}
+
+function withRunStoreLock<T>(fn: () => T): T {
+  acquireRunStoreLock(RUN_STORE_LOCK_PATH);
+  try {
+    return fn();
+  } finally {
+    releaseRunStoreLock(RUN_STORE_LOCK_PATH);
+  }
+}
+
+function latestRunsBySurface(runs: ContractRun[]): Map<string, ContractRun> {
+  const map = new Map<string, ContractRun>();
+  for (const run of sortRunsAscending(runs)) {
+    map.set(run.surfaceId, run);
+  }
+  return map;
+}
+
+function rebuildLineageFromRuns(runs: ContractRun[]): ContractLineageDocument {
+  const surfaces: Record<string, ContractLineageRecord> = {};
+  for (const [surfaceId, latestRun] of latestRunsBySurface(runs).entries()) {
+    surfaces[surfaceId] = {
+      lastRunId: latestRun.runId,
+      lastRunAt: latestRun.createdAt,
+      lastSource: latestRun.source,
+      lastStatus: latestRun.status,
+      contract: latestRun.contract,
+      artifacts: latestRun.artifacts,
+      findingCodes: latestRun.findingCodes,
+    };
+  }
+  return { schemaVersion: 1, surfaces };
+}
+
+function dedupeRuns(runs: ContractRun[]): ContractRun[] {
+  const byRunId = new Set<string>();
+  const byIdempotencyKey = new Set<string>();
+  const deduped: ContractRun[] = [];
+  for (const run of sortRunsAscending(runs)) {
+    const runKey = `${normalizeWorkspaceId(run.workspaceId)}:${run.runId}`;
+    const idempotencyKey = run.idempotencyKey
+      ? `${normalizeWorkspaceId(run.workspaceId)}:${run.idempotencyKey}`
+      : null;
+    if (byRunId.has(runKey)) continue;
+    if (idempotencyKey && byIdempotencyKey.has(idempotencyKey)) continue;
+    byRunId.add(runKey);
+    if (idempotencyKey) byIdempotencyKey.add(idempotencyKey);
+    deduped.push(run);
+  }
+  return deduped;
+}
+
+function persistRunDocuments(runs: ContractRun[]): void {
+  const normalizedRuns = dedupeRuns(runs);
+  const orderedRuns = sortRunsAscending(normalizedRuns);
+  writeJsonAtomic(CONTRACT_RUNS_PATH, { schemaVersion: 2, runs: orderedRuns });
+  writeJsonAtomic(CONTRACT_LINEAGE_PATH, rebuildLineageFromRuns(orderedRuns));
 }
 
 function normalizeRunStatus(status: unknown): ValidationOutcome {
@@ -639,8 +886,7 @@ export function validateOnboardingRequest(request: OnboardingExtractRequest): On
   } else {
     try {
       // Validate URL format only. Sanitization handled separately.
-      // eslint-disable-next-line no-new
-      new URL(request.url);
+      void new URL(request.url);
     } catch {
       errors.push("URL must be valid.");
     }
@@ -741,6 +987,8 @@ export function buildOnboardingArtifacts(request: OnboardingExtractRequest): Onb
   const findingCodes = ["extract.remote-url.bootstrap-only"];
   const createdAt = new Date().toISOString();
   const runDraft: Omit<ContractRun, "runId"> = {
+    workspaceId: getDefaultWorkspaceId(),
+    ingestedAt: createdAt,
     createdAt,
     surfaceId,
     source: "bootstrap",
@@ -787,21 +1035,15 @@ export function runOnboardingExtraction(request: OnboardingExtractRequest): Onbo
     writeJsonAtomic(draft.contractPath, draft.contract);
     writeJsonAtomic(draft.reportPath, draft.extraction);
 
-    const runsDoc = loadContractRuns();
-    const lineageDoc = loadContractLineage();
     const runId = randomUUID();
     const run: ContractRun = { ...draft.runDraft, runId };
-    runsDoc.runs = [...runsDoc.runs.filter((entry) => entry.runId !== run.runId), run].sort((a, b) => {
-      const timeDiff = Date.parse(b.createdAt) - Date.parse(a.createdAt);
-      if (timeDiff !== 0) return timeDiff;
-      return String(b.runId).localeCompare(String(a.runId));
+
+    withRunStoreLock(() => {
+      const runsDoc = loadContractRuns();
+      const existingRuns = runsDoc.runs;
+      persistRunDocuments([...existingRuns, run]);
     });
-    lineageDoc.surfaces[draft.surfaceId] = {
-      ...draft.lineageDraft,
-      lastRunId: runId,
-    };
-    writeJsonAtomic(CONTRACT_RUNS_PATH, runsDoc);
-    writeJsonAtomic(CONTRACT_LINEAGE_PATH, lineageDoc);
+
     const membership = getPolicyMembership(draft.surfaceId);
 
     return {
@@ -910,6 +1152,147 @@ export function hasEverPassed(surfaceId: string): boolean | null {
   return surfaceOutcomes.some((o) => o === "pass");
 }
 
+export interface SourcePassRate {
+  source: RunSource;
+  passed: number;
+  total: number;
+  insufficientHistory: boolean;
+}
+
+export interface SourceRecurringFinding {
+  source: RunSource;
+  codes: { code: string; count: number }[];
+  insufficientHistory: boolean;
+}
+
+export interface SourceTimeToGreen {
+  source: RunSource;
+  latestMs: number | null;
+  averageMs: number | null;
+  samples: number;
+  insufficientHistory: boolean;
+}
+
+function runsForSurfaceBySource(surfaceId: string, source: RunSource): ContractRun[] {
+  const runsDoc = loadContractRuns();
+  return sortRunsAscending(
+    runsDoc.runs.filter((run) => run.surfaceId === surfaceId && run.source === source)
+  );
+}
+
+function sourcePassRate(surfaceId: string, source: RunSource): SourcePassRate {
+  const runs = runsForSurfaceBySource(surfaceId, source);
+  const total = runs.length;
+  const passed = runs.filter((run) => run.status === "pass").length;
+  return {
+    source,
+    passed,
+    total,
+    insufficientHistory: total < 2,
+  };
+}
+
+function sourceRecurringFindings(
+  surfaceId: string,
+  source: RunSource,
+  topN: number = 3
+): SourceRecurringFinding {
+  const runs = runsForSurfaceBySource(surfaceId, source);
+  if (runs.length < 2) {
+    return { source, codes: [], insufficientHistory: true };
+  }
+  const counts: Record<string, number> = {};
+  for (const run of runs) {
+    for (const code of run.findingCodes) {
+      counts[code] = (counts[code] ?? 0) + 1;
+    }
+  }
+  const codes = Object.entries(counts)
+    .map(([code, count]) => ({ code, count }))
+    .sort((a, b) => b.count - a.count || a.code.localeCompare(b.code))
+    .slice(0, topN);
+  return {
+    source,
+    codes,
+    insufficientHistory: codes.length === 0,
+  };
+}
+
+function sourceTimeToGreen(surfaceId: string, source: RunSource): SourceTimeToGreen {
+  const runs = runsForSurfaceBySource(surfaceId, source);
+  if (runs.length < 2) {
+    return {
+      source,
+      latestMs: null,
+      averageMs: null,
+      samples: 0,
+      insufficientHistory: true,
+    };
+  }
+
+  const samples: number[] = [];
+  let openFailureAt: number | null = null;
+  for (const run of runs) {
+    const runAt = Date.parse(run.createdAt);
+    if (Number.isNaN(runAt)) continue;
+
+    if (run.status === "fail" || run.status === "warn") {
+      if (openFailureAt === null) {
+        openFailureAt = runAt;
+      }
+      continue;
+    }
+
+    if (run.status === "pass" && openFailureAt !== null) {
+      const delta = runAt - openFailureAt;
+      if (delta >= 0) {
+        samples.push(delta);
+      }
+      openFailureAt = null;
+    }
+  }
+
+  if (samples.length === 0) {
+    return {
+      source,
+      latestMs: null,
+      averageMs: null,
+      samples: 0,
+      insufficientHistory: true,
+    };
+  }
+
+  const sum = samples.reduce((total, value) => total + value, 0);
+  return {
+    source,
+    latestMs: samples[samples.length - 1],
+    averageMs: Math.round(sum / samples.length),
+    samples: samples.length,
+    insufficientHistory: false,
+  };
+}
+
+export function getPerSourcePassRates(surfaceId: string): SourcePassRate[] {
+  return (["bootstrap", "generation", "ci", "runtime"] as RunSource[]).map((source) =>
+    sourcePassRate(surfaceId, source)
+  );
+}
+
+export function getPerSourceRecurringFindings(
+  surfaceId: string,
+  topN: number = 3
+): SourceRecurringFinding[] {
+  return (["bootstrap", "generation", "ci", "runtime"] as RunSource[]).map((source) =>
+    sourceRecurringFindings(surfaceId, source, topN)
+  );
+}
+
+export function getPerSourceTimeToGreen(surfaceId: string): SourceTimeToGreen[] {
+  return (["bootstrap", "generation", "ci", "runtime"] as RunSource[]).map((source) =>
+    sourceTimeToGreen(surfaceId, source)
+  );
+}
+
 /**
  * Count surfaces in the contract that use this expectation (PR 4).
  * "Use" means the expectation is enabled (would trigger validation).
@@ -956,7 +1339,7 @@ export function loadValidationOutcomes(
     }
   }
 
-  let committed: Record<string, ValidationOutcome[]> = {};
+  const committed: Record<string, ValidationOutcome[]> = {};
   if (existsSync(VALIDATION_OUTCOMES_PATH)) {
     try {
       const raw = readFileSync(VALIDATION_OUTCOMES_PATH, "utf-8");
@@ -1044,27 +1427,233 @@ export interface SurfaceEvolution {
   findingDelta: FindingCodeDelta | null;
 }
 
+export type RunStoreMode = "auto" | "json" | "db";
+
 export interface RunStore {
-  loadRuns(): ContractRunsDocument;
-  loadLineage(): ContractLineageDocument;
+  readonly mode: "json" | "db";
+  loadRuns(): Promise<ContractRunsDocument>;
+  loadLineage(runsDoc?: ContractRunsDocument): Promise<ContractLineageDocument>;
 }
 
 export class JsonRunStore implements RunStore {
-  loadRuns(): ContractRunsDocument {
-    return loadContractRuns();
+  readonly mode = "json" as const;
+
+  async loadRuns(): Promise<ContractRunsDocument> {
+    return loadContractRunsFromJson();
   }
-  loadLineage(): ContractLineageDocument {
-    return loadContractLineage();
+  async loadLineage(): Promise<ContractLineageDocument> {
+    return loadContractLineageFromJson();
   }
 }
 
 export class DbRunStore implements RunStore {
-  loadRuns(): ContractRunsDocument {
-    return { schemaVersion: 1, runs: [] };
+  readonly mode = "db" as const;
+  private readonly workspaceId: string;
+
+  constructor(workspaceId: string) {
+    this.workspaceId = normalizeWorkspaceId(workspaceId);
   }
-  loadLineage(): ContractLineageDocument {
-    return { schemaVersion: 1, surfaces: {} };
+
+  private mapDbRunRow(row: Record<string, unknown>): ContractRun {
+    return {
+      runId: String(row.run_id),
+      workspaceId: normalizeWorkspaceId(
+        typeof row.workspace_id === "string" ? row.workspace_id : this.workspaceId
+      ),
+      idempotencyKey:
+        row.idempotency_key && typeof row.idempotency_key === "string"
+          ? row.idempotency_key
+          : undefined,
+      ingestedAt:
+        row.ingested_at && typeof row.ingested_at === "string"
+          ? row.ingested_at
+          : undefined,
+      createdAt: String(row.created_at),
+      surfaceId: String(row.surface_id),
+      source: String(row.source) as RunSource,
+      contract: {
+        id: String(row.contract_id),
+        version: String(row.contract_version),
+        sha256: String(row.contract_sha256),
+      },
+      artifacts: {
+        extractionPath:
+          row.artifacts_extraction_path && typeof row.artifacts_extraction_path === "string"
+            ? row.artifacts_extraction_path
+            : undefined,
+        reportPath:
+          row.artifacts_report_path && typeof row.artifacts_report_path === "string"
+            ? row.artifacts_report_path
+            : undefined,
+      },
+      status: String(row.status) as ValidationOutcome,
+      findingCodes: Array.isArray(row.finding_codes)
+        ? row.finding_codes.filter((entry): entry is string => typeof entry === "string")
+        : [],
+      summary: {
+        errorCount: typeof row.error_count === "number" ? row.error_count : 0,
+        warnCount: typeof row.warn_count === "number" ? row.warn_count : 0,
+      },
+    };
   }
+
+  async loadRuns(): Promise<ContractRunsDocument> {
+    const pool = getPool();
+    const result = await pool.query(
+      `SELECT
+         workspace_id,
+         run_id,
+         idempotency_key,
+         ingested_at,
+         created_at,
+         surface_id,
+         source,
+         contract_id,
+         contract_version,
+         contract_sha256,
+         artifacts_extraction_path,
+         artifacts_report_path,
+         status,
+         finding_codes,
+         error_count,
+         warn_count
+       FROM contract_runs
+       WHERE workspace_id = $1
+       ORDER BY created_at ASC, run_id ASC`,
+      [this.workspaceId]
+    );
+    const runs = result.rows
+      .map((row) => this.mapDbRunRow(row as Record<string, unknown>))
+      .filter((run) => normalizeContractRun(run) !== null);
+    return {
+      schemaVersion: 1,
+      runs: sortRunsAscending(runs),
+    };
+  }
+
+  async loadLineage(runsDoc?: ContractRunsDocument): Promise<ContractLineageDocument> {
+    const runs = runsDoc ? runsDoc.runs : (await this.loadRuns()).runs;
+    return rebuildLineageFromRuns(runs);
+  }
+}
+
+function parseRunStoreMode(raw: string | undefined): RunStoreMode {
+  if (raw === "json" || raw === "db" || raw === "auto") return raw;
+  return "auto";
+}
+
+function getConfiguredRunStoreMode(): RunStoreMode {
+  return parseRunStoreMode(process.env.SURFACEOPS_RUNSTORE_MODE);
+}
+
+async function tryLoadFromDbStoreByWorkspace(workspaceId: string): Promise<{
+  runs: ContractRunsDocument;
+  lineage: ContractLineageDocument;
+}> {
+  const store = new DbRunStore(workspaceId);
+  const runs = await store.loadRuns();
+  const lineage = await store.loadLineage(runs);
+  return { runs, lineage };
+}
+
+function loadFromJsonStore(workspaceId: string): {
+  runs: ContractRunsDocument;
+  lineage: ContractLineageDocument;
+} {
+  const normalizedWorkspaceId = normalizeWorkspaceId(workspaceId);
+  const runs = loadContractRunsFromJson().runs.filter(
+    (run) => normalizeWorkspaceId(run.workspaceId) === normalizedWorkspaceId
+  );
+  const orderedRuns = sortRunsAscending(runs);
+  return {
+    runs: {
+      schemaVersion: 2,
+      runs: orderedRuns,
+    },
+    lineage: rebuildLineageFromRuns(orderedRuns),
+  };
+}
+
+export async function loadRunDocumentsFromStore(options?: { workspaceId?: string }): Promise<{
+  runs: ContractRunsDocument;
+  lineage: ContractLineageDocument;
+  mode: "json" | "db";
+  fallbackUsed: boolean;
+  warning?: string;
+}> {
+  const workspaceId = normalizeWorkspaceId(options?.workspaceId ?? getDefaultWorkspaceId());
+  const mode = getConfiguredRunStoreMode();
+  const hasDbConfig = Boolean(process.env.DATABASE_URL);
+
+  if (mode === "json") {
+    const jsonDocs = loadFromJsonStore(workspaceId);
+    return { ...jsonDocs, mode: "json", fallbackUsed: false };
+  }
+
+  if (mode === "auto" && !hasDbConfig) {
+    const jsonDocs = loadFromJsonStore(workspaceId);
+    return { ...jsonDocs, mode: "json", fallbackUsed: false };
+  }
+
+  if (mode === "db" && !hasDbConfig) {
+    const jsonDocs = loadFromJsonStore(workspaceId);
+    return {
+      ...jsonDocs,
+      mode: "json",
+      fallbackUsed: true,
+      warning: "DB mode requested but DATABASE_URL is not configured",
+    };
+  }
+
+  try {
+    const dbDocs = await tryLoadFromDbStoreByWorkspace(workspaceId);
+    return { ...dbDocs, mode: "db", fallbackUsed: false };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown DB RunStore failure";
+    const jsonDocs = loadFromJsonStore(workspaceId);
+    if (mode === "db") {
+      return {
+        ...jsonDocs,
+        mode: "json",
+        fallbackUsed: true,
+        warning: `DB mode requested but unavailable: ${message}`,
+      };
+    }
+    return {
+      ...jsonDocs,
+      mode: "json",
+      fallbackUsed: true,
+      warning: `Auto mode fell back to JSON RunStore: ${message}`,
+    };
+  }
+}
+
+export async function withStoreBackedRunDocuments<T>(
+  workspaceIdOrFn:
+    | string
+    | ((metadata: { mode: "json" | "db"; fallbackUsed: boolean; warning?: string }) => T | Promise<T>),
+  fnMaybe?: (metadata: { mode: "json" | "db"; fallbackUsed: boolean; warning?: string }) => T | Promise<T>
+): Promise<T> {
+  const workspaceId =
+    typeof workspaceIdOrFn === "string"
+      ? normalizeWorkspaceId(workspaceIdOrFn)
+      : getDefaultWorkspaceId();
+  const fn =
+    typeof workspaceIdOrFn === "function"
+      ? workspaceIdOrFn
+      : fnMaybe;
+  if (!fn) {
+    throw new Error("withStoreBackedRunDocuments requires a callback function.");
+  }
+
+  const docs = await loadRunDocumentsFromStore({ workspaceId });
+  return withRunDocumentOverride({ runs: docs.runs, lineage: docs.lineage }, () =>
+    fn({
+      mode: docs.mode,
+      fallbackUsed: docs.fallbackUsed,
+      warning: docs.warning,
+    })
+  );
 }
 
 /**
@@ -1357,11 +1946,6 @@ export function getExpectationMeaning(key: string): string {
 export function summarizeRecurringFindings(
   surfaceId: string
 ): { code: string; count: number }[] {
-  const contract = loadPolicyContract();
-  const outcomesFileExists = validationOutcomesFileExists();
-  const outcomes = loadValidationOutcomes(contract);
-  const surfaceOutcomes = outcomes[surfaceId];
-
   // If we have validation-outcomes.json with history, we could analyze recurring patterns
   // For Phase 6A, we'll use current findings only since we don't have historical findings stored
   const snapshot = getRunSnapshot(surfaceId);

@@ -4,6 +4,9 @@ import { createHash, randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
+const LOCK_TIMEOUT_MS = 5_000;
+const LOCK_POLL_MS = 25;
+
 function fail(message) {
   console.error(`[contract-runs] ${message}`);
   process.exit(1);
@@ -49,6 +52,36 @@ function writeJsonAtomic(filePath, payload) {
   fs.renameSync(tempPath, filePath);
 }
 
+function sleep(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
+function acquireLock(lockPath, timeoutMs = LOCK_TIMEOUT_MS) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      fs.mkdirSync(lockPath);
+      return;
+    } catch (error) {
+      if (error && error.code !== "EEXIST") {
+        throw error;
+      }
+      sleep(LOCK_POLL_MS);
+    }
+  }
+  fail(`Timed out acquiring lock: ${lockPath}`);
+}
+
+function releaseLock(lockPath) {
+  try {
+    fs.rmdirSync(lockPath);
+  } catch (error) {
+    if (error && error.code !== "ENOENT") {
+      throw error;
+    }
+  }
+}
+
 function sha256File(filePath) {
   const content = fs.readFileSync(filePath);
   return createHash("sha256").update(content).digest("hex");
@@ -59,7 +92,7 @@ function initArtifacts(root) {
   fs.mkdirSync(generatedDir, { recursive: true });
 
   ensureFile(path.join(generatedDir, "contract-runs.json"), {
-    schemaVersion: 1,
+    schemaVersion: 2,
     runs: [],
   });
 
@@ -89,6 +122,38 @@ function statusSummary(status, findingCodes) {
   return { errorCount, warnCount };
 }
 
+function sortRunsDeterministic(runs) {
+  return [...runs].sort((a, b) => {
+    const timeDiff = Date.parse(a.createdAt) - Date.parse(b.createdAt);
+    if (timeDiff !== 0) return timeDiff;
+    return String(a.runId).localeCompare(String(b.runId));
+  });
+}
+
+function latestRunsBySurface(runs) {
+  const map = new Map();
+  for (const run of runs) {
+    map.set(run.surfaceId, run);
+  }
+  return map;
+}
+
+function rebuildLineageFromRuns(runs) {
+  const surfaces = {};
+  for (const [surfaceId, run] of latestRunsBySurface(runs).entries()) {
+    surfaces[surfaceId] = {
+      lastRunId: run.runId,
+      lastRunAt: run.createdAt,
+      lastSource: run.source,
+      lastStatus: run.status,
+      contract: run.contract,
+      artifacts: run.artifacts,
+      findingCodes: run.findingCodes,
+    };
+  }
+  return { schemaVersion: 1, surfaces };
+}
+
 function emitRun(root, args) {
   const surfaceId = args["surface-id"];
   const source = args.source;
@@ -116,11 +181,26 @@ function emitRun(root, args) {
   if (!contract) fail(`Failed to parse canonical contract: ${contractPath}`);
 
   const createdAt = args["created-at"] || new Date().toISOString();
+  if (Number.isNaN(Date.parse(createdAt))) {
+    fail(`Invalid --created-at value: ${createdAt}`);
+  }
   const findingCodes = parseCodes(args["finding-codes"]);
   const runId = args["run-id"] || randomUUID();
+  const workspaceId =
+    typeof args["workspace-id"] === "string" && args["workspace-id"].trim().length > 0
+      ? args["workspace-id"].trim()
+      : "ws-local-default";
+  const idempotencyKey =
+    typeof args["idempotency-key"] === "string" && args["idempotency-key"].trim().length > 0
+      ? args["idempotency-key"].trim()
+      : undefined;
+  const ingestedAt = new Date().toISOString();
 
   const runRecord = {
     runId,
+    workspaceId,
+    idempotencyKey,
+    ingestedAt,
     createdAt,
     surfaceId,
     source,
@@ -138,37 +218,64 @@ function emitRun(root, args) {
     summary: statusSummary(status, findingCodes),
   };
 
-  const runsDoc = readJson(runsPath, { schemaVersion: 1, runs: [] });
-  if (!Array.isArray(runsDoc.runs)) runsDoc.runs = [];
+  const lockPath = path.join(generatedDir, "contract-runs.lock");
+  acquireLock(lockPath);
+  try {
+    const runsDoc = readJson(runsPath, { schemaVersion: 2, runs: [] });
+    if (!Array.isArray(runsDoc.runs)) runsDoc.runs = [];
 
-  if (!runsDoc.runs.some((r) => r.runId === runId)) {
-    runsDoc.runs.push(runRecord);
-    runsDoc.runs.sort((a, b) => {
-      const timeDiff = Date.parse(a.createdAt) - Date.parse(b.createdAt);
-      if (timeDiff !== 0) return timeDiff;
-      return String(a.runId).localeCompare(String(b.runId));
-    });
+    const duplicateByRunId = runsDoc.runs.some(
+      (run) =>
+        run &&
+        (run.workspaceId || "ws-local-default") === workspaceId &&
+        run.runId === runRecord.runId
+    );
+    const duplicateByIdempotencyKey =
+      Boolean(idempotencyKey) &&
+      runsDoc.runs.some(
+        (run) =>
+          run &&
+          (run.workspaceId || "ws-local-default") === workspaceId &&
+          typeof run.idempotencyKey === "string" &&
+          run.idempotencyKey === idempotencyKey,
+      );
+
+    const nextRuns = duplicateByRunId || duplicateByIdempotencyKey
+      ? runsDoc.runs
+      : sortRunsDeterministic([...runsDoc.runs, runRecord]);
+
+    const nextRunsDoc = {
+      schemaVersion: 2,
+      runs: nextRuns,
+    };
+    const nextLineageDoc = rebuildLineageFromRuns(nextRuns);
+
+    writeJsonAtomic(runsPath, nextRunsDoc);
+    writeJsonAtomic(lineagePath, nextLineageDoc);
+
+    const effectiveRun = duplicateByRunId || duplicateByIdempotencyKey
+      ? nextRuns.find(
+        (run) =>
+          run.runId === runRecord.runId ||
+            (idempotencyKey && run.idempotencyKey === idempotencyKey),
+      ) || runRecord
+      : runRecord;
+
+    console.log(
+      JSON.stringify(
+        {
+          ok: true,
+          deduped: Boolean(duplicateByRunId || duplicateByIdempotencyKey),
+          runId: effectiveRun.runId,
+          surfaceId: effectiveRun.surfaceId,
+        },
+        null,
+        2,
+      ),
+    );
+  } finally {
+    releaseLock(lockPath);
   }
-
-  writeJsonAtomic(runsPath, runsDoc);
-
-  const lineageDoc = readJson(lineagePath, { schemaVersion: 1, surfaces: {} });
-  if (!lineageDoc.surfaces || typeof lineageDoc.surfaces !== "object") {
-    lineageDoc.surfaces = {};
-  }
-
-  lineageDoc.surfaces[surfaceId] = {
-    lastRunId: runRecord.runId,
-    lastRunAt: runRecord.createdAt,
-    lastSource: runRecord.source,
-    lastStatus: runRecord.status,
-    contract: runRecord.contract,
-    artifacts: runRecord.artifacts,
-    findingCodes: runRecord.findingCodes,
-  };
-
-  writeJsonAtomic(lineagePath, lineageDoc);
-  console.log(JSON.stringify({ ok: true, runId: runRecord.runId, surfaceId }, null, 2));
 }
 
 function main() {
@@ -177,7 +284,9 @@ function main() {
   const root = path.resolve(args.root || process.cwd());
 
   if (!command || !["init", "emit"].includes(command)) {
-    fail("Usage: node scripts/lib/contract-runs.mjs <init|emit> [--root <path>] ...");
+    fail(
+      "Usage: node scripts/lib/contract-runs.mjs <init|emit> [--root <path>] [--idempotency-key <key>] ...",
+    );
   }
 
   if (command === "init") {

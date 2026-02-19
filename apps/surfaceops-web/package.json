@@ -11,7 +11,10 @@
     "type-check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "migrate": "tsx scripts/run-migrations.ts"
+    "migrate": "tsx scripts/run-migrations.ts",
+    "sync:run-artifacts:db": "tsx scripts/sync-run-artifacts-to-db.ts",
+    "backfill:governance:db": "tsx scripts/backfill-governance-store.ts",
+    "verify:governance:db-parity": "tsx scripts/verify-governance-store-parity.ts"
   },
   "dependencies": {
     "@surfaces/platform-auth": "workspace:*",
