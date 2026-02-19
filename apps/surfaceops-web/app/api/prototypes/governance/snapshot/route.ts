@@ -4,12 +4,18 @@ import {
   assertWritablePrototype,
 } from "@/app/contracts/governance/_lib/governance-persistence";
 import { loadGovernancePrototypeSelection } from "@/app/contracts/governance/_lib/prototype-registry";
+import { getWorkspaceSession } from "@/lib/workspace-auth";
 
 type SnapshotRequest = {
   prototypeId?: string;
 };
 
 export async function POST(request: Request) {
+  const workspaceSession = await getWorkspaceSession(request);
+  if (!workspaceSession) {
+    return NextResponse.json({ ok: false, error: "Session required." }, { status: 401 });
+  }
+
   let payload: SnapshotRequest;
   try {
     payload = (await request.json()) as SnapshotRequest;
@@ -24,15 +30,25 @@ export async function POST(request: Request) {
 
   try {
     assertWritablePrototype(prototypeId);
-    const selection = loadGovernancePrototypeSelection(prototypeId, null);
-    const result = appendSnapshotFromLatestExtraction(selection.workspaceRoot, selection.selected);
+    const selection = await loadGovernancePrototypeSelection(
+      prototypeId,
+      null,
+      workspaceSession.workspaceId,
+    );
+    const result = await appendSnapshotFromLatestExtraction(
+      selection.workspaceRoot,
+      selection.selected,
+      workspaceSession.workspaceId,
+    );
     return NextResponse.json(
       {
         ok: true,
-        snapshotId: result.snapshotId,
-        createdAt: result.createdAt,
-        baselineSnapshotId: result.index.baselineSnapshotId,
-        latestSnapshotId: result.index.latestSnapshotId,
+        snapshotId: result.value.snapshotId,
+        createdAt: result.value.createdAt,
+        baselineSnapshotId: result.value.index.baselineSnapshotId,
+        latestSnapshotId: result.value.index.latestSnapshotId,
+        storeMode: result.storeMeta.mode,
+        workspaceId: result.storeMeta.workspaceId,
       },
       { status: 200 },
     );

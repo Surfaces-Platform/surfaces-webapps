@@ -2,6 +2,7 @@ import { GovernanceWorkspace } from "./_components/governance-workspace";
 import { buildExtractionDiff } from "./_lib/prototype-diff";
 import { loadGovernancePrototypeSelection } from "./_lib/prototype-registry";
 import { resolveReferenceTargetBaseUrl } from "./inspector/_lib/target-registry";
+import { getWorkspaceIdFromCurrentRequest } from "@/lib/workspace-auth";
 
 export default async function GovernancePage({
   searchParams,
@@ -9,9 +10,11 @@ export default async function GovernancePage({
   searchParams: Promise<{ prototype?: string; snapshot?: string; panel?: string }>;
 }) {
   const params = await searchParams;
-  const selection = loadGovernancePrototypeSelection(
+  const workspaceId = await getWorkspaceIdFromCurrentRequest();
+  const selection = await loadGovernancePrototypeSelection(
     params.prototype ?? null,
     params.snapshot ?? null,
+    workspaceId,
   );
   const extraction = selection.extractionReport as { extracted?: { routes?: unknown[]; authAware?: boolean } };
   const previewRoutes = Array.isArray(extraction.extracted?.routes)

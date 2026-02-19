@@ -6,6 +6,7 @@ import {
 } from "@/app/contracts/governance/_lib/governance-persistence";
 import { loadGovernancePrototypeSelection } from "@/app/contracts/governance/_lib/prototype-registry";
 import type { SurfaceContract } from "@/app/contracts/governance/_lib/types";
+import { getWorkspaceSession } from "@/lib/workspace-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -42,6 +43,11 @@ function isSurfaceContract(value: unknown): value is SurfaceContract {
 }
 
 export async function GET(request: NextRequest) {
+  const workspaceSession = await getWorkspaceSession(request);
+  if (!workspaceSession) {
+    return NextResponse.json({ ok: false, error: "Session required." }, { status: 401 });
+  }
+
   const prototypeId = request.nextUrl.searchParams.get("prototypeId")?.trim() ?? "";
   const targetUrl = request.nextUrl.searchParams.get("targetUrl")?.trim() ?? "";
   if (!prototypeId || !targetUrl) {
@@ -56,13 +62,26 @@ export async function GET(request: NextRequest) {
 
   try {
     assertWritablePrototype(prototypeId);
-    const selection = loadGovernancePrototypeSelection(prototypeId, null);
-    const baseline = getInspectorBaselineForTarget(
+    const selection = await loadGovernancePrototypeSelection(
+      prototypeId,
+      null,
+      workspaceSession.workspaceId,
+    );
+    const baselineResult = await getInspectorBaselineForTarget(
       selection.workspaceRoot,
       selection.selected,
       targetUrl,
+      workspaceSession.workspaceId,
     );
-    return NextResponse.json({ ok: true, baseline }, { status: 200 });
+    return NextResponse.json(
+      {
+        ok: true,
+        baseline: baselineResult.value,
+        storeMode: baselineResult.storeMeta.mode,
+        workspaceId: baselineResult.storeMeta.workspaceId,
+      },
+      { status: 200 },
+    );
   } catch (error) {
     return NextResponse.json(
       { ok: false, error: error instanceof Error ? error.message : "Failed to load baseline." },
@@ -72,6 +91,11 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: Request) {
+  const workspaceSession = await getWorkspaceSession(request);
+  if (!workspaceSession) {
+    return NextResponse.json({ ok: false, error: "Session required." }, { status: 401 });
+  }
+
   let payload: BaselineRequest;
   try {
     payload = (await request.json()) as BaselineRequest;
@@ -99,8 +123,15 @@ export async function POST(request: Request) {
 
   try {
     assertWritablePrototype(prototypeId);
-    const selection = loadGovernancePrototypeSelection(prototypeId, null);
-    const baseline = upsertInspectorBaselineForTarget(selection.workspaceRoot, selection.selected, {
+    const selection = await loadGovernancePrototypeSelection(
+      prototypeId,
+      null,
+      workspaceSession.workspaceId,
+    );
+    const baselineResult = await upsertInspectorBaselineForTarget(
+      selection.workspaceRoot,
+      selection.selected,
+      {
       targetUrl,
       contract: payload.contract,
       requiredSections: Array.isArray(payload.requiredSections) ? payload.requiredSections : [],
@@ -108,8 +139,18 @@ export async function POST(request: Request) {
         payload.sourceSnapshotCapturedAt && payload.sourceSnapshotCapturedAt.trim().length > 0
           ? payload.sourceSnapshotCapturedAt
           : new Date().toISOString(),
-    });
-    return NextResponse.json({ ok: true, baseline }, { status: 200 });
+    },
+      workspaceSession.workspaceId,
+    );
+    return NextResponse.json(
+      {
+        ok: true,
+        baseline: baselineResult.value,
+        storeMode: baselineResult.storeMeta.mode,
+        workspaceId: baselineResult.storeMeta.workspaceId,
+      },
+      { status: 200 },
+    );
   } catch (error) {
     return NextResponse.json(
       { ok: false, error: error instanceof Error ? error.message : "Failed to save baseline." },

@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import { NextResponse } from "next/server";
 import { assertWritablePrototype } from "@/app/contracts/governance/_lib/governance-persistence";
 import { loadGovernancePrototypeSelection } from "@/app/contracts/governance/_lib/prototype-registry";
+import { getWorkspaceSession } from "@/lib/workspace-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,6 +21,11 @@ function extractErrorMessage(output: { stdout: string; stderr: string; status: n
 }
 
 export async function POST(request: Request) {
+  const workspaceSession = await getWorkspaceSession(request);
+  if (!workspaceSession) {
+    return NextResponse.json({ ok: false, error: "Session required." }, { status: 401 });
+  }
+
   let payload: ExtractRequest;
   try {
     payload = (await request.json()) as ExtractRequest;
@@ -34,7 +40,11 @@ export async function POST(request: Request) {
 
   try {
     assertWritablePrototype(prototypeId);
-    const selection = loadGovernancePrototypeSelection(prototypeId, null);
+    const selection = await loadGovernancePrototypeSelection(
+      prototypeId,
+      null,
+      workspaceSession.workspaceId,
+    );
     const scriptPath = path.join(
       selection.workspaceRoot,
       "scripts",
@@ -65,7 +75,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const refreshed = loadGovernancePrototypeSelection(prototypeId, null);
+    const refreshed = await loadGovernancePrototypeSelection(
+      prototypeId,
+      null,
+      workspaceSession.workspaceId,
+    );
     return NextResponse.json(
       {
         ok: true,

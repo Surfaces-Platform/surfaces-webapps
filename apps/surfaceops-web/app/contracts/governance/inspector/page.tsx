@@ -10,6 +10,7 @@ import {
   listInspectorTargetProfiles,
   resolveReferenceTargetBaseUrl,
 } from "./_lib/target-registry";
+import { getWorkspaceIdFromCurrentRequest } from "@/lib/workspace-auth";
 
 function extractRoutes(value: unknown): string[] {
   const maybeRoutes = (
@@ -46,9 +47,11 @@ export default async function GovernanceInspectorPage({
 }) {
   const params = await searchParams;
   const requested = readInspectorUrlState(params);
-  const selection = loadGovernancePrototypeSelection(
+  const workspaceId = await getWorkspaceIdFromCurrentRequest();
+  const selection = await loadGovernancePrototypeSelection(
     requested.prototype ?? null,
     requested.snapshot || null,
+    workspaceId,
   );
 
   const referenceBaseUrl = resolveReferenceTargetBaseUrl(
