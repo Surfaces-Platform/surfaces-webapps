@@ -5,7 +5,8 @@ function sanitizeConnectionString(value: string | undefined): string | undefined
     return value;
   }
 
-  return value.replace(/\\[rn]/g, "").trim();
+  const sanitized = value.replace(/\\[rn]/g, "").trim();
+  return sanitized.replace(/^(['"])+/, "").replace(/(['"])+$/, "");
 }
 
 function createPoolConfig(connectionString: string | undefined): PoolConfig {
