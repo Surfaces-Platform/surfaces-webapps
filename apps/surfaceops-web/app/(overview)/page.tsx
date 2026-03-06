@@ -59,6 +59,9 @@ export default function Home() {
             extraction drift, ownership, and enforcement posture across production surfaces.
             Access is rolling out in small cohorts while we tighten the workflow.
           </p>
+          <div style={{ marginTop: "32px" }}>
+            <InviteRequestPanel />
+          </div>
         </section>
 
         <section
@@ -138,19 +141,27 @@ export default function Home() {
             borderTop: `1px solid ${colors.neutral[200]}`,
           }}
         >
+          <h2
+            style={{
+              fontSize: "20px",
+              fontWeight: 600,
+              margin: "0 0 24px",
+            }}
+          >
+            What happens next
+          </h2>
           <p
             style={{
               fontSize: "14px",
               fontWeight: 400,
               lineHeight: 1.6,
-              margin: "0 0 24px",
+              margin: 0,
               maxWidth: "640px",
             }}
           >
-            Request an invite to join the next SurfaceOps cohort. We’ll reach out as preview
-            access expands.
+            Invite requests go into the next rollout queue. We review new teams in small groups
+            and reach out directly when preview access is available.
           </p>
-          <InviteRequestPanel />
         </section>
       </div>
     </div>
