@@ -8,9 +8,27 @@ function sanitizeConnectionString(value: string | undefined): string | undefined
   return value.replace(/\\[rn]/g, "").trim();
 }
 
-const poolConfig: PoolConfig = {
-  connectionString: sanitizeConnectionString(process.env.DATABASE_URL),
-};
+function createPoolConfig(connectionString: string | undefined): PoolConfig {
+  if (!connectionString) {
+    return {};
+  }
+
+  const url = new URL(connectionString);
+  const sslmode = url.searchParams.get("sslmode");
+
+  return {
+    host: url.hostname,
+    port: url.port ? Number(url.port) : 5432,
+    database: url.pathname.replace(/^\//, ""),
+    user: decodeURIComponent(url.username),
+    password: decodeURIComponent(url.password),
+    ssl: sslmode ? { rejectUnauthorized: false } : undefined,
+  };
+}
+
+const poolConfig: PoolConfig = createPoolConfig(
+  sanitizeConnectionString(process.env.DATABASE_URL),
+);
 
 let pool: Pool | null = null;
 
