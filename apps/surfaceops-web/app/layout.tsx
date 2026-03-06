@@ -35,7 +35,6 @@ export default function RootLayout({
             ]}
             utilities={[
               { label: "GitHub", href: "#github" },
-              { label: "Login", href: "/auth/login" },
             ]}
             theme="light"
           />
