@@ -5,6 +5,8 @@ import {
   type InviteRequestPayload,
 } from "@/lib/invite-requests";
 
+export const runtime = "nodejs";
+
 export async function POST(request: Request) {
   let payload: InviteRequestPayload;
 
@@ -28,6 +30,8 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
+
+    console.error("invite-request submit failed", error);
 
     return NextResponse.json(
       { ok: false, error: "Unable to save invite request." },
