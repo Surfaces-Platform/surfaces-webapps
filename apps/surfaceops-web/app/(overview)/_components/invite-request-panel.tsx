@@ -60,14 +60,14 @@ export function InviteRequestPanel() {
           width: "fit-content",
           fontSize: "14px",
           fontWeight: 600,
-          padding: "14px 22px",
+          padding: "12px 24px",
           backgroundColor: colors.structure.primary,
           color: colors.neutral[0],
           border: "none",
-          borderRadius: "999px",
+          borderRadius: "6px",
           cursor: formOpen ? "default" : "pointer",
           opacity: formOpen ? 0.8 : 1,
-          boxShadow: "0 20px 40px rgba(15, 23, 42, 0.12)",
+          transition: "all var(--contract-motion-duration) var(--contract-motion-timing)",
         }}
       >
         Request An Invite
@@ -79,11 +79,10 @@ export function InviteRequestPanel() {
           style={{
             display: "grid",
             gap: "12px",
-            padding: "20px",
-            borderRadius: "20px",
+            padding: "24px",
+            borderRadius: "6px",
             border: `1px solid ${colors.neutral[200]}`,
             backgroundColor: colors.neutral[0],
-            boxShadow: "0 24px 48px rgba(15, 23, 42, 0.08)",
           }}
         >
           <label
@@ -117,11 +116,11 @@ export function InviteRequestPanel() {
               aria-describedby="invite-request-status"
               style={{
                 flex: "1 1 260px",
-                minHeight: "48px",
-                borderRadius: "14px",
+                minHeight: "44px",
+                borderRadius: "6px",
                 border: `1px solid ${colors.neutral[400]}`,
                 padding: "0 16px",
-                fontSize: "15px",
+                fontSize: "14px",
                 color: colors.neutral[900],
                 backgroundColor: colors.neutral[50],
               }}
@@ -130,9 +129,9 @@ export function InviteRequestPanel() {
               type="submit"
               disabled={isSubmitting}
               style={{
-                minHeight: "48px",
+                minHeight: "44px",
                 padding: "0 18px",
-                borderRadius: "14px",
+                borderRadius: "6px",
                 border: "none",
                 backgroundColor: colors.neutral[900],
                 color: colors.neutral[0],

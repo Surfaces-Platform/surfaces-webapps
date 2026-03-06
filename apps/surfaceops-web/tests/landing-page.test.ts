@@ -9,7 +9,14 @@ describe("surfaceops landing page", () => {
 
     expect(html).toContain("Request An Invite");
     expect(html).toContain("Invite-only preview");
+    expect(html).not.toContain("radial-gradient");
     expect(html).not.toContain("Log in to view surfaces");
     expect(html).not.toContain(">Login<");
+    expect(html.indexOf("data-contract-section=\"landing.hero\"")).toBeLessThan(
+      html.indexOf("data-contract-section=\"landing.guidance\""),
+    );
+    expect(html.indexOf("data-contract-section=\"landing.guidance\"")).toBeLessThan(
+      html.indexOf("data-contract-section=\"landing.actions\""),
+    );
   });
 });
