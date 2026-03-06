@@ -3,6 +3,21 @@
   "version": "0.1.0",
   "surfaceId": "surfaces-web",
   "layout": {
+    "landingPattern": {
+      "pageBackgroundMode": "solid",
+      "policy": "strict",
+      "requireTopLevelSections": [
+        "landing.hero",
+        "landing.guidance",
+        "landing.actions"
+      ],
+      "sectionOrder": [
+        "landing.hero",
+        "landing.demos",
+        "landing.guidance",
+        "landing.actions"
+      ]
+    },
     "maxContentWidth": 1120
   },
   "color": {

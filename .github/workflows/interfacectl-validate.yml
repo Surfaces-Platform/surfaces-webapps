@@ -16,6 +16,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.INTERFACECTL_TOKEN }}
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
@@ -29,28 +32,20 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Checkout interfacectl tooling
-        uses: actions/checkout@v4
-        with:
-          repository: Surfaces-Platform/interfacectl
-          path: interfacectl-tooling
-          token: ${{ secrets.INTERFACECTL_TOKEN || secrets.GITHUB_TOKEN }}
-
       - name: Install interfacectl dependencies
-        working-directory: interfacectl-tooling
+        working-directory: tools/interfacectl
         run: pnpm install --frozen-lockfile
 
       - name: Build interfacectl
-        working-directory: interfacectl-tooling
+        working-directory: tools/interfacectl
         run: pnpm run build
 
       - name: Validate interface contract
         env:
-          INTERFACECTL_BIN: ${{ github.workspace }}/interfacectl-tooling/packages/interfacectl-cli/dist/index.js
+          INTERFACECTL_BIN: ${{ github.workspace }}/tools/interfacectl/packages/interfacectl-cli/dist/index.js
         run: |
           node "$INTERFACECTL_BIN" validate \
             --root . \
             --contract contracts/surfaces.web.contract.json \
             --format json
-
 
