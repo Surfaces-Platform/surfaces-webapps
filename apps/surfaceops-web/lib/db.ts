@@ -1,14 +1,22 @@
 import { Pool, type PoolConfig } from "pg";
 
+function sanitizeConnectionString(value: string | undefined): string | undefined {
+  if (!value) {
+    return value;
+  }
+
+  return value.replace(/\\[rn]/g, "").trim();
+}
+
 const poolConfig: PoolConfig = {
-  connectionString: process.env.DATABASE_URL,
+  connectionString: sanitizeConnectionString(process.env.DATABASE_URL),
 };
 
 let pool: Pool | null = null;
 
 export function getPool(): Pool {
   if (!pool) {
-    if (!process.env.DATABASE_URL) {
+    if (!sanitizeConnectionString(process.env.DATABASE_URL)) {
       throw new Error("DATABASE_URL is not set");
     }
     pool = new Pool(poolConfig);
