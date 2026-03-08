@@ -31,27 +31,6 @@
     },
     "maxContentWidth": 1120
   },
-  "flows": {
-    "policy": "warn",
-    "requirements": [
-      {
-        "flowId": "multi-step-form",
-        "minSteps": 2,
-        "requiredSteps": [
-          "review"
-        ],
-        "requiredTransitions": [
-          {
-            "from": "details",
-            "to": "review"
-          }
-        ],
-        "terminalSteps": [
-          "review"
-        ]
-      }
-    ]
-  },
   "color": {
     "allowedValues": [
       "#052e16",
