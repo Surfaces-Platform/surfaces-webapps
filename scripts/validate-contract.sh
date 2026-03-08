@@ -19,3 +19,10 @@ cd "$REPO_ROOT" && node "$INTERFACECTL_BIN" validate \
   --root "$REPO_ROOT" \
   --contract "$REPO_ROOT/contracts/surfaces.web.contract.json" \
   --format json
+
+echo "Validating elevated-card policy..."
+cd "$REPO_ROOT" && node "$REPO_ROOT/scripts/check-elevated-cards.mjs" \
+  --workspace-root "$REPO_ROOT" \
+  --contract "$REPO_ROOT/contracts/surfaces.web.contract.json" \
+  --config "$REPO_ROOT/interfacectl.config.json" \
+  --format json

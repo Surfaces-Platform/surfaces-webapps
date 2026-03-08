@@ -41,6 +41,17 @@
       },
       "id": "surfaces-web",
       "layout": {
+        "chromePolicy": {
+          "allowInsetShadow": true,
+          "allowOuterShadow": false,
+          "maxBorderRadiusPx": 8,
+          "policy": "off",
+          "targets": [
+            "page-container",
+            "top-level-section",
+            "layout-container"
+          ]
+        },
         "maxContentWidth": 1120
       },
       "requiredSections": [
