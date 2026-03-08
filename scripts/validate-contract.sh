@@ -14,13 +14,13 @@ if [ ! -f "$INTERFACECTL_BIN" ]; then
 fi
 
 # Run validation
-echo "Validating interface contracts..."
+echo "Validating interface contracts against the shared interfacectl baseline..."
 cd "$REPO_ROOT" && node "$INTERFACECTL_BIN" validate \
   --root "$REPO_ROOT" \
   --contract "$REPO_ROOT/contracts/surfaces.web.contract.json" \
   --format json
 
-echo "Validating elevated-card policy..."
+echo "Validating Surfaces-specific elevated-card policy..."
 cd "$REPO_ROOT" && node "$REPO_ROOT/scripts/check-elevated-cards.mjs" \
   --workspace-root "$REPO_ROOT" \
   --contract "$REPO_ROOT/contracts/surfaces.web.contract.json" \
