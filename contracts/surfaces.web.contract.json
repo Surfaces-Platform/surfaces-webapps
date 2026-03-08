@@ -104,6 +104,17 @@
         "policy": "strict"
       },
       "layout": {
+        "chromePolicy": {
+          "allowInsetShadow": true,
+          "allowOuterShadow": false,
+          "maxBorderRadiusPx": 8,
+          "policy": "strict",
+          "targets": [
+            "page-container",
+            "top-level-section",
+            "layout-container"
+          ]
+        },
         "landingPattern": {
           "pageBackgroundMode": "solid",
           "policy": "strict",
@@ -154,6 +165,17 @@
         "policy": "warn"
       },
       "layout": {
+        "chromePolicy": {
+          "allowInsetShadow": true,
+          "allowOuterShadow": false,
+          "maxBorderRadiusPx": 8,
+          "policy": "strict",
+          "targets": [
+            "page-container",
+            "top-level-section",
+            "layout-container"
+          ]
+        },
         "landingPattern": {
           "pageBackgroundMode": "solid",
           "policy": "strict",
@@ -233,6 +255,17 @@
         ]
       },
       "layout": {
+        "chromePolicy": {
+          "allowInsetShadow": true,
+          "allowOuterShadow": false,
+          "maxBorderRadiusPx": 8,
+          "policy": "strict",
+          "targets": [
+            "page-container",
+            "top-level-section",
+            "layout-container"
+          ]
+        },
         "landingPattern": {
           "pageBackgroundMode": "solid",
           "policy": "strict",
@@ -285,6 +318,17 @@
         "policy": "warn"
       },
       "layout": {
+        "chromePolicy": {
+          "allowInsetShadow": true,
+          "allowOuterShadow": false,
+          "maxBorderRadiusPx": 8,
+          "policy": "strict",
+          "targets": [
+            "page-container",
+            "top-level-section",
+            "layout-container"
+          ]
+        },
         "maxContentWidth": 1120
       },
       "owner": "",
