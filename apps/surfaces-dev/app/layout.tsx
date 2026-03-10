@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
+import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
+});
 
 export const metadata: Metadata = {
   title: "surfaces.dev - Contract Enforcement Quick Starts",
@@ -13,17 +19,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
       <body
-        className="antialiased"
-        style={{ fontFamily: 'JetBrains Mono, monospace' }}
+        className={`${jetbrainsMono.variable} antialiased`}
+        style={{ fontFamily: 'var(--font-geist-mono), JetBrains Mono, monospace' }}
       >
         {children}
       </body>
