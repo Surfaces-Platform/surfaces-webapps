@@ -1,3 +1,4 @@
+import { ContextLinkCard } from '../_components/DocsSurfaceShell';
 import QuickStartSurfacePage, { NextContextLinks } from '../_components/QuickStartSurfacePage';
 
 const generationSnippet = `# 1) Start the adapter service (reference-target contract)
@@ -63,10 +64,17 @@ export default function GenerationQuickStartPage() {
         'Use the contract for your target surface: contracts/generated/reference-target-web.contract.json for reference-target demos, contracts/surfaces.web.contract.json for canonical surfaces.'
       ]}
       actions={
-        <NextContextLinks
-          left={{ href: '/integration', label: 'Integration Quick Start' }}
-          right={{ href: '/runtime', label: 'Runtime Quick Start' }}
-        />
+        <div className="space-y-3">
+          <ContextLinkCard
+            href="/guides/marketing-profile"
+            eyebrow="Read guide"
+            label="What marketing profiles do during first contract generation"
+          />
+          <NextContextLinks
+            left={{ href: '/integration', label: 'Integration Quick Start' }}
+            right={{ href: '/runtime', label: 'Runtime Quick Start' }}
+          />
+        </div>
       }
     />
   );

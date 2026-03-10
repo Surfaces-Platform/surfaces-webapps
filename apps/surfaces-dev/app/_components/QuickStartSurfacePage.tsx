@@ -1,15 +1,35 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import Link from 'next/link';
 import { motion } from 'motion/react';
 import Navigation from '@surfaces/ui/components/Navigation';
 import { colors } from '@surfaces/ui/tokens/colors';
 import { fadeVariants, staggerContainerFast } from '@surfaces/ui/utils/motion';
+import {
+  ContextLinkCard,
+  surfacesDevBodyStyle,
+  surfacesDevCardStyle,
+  surfacesDevMutedBodyStyle,
+  surfacesDevNavSections,
+  surfacesDevPreStyle,
+  surfacesDevSectionTitleStyle
+} from './DocsSurfaceShell';
 
 export type QuickStartStep = {
   title: string;
   detail: string;
+};
+
+export type QuickStartDetailItem = {
+  label?: string;
+  text: string;
+};
+
+export type QuickStartDetailSection = {
+  title: string;
+  intro?: string;
+  items?: QuickStartDetailItem[];
+  ordered?: boolean;
 };
 
 export type QuickStartSurfacePageProps = {
@@ -21,14 +41,9 @@ export type QuickStartSurfacePageProps = {
   snippetTitle: string;
   snippet: string;
   notes?: string[];
+  detailSections?: QuickStartDetailSection[];
   actions?: ReactNode;
 };
-
-const navSections = [
-  { label: 'Generation', href: '/generation' },
-  { label: 'Integration', href: '/integration' },
-  { label: 'Runtime', href: '/runtime' }
-];
 
 const statusRules = [
   { status: 'pass', meaning: 'No findings. Continue.' },
@@ -45,6 +60,7 @@ export default function QuickStartSurfacePage({
   snippetTitle,
   snippet,
   notes = [],
+  detailSections = [],
   actions
 }: QuickStartSurfacePageProps) {
   const handleSurfaceChange = (surface: 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev') => {
@@ -62,27 +78,44 @@ export default function QuickStartSurfacePage({
     >
       <Navigation
         currentSurface="surfaces-dev"
-        sections={navSections}
+        sections={surfacesDevNavSections}
         utilities={[{ label: 'GitHub', href: '#github' }]}
         theme="dark"
+        currentContext={{ contentType: 'docs', subject: 'contracts' }}
         onSurfaceChange={handleSurfaceChange}
       />
 
-      <div className="contract-container">
+      <div
+        className="contract-container"
+        data-contract="page-container"
+        data-contract-typography-profile="marketing-mono"
+      >
         <motion.section
           data-contract-section="landing.hero"
+          data-contract-marketing-layout-profile="marketing-open-flow-text-compact"
+          data-contract-hero-container-mode="open-flow"
+          data-contract-hero-visual-placement="none"
+          data-contract-section-divider-mode="border-top"
+          data-contract-section-spacing-profile="compact"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
           variants={staggerContainerFast}
           className="pt-32 pb-20"
+          style={{
+            paddingTop: 'var(--marketing-layout-hero-padding-top-compact)',
+            paddingBottom: 'var(--marketing-layout-hero-padding-bottom-compact)'
+          }}
         >
           <motion.p
             variants={fadeVariants}
+            data-contract-copy-role="heroEyebrow"
             style={{
               margin: 0,
-              fontSize: '11px',
-              letterSpacing: '0.02em',
+              fontFamily: 'var(--marketing-mono-hero-eyebrow-family)',
+              fontSize: 'var(--marketing-mono-hero-eyebrow-size)',
+              lineHeight: 'var(--marketing-mono-hero-eyebrow-line-height)',
+              letterSpacing: 'var(--marketing-mono-hero-eyebrow-letter-spacing)',
               color: colors.signal.active,
               marginBottom: '14px',
               textTransform: 'uppercase'
@@ -93,10 +126,12 @@ export default function QuickStartSurfacePage({
 
           <motion.h1
             variants={fadeVariants}
+            data-contract-copy-role="heroTitle"
             style={{
-              fontSize: '22px',
+              fontFamily: 'var(--marketing-mono-hero-title-family)',
+              fontSize: 'var(--marketing-mono-hero-title-size)',
               fontWeight: 600,
-              lineHeight: 1.35,
+              lineHeight: 'var(--marketing-mono-hero-title-line-height)',
               marginBottom: '16px'
             }}
           >
@@ -105,10 +140,12 @@ export default function QuickStartSurfacePage({
 
           <motion.p
             variants={fadeVariants}
+            data-contract-copy-role="heroBody"
             style={{
-              fontSize: '14px',
-              lineHeight: 1.7,
-              maxWidth: '820px',
+              fontFamily: 'var(--marketing-mono-hero-body-family)',
+              fontSize: 'var(--marketing-mono-hero-body-size)',
+              lineHeight: 'var(--marketing-mono-hero-body-line-height)',
+              maxWidth: 'var(--marketing-layout-body-max-width)',
               marginBottom: '14px'
             }}
           >
@@ -117,14 +154,16 @@ export default function QuickStartSurfacePage({
 
           <motion.p
             variants={fadeVariants}
+            data-contract-copy-role="body"
             style={{
               margin: 0,
-              fontSize: '12px',
-              color: colors.neutral[400],
-              fontFamily: 'Inter, sans-serif'
+              fontFamily: 'var(--marketing-mono-body-family)',
+              fontSize: 'var(--marketing-mono-body-size)',
+              lineHeight: 'var(--marketing-mono-body-line-height)',
+              color: colors.neutral[400]
             }}
           >
-            Canonical policy source: <code>contracts/surfaces.web.contract.json</code>
+            Canonical contract source: <code>contracts/surfaces.web.contract.json</code>
           </motion.p>
         </motion.section>
 
@@ -137,21 +176,31 @@ export default function QuickStartSurfacePage({
           style={{ borderTop: `1px solid ${colors.neutral[800]}` }}
         >
           <motion.h2 variants={fadeVariants} style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px' }}>
-            Quick Start
+            <span
+              data-contract-copy-role="sectionTitle"
+              style={{
+                fontFamily: 'var(--marketing-mono-section-title-family)',
+                fontSize: 'var(--marketing-mono-section-title-size)',
+                lineHeight: 'var(--marketing-mono-section-title-line-height)'
+              }}
+            >
+              Quick Start
+            </span>
           </motion.h2>
 
           <motion.ol variants={fadeVariants} style={{ margin: 0, paddingLeft: '20px', maxWidth: '860px' }}>
             {steps.map((step) => (
               <li
                 key={step.title}
-                style={{
-                  marginBottom: '12px',
-                  fontSize: '12px',
-                  color: colors.neutral[400],
-                  fontFamily: 'Inter, sans-serif',
-                  lineHeight: 1.65
-                }}
-              >
+                data-contract-copy-role="body"
+              style={{
+                marginBottom: '12px',
+                fontFamily: 'var(--marketing-mono-body-family)',
+                fontSize: 'var(--marketing-mono-body-size)',
+                lineHeight: 'var(--marketing-mono-body-line-height)',
+                color: colors.neutral[400]
+              }}
+            >
                 <strong style={{ color: colors.neutral[200], fontWeight: 600 }}>{step.title}</strong>
                 {' '}
                 {step.detail}
@@ -169,22 +218,19 @@ export default function QuickStartSurfacePage({
           style={{ borderTop: `1px solid ${colors.neutral[800]}` }}
         >
           <motion.h2 variants={fadeVariants} style={{ fontSize: '16px', fontWeight: 600, marginBottom: '14px' }}>
-            {snippetTitle}
+            <span
+              data-contract-copy-role="sectionTitle"
+              style={{
+                fontFamily: 'var(--marketing-mono-section-title-family)',
+                fontSize: 'var(--marketing-mono-section-title-size)',
+                lineHeight: 'var(--marketing-mono-section-title-line-height)'
+              }}
+            >
+              {snippetTitle}
+            </span>
           </motion.h2>
 
-          <motion.pre
-            variants={fadeVariants}
-            className="p-4 rounded-[4px] overflow-x-auto"
-            style={{
-              margin: 0,
-              maxWidth: '900px',
-              border: `1px solid ${colors.neutral[600]}`,
-              backgroundColor: colors.neutral[800],
-              color: colors.neutral[200],
-              fontSize: '11px',
-              lineHeight: 1.6
-            }}
-          >
+          <motion.pre variants={fadeVariants} className="p-4 rounded-[4px] overflow-x-auto" style={surfacesDevPreStyle}>
             {snippet}
           </motion.pre>
 
@@ -193,12 +239,13 @@ export default function QuickStartSurfacePage({
               {notes.map((note) => (
                 <li
                   key={note}
+                  data-contract-copy-role="body"
                   style={{
-                    fontSize: '12px',
-                    color: colors.neutral[400],
-                    fontFamily: 'Inter, sans-serif',
-                    lineHeight: 1.6,
-                    marginBottom: '6px'
+                    marginBottom: '6px',
+                    fontFamily: 'var(--marketing-mono-body-family)',
+                    fontSize: 'var(--marketing-mono-body-size)',
+                    lineHeight: 'var(--marketing-mono-body-line-height)',
+                    color: colors.neutral[400]
                   }}
                 >
                   {note}
@@ -217,7 +264,16 @@ export default function QuickStartSurfacePage({
           style={{ borderTop: `1px solid ${colors.neutral[800]}` }}
         >
           <motion.h2 variants={fadeVariants} style={{ fontSize: '16px', fontWeight: 600, marginBottom: '14px' }}>
-            Status Rules
+            <span
+              data-contract-copy-role="sectionTitle"
+              style={{
+                fontFamily: 'var(--marketing-mono-section-title-family)',
+                fontSize: 'var(--marketing-mono-section-title-size)',
+                lineHeight: 'var(--marketing-mono-section-title-line-height)'
+              }}
+            >
+              Status Rules
+            </span>
           </motion.h2>
 
           <motion.div variants={fadeVariants} className="space-y-3" style={{ maxWidth: '860px' }}>
@@ -225,20 +281,97 @@ export default function QuickStartSurfacePage({
               <div
                 key={rule.status}
                 className="p-4 rounded-[4px]"
-                style={{
-                  border: `1px solid ${colors.neutral[600]}`,
-                  backgroundColor: colors.neutral[800]
-                }}
+                style={surfacesDevCardStyle}
               >
                 <p style={{ margin: 0, fontSize: '12px', lineHeight: 1.6, fontFamily: 'Inter, sans-serif', color: colors.neutral[400] }}>
-                  <strong style={{ color: colors.neutral[200], fontWeight: 600 }}><code>{rule.status}</code></strong>
-                  {' '}
-                  {rule.meaning}
+                  <span
+                    data-contract-copy-role="body"
+                    style={{
+                      fontFamily: 'var(--marketing-mono-body-family)',
+                      fontSize: 'var(--marketing-mono-body-size)',
+                      lineHeight: 'var(--marketing-mono-body-line-height)'
+                    }}
+                  >
+                    <strong style={{ color: colors.neutral[200], fontWeight: 600 }}><code>{rule.status}</code></strong>
+                    {' '}
+                    {rule.meaning}
+                  </span>
                 </p>
               </div>
             ))}
           </motion.div>
         </motion.section>
+
+        {detailSections.map((section) => {
+          const ListTag = section.ordered ? 'ol' : 'ul';
+
+          return (
+            <motion.section
+              key={section.title}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={staggerContainerFast}
+              className="py-16"
+              style={{ borderTop: `1px solid ${colors.neutral[800]}` }}
+            >
+              <motion.h2 variants={fadeVariants} style={{ fontSize: '16px', fontWeight: 600, marginBottom: '14px' }}>
+                <span
+                  data-contract-copy-role="sectionTitle"
+                  style={surfacesDevSectionTitleStyle}
+                >
+                  {section.title}
+                </span>
+              </motion.h2>
+
+              {section.intro ? (
+                <motion.p
+                  variants={fadeVariants}
+                  data-contract-copy-role="body"
+                  style={{
+                    marginTop: 0,
+                    marginBottom: section.items?.length ? '14px' : 0,
+                    maxWidth: '860px',
+                    ...surfacesDevMutedBodyStyle
+                  }}
+                >
+                  {section.intro}
+                </motion.p>
+              ) : null}
+
+              {section.items?.length ? (
+                <motion.div variants={fadeVariants}>
+                  <ListTag
+                    style={{
+                      margin: 0,
+                      paddingLeft: section.ordered ? '20px' : '18px',
+                      maxWidth: '860px'
+                    }}
+                  >
+                    {section.items.map((item, index) => (
+                      <li
+                        key={`${section.title}-${item.label ?? index}`}
+                        data-contract-copy-role="body"
+                        style={{
+                          marginBottom: '10px',
+                          ...surfacesDevMutedBodyStyle
+                        }}
+                      >
+                        {item.label ? (
+                          <>
+                            <strong style={{ color: colors.neutral[200], fontWeight: 600 }}>{item.label}</strong>
+                            {' '}
+                          </>
+                        ) : null}
+                        {item.text}
+                      </li>
+                    ))}
+                  </ListTag>
+                </motion.div>
+              ) : null}
+            </motion.section>
+          );
+        })}
 
         <motion.section
           data-contract-section="landing.actions"
@@ -250,21 +383,51 @@ export default function QuickStartSurfacePage({
           style={{ borderTop: `1px solid ${colors.neutral[800]}` }}
         >
           <motion.h2 variants={fadeVariants} style={{ fontSize: '16px', fontWeight: 600, marginBottom: '14px' }}>
-            Next Context
+            <span
+              data-contract-copy-role="sectionTitle"
+              style={{
+                fontFamily: 'var(--marketing-mono-section-title-family)',
+                fontSize: 'var(--marketing-mono-section-title-size)',
+                lineHeight: 'var(--marketing-mono-section-title-line-height)'
+              }}
+            >
+              Next Context
+            </span>
           </motion.h2>
 
           <motion.div variants={fadeVariants} style={{ maxWidth: '860px' }}>
             {actions ?? (
               <p style={{ margin: 0, fontSize: '12px', color: colors.neutral[400], fontFamily: 'Inter, sans-serif' }}>
-                Use the top navigation to switch contexts.
+                <span
+                  data-contract-copy-role="body"
+                  style={{
+                    fontFamily: 'var(--marketing-mono-body-family)',
+                    fontSize: 'var(--marketing-mono-body-size)',
+                    lineHeight: 'var(--marketing-mono-body-line-height)'
+                  }}
+                >
+                  Use the top navigation to switch contexts.
+                </span>
               </p>
             )}
           </motion.div>
-
-          <motion.p variants={fadeVariants} style={{ marginTop: '18px', marginBottom: 0, fontSize: '12px', color: colors.neutral[600], fontFamily: 'Inter, sans-serif' }}>
-            surfaces.dev quick start • {activeTab}
-          </motion.p>
         </motion.section>
+
+        <motion.p
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeVariants}
+          style={{
+            marginTop: '18px',
+            marginBottom: 0,
+            fontSize: '12px',
+            color: colors.neutral[600],
+            fontFamily: 'Inter, sans-serif'
+          }}
+        >
+          surfaces.dev docs • {activeTab}
+        </motion.p>
       </div>
     </div>
   );
@@ -279,23 +442,8 @@ export function NextContextLinks({
 }) {
   return (
     <div className="grid gap-3 sm:grid-cols-2">
-      <Link
-        href={left.href}
-        className="p-4 rounded-[4px]"
-        style={{ border: `1px solid ${colors.neutral[600]}`, backgroundColor: colors.neutral[800], color: colors.neutral[200], textDecoration: 'none' }}
-      >
-        <span style={{ fontSize: '12px', color: colors.neutral[400], fontFamily: 'Inter, sans-serif' }}>Read next</span>
-        <div style={{ marginTop: '4px', fontSize: '13px', fontWeight: 600 }}>{left.label}</div>
-      </Link>
-
-      <Link
-        href={right.href}
-        className="p-4 rounded-[4px]"
-        style={{ border: `1px solid ${colors.neutral[600]}`, backgroundColor: colors.neutral[800], color: colors.neutral[200], textDecoration: 'none' }}
-      >
-        <span style={{ fontSize: '12px', color: colors.neutral[400], fontFamily: 'Inter, sans-serif' }}>Read next</span>
-        <div style={{ marginTop: '4px', fontSize: '13px', fontWeight: 600 }}>{right.label}</div>
-      </Link>
+      <ContextLinkCard href={left.href} label={left.label} />
+      <ContextLinkCard href={right.href} label={right.label} />
     </div>
   );
 }

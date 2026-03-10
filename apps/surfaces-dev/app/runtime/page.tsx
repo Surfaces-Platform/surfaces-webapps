@@ -50,7 +50,53 @@ export default function RuntimeQuickStartPage() {
         'Runtime should block strict-policy findings only.',
         'Warn findings remain visible for remediation and policy hygiene.',
         'Runtime checks complement Generation time + CI/CD time checks, not replace them.',
-        'Icon-source policy (`icon.source-disallowed`) is currently visible in integration/CI validation paths, not Runtime (edge).'
+        'Icon-source policy (`icon.source-disallowed`) is currently visible in integration/CI validation paths, not Runtime (edge).',
+        'Concrete consumer example walkthrough: `ios/ContractChatSample/README.md`.'
+      ]}
+      detailSections={[
+        {
+          title: 'Consumer Runtime Example: ContractChatSample',
+          intro:
+            'The platform/web flow above is request-time enforcement of proposed live changes. `ContractChatSample` is a client-side consumer example where the app gates streamed content before rendering. It is testing local runtime orchestration and UI-state transitions, not model quality.',
+          items: [
+            {
+              label: '`CoreMLStubRuntime`',
+              text: 'emits token-sized events into an async stream.'
+            },
+            {
+              label: '`ChatViewModel`',
+              text: 'consumes the stream and owns transcript, footer, and cancellation state.'
+            },
+            {
+              label: '`StreamingContractValidator`',
+              text: 'accepts, buffers, replaces, or rejects each chunk before it reaches the renderer.'
+            },
+            {
+              label: 'Render rule',
+              text: 'only approved text is appended to the UIKit assistant transcript.'
+            }
+          ]
+        },
+        {
+          title: 'ContractChatSample Event Sequence',
+          intro:
+            'This sample makes the runtime decision path visible in three small UI scenarios.',
+          ordered: true,
+          items: [
+            {
+              label: '`Send`',
+              text: 'Prompt submitted, chunks emitted, validator approves, assistant bubble updates incrementally, footer ends at `Complete`.'
+            },
+            {
+              label: '`Cancel`',
+              text: 'Prompt submitted, footer reaches `Streaming`, cancel tapped, cancellation becomes authoritative, late completion is ignored, footer ends at `Cancelled`.'
+            },
+            {
+              label: '`Blocked`',
+              text: 'Safe text renders first, a prohibited chunk is rejected, a governance/status row appears, the rejected text never renders, and the footer ends at `Complete`.'
+            }
+          ]
+        }
       ]}
       actions={
         <NextContextLinks
