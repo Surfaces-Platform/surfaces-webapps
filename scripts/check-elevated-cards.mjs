@@ -12,6 +12,8 @@ const MARKER_PATTERNS = {
     /\bdata-contract-section\s*=\s*(?:"([^"]+)"|'([^']+)'|{`([^`]+)`}|{\s*["'`]([^"'`]+)["'`]\s*})/,
   layoutContainer:
     /\bdata-contract-container\s*=\s*(?:"([^"]+)"|'([^']+)'|{`([^`]+)`}|{\s*["'`]([^"'`]+)["'`]\s*})/,
+  chromeIgnore:
+    /\bdata-contract-chrome-ignore\s*=\s*(?:"true"|'true'|{true}|{\s*true\s*})/,
 };
 
 const STYLE_OBJECT_PATTERN = /\bstyle\s*=\s*{{([\s\S]*?)}}/;
@@ -21,6 +23,40 @@ const CLASSNAME_PATTERN =
   /\bclass(?:Name)?\s*=\s*(?:"([^"]+)"|'([^']+)'|{`([^`]+)`}|{\s*["'`]([^"'`]+)["'`]\s*})/;
 const CSS_RULE_PATTERN = /([^{}]+)\{([^{}]+)\}/g;
 const CSS_CLASS_SELECTOR_PATTERN = /\.([_a-zA-Z]+[\w-]*)/g;
+const STRUCTURAL_TAG_NAMES = new Set(["div", "main", "section", "article"]);
+const LEAF_TAG_NAMES = new Set([
+  "a",
+  "button",
+  "img",
+  "input",
+  "label",
+  "li",
+  "nav",
+  "p",
+  "span",
+  "svg",
+]);
+
+function getTagName(tag) {
+  const match = tag.match(/^<\/?\s*([A-Za-z][\w.:-]*)/);
+  return match?.[1]?.toLowerCase() ?? "";
+}
+
+function isHeadingTagName(tagName) {
+  return /^h[1-6]$/.test(tagName);
+}
+
+function hasChromeIgnore(tag) {
+  return MARKER_PATTERNS.chromeIgnore.test(tag);
+}
+
+function isSelfClosingTag(tag) {
+  return /\/>$/.test(tag) || /^<\s*(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)\b/i.test(tag);
+}
+
+function markerValueFromMatch(match) {
+  return match?.[1] ?? match?.[2] ?? match?.[3] ?? match?.[4] ?? "";
+}
 
 const RADIUS_TOKEN_MAP = new Map([
   ["rounded-none", 0],
@@ -284,51 +320,110 @@ function parseClassSignals(classNames, source, targetType) {
 
 function collectTargetWrappers(fileContent, source, allowedTargets) {
   const wrappers = [];
-  const tagPattern = /<[A-Za-z][\w.:-]*\b[^>]*>/g;
+  const tagPattern = /<\/?[A-Za-z][\w.:-]*\b[^>]*>/g;
   let match;
+  let wrapperId = 0;
+  const stack = [];
 
   while ((match = tagPattern.exec(fileContent)) !== null) {
     const tag = match[0];
-    if (tag.startsWith("</")) continue;
+    const closing = tag.startsWith("</");
+    const tagName = getTagName(tag);
 
-    if (allowedTargets.has("page-container") && MARKER_PATTERNS.pageContainer.test(tag)) {
-      wrappers.push({
+    if (closing) {
+      while (stack.length > 0) {
+        const entry = stack.pop();
+        if (entry?.tagName === tagName) break;
+      }
+      continue;
+    }
+
+    const classNames = getClassNames(tag);
+    const styleText = getStyleText(tag);
+    const ignored = hasChromeIgnore(tag);
+    const parent = stack[stack.length - 1];
+    const parentWrapper = parent?.wrapperMeta;
+
+    let wrapperMeta;
+
+    if (!ignored && allowedTargets.has("page-container") && MARKER_PATTERNS.pageContainer.test(tag)) {
+      wrapperMeta = {
+        id: ++wrapperId,
         targetType: "page-container",
         source,
-        classNames: getClassNames(tag),
-        styleText: getStyleText(tag),
+        classNames,
+        styleText,
         markerValue: "page-container",
-      });
+        inferred: false,
+        parentWrapperId: undefined,
+        parentTargetType: undefined,
+      };
+      wrappers.push(wrapperMeta);
     }
 
     const sectionMatch = MARKER_PATTERNS.section.exec(tag);
     MARKER_PATTERNS.section.lastIndex = 0;
-    if (allowedTargets.has("top-level-section") && sectionMatch) {
-      wrappers.push({
+    if (!wrapperMeta && !ignored && allowedTargets.has("top-level-section") && sectionMatch) {
+      wrapperMeta = {
+        id: ++wrapperId,
         targetType: "top-level-section",
         source,
-        classNames: getClassNames(tag),
-        styleText: getStyleText(tag),
-        markerValue:
-          sectionMatch[1] ?? sectionMatch[2] ?? sectionMatch[3] ?? sectionMatch[4] ?? "",
-      });
+        classNames,
+        styleText,
+        markerValue: markerValueFromMatch(sectionMatch),
+        inferred: false,
+        parentWrapperId: undefined,
+        parentTargetType: undefined,
+      };
+      wrappers.push(wrapperMeta);
     }
 
     const layoutContainerMatch = MARKER_PATTERNS.layoutContainer.exec(tag);
     MARKER_PATTERNS.layoutContainer.lastIndex = 0;
-    if (allowedTargets.has("layout-container") && layoutContainerMatch) {
-      wrappers.push({
+    if (!wrapperMeta && !ignored && allowedTargets.has("layout-container") && layoutContainerMatch) {
+      wrapperMeta = {
+        id: ++wrapperId,
         targetType: "layout-container",
         source,
-        classNames: getClassNames(tag),
-        styleText: getStyleText(tag),
-        markerValue:
-          layoutContainerMatch[1] ??
-          layoutContainerMatch[2] ??
-          layoutContainerMatch[3] ??
-          layoutContainerMatch[4] ??
-          "",
-      });
+        classNames,
+        styleText,
+        markerValue: markerValueFromMatch(layoutContainerMatch),
+        inferred: false,
+        parentWrapperId: undefined,
+        parentTargetType: undefined,
+      };
+      wrappers.push(wrapperMeta);
+    }
+
+    const isStructuralTag = STRUCTURAL_TAG_NAMES.has(tagName);
+    const isLeafTag = LEAF_TAG_NAMES.has(tagName) || isHeadingTagName(tagName);
+    const hasInspectableSignals = classNames.length > 0 || Boolean(styleText);
+    const canInferWrapper =
+      !wrapperMeta &&
+      !ignored &&
+      isStructuralTag &&
+      !isLeafTag &&
+      hasInspectableSignals &&
+      parentWrapper &&
+      !parentWrapper.inferred;
+
+    if (canInferWrapper) {
+      wrapperMeta = {
+        id: ++wrapperId,
+        targetType: "layout-wrapper-inferred",
+        source,
+        classNames,
+        styleText,
+        markerValue: tagName,
+        inferred: true,
+        parentWrapperId: parentWrapper.id,
+        parentTargetType: parentWrapper.targetType,
+      };
+      wrappers.push(wrapperMeta);
+    }
+
+    if (!isSelfClosingTag(tag)) {
+      stack.push({ tagName, wrapperMeta });
     }
   }
 
@@ -432,6 +527,8 @@ function buildViolations(surfaceId, wrapper, policy, signals) {
       code: "layout.chrome.radius-exceeded",
       surfaceId,
       targetType: wrapper.targetType,
+      inferred: wrapper.inferred === true,
+      parentTargetType: wrapper.parentTargetType,
       source: exceededRadius.source,
       message: `Wrapper uses border radius ${exceededRadius.value}px, above the ${policy.maxBorderRadiusPx}px cap.`,
       evidence: exceededRadius.evidence,
@@ -452,6 +549,8 @@ function buildViolations(surfaceId, wrapper, policy, signals) {
       code: "layout.chrome.outer-shadow-disallowed",
       surfaceId,
       targetType: wrapper.targetType,
+      inferred: wrapper.inferred === true,
+      parentTargetType: wrapper.parentTargetType,
       source: disallowedShadow.source,
       message: `Wrapper uses disallowed ${disallowedShadow.value} shadow treatment.`,
       evidence: disallowedShadow.evidence,
@@ -475,6 +574,24 @@ function formatText(result) {
     );
   }
   return lines.join("\n");
+}
+
+function shouldSkipWrapper(wrapper, signals, wrappersById) {
+  if (!wrapper.inferred || !wrapper.parentWrapperId) return false;
+  const parentWrapper = wrappersById.get(wrapper.parentWrapperId);
+  if (!parentWrapper?.inferred) return false;
+
+  const wrapperSignature = JSON.stringify({
+    classNames: [...wrapper.classNames].sort(),
+    style: wrapper.styleText?.value ?? "",
+  });
+  const parentSignature = JSON.stringify({
+    classNames: [...parentWrapper.classNames].sort(),
+    style: parentWrapper.styleText?.value ?? "",
+  });
+
+  if (wrapperSignature !== parentSignature) return false;
+  return signals.some((signal) => signal.type === "radius" || signal.type === "shadow");
 }
 
 export async function checkElevatedCards({
@@ -520,6 +637,7 @@ export async function checkElevatedCards({
         ),
       );
     }
+    const wrappersById = new Map(wrappers.map((wrapper) => [wrapper.id, wrapper]));
 
     const cssRules = [];
     for (const filePath of cssFiles) {
@@ -541,6 +659,7 @@ export async function checkElevatedCards({
         }
       }
 
+      if (shouldSkipWrapper(wrapper, signals, wrappersById)) continue;
       violations.push(...buildViolations(surface.id, wrapper, chromePolicy, signals));
     }
   }

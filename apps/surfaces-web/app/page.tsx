@@ -14,18 +14,13 @@ const enforcementStages = [
 ] as const;
 
 const adaptiveModules = [
-  { id: 'shell-nav', width: '40%', height: '10%', left: '12%', top: '14%' },
-  { id: 'hero-panel', width: '44%', height: '22%', left: '18%', top: '30%' },
-  { id: 'metrics', width: '20%', height: '16%', left: '67%', top: '24%' },
-  { id: 'policy', width: '26%', height: '14%', left: '60%', top: '49%' },
-  { id: 'surface', width: '34%', height: '12%', left: '16%', top: '62%' },
-  { id: 'signal', width: '22%', height: '12%', left: '56%', top: '68%' }
+  { id: 'shell-band', width: '28%', height: '8%', left: '16%', top: '16%' },
+  { id: 'hero-panel', width: '36%', height: '18%', left: '22%', top: '30%' },
+  { id: 'adaptive-row', width: '22%', height: '10%', left: '56%', top: '60%' }
 ] as const;
 
 const rejectedFragments = [
-  { id: 'fragment-a', width: 60, height: 18, top: '22%', right: '18%' },
-  { id: 'fragment-b', width: 42, height: 14, top: '50%', right: '8%' },
-  { id: 'fragment-c', width: 54, height: 16, top: '74%', right: '20%' }
+  { id: 'fragment-runtime', width: 86, height: 18, top: '53%', right: '9%' }
 ] as const;
 
 export default function Home() {
@@ -95,226 +90,195 @@ export default function Home() {
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
           variants={staggerContainer}
-          className="pt-20 pb-24 md:pt-24 md:pb-28"
+          className="pt-32 pb-24 md:pt-32 md:pb-24"
         >
-          <div
-            className="landing-hero-shell"
-            style={{
-              background: `linear-gradient(135deg, ${colors.neutral[0]} 0%, ${colors.neutral[50]} 58%, ${colors.neutral[100]} 100%)`,
-              border: `1px solid ${colors.neutral[200]}`
-            }}
-          >
-            <div className="landing-hero-grid">
-              <div className="landing-hero-copy">
-                <motion.div variants={fadeUpVariants} className="landing-hero-kicker">
-                  Canonical source of interface truth
-                </motion.div>
-
-                <motion.h1
-                  variants={fadeUpVariants}
-                  style={{
-                    fontSize: 'clamp(2.75rem, 5vw, 4.75rem)',
-                    fontWeight: 600,
-                    lineHeight: 1.02,
-                    letterSpacing: '-0.05em',
-                    maxWidth: '11ch'
-                  }}
-                >
-                  Agent behavior,
-                  <br />
-                  contract-enforced.
-                </motion.h1>
-
-                <motion.p
-                  variants={fadeUpVariants}
-                  style={{
-                    fontSize: '15px',
-                    fontWeight: 400,
-                    lineHeight: 1.7,
-                    maxWidth: '540px',
-                    color: colors.neutral[600]
-                  }}
-                >
-                  Interface contracts enforced at generation time, CI/CD time, and runtime
-                  (edge/on-device). Behavior stays predictable and accountable.
-                </motion.p>
-
-                <motion.div variants={fadeUpVariants} className="landing-hero-actions">
-                  <a
-                    href="#demos"
-                    className="contract-motion"
-                    style={{
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      padding: '12px 24px',
-                      backgroundColor: colors.structure.primary,
-                      color: colors.neutral[0],
-                      border: 'none',
-                      borderRadius: '999px',
-                      cursor: 'pointer',
-                      textDecoration: 'none',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                  >
-                    See the demos
-                  </a>
-                  <a
-                    href="#docs"
-                    className="contract-motion"
-                    style={{
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      padding: '12px 24px',
-                      backgroundColor: colors.neutral[0],
-                      color: colors.neutral[900],
-                      border: `1px solid ${colors.neutral[200]}`,
-                      borderRadius: '999px',
-                      cursor: 'pointer',
-                      textDecoration: 'none',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backdropFilter: 'blur(10px)'
-                    }}
-                  >
-                    Read the philosophy
-                  </a>
-                </motion.div>
-
-                <motion.div
-                  variants={fadeUpVariants}
-                  className="landing-hero-principles"
-                  aria-label="Core Surfaces principles"
-                >
-                  <div className="landing-hero-principle">
-                    <span className="landing-hero-principle-title">Define</span>
-                    <span className="landing-hero-principle-copy">Shell-owned invariants</span>
-                  </div>
-                  <div className="landing-hero-principle">
-                    <span className="landing-hero-principle-title">Enforce</span>
-                    <span className="landing-hero-principle-copy">Bounded adaptive change</span>
-                  </div>
-                  <div className="landing-hero-principle">
-                    <span className="landing-hero-principle-title">Operate</span>
-                    <span className="landing-hero-principle-copy">Signals from drift and near-misses</span>
-                  </div>
-                </motion.div>
-              </div>
-
-              <motion.div
+          <div className="landing-hero-grid">
+            <div className="landing-hero-copy">
+              <motion.p
                 variants={fadeUpVariants}
-                className="landing-hero-art"
-                role="img"
-                aria-label="A rigid interface frame holds a stable outer shell while interior modules shift inside a restricted zone; three subtle control planes filter change, and invalid fragments dissolve at the boundaries before they can enter or render."
+                className="landing-hero-kicker"
+                style={{
+                  margin: '0 0 12px',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  color: colors.neutral[600]
+                }}
               >
-                <div className="landing-hero-aura" />
-                <div className="landing-hero-surface-echoes" aria-hidden="true">
-                  <span>web</span>
-                  <span>mobile</span>
-                  <span>CLI</span>
-                  <span>ops</span>
-                </div>
+                Canonical source of interface truth
+              </motion.p>
 
-                <div className="landing-hero-frame" aria-hidden="true">
-                  <div className="landing-hero-frame-top">
-                    <span className="landing-hero-frame-brand">surfaces.systems</span>
-                    <div className="landing-hero-frame-status">
-                      <span />
-                      <span />
-                      <span />
-                    </div>
-                  </div>
-                  <div className="landing-hero-rail landing-hero-rail-y" />
-                  <div className="landing-hero-rail landing-hero-rail-x" />
+              <motion.h1
+                variants={fadeUpVariants}
+                style={{
+                  fontSize: 'clamp(2.5rem, 4vw, 4rem)',
+                  fontWeight: 600,
+                  lineHeight: 1.08,
+                  letterSpacing: '-0.04em',
+                  margin: '0 0 24px',
+                  maxWidth: '720px'
+                }}
+              >
+                Agent behavior, contract-enforced.
+              </motion.h1>
 
-                  <div className="landing-hero-field">
-                    <div className="landing-hero-lattice" />
+              <motion.p
+                variants={fadeUpVariants}
+                style={{
+                  fontSize: '14px',
+                  fontWeight: 400,
+                  lineHeight: 1.6,
+                  margin: 0,
+                  maxWidth: '640px',
+                  color: colors.neutral[600]
+                }}
+              >
+                Interface contracts keep adaptive change bounded across generation time,
+                CI/CD time, and runtime so behavior stays predictable and accountable.
+              </motion.p>
 
-                    {enforcementStages.map((stage, index) => (
-                      <motion.div
-                        key={stage.key}
-                        className="landing-hero-gate"
-                        initial={{ opacity: 0.55, x: 0 }}
-                        animate={{ opacity: [0.55, 0.9, 0.55], x: [0, 2, 0] }}
-                        transition={{
-                          duration: 6,
-                          repeat: Number.POSITIVE_INFINITY,
-                          repeatType: 'mirror',
-                          delay: index * 0.8
-                        }}
-                        style={{
-                          left: `${26 + index * 20}%`,
-                          borderColor: stage.accent,
-                          boxShadow: `0 0 0 1px ${stage.accent}14`
-                        }}
-                      >
-                        <span
-                          className="landing-hero-gate-label"
-                          style={{ color: colors.neutral[600] }}
-                        >
-                          {stage.label}
-                        </span>
-                      </motion.div>
-                    ))}
-
-                    {adaptiveModules.map((module, index) => (
-                      <motion.div
-                        key={module.id}
-                        className="landing-hero-module"
-                        initial={{ opacity: 0.9 }}
-                        animate={{
-                          y: index % 2 === 0 ? [0, -4, 0] : [0, 3, 0],
-                          scale: [1, 1.01, 1]
-                        }}
-                        transition={{
-                          duration: 7 + index,
-                          repeat: Number.POSITIVE_INFINITY,
-                          repeatType: 'mirror',
-                          ease: 'easeInOut'
-                        }}
-                        style={{
-                          width: module.width,
-                          height: module.height,
-                          left: module.left,
-                          top: module.top
-                        }}
-                      >
-                        <span className="landing-hero-module-shine" />
-                      </motion.div>
-                    ))}
-
-                    <div className="landing-hero-signal-path" />
-
-                    {rejectedFragments.map((fragment, index) => (
-                      <motion.div
-                        key={fragment.id}
-                        className="landing-hero-fragment"
-                        initial={{ opacity: 0.55, scale: 0.96 }}
-                        animate={{
-                          opacity: [0.2, 0.72, 0.2],
-                          x: [0, 10, 0],
-                          rotate: [0, 6, 0]
-                        }}
-                        transition={{
-                          duration: 5.5,
-                          repeat: Number.POSITIVE_INFINITY,
-                          repeatType: 'mirror',
-                          delay: index * 0.7
-                        }}
-                        style={{
-                          width: `${fragment.width}px`,
-                          height: `${fragment.height}px`,
-                          top: fragment.top,
-                          right: fragment.right
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
+              <motion.div variants={fadeUpVariants} className="landing-hero-actions">
+                <a
+                  href="#demos"
+                  className="contract-motion"
+                  style={{
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    padding: '12px 24px',
+                    backgroundColor: colors.structure.primary,
+                    color: colors.neutral[0],
+                    border: 'none',
+                    borderRadius: '999px',
+                    cursor: 'pointer',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  See the demos
+                </a>
+                <a
+                  href="#docs"
+                  className="contract-motion"
+                  style={{
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    padding: '12px 24px',
+                    backgroundColor: 'transparent',
+                    color: colors.neutral[900],
+                    border: `1px solid ${colors.neutral[200]}`,
+                    borderRadius: '999px',
+                    cursor: 'pointer',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  Read the philosophy
+                </a>
               </motion.div>
             </div>
+
+            <motion.div
+              variants={fadeUpVariants}
+              className="landing-hero-art"
+              role="img"
+              aria-label="A rigid interface frame holds a stable outer shell while interior modules shift inside a restricted zone; three subtle control planes filter change, and invalid fragments dissolve at the boundaries before they can enter or render."
+            >
+              <div className="landing-hero-frame" aria-hidden="true">
+                <div className="landing-hero-frame-top">
+                  <span className="landing-hero-frame-brand">surfaces.systems</span>
+                </div>
+                <div className="landing-hero-rail landing-hero-rail-y" />
+                <div className="landing-hero-rail landing-hero-rail-x" />
+
+                <div className="landing-hero-field">
+                  <div className="landing-hero-lattice" />
+
+                  {enforcementStages.map((stage, index) => (
+                    <motion.div
+                      key={stage.key}
+                      className="landing-hero-gate"
+                      initial={{ opacity: 0.55, x: 0 }}
+                      animate={{ opacity: [0.55, 0.9, 0.55], x: [0, 2, 0] }}
+                      transition={{
+                        duration: 6,
+                        repeat: Number.POSITIVE_INFINITY,
+                        repeatType: 'mirror',
+                        delay: index * 0.8
+                      }}
+                      style={{
+                        left: `${26 + index * 20}%`,
+                        borderColor: stage.accent
+                      }}
+                    >
+                      <span
+                        className="landing-hero-gate-label"
+                        style={{ color: colors.neutral[600] }}
+                      >
+                        {stage.label}
+                      </span>
+                    </motion.div>
+                  ))}
+
+                  {adaptiveModules.map((module, index) => (
+                    <motion.div
+                      key={module.id}
+                      className="landing-hero-module"
+                      initial={{ opacity: 0.9 }}
+                      animate={{
+                        y: index % 2 === 0 ? [0, -4, 0] : [0, 3, 0],
+                        scale: [1, 1.01, 1]
+                      }}
+                      transition={{
+                        duration: 7 + index,
+                        repeat: Number.POSITIVE_INFINITY,
+                        repeatType: 'mirror',
+                        ease: 'easeInOut'
+                      }}
+                      style={{
+                        width: module.width,
+                        height: module.height,
+                        left: module.left,
+                        top: module.top
+                      }}
+                    >
+                      <span className="landing-hero-module-shine" />
+                    </motion.div>
+                  ))}
+
+                  <div className="landing-hero-signal-path" />
+
+                  {rejectedFragments.map((fragment, index) => (
+                    <motion.div
+                      key={fragment.id}
+                      className="landing-hero-fragment"
+                      initial={{ opacity: 0.55, scale: 0.96 }}
+                      animate={{
+                        opacity: [0.2, 0.72, 0.2],
+                        x: [0, 10, 0],
+                        rotate: [0, 6, 0]
+                      }}
+                      transition={{
+                        duration: 5.5,
+                        repeat: Number.POSITIVE_INFINITY,
+                        repeatType: 'mirror',
+                        delay: index * 0.7
+                      }}
+                      style={{
+                        width: `${fragment.width}px`,
+                        height: `${fragment.height}px`,
+                        top: fragment.top,
+                        right: fragment.right
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </motion.div>
           </div>
         </motion.section>
 

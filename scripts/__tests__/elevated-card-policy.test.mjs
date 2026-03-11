@@ -171,6 +171,175 @@ test("fails when inspected wrapper uses outer shadow from CSS class", async () =
   );
 });
 
+test("fails when direct child layout wrapper under landing hero uses outer shadow", async () => {
+  const { checkElevatedCards } = await importChecker();
+  const workspaceRoot = await makeWorkspace({
+    pageSource: `
+      export default function Page() {
+        return (
+          <section data-contract-section="landing.hero">
+            <div className="hero-shell">Hero</div>
+          </section>
+        );
+      }
+    `,
+    cssSource: `
+      .hero-shell {
+        box-shadow: 0 12px 48px rgba(15, 23, 42, 0.15);
+      }
+    `,
+  });
+
+  const result = await checkElevatedCards({
+    workspaceRoot,
+    contractPath: "contracts/surfaces.web.contract.json",
+    configPath: "interfacectl.config.json",
+  });
+
+  assert.equal(result.ok, false);
+  assert.ok(
+    result.violations.some(
+      (violation) =>
+        violation.code === "layout.chrome.outer-shadow-disallowed" &&
+        violation.targetType === "layout-wrapper-inferred" &&
+        violation.inferred === true &&
+        violation.parentTargetType === "top-level-section",
+    ),
+    JSON.stringify(result.violations, null, 2),
+  );
+});
+
+test("fails when direct child layout wrapper under page container exceeds radius cap", async () => {
+  const { checkElevatedCards } = await importChecker();
+  const workspaceRoot = await makeWorkspace({
+    pageSource: `
+      export default function Page() {
+        return (
+          <main data-contract="page-container">
+            <div style={{ borderRadius: "12px" }}>
+              <section data-contract-section="landing.hero">Hero</section>
+            </div>
+          </main>
+        );
+      }
+    `,
+  });
+
+  const result = await checkElevatedCards({
+    workspaceRoot,
+    contractPath: "contracts/surfaces.web.contract.json",
+    configPath: "interfacectl.config.json",
+  });
+
+  assert.equal(result.ok, false);
+  assert.ok(
+    result.violations.some(
+      (violation) =>
+        violation.code === "layout.chrome.radius-exceeded" &&
+        violation.targetType === "layout-wrapper-inferred" &&
+        violation.inferred === true &&
+        violation.parentTargetType === "page-container",
+    ),
+    JSON.stringify(result.violations, null, 2),
+  );
+});
+
+test("passes when inferred wrapper contains nested rounded and shadowed controls", async () => {
+  const { checkElevatedCards } = await importChecker();
+  const workspaceRoot = await makeWorkspace({
+    pageSource: `
+      export default function Page() {
+        return (
+          <section data-contract-section="landing.hero">
+            <div className="hero-shell">
+              <button className="rounded-[12px] shadow-lg">Nested control</button>
+            </div>
+          </section>
+        );
+      }
+    `,
+    cssSource: `
+      .hero-shell {
+        border-radius: 6px;
+        box-shadow: inset 0 1px 0 rgba(15, 23, 42, 0.15);
+      }
+    `,
+  });
+
+  const result = await checkElevatedCards({
+    workspaceRoot,
+    contractPath: "contracts/surfaces.web.contract.json",
+    configPath: "interfacectl.config.json",
+  });
+
+  assert.equal(result.ok, true, JSON.stringify(result.violations, null, 2));
+});
+
+test("passes when inferred wrapper opts out with chrome ignore marker", async () => {
+  const { checkElevatedCards } = await importChecker();
+  const workspaceRoot = await makeWorkspace({
+    pageSource: `
+      export default function Page() {
+        return (
+          <section data-contract-section="landing.hero">
+            <div data-contract-chrome-ignore="true" className="hero-shell">Hero</div>
+          </section>
+        );
+      }
+    `,
+    cssSource: `
+      .hero-shell {
+        box-shadow: 0 12px 48px rgba(15, 23, 42, 0.15);
+        border-radius: 16px;
+      }
+    `,
+  });
+
+  const result = await checkElevatedCards({
+    workspaceRoot,
+    contractPath: "contracts/surfaces.web.contract.json",
+    configPath: "interfacectl.config.json",
+  });
+
+  assert.equal(result.ok, true, JSON.stringify(result.violations, null, 2));
+});
+
+test("does not duplicate violations for nested inferred wrappers with identical offending chrome", async () => {
+  const { checkElevatedCards } = await importChecker();
+  const workspaceRoot = await makeWorkspace({
+    pageSource: `
+      export default function Page() {
+        return (
+          <section data-contract-section="landing.hero">
+            <div className="hero-shell">
+              <div className="hero-shell">Hero</div>
+            </div>
+          </section>
+        );
+      }
+    `,
+    cssSource: `
+      .hero-shell {
+        box-shadow: 0 12px 48px rgba(15, 23, 42, 0.15);
+      }
+    `,
+  });
+
+  const result = await checkElevatedCards({
+    workspaceRoot,
+    contractPath: "contracts/surfaces.web.contract.json",
+    configPath: "interfacectl.config.json",
+  });
+
+  assert.equal(result.ok, false);
+  const shadowViolations = result.violations.filter(
+    (violation) =>
+      violation.code === "layout.chrome.outer-shadow-disallowed" &&
+      violation.targetType === "layout-wrapper-inferred",
+  );
+  assert.equal(shadowViolations.length, 1, JSON.stringify(result.violations, null, 2));
+});
+
 test("shared validate remains unchanged and monorepo scripts add the repo-local gate", async () => {
   const sandboxRoot = await fsp.mkdtemp(path.join(os.tmpdir(), "surfaces-validate-style-"));
   await fsp.mkdir(
