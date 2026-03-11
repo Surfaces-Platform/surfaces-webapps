@@ -2,11 +2,7 @@
   "$schema": "https://contracts.surfaces.local/web.surface.contract.schema.json",
   "color": {
     "allowedValues": [
-      "#0f172a",
-      "#334155",
       "#475569",
-      "#64748b",
-      "#94a3b8",
       "#e2e8f0",
       "#ffffff",
       "rgba(255, 255, 255, 0.8)",
@@ -117,7 +113,7 @@
           "aliases": [],
           "attributes": [
             "transition",
-            "transition={{\n                          duration"
+            "transition={{\n                        duration"
           ],
           "normalizedValue": "120ms",
           "token": "var(--contract-motion-duration)"
@@ -126,7 +122,7 @@
           "aliases": [],
           "attributes": [
             "transition",
-            "transition={{\n                          duration"
+            "transition={{\n                        duration"
           ],
           "normalizedValue": "linear",
           "token": "var(--contract-motion-timing)"
