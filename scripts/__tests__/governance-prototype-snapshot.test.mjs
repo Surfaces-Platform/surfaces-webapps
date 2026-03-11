@@ -8,6 +8,14 @@ import { spawnSync } from "node:child_process";
 
 const repoRoot = path.resolve(path.join(path.dirname(fileURLToPath(import.meta.url)), "../.."));
 
+function createIsolatedResolverEnv() {
+  const env = { ...process.env };
+  delete env.SURFACES_INTERFACECTL_ROOT;
+  delete env.SURFACES_INTERFACECTL_CLI;
+  delete env.SURFACES_INTERFACECTL_GENERATION_GUARD;
+  return env;
+}
+
 function makeSandbox() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "governance-snapshot-"));
   fs.mkdirSync(path.join(dir, "scripts", "prototypes"), { recursive: true });
@@ -93,6 +101,7 @@ test("snapshot-governance-extraction appends p0004 snapshot and updates index", 
   const result = spawnSync("node", ["scripts/prototypes/snapshot-governance-extraction.mjs"], {
     cwd: sandbox,
     encoding: "utf8",
+    env: createIsolatedResolverEnv(),
   });
   assert.equal(result.status, 0, result.stderr || result.stdout);
   const indexPath = path.join(

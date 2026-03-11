@@ -8,6 +8,14 @@ import { spawnSync } from "node:child_process";
 
 const repoRoot = path.resolve(path.join(path.dirname(fileURLToPath(import.meta.url)), "../.."));
 
+function createIsolatedResolverEnv(extraEnv = {}) {
+  const env = { ...process.env, ...extraEnv };
+  delete env.SURFACES_INTERFACECTL_ROOT;
+  delete env.SURFACES_INTERFACECTL_CLI;
+  delete env.SURFACES_INTERFACECTL_GENERATION_GUARD;
+  return env;
+}
+
 function writeExecutable(filePath, content) {
   fs.writeFileSync(filePath, content, "utf8");
   fs.chmodSync(filePath, 0o755);
@@ -229,11 +237,10 @@ function runScript(scriptPath, sandbox, env = {}) {
   return spawnSync(scriptPath, {
     cwd: sandbox.dir,
     encoding: "utf8",
-    env: {
-      ...process.env,
+    env: createIsolatedResolverEnv({
       PATH: `${sandbox.binDir}:${process.env.PATH}`,
       ...env,
-    },
+    }),
   });
 }
 
