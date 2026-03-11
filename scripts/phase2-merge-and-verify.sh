@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # Phase 2: After merging the interfacectl schema PR, run this from the shared
-# workspace. Uses the standalone sibling interfacectl repo rather than the
-# vendored fallback mirror.
+# workspace. Uses the standalone sibling interfacectl repo.
 
 set -e
 

@@ -16,35 +16,39 @@ function writeFile(filePath, contents) {
   fs.writeFileSync(filePath, contents, "utf8");
 }
 
+function writeStandaloneInterfacectlRepo(repoRoot, version) {
+  writeFile(
+    path.join(repoRoot, "packages", "interfacectl-cli", "package.json"),
+    JSON.stringify({
+      name: "@surfaces/interfacectl-cli",
+      version,
+      main: "dist/index.js",
+      bin: { interfacectl: "dist/index.js" },
+    }),
+  );
+  writeFile(
+    path.join(repoRoot, "packages", "interfacectl-cli", "dist", "index.js"),
+    "#!/usr/bin/env node\n",
+  );
+  writeFile(
+    path.join(repoRoot, "packages", "interfacectl-validator", "package.json"),
+    JSON.stringify({
+      name: "@surfaces/interfacectl-validator",
+      version,
+    }),
+  );
+  writeFile(
+    path.join(repoRoot, "tools", "check-generation-boundaries.mjs"),
+    "export {};\n",
+  );
+}
+
 test("resolver honors explicit standalone repo root", async () => {
   const sandbox = await fsp.mkdtemp(path.join(os.tmpdir(), "surfaces-interfacectl-root-"));
   const standaloneRoot = path.join(sandbox, "standalone-interfacectl");
 
   try {
-    writeFile(
-      path.join(standaloneRoot, "packages", "interfacectl-cli", "package.json"),
-      JSON.stringify({
-        name: "@surfaces/interfacectl-cli",
-        version: "0.2.0-canary.1",
-        main: "dist/index.js",
-        bin: { interfacectl: "dist/index.js" },
-      }),
-    );
-    writeFile(
-      path.join(standaloneRoot, "packages", "interfacectl-cli", "dist", "index.js"),
-      "#!/usr/bin/env node\n",
-    );
-    writeFile(
-      path.join(standaloneRoot, "packages", "interfacectl-validator", "package.json"),
-      JSON.stringify({
-        name: "@surfaces/interfacectl-validator",
-        version: "0.2.0-canary.1",
-      }),
-    );
-    writeFile(
-      path.join(standaloneRoot, "tools", "check-generation-boundaries.mjs"),
-      "export {};\n",
-    );
+    writeStandaloneInterfacectlRepo(standaloneRoot, "0.2.0-canary.1");
 
     const cli = resolveCliTool({
       cwd: sandbox,
@@ -73,8 +77,13 @@ test("resolver honors explicit standalone repo root", async () => {
   }
 });
 
-test("resolver can use an installed CLI package and local submodule guard fallback", async () => {
+test("resolver can use an installed CLI package with an explicit guard override", async () => {
   const sandbox = await fsp.mkdtemp(path.join(os.tmpdir(), "surfaces-interfacectl-installed-"));
+  const explicitGuardPath = path.join(
+    sandbox,
+    "custom-tools",
+    "check-generation-boundaries.mjs",
+  );
 
   try {
     writeFile(
@@ -103,159 +112,91 @@ test("resolver can use an installed CLI package and local submodule guard fallba
       ),
       "#!/usr/bin/env node\n",
     );
-    writeFile(
-      path.join(
-        sandbox,
-        "tools",
-        "interfacectl",
-        "tools",
-        "check-generation-boundaries.mjs",
-      ),
-      "export {};\n",
-    );
+    writeFile(explicitGuardPath, "export {};\n");
 
     const cli = resolveCliTool({ cwd: sandbox, env: {} });
     const guard = resolveGenerationGuardTool({
       cwd: sandbox,
       env: {},
       cliResolution: cli,
+      guardPath: explicitGuardPath,
     });
 
     assert.equal(cli.source, "installed-package");
-    assert.equal(fs.realpathSync(cli.path), fs.realpathSync(path.join(
-      sandbox,
-      "node_modules",
-      "@surfaces",
-      "interfacectl-cli",
-      "dist",
-      "index.js",
-    )));
-    assert.equal(guard.source, "local-submodule");
     assert.equal(
-      guard.path,
-      path.join(
-        sandbox,
-        "tools",
-        "interfacectl",
-        "tools",
-        "check-generation-boundaries.mjs",
+      fs.realpathSync(cli.path),
+      fs.realpathSync(
+        path.join(
+          sandbox,
+          "node_modules",
+          "@surfaces",
+          "interfacectl-cli",
+          "dist",
+          "index.js",
+        ),
       ),
     );
+    assert.equal(guard.source, "explicit-guard");
+    assert.equal(guard.path, explicitGuardPath);
   } finally {
     await fsp.rm(sandbox, { recursive: true, force: true });
   }
 });
 
-test("resolver normalizes a vendored fallback workspace package to local-submodule", async () => {
-  const sandbox = await fsp.mkdtemp(path.join(os.tmpdir(), "surfaces-interfacectl-vendored-"));
+test("resolver fails to resolve a guard when only an installed CLI package is available", async () => {
+  const sandbox = await fsp.mkdtemp(path.join(os.tmpdir(), "surfaces-interfacectl-installed-guard-"));
 
   try {
-    const vendoredCliRoot = path.join(
-      sandbox,
-      "tools",
-      "interfacectl",
-      "packages",
-      "interfacectl-cli",
-    );
     writeFile(
-      path.join(vendoredCliRoot, "package.json"),
+      path.join(
+        sandbox,
+        "node_modules",
+        "@surfaces",
+        "interfacectl-cli",
+        "package.json",
+      ),
       JSON.stringify({
         name: "@surfaces/interfacectl-cli",
-        version: "0.2.0-vendored.1",
+        version: "0.2.0-installed.1",
         main: "dist/index.js",
         bin: { interfacectl: "dist/index.js" },
       }),
     );
     writeFile(
-      path.join(vendoredCliRoot, "dist", "index.js"),
-      "#!/usr/bin/env node\n",
-    );
-    writeFile(
       path.join(
         sandbox,
-        "tools",
-        "interfacectl",
-        "tools",
-        "check-generation-boundaries.mjs",
-      ),
-      "export {};\n",
-    );
-
-    fs.mkdirSync(path.join(sandbox, "node_modules", "@surfaces"), { recursive: true });
-    fs.symlinkSync(
-      vendoredCliRoot,
-      path.join(sandbox, "node_modules", "@surfaces", "interfacectl-cli"),
-      "dir",
-    );
-
-    const cli = resolveCliTool({ cwd: sandbox, env: {} });
-    const guard = resolveGenerationGuardTool({
-      cwd: sandbox,
-      env: {},
-      cliResolution: cli,
-    });
-
-    assert.equal(cli.source, "local-submodule");
-    assert.equal(cli.repoRoot, path.join(sandbox, "tools", "interfacectl"));
-    assert.equal(cli.version, "0.2.0-vendored.1");
-    assert.equal(
-      cli.path,
-      path.join(
-        sandbox,
-        "tools",
-        "interfacectl",
-        "packages",
+        "node_modules",
+        "@surfaces",
         "interfacectl-cli",
         "dist",
         "index.js",
       ),
+      "#!/usr/bin/env node\n",
     );
-    assert.equal(guard.source, "local-submodule");
-    assert.equal(
-      guard.path,
-      path.join(
-        sandbox,
-        "tools",
-        "interfacectl",
-        "tools",
-        "check-generation-boundaries.mjs",
-      ),
+
+    const cli = resolveCliTool({ cwd: sandbox, env: {} });
+    assert.equal(cli.source, "installed-package");
+    assert.throws(
+      () =>
+        resolveGenerationGuardTool({
+          cwd: sandbox,
+          env: {},
+          cliResolution: cli,
+        }),
+      /Unable to resolve the shared generation boundary checker/,
     );
   } finally {
     await fsp.rm(sandbox, { recursive: true, force: true });
   }
 });
 
-test("resolver prefers a sibling standalone checkout before installed-package or submodule fallback", async () => {
+test("resolver prefers a sibling standalone checkout before an installed package", async () => {
   const sandbox = await fsp.mkdtemp(path.join(os.tmpdir(), "surfaces-interfacectl-sibling-"));
   const surfacesRoot = path.join(sandbox, "surfaces-webapps");
   const siblingRoot = path.join(sandbox, "interfacectl");
 
   try {
-    writeFile(
-      path.join(siblingRoot, "packages", "interfacectl-cli", "package.json"),
-      JSON.stringify({
-        name: "@surfaces/interfacectl-cli",
-        version: "0.3.0-local.1",
-        main: "dist/index.js",
-        bin: { interfacectl: "dist/index.js" },
-      }),
-    );
-    writeFile(
-      path.join(siblingRoot, "packages", "interfacectl-cli", "dist", "index.js"),
-      "#!/usr/bin/env node\n",
-    );
-    writeFile(
-      path.join(siblingRoot, "packages", "interfacectl-validator", "package.json"),
-      JSON.stringify({
-        name: "@surfaces/interfacectl-validator",
-        version: "0.3.0-local.1",
-      }),
-    );
-    writeFile(
-      path.join(siblingRoot, "tools", "check-generation-boundaries.mjs"),
-      "export {};\n",
-    );
+    writeStandaloneInterfacectlRepo(siblingRoot, "0.3.0-local.1");
 
     writeFile(
       path.join(

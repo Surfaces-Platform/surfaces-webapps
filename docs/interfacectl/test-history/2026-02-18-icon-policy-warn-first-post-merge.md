@@ -35,7 +35,7 @@ Validation and adapter checks were rerun on merged `main`:
 - `surfaces-webapps`
   - `pnpm run interfacectl:build` ✅
   - `pnpm run generate:contract:all` ✅
-  - `node tools/interfacectl/packages/interfacectl-cli/dist/index.js validate --workspace-root . --contract ./contracts/surfaces.web.contract.json --format json --exit-codes v2` ✅ (0 findings)
+  - `node scripts/interfacectl-tool.mjs run cli validate --workspace-root . --contract ./contracts/surfaces.web.contract.json --format json --exit-codes v2` ✅ (0 findings)
   - `pnpm run adapter:validate-generation --tool codex --surface surfaces-web --mode workspace --workspace-root . --contract ./contracts/surfaces.web.contract.json` ✅ (`status: pass`)
   - `pnpm run test:scripts` ✅
   - `pnpm run type-check` ✅

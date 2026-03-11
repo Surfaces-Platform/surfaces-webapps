@@ -9,11 +9,11 @@ import { spawnSync } from "node:child_process";
 const repoRoot = path.resolve(path.join(path.dirname(fileURLToPath(import.meta.url)), "../.."));
 
 function createIsolatedResolverEnv(extraEnv = {}) {
-  const env = { ...process.env, ...extraEnv };
+  const env = { ...process.env };
   delete env.SURFACES_INTERFACECTL_ROOT;
   delete env.SURFACES_INTERFACECTL_CLI;
   delete env.SURFACES_INTERFACECTL_GENERATION_GUARD;
-  return env;
+  return { ...env, ...extraEnv };
 }
 
 function writeExecutable(filePath, content) {
@@ -23,6 +23,7 @@ function writeExecutable(filePath, content) {
 
 function makeSandbox() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "surfaces-demo-scripts-"));
+  const interfacectlRoot = path.join(dir, "..", `${path.basename(dir)}-interfacectl`);
 
   const demoDir = path.join(dir, "scripts", "demos");
   fs.mkdirSync(demoDir, { recursive: true });
@@ -70,14 +71,34 @@ function makeSandbox() {
     JSON.stringify({ surfaceId: "reference-target-web", extracted: { authAware: false } }, null, 2)
   );
 
-  fs.mkdirSync(path.join(dir, "tools", "interfacectl", "tools"), { recursive: true });
-  fs.mkdirSync(path.join(dir, "tools", "interfacectl", "packages", "interfacectl-cli", "dist"), {
+  fs.mkdirSync(path.join(interfacectlRoot, "tools"), { recursive: true });
+  fs.mkdirSync(path.join(interfacectlRoot, "packages", "interfacectl-cli", "dist"), {
+    recursive: true,
+  });
+  fs.mkdirSync(path.join(interfacectlRoot, "packages", "interfacectl-validator"), {
     recursive: true,
   });
   fs.mkdirSync(path.join(dir, "apps", "reference-target-web"), { recursive: true });
 
+  fs.writeFileSync(
+    path.join(interfacectlRoot, "packages", "interfacectl-cli", "package.json"),
+    JSON.stringify({
+      name: "@surfaces/interfacectl-cli",
+      version: "0.1.0-test.1",
+      main: "dist/index.js",
+      bin: { interfacectl: "dist/index.js" },
+    })
+  );
+  fs.writeFileSync(
+    path.join(interfacectlRoot, "packages", "interfacectl-validator", "package.json"),
+    JSON.stringify({
+      name: "@surfaces/interfacectl-validator",
+      version: "0.1.0-test.1",
+    })
+  );
+
   writeExecutable(
-    path.join(dir, "tools", "interfacectl", "tools", "check-generation-boundaries.mjs"),
+    path.join(interfacectlRoot, "tools", "check-generation-boundaries.mjs"),
     `#!/usr/bin/env node
 const args = process.argv.slice(2);
 const idx = args.indexOf("--descriptor");
@@ -91,7 +112,7 @@ console.log("guard pass");
   );
 
   writeExecutable(
-    path.join(dir, "tools", "interfacectl", "packages", "interfacectl-cli", "dist", "index.js"),
+    path.join(interfacectlRoot, "packages", "interfacectl-cli", "dist", "index.js"),
     `#!/usr/bin/env node
 const fs = require("fs");
 const args = process.argv.slice(2);
@@ -230,7 +251,7 @@ process.stdout.write("HTTP/1.1 " + code + " " + statusText + "\\r\\ncontent-type
 `
   );
 
-  return { dir, binDir };
+  return { dir, binDir, interfacectlRoot };
 }
 
 function runScript(scriptPath, sandbox, env = {}) {
@@ -239,6 +260,7 @@ function runScript(scriptPath, sandbox, env = {}) {
     encoding: "utf8",
     env: createIsolatedResolverEnv({
       PATH: `${sandbox.binDir}:${process.env.PATH}`,
+      SURFACES_INTERFACECTL_ROOT: sandbox.interfacectlRoot,
       ...env,
     }),
   });

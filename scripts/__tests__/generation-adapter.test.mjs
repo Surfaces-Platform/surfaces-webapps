@@ -161,14 +161,18 @@ function makeAdapterSandbox() {
   const parityContractPath = path.join(dir, "contracts", "parity.contract.json");
   const cliPath = path.join(
     dir,
-    "tools",
     "interfacectl",
     "packages",
     "interfacectl-cli",
     "dist",
     "index.js",
   );
-  const guardPath = path.join(dir, "tools", "interfacectl", "tools", "check-generation-boundaries.mjs");
+  const guardPath = path.join(
+    dir,
+    "interfacectl",
+    "tools",
+    "check-generation-boundaries.mjs",
+  );
 
   const contract = {
     contractId: "surfaces.web",

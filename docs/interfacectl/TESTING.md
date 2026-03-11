@@ -5,7 +5,7 @@ This checklist verifies that `interfacectl validate` works as designed: determin
 ## Assumptions
 
 1. Contract file lives at: `contracts/surfaces.web.contract.json`
-2. The shared resolver can find the CLI via explicit env overrides, `SURFACES_INTERFACECTL_ROOT`, a sibling standalone checkout, an installed package, or the local submodule fallback.
+2. The shared resolver can find the CLI via explicit env overrides, `SURFACES_INTERFACECTL_ROOT`, a sibling standalone checkout, or an installed package.
 3. Validation command is invoked via `node scripts/interfacectl-tool.mjs run cli validate`.
 4. Validator is static/deterministic (no Next.js dev server, no runtime probing).
 

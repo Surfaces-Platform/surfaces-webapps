@@ -30,7 +30,7 @@ Validator builds copy the bundled schema automatically via `packages/interfacect
 ## Using the CLI from the Surfaces monorepo
 
 - The repo now resolves interfacectl via `scripts/interfacectl-tool.mjs`.
-- Preferred sources, in order: explicit artifact paths, `SURFACES_INTERFACECTL_ROOT`, detected sibling checkout, installed package, then local submodule fallback.
+- Preferred sources, in order: explicit artifact paths, `SURFACES_INTERFACECTL_ROOT`, detected sibling checkout, then installed package.
 - The npm packages are not published in the public registry yet, so external installs currently require a tarball, git URL, or standalone checkout.
 - From `surfaces-webapps`, run `node scripts/interfacectl-tool.mjs run cli validate --root . --contract contracts/surfaces.web.contract.json`
 - Remember to keep `interfacectl.config.json` in sync with surface locations (see below).

@@ -8,16 +8,18 @@ import { spawnSync } from "node:child_process";
 
 const repoRoot = path.resolve(path.join(path.dirname(fileURLToPath(import.meta.url)), "../.."));
 
-function createIsolatedResolverEnv() {
+function createIsolatedResolverEnv(extraEnv = {}) {
   const env = { ...process.env };
   delete env.SURFACES_INTERFACECTL_ROOT;
   delete env.SURFACES_INTERFACECTL_CLI;
   delete env.SURFACES_INTERFACECTL_GENERATION_GUARD;
-  return env;
+  return { ...env, ...extraEnv };
 }
 
 function makeSandbox() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "governance-snapshot-"));
+  const interfacectlRoot = path.join(dir, "..", `${path.basename(dir)}-interfacectl`);
+
   fs.mkdirSync(path.join(dir, "scripts", "prototypes"), { recursive: true });
   fs.mkdirSync(path.join(dir, "scripts", "lib"), { recursive: true });
   fs.copyFileSync(
@@ -28,14 +30,17 @@ function makeSandbox() {
     path.join(repoRoot, "scripts", "lib", "interfacectl-tooling.mjs"),
     path.join(dir, "scripts", "lib", "interfacectl-tooling.mjs"),
   );
-  fs.mkdirSync(path.join(dir, "apps", "surfaceops-web", "prototypes", "governance", "p0004", "extraction"), {
-    recursive: true,
-  });
-  fs.mkdirSync(path.join(dir, "contracts", "generated"), { recursive: true });
   fs.mkdirSync(
-    path.join(dir, "tools", "interfacectl", "packages", "interfacectl-cli", "dist"),
+    path.join(dir, "apps", "surfaceops-web", "prototypes", "governance", "p0004", "extraction"),
     { recursive: true },
   );
+  fs.mkdirSync(path.join(dir, "contracts", "generated"), { recursive: true });
+  fs.mkdirSync(path.join(interfacectlRoot, "packages", "interfacectl-cli", "dist"), {
+    recursive: true,
+  });
+  fs.mkdirSync(path.join(interfacectlRoot, "packages", "interfacectl-validator"), {
+    recursive: true,
+  });
 
   fs.writeFileSync(
     path.join(dir, "apps", "surfaceops-web", "prototypes", "governance", "manifest.json"),
@@ -66,16 +71,50 @@ function makeSandbox() {
   );
 
   fs.writeFileSync(
-    path.join(dir, "apps", "surfaceops-web", "prototypes", "governance", "p0004", "extraction", "surfaces-web.extraction.json"),
+    path.join(
+      dir,
+      "apps",
+      "surfaceops-web",
+      "prototypes",
+      "governance",
+      "p0004",
+      "extraction",
+      "surfaces-web.extraction.json",
+    ),
     JSON.stringify({ extracted: { routes: ["/"], authAware: true, hasShell: true } }, null, 2),
   );
   fs.writeFileSync(
-    path.join(dir, "apps", "surfaceops-web", "prototypes", "governance", "p0004", "extraction", "surfaces-web.contract.json"),
+    path.join(
+      dir,
+      "apps",
+      "surfaceops-web",
+      "prototypes",
+      "governance",
+      "p0004",
+      "extraction",
+      "surfaces-web.contract.json",
+    ),
     JSON.stringify({ contractId: "surfaces.web" }, null, 2),
   );
 
   fs.writeFileSync(
-    path.join(dir, "tools", "interfacectl", "packages", "interfacectl-cli", "dist", "index.js"),
+    path.join(interfacectlRoot, "packages", "interfacectl-cli", "package.json"),
+    JSON.stringify({
+      name: "@surfaces/interfacectl-cli",
+      version: "0.1.0-test.1",
+      main: "dist/index.js",
+      bin: { interfacectl: "dist/index.js" },
+    }),
+  );
+  fs.writeFileSync(
+    path.join(interfacectlRoot, "packages", "interfacectl-validator", "package.json"),
+    JSON.stringify({
+      name: "@surfaces/interfacectl-validator",
+      version: "0.1.0-test.1",
+    }),
+  );
+  fs.writeFileSync(
+    path.join(interfacectlRoot, "packages", "interfacectl-cli", "dist", "index.js"),
     `#!/usr/bin/env node
 const fs = require("fs");
 const args = process.argv.slice(2);
@@ -90,22 +129,27 @@ if (args[0] === "generate-contract") {
 process.exit(0);
 `,
   );
-  fs.chmodSync(path.join(dir, "tools", "interfacectl", "packages", "interfacectl-cli", "dist", "index.js"), 0o755);
+  fs.chmodSync(
+    path.join(interfacectlRoot, "packages", "interfacectl-cli", "dist", "index.js"),
+    0o755,
+  );
   fs.chmodSync(path.join(dir, "scripts", "lib", "interfacectl-tooling.mjs"), 0o755);
 
-  return dir;
+  return { dir, interfacectlRoot };
 }
 
 test("snapshot-governance-extraction appends p0004 snapshot and updates index", () => {
   const sandbox = makeSandbox();
   const result = spawnSync("node", ["scripts/prototypes/snapshot-governance-extraction.mjs"], {
-    cwd: sandbox,
+    cwd: sandbox.dir,
     encoding: "utf8",
-    env: createIsolatedResolverEnv(),
+    env: createIsolatedResolverEnv({
+      SURFACES_INTERFACECTL_ROOT: sandbox.interfacectlRoot,
+    }),
   });
   assert.equal(result.status, 0, result.stderr || result.stdout);
   const indexPath = path.join(
-    sandbox,
+    sandbox.dir,
     "apps",
     "surfaceops-web",
     "prototypes",
@@ -120,7 +164,7 @@ test("snapshot-governance-extraction appends p0004 snapshot and updates index", 
   assert.equal(index.latestSnapshotId, index.snapshotIds[0]);
   assert.equal(index.baselineSnapshotId, index.snapshotIds[0]);
   const reportPath = path.join(
-    sandbox,
+    sandbox.dir,
     "apps",
     "surfaceops-web",
     "prototypes",

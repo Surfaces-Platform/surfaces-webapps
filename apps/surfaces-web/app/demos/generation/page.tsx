@@ -9,7 +9,7 @@ export default function GenerationDemoPage() {
       </p>
       <pre style={{ marginTop: "16px", padding: "12px", border: "1px solid #e5e7eb", borderRadius: 6, background: "#f8fafc" }}>
 {`# Block shell-owned primitives (e.g., navigation) before writing output
-node tools/check-generation-boundaries.mjs \\
+node scripts/interfacectl-tool.mjs run guard -- \\
   --contract contracts/surfaces.web.contract.json \\
   --descriptor out/generated-descriptor.json
 

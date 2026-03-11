@@ -12,7 +12,7 @@ Or a single surface:
 pnpm run generate:contract
 ```
 
-The CLI is resolved through `scripts/interfacectl-tool.mjs` in this order: explicit env path, explicit repo root, detected sibling checkout, installed package, then the local `tools/interfacectl` fallback. During the current transition, the default path is a sibling standalone checkout; use the vendored fallback mirror only when you explicitly need to test or recover it. Run `pnpm run interfacectl:build` when the resolved source is a standalone/sibling checkout or the vendored fallback.
+The CLI is resolved through `scripts/interfacectl-tool.mjs` in this order: explicit env path, explicit repo root, detected sibling checkout, then installed package. The default path is a sibling standalone checkout. Run `pnpm run interfacectl:build` when the resolved source is a standalone or sibling checkout.
 
 - `*.contract.json` — Schema-valid contract with `x_extracted` (routes, hasShell, designSystemComponents, authAware).
 - `*.extraction.json` — Machine-readable report and warnings.
