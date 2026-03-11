@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 
@@ -100,8 +99,7 @@ function buildLocalCli() {
       const cli = resolveCliTool();
       if (
         cli.source === "explicit-root" ||
-        cli.source === "sibling-checkout" ||
-        cli.source === "local-submodule"
+        cli.source === "sibling-checkout"
       ) {
         repoRoot =
           cli.repoRoot ??
@@ -113,13 +111,7 @@ function buildLocalCli() {
         );
         return;
       }
-    } catch {
-      const localSubmoduleRoot = path.join(process.cwd(), "tools", "interfacectl");
-      if (fs.existsSync(path.join(localSubmoduleRoot, "package.json"))) {
-        repoRoot = localSubmoduleRoot;
-        source = "local-submodule";
-      }
-    }
+    } catch {}
   }
 
   if (!repoRoot) {

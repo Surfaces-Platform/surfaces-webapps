@@ -7,7 +7,7 @@
 > - `/Users/mike/SurfacesPlatform/surfaces-webapps/docs/interfacectl/contract-validation.md`
 > - `/Users/mike/SurfacesPlatform/surfaces-webapps/docs/interfacectl/shell-boundary.md`
 > - `/Users/mike/SurfacesPlatform/surfaces-webapps/contracts/surfaces.web.contract.json`
-> - `/Users/mike/SurfacesPlatform/surfaces-webapps/tools/interfacectl/packages/interfacectl-validator/src/schema/web.surface.contract.schema.json`
+> - `/Users/mike/SurfacesPlatform/interfacectl/packages/interfacectl-validator/src/schema/web.surface.contract.schema.json`
 
 ## Contract Intent Declaration
 
@@ -431,7 +431,7 @@ The contract schema (`web.surface.contract.schema.json`) does not include `allow
 
 **Schema Verification:**
 - **`allowedColors` in schema:** ✅ **TRUE** (found in schema file)
-- **Schema source updated:** ✅ Updated from `tools/interfacectl/packages/interfacectl-validator/src/schema/web.surface.contract.schema.json`
+- **Schema source updated:** ✅ Updated from `../interfacectl/packages/interfacectl-validator/src/schema/web.surface.contract.schema.json`
 
 **Contract Validated:** `contracts/surfaces.web.contract.json`
 

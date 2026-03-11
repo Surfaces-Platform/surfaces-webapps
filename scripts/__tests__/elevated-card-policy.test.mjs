@@ -14,7 +14,7 @@ const checkerModulePath = path.join(repoRoot, "scripts", "check-elevated-cards.m
 const validateContractScriptPath = path.join(repoRoot, "scripts", "validate-contract.sh");
 const sharedSchemaPath = path.join(
   repoRoot,
-  "tools",
+  "..",
   "interfacectl",
   "packages",
   "interfacectl-validator",

@@ -3,19 +3,6 @@ import path from "node:path";
 import { createRequire } from "node:module";
 import { spawnSync } from "node:child_process";
 
-const LOCAL_SUBMODULE_ROOT = path.join("tools", "interfacectl");
-const LOCAL_SUBMODULE_CLI = path.join(
-  LOCAL_SUBMODULE_ROOT,
-  "packages",
-  "interfacectl-cli",
-  "dist",
-  "index.js",
-);
-const LOCAL_SUBMODULE_GUARD = path.join(
-  LOCAL_SUBMODULE_ROOT,
-  "tools",
-  "check-generation-boundaries.mjs",
-);
 const STANDALONE_REPO_MARKERS = [
   path.join("packages", "interfacectl-cli", "package.json"),
   path.join("packages", "interfacectl-validator", "package.json"),
@@ -50,34 +37,6 @@ function isInterfacectlRepoRoot(candidatePath) {
 
 function uniquePaths(paths) {
   return [...new Set(paths.map((candidate) => path.resolve(candidate)))];
-}
-
-function resolveLocalSubmoduleMetadata(cwd, candidatePath) {
-  if (!candidatePath) return undefined;
-
-  const repoRoot = path.join(cwd, LOCAL_SUBMODULE_ROOT);
-  if (!fs.existsSync(repoRoot)) {
-    return undefined;
-  }
-
-  try {
-    const realCandidate = fs.realpathSync(candidatePath);
-    const realRepoRoot = fs.realpathSync(repoRoot);
-    if (
-      realCandidate !== realRepoRoot &&
-      !realCandidate.startsWith(`${realRepoRoot}${path.sep}`)
-    ) {
-      return undefined;
-    }
-  } catch {
-    return undefined;
-  }
-
-  return {
-    repoRoot,
-    packageRoot: path.join(repoRoot, "packages", "interfacectl-cli"),
-    cliPath: path.join(repoRoot, "packages", "interfacectl-cli", "dist", "index.js"),
-  };
 }
 
 function getSiblingRepoCandidates(cwd) {
@@ -208,19 +167,6 @@ function resolveInstalledCli(cwd) {
   try {
     const cliPath = requireFromCwd.resolve("@surfaces/interfacectl-cli");
     const packageRoot = findPackageRoot(cliPath);
-    const localSubmodule = resolveLocalSubmoduleMetadata(cwd, packageRoot ?? cliPath);
-    if (localSubmodule && fs.existsSync(localSubmodule.cliPath)) {
-      ensureFileExists(localSubmodule.cliPath, "interfacectl CLI");
-      return {
-        kind: "cli",
-        source: "local-submodule",
-        path: localSubmodule.cliPath,
-        repoRoot: localSubmodule.repoRoot,
-        packageRoot: localSubmodule.packageRoot,
-        version: readPackageVersion(localSubmodule.packageRoot),
-      };
-    }
-
     return {
       kind: "cli",
       source: "installed-package",
@@ -231,25 +177,6 @@ function resolveInstalledCli(cwd) {
   } catch {
     return undefined;
   }
-}
-
-function resolveLocalSubmoduleCli(cwd) {
-  const cliPath = path.join(cwd, LOCAL_SUBMODULE_CLI);
-  if (!fs.existsSync(cliPath)) {
-    return undefined;
-  }
-
-  ensureFileExists(cliPath, "interfacectl CLI");
-
-  const repoRoot = path.join(cwd, LOCAL_SUBMODULE_ROOT);
-  return {
-    kind: "cli",
-    source: "local-submodule",
-    path: cliPath,
-    repoRoot,
-    packageRoot: path.join(repoRoot, "packages", "interfacectl-cli"),
-    version: readPackageVersion(path.join(repoRoot, "packages", "interfacectl-cli")),
-  };
 }
 
 function resolveExplicitGuard(cwd, explicitGuardPath) {
@@ -310,42 +237,23 @@ function resolveGuardFromCliRepo(cliResolution) {
   };
 }
 
-function resolveLocalSubmoduleGuard(cwd) {
-  const guardPath = path.join(cwd, LOCAL_SUBMODULE_GUARD);
-  if (!fs.existsSync(guardPath)) {
-    return undefined;
-  }
-
-  ensureFileExists(guardPath, "Generation guard");
-
-  return {
-    kind: "guard",
-    source: "local-submodule",
-    path: guardPath,
-    repoRoot: path.join(cwd, LOCAL_SUBMODULE_ROOT),
-  };
-}
-
 function missingCliMessage(cwd) {
-  const fallbackPath = path.join(cwd, LOCAL_SUBMODULE_CLI);
   return [
     "Unable to resolve interfacectl CLI.",
     `Set ${INTERFACECTL_ENV_VARS.cli} to an explicit CLI entrypoint,`,
     `set ${INTERFACECTL_ENV_VARS.root} to a standalone interfacectl checkout,`,
     "use a built sibling ../interfacectl checkout,",
-    "install @surfaces/interfacectl-cli into this workspace,",
-    `or build the local submodule fallback at ${fallbackPath}.`,
+    "or install @surfaces/interfacectl-cli into this workspace.",
   ].join(" ");
 }
 
-function missingGuardMessage(cwd) {
-  const fallbackPath = path.join(cwd, LOCAL_SUBMODULE_GUARD);
+function missingGuardMessage() {
   return [
     "Unable to resolve the shared generation boundary checker.",
     `Set ${INTERFACECTL_ENV_VARS.guard} to an explicit checker path,`,
     `set ${INTERFACECTL_ENV_VARS.root} to a standalone interfacectl checkout,`,
     "use a sibling ../interfacectl checkout,",
-    `or provide the local submodule fallback at ${fallbackPath}.`,
+    "or install/build an interfacectl source that contains tools/check-generation-boundaries.mjs.",
   ].join(" ");
 }
 
@@ -361,7 +269,6 @@ export function resolveCliTool(options = {}) {
     resolveExplicitRoot(cwd, explicitRootPath) ??
     resolveSiblingCli(cwd) ??
     resolveInstalledCli(cwd) ??
-    resolveLocalSubmoduleCli(cwd) ??
     (() => {
       throw new Error(missingCliMessage(cwd));
     })()
@@ -397,9 +304,8 @@ export function resolveGenerationGuardTool(options = {}) {
 
   return (
     resolveGuardFromCliRepo(cliResolution) ??
-    resolveLocalSubmoduleGuard(cwd) ??
     (() => {
-      throw new Error(missingGuardMessage(cwd));
+      throw new Error(missingGuardMessage());
     })()
   );
 }

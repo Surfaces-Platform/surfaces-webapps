@@ -9,11 +9,11 @@ import { spawnSync } from "node:child_process";
 const repoRoot = "/Users/mike/SurfacesPlatform/surfaces-webapps";
 
 function createIsolatedResolverEnv(extraEnv = {}) {
-  const env = { ...process.env, ...extraEnv };
+  const env = { ...process.env };
   delete env.SURFACES_INTERFACECTL_ROOT;
   delete env.SURFACES_INTERFACECTL_CLI;
   delete env.SURFACES_INTERFACECTL_GENERATION_GUARD;
-  return env;
+  return { ...env, ...extraEnv };
 }
 
 function writeFile(filePath, contents) {
