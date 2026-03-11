@@ -48,7 +48,6 @@ gh pr merge "$PR_NUMBER" --squash
 echo "Post-merge verification on main..."
 git checkout main
 git pull
-git submodule update --init --recursive
 SURFACES_INTERFACECTL_ROOT="$INTERFACECTL_REPO" pnpm install --frozen-lockfile
 SURFACES_INTERFACECTL_ROOT="$INTERFACECTL_REPO" pnpm run interfacectl:build
 SURFACES_INTERFACECTL_ROOT="$INTERFACECTL_REPO" pnpm run generate:contract

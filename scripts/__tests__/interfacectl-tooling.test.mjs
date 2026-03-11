@@ -146,6 +146,86 @@ test("resolver can use an installed CLI package and local submodule guard fallba
   }
 });
 
+test("resolver normalizes a vendored fallback workspace package to local-submodule", async () => {
+  const sandbox = await fsp.mkdtemp(path.join(os.tmpdir(), "surfaces-interfacectl-vendored-"));
+
+  try {
+    const vendoredCliRoot = path.join(
+      sandbox,
+      "tools",
+      "interfacectl",
+      "packages",
+      "interfacectl-cli",
+    );
+    writeFile(
+      path.join(vendoredCliRoot, "package.json"),
+      JSON.stringify({
+        name: "@surfaces/interfacectl-cli",
+        version: "0.2.0-vendored.1",
+        main: "dist/index.js",
+        bin: { interfacectl: "dist/index.js" },
+      }),
+    );
+    writeFile(
+      path.join(vendoredCliRoot, "dist", "index.js"),
+      "#!/usr/bin/env node\n",
+    );
+    writeFile(
+      path.join(
+        sandbox,
+        "tools",
+        "interfacectl",
+        "tools",
+        "check-generation-boundaries.mjs",
+      ),
+      "export {};\n",
+    );
+
+    fs.mkdirSync(path.join(sandbox, "node_modules", "@surfaces"), { recursive: true });
+    fs.symlinkSync(
+      vendoredCliRoot,
+      path.join(sandbox, "node_modules", "@surfaces", "interfacectl-cli"),
+      "dir",
+    );
+
+    const cli = resolveCliTool({ cwd: sandbox, env: {} });
+    const guard = resolveGenerationGuardTool({
+      cwd: sandbox,
+      env: {},
+      cliResolution: cli,
+    });
+
+    assert.equal(cli.source, "local-submodule");
+    assert.equal(cli.repoRoot, path.join(sandbox, "tools", "interfacectl"));
+    assert.equal(cli.version, "0.2.0-vendored.1");
+    assert.equal(
+      cli.path,
+      path.join(
+        sandbox,
+        "tools",
+        "interfacectl",
+        "packages",
+        "interfacectl-cli",
+        "dist",
+        "index.js",
+      ),
+    );
+    assert.equal(guard.source, "local-submodule");
+    assert.equal(
+      guard.path,
+      path.join(
+        sandbox,
+        "tools",
+        "interfacectl",
+        "tools",
+        "check-generation-boundaries.mjs",
+      ),
+    );
+  } finally {
+    await fsp.rm(sandbox, { recursive: true, force: true });
+  }
+});
+
 test("resolver prefers a sibling standalone checkout before installed-package or submodule fallback", async () => {
   const sandbox = await fsp.mkdtemp(path.join(os.tmpdir(), "surfaces-interfacectl-sibling-"));
   const surfacesRoot = path.join(sandbox, "surfaces-webapps");

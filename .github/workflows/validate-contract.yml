@@ -15,13 +15,25 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
+    defaults:
+      run:
+        working-directory: surfaces-webapps
+    env:
+      SURFACES_INTERFACECTL_ROOT: ${{ github.workspace }}/interfacectl
     
     steps:
-      - name: Checkout code
+      - name: Checkout surfaces-webapps
         uses: actions/checkout@v4
         with:
-          submodules: recursive
-          token: ${{ secrets.INTERFACECTL_TOKEN }}
+          path: surfaces-webapps
+          token: ${{ secrets.INTERFACECTL_TOKEN || github.token }}
+
+      - name: Checkout interfacectl
+        uses: actions/checkout@v4
+        with:
+          repository: Surfaces-Platform/interfacectl
+          path: interfacectl
+          token: ${{ secrets.INTERFACECTL_TOKEN || github.token }}
       
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -31,6 +43,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'pnpm'
+          cache-dependency-path: surfaces-webapps/pnpm-lock.yaml
       
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -66,7 +79,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: interfacectl-report
-          path: artifacts/interfacectl-report.json
+          path: surfaces-webapps/artifacts/interfacectl-report.json
       
       - name: Generate contract (surfaces-web)
         run: pnpm run generate:contract
@@ -88,7 +101,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: promotion-readiness
-          path: artifacts/promotion-readiness.json
+          path: surfaces-webapps/artifacts/promotion-readiness.json
       
       - name: Check generated contract drift
         run: |
@@ -96,6 +109,56 @@ jobs:
             echo "::error::Generated contract artifacts are out of date. Run: pnpm run interfacectl:build && pnpm run generate:contract"
             exit 1
           fi
+
+  vendored-fallback-smoke:
+    name: Vendored Fallback Smoke
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout code with vendored fallback
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.INTERFACECTL_TOKEN || github.token }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Ensure artifacts directory
+        run: mkdir -p artifacts
+
+      - name: Build vendored fallback interfacectl
+        run: pnpm run interfacectl:build
+
+      - name: Capture fallback CLI provenance
+        run: pnpm cli:where:ci > artifacts/interfacectl-fallback-provenance.json
+
+      - name: Assert vendored fallback provenance
+        run: |
+          node -e "const fs=require('fs'); const report=JSON.parse(fs.readFileSync('artifacts/interfacectl-fallback-provenance.json','utf8')); const cli=report?.cli?.source; const guard=report?.guard?.source; if (cli !== 'local-submodule' || guard !== 'local-submodule') { console.error('Expected local-submodule provenance for fallback smoke job.'); console.error(JSON.stringify(report, null, 2)); process.exit(1); }"
+
+      - name: Print fallback validation provenance
+        run: node scripts/print-provenance.mjs --strict
+
+      - name: Validate contract through vendored fallback
+        run: pnpm run validate:contract:json
+
+      - name: Upload fallback provenance artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: interfacectl-fallback-provenance
+          path: artifacts/interfacectl-fallback-provenance.json
 
   onboarding-browser-smoke:
     name: Onboarding Browser Smoke
@@ -108,8 +171,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          submodules: recursive
-          token: ${{ secrets.INTERFACECTL_TOKEN }}
+          token: ${{ secrets.INTERFACECTL_TOKEN || github.token }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -152,8 +214,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          submodules: recursive
-          token: ${{ secrets.INTERFACECTL_TOKEN }}
+          token: ${{ secrets.INTERFACECTL_TOKEN || github.token }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4

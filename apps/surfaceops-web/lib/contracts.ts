@@ -77,7 +77,7 @@ export function getBuildMetadata(): {
 } {
   const surfaceopsBuildSha =
     (typeof process !== "undefined" && process.env?.VERCEL_GIT_COMMIT_SHA) || "unknown";
-  // TODO: Expose interfacectl submodule SHA at build time if needed; avoid git at runtime on Vercel.
+  // TODO: Expose the resolved interfacectl source SHA at build time if needed; avoid git at runtime on Vercel.
   const interfacectlSha = "unknown";
   return { surfaceopsBuildSha: surfaceopsBuildSha.slice(0, 7), interfacectlSha };
 }

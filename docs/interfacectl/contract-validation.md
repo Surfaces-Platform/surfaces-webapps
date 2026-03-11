@@ -37,7 +37,7 @@ Workspace scripts resolve the shared tooling in this order:
 2. Standalone checkout: `SURFACES_INTERFACECTL_ROOT`
 3. Detected sibling standalone checkout (`../interfacectl` or the matching clean worktree)
 4. Installed `@surfaces/interfacectl-cli`
-5. Local `tools/interfacectl` submodule fallback for developer convenience
+5. Local `tools/interfacectl` submodule fallback only when you intentionally need the vendored mirror
 
 Run validation from the repo root:
 
@@ -58,6 +58,8 @@ The CLI will:
 2. Generate static descriptors for each contract surface from workspace files
 3. Evaluate compliance using the validator library
 4. Exit `0` on success, `1` on drift, `2` on contract/descriptor errors
+
+For this workspace, the default CI path checks out `interfacectl` separately and exports `SURFACES_INTERFACECTL_ROOT`. Recursive submodule checkout is reserved for the explicit fallback smoke path.
 
 ### Flags
 

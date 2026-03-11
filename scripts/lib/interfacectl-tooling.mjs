@@ -52,6 +52,34 @@ function uniquePaths(paths) {
   return [...new Set(paths.map((candidate) => path.resolve(candidate)))];
 }
 
+function resolveLocalSubmoduleMetadata(cwd, candidatePath) {
+  if (!candidatePath) return undefined;
+
+  const repoRoot = path.join(cwd, LOCAL_SUBMODULE_ROOT);
+  if (!fs.existsSync(repoRoot)) {
+    return undefined;
+  }
+
+  try {
+    const realCandidate = fs.realpathSync(candidatePath);
+    const realRepoRoot = fs.realpathSync(repoRoot);
+    if (
+      realCandidate !== realRepoRoot &&
+      !realCandidate.startsWith(`${realRepoRoot}${path.sep}`)
+    ) {
+      return undefined;
+    }
+  } catch {
+    return undefined;
+  }
+
+  return {
+    repoRoot,
+    packageRoot: path.join(repoRoot, "packages", "interfacectl-cli"),
+    cliPath: path.join(repoRoot, "packages", "interfacectl-cli", "dist", "index.js"),
+  };
+}
+
 function getSiblingRepoCandidates(cwd) {
   const repoRoot = path.resolve(cwd);
   const repoName = path.basename(repoRoot);
@@ -180,6 +208,19 @@ function resolveInstalledCli(cwd) {
   try {
     const cliPath = requireFromCwd.resolve("@surfaces/interfacectl-cli");
     const packageRoot = findPackageRoot(cliPath);
+    const localSubmodule = resolveLocalSubmoduleMetadata(cwd, packageRoot ?? cliPath);
+    if (localSubmodule && fs.existsSync(localSubmodule.cliPath)) {
+      ensureFileExists(localSubmodule.cliPath, "interfacectl CLI");
+      return {
+        kind: "cli",
+        source: "local-submodule",
+        path: localSubmodule.cliPath,
+        repoRoot: localSubmodule.repoRoot,
+        packageRoot: localSubmodule.packageRoot,
+        version: readPackageVersion(localSubmodule.packageRoot),
+      };
+    }
+
     return {
       kind: "cli",
       source: "installed-package",

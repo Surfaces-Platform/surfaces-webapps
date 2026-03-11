@@ -79,7 +79,6 @@ pnpm validate:local
 ### 2. Verification (passed)
 
 ```bash
-git submodule update --init --recursive
 export SURFACES_INTERFACECTL_ROOT=/Users/mike/SurfacesPlatform/interfacectl
 pnpm install --frozen-lockfile
 pnpm run interfacectl:build
