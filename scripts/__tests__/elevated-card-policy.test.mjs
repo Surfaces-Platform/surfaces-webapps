@@ -7,15 +7,18 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
+import { findSiblingInterfacectlRepoRoot } from "../lib/interfacectl-tooling.mjs";
+
 const repoRoot = path.resolve(
   path.join(path.dirname(fileURLToPath(import.meta.url)), "../.."),
 );
 const checkerModulePath = path.join(repoRoot, "scripts", "check-elevated-cards.mjs");
 const validateContractScriptPath = path.join(repoRoot, "scripts", "validate-contract.sh");
+const sharedInterfacectlRoot =
+  findSiblingInterfacectlRepoRoot({ cwd: repoRoot }) ??
+  path.resolve(repoRoot, "..", "interfacectl");
 const sharedSchemaPath = path.join(
-  repoRoot,
-  "..",
-  "interfacectl",
+  sharedInterfacectlRoot,
   "packages",
   "interfacectl-validator",
   "src",
