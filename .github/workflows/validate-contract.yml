@@ -12,8 +12,6 @@ jobs:
   validate:
     name: Validate Contract
     runs-on: ubuntu-latest
-    env:
-      INTERFACECTL_BIN: ${{ github.workspace }}/tools/interfacectl/packages/interfacectl-cli/dist/index.js
     permissions:
       contents: read
       pull-requests: read
@@ -55,16 +53,14 @@ jobs:
       - name: Show CLI provenance
         run: pnpm cli:where:ci
 
+      - name: Print validation provenance
+        run: node scripts/print-provenance.mjs --strict
+
       - name: Ensure artifacts directory
         run: mkdir -p artifacts
       
       - name: Validate interface contract
-        run: |
-          node "$INTERFACECTL_BIN" validate \
-            --workspace-root . \
-            --contract ./contracts/surfaces.web.contract.json \
-            --format json \
-            --out ./artifacts/interfacectl-report.json
+        run: pnpm run validate:contract:json
 
       - name: Upload validation artifact
         uses: actions/upload-artifact@v4
@@ -76,12 +72,7 @@ jobs:
         run: pnpm run generate:contract
       
       - name: Validate extracted (Phase 0.5)
-        run: |
-          node "$INTERFACECTL_BIN" validate-extracted \
-            --contract ./contracts/surfaces.web.contract.json \
-            --extracted ./contracts/generated/surfaces-web.extraction.json \
-            --surface surfaces-web \
-            --exit-codes v2
+        run: pnpm run validate:extracted
 
       - name: Validate run artifacts schema
         run: pnpm run validate:run-artifacts

@@ -10,7 +10,7 @@ This monorepo contains five Next.js web applications for the Surfaces Platform:
 
 ## Local Development
 
-**First-time clone:** If you cloned without submodules, run `git submodule update --init --recursive` so `tools/interfacectl` is available (required for contract validation and generation).
+**First-time clone:** During the current transition, this workspace still vendors `tools/interfacectl` as a fallback workspace. If you cloned without submodules, run `git submodule update --init --recursive`. Day-to-day validation and generation commands now prefer a sibling standalone `interfacectl` checkout when one is present and are not hardcoded to that fallback path.
 
 ### Running Individual Apps
 
@@ -154,17 +154,18 @@ This runs `tsc --noEmit` for each package, catching type errors before pushing t
 Validate interface contract compliance:
 
 ```bash
-# Local development: uses CLI from tools/interfacectl (build once with interfacectl:build)
+# Local development: uses the resolver-backed CLI entrypoint
 pnpm validate:local
 
-# CI/production: builds CLI from tools/interfacectl, then validates
+# CI/production: prints provenance, builds local fallback only when needed, then validates
 pnpm validate:ci
 ```
 
-**Validation strategy:** 
-- The interfacectl CLI lives in `tools/interfacectl` (git submodule). Build it once with `pnpm run interfacectl:build`.
-- `validate:local` runs the built CLI for fast local iteration.
-- `validate:ci` builds the CLI from the submodule then runs validation (deterministic in CI).
+**Validation strategy:**
+- `scripts/interfacectl-tool.mjs` resolves the CLI in this order: `SURFACES_INTERFACECTL_CLI` or `SURFACES_INTERFACECTL_GENERATION_GUARD`, then `SURFACES_INTERFACECTL_ROOT`, then a detected sibling standalone checkout (`../interfacectl` or the matching clean worktree), then an installed `@surfaces/interfacectl-cli`, then the local `tools/interfacectl` fallback.
+- `pnpm run interfacectl:build` only builds when the resolved source is a standalone checkout or the vendored fallback.
+- `validate:local` and `validate:ci` use the same resolver-backed entrypoint as the rest of the repo.
+- The current workspace still keeps `tools/interfacectl` and the related `pnpm` overrides as a migration fallback, so initialize submodules only when you actually need that local source.
 
 Check CLI provenance:
 ```bash
@@ -184,7 +185,7 @@ Generated contract artifacts are produced by the interfacectl CLI and committed 
 
 **How to run generation (from repo root):**
 
-1. Ensure the interfacectl submodule is present and built:
+1. Ensure `interfacectl` is resolvable and built if you are using a local checkout or fallback mirror:
    ```bash
    git submodule update --init --recursive
    pnpm install
@@ -212,10 +213,10 @@ git commit -m "chore: update generated contract artifacts"
 
 Interface contract validation runs automatically before each commit via a pre-commit hook. This ensures contract violations are caught locally before code is pushed.
 
-The hook uses `validate:local`, which requires the interfacectl CLI to be built from `tools/interfacectl`. If you see build errors, run:
+The hook uses resolver-backed `validate:local`. If the resolved source is a local checkout or the vendored fallback and it has not been built yet, run:
 
 ```bash
-# Ensure submodule is present, then build the CLI once
+# Ensure the fallback checkout is present if you need it, then build once
 git submodule update --init --recursive
 pnpm run interfacectl:build
 

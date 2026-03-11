@@ -1,5 +1,5 @@
 {
-  "$schema": "../tools/interfacectl/packages/interfacectl-validator/src/schema/web.surface.contract.schema.json",
+  "$schema": "https://contracts.surfaces.local/web.surface.contract.schema.json",
   "color": {
     "allowedValues": [
       "#052e16",

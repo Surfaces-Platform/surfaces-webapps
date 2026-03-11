@@ -3,7 +3,7 @@
 ## Canonical contract
 
 - **Source of truth**: [`contracts/surfaces.web.contract.json`](../../contracts/surfaces.web.contract.json)
-- **Schema**: [`tools/interfacectl/packages/interfacectl-validator/src/schema/web.surface.contract.schema.json`](../../tools/interfacectl/packages/interfacectl-validator/src/schema/web.surface.contract.schema.json)
+- **Schema**: standalone `interfacectl` repo, `packages/interfacectl-validator/src/schema/web.surface.contract.schema.json`
 - **Guarantees**: surface enumerations, required section identifiers, allowed fonts, layout width, and motion constraints.
 
 The contract is versioned JSON—surfaces must conform to it but never redefine it. All validation logic derives exclusively from this file (and optional schema).
@@ -31,17 +31,25 @@ No dev servers, app execution, or runtime introspection is invoked. If informati
 
 ## CLI usage
 
-The CLI is available in the workspace via `@surfaces/interfacectl-cli`. Run validation from the Surfaces monorepo root:
+Workspace scripts resolve the shared tooling in this order:
+
+1. Explicit overrides: `SURFACES_INTERFACECTL_CLI`, `SURFACES_INTERFACECTL_GENERATION_GUARD`
+2. Standalone checkout: `SURFACES_INTERFACECTL_ROOT`
+3. Detected sibling standalone checkout (`../interfacectl` or the matching clean worktree)
+4. Installed `@surfaces/interfacectl-cli`
+5. Local `tools/interfacectl` submodule fallback for developer convenience
+
+Run validation from the repo root:
 
 ```bash
-# Local development (assumes CLI packages are built)
+# Local development
 pnpm validate:local
 
-# CI/production (builds CLI from source, then validates)
+# CI / build agents
 pnpm validate:ci
 
-# Direct usage (if CLI is built)
-pnpm exec interfacectl validate --workspace-root . --contract contracts/surfaces.web.contract.json
+# Direct usage through the shared resolver
+node scripts/interfacectl-tool.mjs run cli validate --workspace-root . --contract ./contracts/surfaces.web.contract.json
 ```
 
 The CLI will:
@@ -128,7 +136,7 @@ Minimal finding sample:
 pnpm run adapter:validate-generation --tool codex --surface surfaces-web --mode workspace --workspace-root . --contract ./contracts/surfaces.web.contract.json
 
 # Direct CLI validate with deterministic v2 exit codes
-node tools/interfacectl/packages/interfacectl-cli/dist/index.js validate --workspace-root . --contract ./contracts/surfaces.web.contract.json --format json --exit-codes v2
+node scripts/interfacectl-tool.mjs run cli validate --workspace-root . --contract ./contracts/surfaces.web.contract.json --format json --exit-codes v2
 ```
 
 Strict-pilot gate runbook:
@@ -136,7 +144,7 @@ Strict-pilot gate runbook:
 
 ### Prerequisites
 
-- `tools/interfacectl` must be on an icon-policy-capable revision.
+- The resolved interfacectl toolchain must be on an icon-policy-capable revision. Use `pnpm run cli:where:local` to inspect the active source.
 - Contract must define per-surface icon policy blocks (`surfaces[*].icons`) for icon-source checks to emit findings.
 
 ## CI integration
@@ -224,7 +232,7 @@ Tips: keep `interfacectl.config.json` in repo root; pin Node 18/20; add `--surfa
 2. Annotate sections with `data-contract-section="surface.section"`.
 3. Reference shared font variables in `layout.tsx` / CSS; avoid ad-hoc font stacks.
 4. Reuse `.contract-motion` (or equivalent) transitions defined via contract motion variables.
-5. After installing the CLI (`pnpm add -D @surfaces/interfacectl-cli`), run `pnpm exec interfacectl validate --root . --contract contracts/surfaces.web.contract.json` locally before opening a PR.
+5. Before opening a PR, run either `pnpm validate:local` or `node scripts/interfacectl-tool.mjs run cli validate --root . --contract contracts/surfaces.web.contract.json`.
 
 ## Pre-commit Hooks
 
@@ -234,8 +242,7 @@ A pre-commit hook is configured to automatically run contract validation before 
 
 ```bash
 # Build the CLI packages
-pnpm --filter @surfaces/interfacectl-validator run build
-pnpm --filter @surfaces/interfacectl-cli run build
+pnpm run interfacectl:build
 ```
 
 The hook is managed via [husky](https://typicode.github.io/husky/) and configured in:

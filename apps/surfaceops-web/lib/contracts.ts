@@ -69,7 +69,7 @@ export function getLastExtractionRun(surfaceId: string): GitLogEntry | null {
 /**
  * Build metadata for drift-safety transparency.
  * SurfaceOps build sha from VERCEL_GIT_COMMIT_SHA when present.
- * interfacectl sha: unknown (TODO: inject at build time from tools/interfacectl submodule if needed).
+ * interfacectl sha: unknown (TODO: inject at build time from the resolved interfacectl source if needed).
  */
 export function getBuildMetadata(): {
   surfaceopsBuildSha: string;

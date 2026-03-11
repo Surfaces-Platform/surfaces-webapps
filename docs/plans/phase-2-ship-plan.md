@@ -45,24 +45,22 @@ Record merged SHA for step B.
 
 ---
 
-## B) surfaces-webapps submodule bump
+## B) surfaces-webapps wiring against the merged interfacectl SHA
 
 **Do this after merging the interfacectl PR.**
 
 ```bash
-cd /Users/mike/Cursor/surfaces-webapps
+cd /Users/mike/SurfacesPlatform/surfaces-webapps
 
-cd tools/interfacectl
-git checkout main
-git pull
-git checkout <merged_sha>
-cd ../..
+export SURFACES_INTERFACECTL_ROOT=/Users/mike/SurfacesPlatform/interfacectl
+git checkout feat/surfaceops-phase-2
 
-git add tools/interfacectl
-git commit -m "chore: bump interfacectl submodule for owner schema"
+pnpm run interfacectl:build
+pnpm run generate:contract
+pnpm validate:local
 ```
 
-**Merge plan:** Put B and C in the same PR so CI sees the bumped submodule and the UI changes together.
+**Merge plan:** Put B and C in the same PR so CI sees the standalone interfacectl dependency and the UI changes together.
 
 ---
 
@@ -72,7 +70,7 @@ git commit -m "chore: bump interfacectl submodule for owner schema"
 
 | Requirement | Files | Status |
 |-------------|-------|--------|
-| **1. Owner** | `tools/interfacectl/packages/interfacectl-validator/src/schema/web.surface.contract.schema.json`, `contracts/surfaces.web.contract.json`, `apps/surfaceops-web/app/contracts/page.tsx`, `apps/surfaceops-web/app/contracts/[surfaceId]/page.tsx` | ✅ |
+| **1. Owner** | `interfacectl repo: packages/interfacectl-validator/src/schema/web.surface.contract.schema.json`, `contracts/surfaces.web.contract.json`, `apps/surfaceops-web/app/contracts/page.tsx`, `apps/surfaceops-web/app/contracts/[surfaceId]/page.tsx` | ✅ |
 | **2. Change awareness** | `apps/surfaceops-web/lib/contracts.ts` (`getLastContractChange`, `getLastExtractionRun`), detail page | ✅ |
 | **3. Repeated outcomes** | `apps/surfaceops-web/lib/contracts.ts` (`loadValidationOutcomes`), list + detail UI dots | ✅ |
 | **4. Public vs auth** | `apps/surfaceops-web/app/(overview)/page.tsx` — copy only, no auth | ✅ |
@@ -82,14 +80,12 @@ git commit -m "chore: bump interfacectl submodule for owner schema"
 
 ```bash
 git submodule update --init --recursive
+export SURFACES_INTERFACECTL_ROOT=/Users/mike/SurfacesPlatform/interfacectl
 pnpm install --frozen-lockfile
 pnpm run interfacectl:build
 
-# Ensure INTERFACECTL_BIN is set locally
-INTERFACECTL_BIN="$(pnpm -s run interfacectl:bin)"
-
 pnpm run generate:contract
-node "$INTERFACECTL_BIN" validate-extracted --contract ./contracts/surfaces.web.contract.json --extracted ./contracts/generated/surfaces-web.extraction.json --surface surfaces-web --exit-codes v2
+node scripts/interfacectl-tool.mjs run cli validate-extracted --contract ./contracts/surfaces.web.contract.json --extracted ./contracts/generated/surfaces-web.extraction.json --surface surfaces-web --exit-codes v2
 
 # Stop condition: never edit generated JSON by hand. If this fails, the only allowed fix is:
 # run pnpm run generate:contract, then commit the regenerated artifacts (or revert the triggering change)
@@ -116,7 +112,7 @@ pnpm validate:local
 
 ### Dependencies
 - Depends on interfacectl PR with `surfaces[].owner` schema (merged)
-- Submodule bump: `tools/interfacectl` → merged interfacectl SHA
+- Resolved against standalone `interfacectl` checkout at the merged SHA via `SURFACES_INTERFACECTL_ROOT`
 ```
 
 ---
@@ -135,7 +131,7 @@ pnpm validate:local
 |------|--------|
 | interfacectl PR link | _Create after merge_ |
 | interfacectl merged SHA | _Record after merge_ |
-| surfaces-webapps PR link | _Create after submodule bump_ |
+| surfaces-webapps PR link | _Create after standalone interfacectl validation_ |
 | Checks green | ✅ type-check, validate:local, validate-extracted |
 | No generated drift | ✅ |
 | Overview public, /contracts auth-gated | ✅ |

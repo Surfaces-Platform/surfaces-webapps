@@ -7,18 +7,17 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
+import {
+  resolveCliTool,
+  resolveGenerationGuardTool,
+} from "../lib/interfacectl-tooling.mjs";
+
 const repoRoot = path.resolve(
   path.join(path.dirname(fileURLToPath(import.meta.url)), "../..")
 );
 
-const cliPath = path.join(
-  repoRoot,
-  "tools/interfacectl/packages/interfacectl-cli/dist/index.js"
-);
-const guardPath = path.join(
-  repoRoot,
-  "tools/interfacectl/tools/check-generation-boundaries.mjs"
-);
+const cliPath = resolveCliTool({ cwd: repoRoot }).path;
+const guardPath = resolveGenerationGuardTool({ cwd: repoRoot }).path;
 
 function runNode(args, cwd = repoRoot) {
   return spawnSync("node", args, {

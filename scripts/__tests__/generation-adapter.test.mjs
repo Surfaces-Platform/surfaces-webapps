@@ -13,6 +13,7 @@ import {
   computeStatusFromFindings,
   runGenerationAdapter,
 } from "../adapter/generation-adapter-core.mjs";
+import { resolveGenerationGuardTool } from "../lib/interfacectl-tooling.mjs";
 
 const repoRoot = path.resolve(
   path.join(path.dirname(fileURLToPath(import.meta.url)), "../.."),
@@ -32,13 +33,7 @@ const httpWrapperPath = path.join(
   "serve-generation-adapter.mjs",
 );
 
-const guardSourcePath = path.join(
-  repoRoot,
-  "tools",
-  "interfacectl",
-  "tools",
-  "check-generation-boundaries.mjs",
-);
+const guardSourcePath = resolveGenerationGuardTool({ cwd: repoRoot }).path;
 
 function writeFile(filePath, contents) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });

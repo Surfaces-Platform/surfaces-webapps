@@ -4,6 +4,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 
+import { resolveCliTool } from "../lib/interfacectl-tooling.mjs";
+
 function parseArgs(argv) {
   const args = {};
   for (let i = 0; i < argv.length; i += 1) {
@@ -109,16 +111,7 @@ function main() {
   const selected = manifest.prototypes.find((p) => p.id === (requestedPrototype || manifest.activePrototypeId));
   if (!selected) fail(`Prototype not found: ${requestedPrototype || manifest.activePrototypeId}`);
 
-  const cliPath = path.join(
-    root,
-    "tools",
-    "interfacectl",
-    "packages",
-    "interfacectl-cli",
-    "dist",
-    "index.js",
-  );
-  if (!fs.existsSync(cliPath)) fail(`interfacectl CLI not built: ${cliPath}`);
+  const cliPath = resolveCliTool({ cwd: root }).path;
 
   const generatedContractPath = path.join(root, "contracts", "generated", "surfaces-web.contract.json");
   const generatedReportPath = path.join(root, "contracts", "generated", "surfaces-web.extraction.json");

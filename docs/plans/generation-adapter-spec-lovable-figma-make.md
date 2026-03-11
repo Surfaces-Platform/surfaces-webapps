@@ -20,8 +20,8 @@ Out of scope:
 
 ## Canonical Inputs and Dependencies
 - Contract: `contracts/surfaces.web.contract.json`
-- CLI validator: `tools/interfacectl/packages/interfacectl-cli/dist/index.js`
-- Generation boundary checker: `tools/interfacectl/tools/check-generation-boundaries.mjs`
+- CLI validator: `node scripts/interfacectl-tool.mjs path cli`
+- Generation boundary checker: `node scripts/interfacectl-tool.mjs path guard`
 - Optional operations view: SurfaceOps routes under `/contracts/runs`
 
 ## System Model

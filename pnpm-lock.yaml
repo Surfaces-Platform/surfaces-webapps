@@ -19,12 +19,6 @@ importers:
       '@playwright/test':
         specifier: ^1.51.1
         version: 1.58.2
-      '@surfaces/interfacectl-cli':
-        specifier: workspace:*
-        version: link:tools/interfacectl/packages/interfacectl-cli
-      '@surfaces/interfacectl-validator':
-        specifier: workspace:*
-        version: link:tools/interfacectl/packages/interfacectl-validator
       '@types/node':
         specifier: ^20.14.9
         version: 20.19.27

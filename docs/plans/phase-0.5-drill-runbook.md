@@ -20,7 +20,7 @@
 ### 2. Merge order
 
 1. Merge interfacectl PR first
-2. Bump `surfaces-webapps/tools/interfacectl` submodule to the interfacectl merge SHA
+2. Validate `surfaces-webapps` against the merged standalone `interfacectl` SHA via `SURFACES_INTERFACECTL_ROOT`
 3. Merge surfaces-webapps PR
 
 ### 3. Confirm CI is green on surfaces-webapps main
@@ -53,7 +53,7 @@ Create revert PRs (same order), or do a single revert per repo and merge quickly
 ### 1. surfaces-webapps revert
 
 1. Remove `expectsAuthRegisterRoute` from `contracts/surfaces.web.contract.json`
-2. Remove it from `tools/interfacectl/packages/interfacectl-validator/src/schema/web.surface.contract.schema.json`
+2. Remove it from the standalone `interfacectl` repo schema: `packages/interfacectl-validator/src/schema/web.surface.contract.schema.json`
 3. Remove SurfaceOps logic in `apps/surfaceops-web/lib/contracts.ts`:
    - `PolicySurface.phase0` field
    - `computeValidationStatus` branch
@@ -63,10 +63,9 @@ Create revert PRs (same order), or do a single revert per repo and merge quickly
    - intervention mapping in `getInterventionPoint`
 4. Verify locally:
    ```bash
-   pnpm run interfacectl:build
-   pnpm run generate:contract
-   INTERFACECTL_BIN="$(pnpm -s run interfacectl:bin)"
-   node "$INTERFACECTL_BIN" validate-extracted --contract ./contracts/surfaces.web.contract.json --extracted ./contracts/generated/surfaces-web.extraction.json --surface surfaces-web --exit-codes v2
+   SURFACES_INTERFACECTL_ROOT=../interfacectl pnpm run interfacectl:build
+   SURFACES_INTERFACECTL_ROOT=../interfacectl pnpm run generate:contract
+   SURFACES_INTERFACECTL_ROOT=../interfacectl node scripts/interfacectl-tool.mjs run cli validate-extracted --contract ./contracts/surfaces.web.contract.json --extracted ./contracts/generated/surfaces-web.extraction.json --surface surfaces-web --exit-codes v2
    # Expected: exit 0
    git diff --exit-code contracts/generated/
    # Expected: exit 0 (no changes)
@@ -81,9 +80,9 @@ Create revert PRs (same order), or do a single revert per repo and merge quickly
    - `compare()` rule block
 3. Run `pnpm test` and `pnpm run build`
 
-### 3. surfaces-webapps submodule bump
+### 3. surfaces-webapps verification against reverted interfacectl
 
-1. Update `tools/interfacectl` to the interfacectl revert merge SHA
+1. Update or pin `SURFACES_INTERFACECTL_ROOT` to the reverted standalone `interfacectl` SHA
 2. Verify CI is green again
 
 ---

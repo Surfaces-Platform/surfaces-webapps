@@ -1,105 +1,132 @@
 #!/usr/bin/env node
 /**
  * Prints provenance information for interfacectl validation runs.
- * Cross-platform Node script that extracts git SHA, binary path, CLI version,
+ * Resolver-backed script that prints CLI source, binary path, version, repo SHA,
  * workspace root, contract path, and schema checksum.
  */
 
-import { execSync } from "child_process";
-import { readFileSync, existsSync } from "fs";
+import { spawnSync } from "node:child_process";
 import { createHash } from "crypto";
+import { createRequire } from "node:module";
 import { fileURLToPath } from "url";
 import { dirname, join, resolve } from "path";
+import fs from "node:fs";
+
+import { resolveCliTool } from "./lib/interfacectl-tooling.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const workspaceRoot = resolve(join(__dirname, ".."));
 const contractPath = "./contracts/surfaces.web.contract.json";
+const strict = process.argv.includes("--strict") || process.env.CI === "true";
+const requireFromWorkspace = createRequire(join(workspaceRoot, "__surfaces_provenance__.cjs"));
 
-// Get git SHA
-let gitSha = "not a git repo";
-try {
-  gitSha = execSync("git rev-parse HEAD", {
-    cwd: workspaceRoot,
-    encoding: "utf8",
-  }).trim();
-} catch {
-  // Not in a git repo or git not available
+function toDisplayPath(targetPath) {
+  if (!targetPath) return "unresolved";
+  if (targetPath.startsWith(workspaceRoot)) {
+    const relative = targetPath.slice(workspaceRoot.length + 1);
+    return relative ? `./${relative}` : ".";
+  }
+  return targetPath;
 }
 
-// Get binary path - derive from package location for robustness
-let binaryPath = "./node_modules/.bin/interfacectl";
-try {
-  // First try to resolve via which (more accurate if available)
-  const whichOutput = execSync("pnpm exec which interfacectl", {
-    cwd: workspaceRoot,
+function runGit(cwd, args) {
+  const result = spawnSync("git", args, {
+    cwd,
     encoding: "utf8",
-  }).trim();
-  // Normalize to relative path if it's in workspace
-  if (whichOutput.startsWith(workspaceRoot)) {
-    binaryPath = `./${whichOutput.slice(workspaceRoot.length + 1)}`;
-  } else {
-    binaryPath = whichOutput;
+  });
+  if (result.status !== 0) {
+    return undefined;
   }
-} catch {
-  // Fallback: derive from package.json location
+  return result.stdout.trim() || undefined;
+}
+
+function resolveValidatorPackageRoot(cliResolution) {
+  if (cliResolution.repoRoot) {
+    return join(cliResolution.repoRoot, "packages", "interfacectl-validator");
+  }
+
   try {
-    const cliPackagePath = join(
-      workspaceRoot,
-      "interfacectl-tooling/packages/interfacectl-cli/package.json",
+    const validatorPackageJson = requireFromWorkspace.resolve(
+      "@surfaces/interfacectl-validator/package.json",
     );
-    if (existsSync(cliPackagePath)) {
-      // Package exists, assume standard bin location
-      binaryPath = "./node_modules/.bin/interfacectl";
+    return dirname(validatorPackageJson);
+  } catch {
+    return undefined;
+  }
+}
+
+function resolveSchemaPath(validatorPackageRoot) {
+  if (!validatorPackageRoot) {
+    return undefined;
+  }
+
+  for (const relativePath of [
+    join("dist", "schema", "web.surface.contract.schema.json"),
+    join("src", "schema", "web.surface.contract.schema.json"),
+  ]) {
+    const candidate = join(validatorPackageRoot, relativePath);
+    if (fs.existsSync(candidate)) {
+      return candidate;
     }
-  } catch {
-    // Couldn't determine package location - use default
   }
+
+  return undefined;
 }
 
-// Get CLI version
-let cliVersion = "unknown";
+let cliResolution;
+let resolutionError;
+
 try {
-  cliVersion = execSync("pnpm exec interfacectl --version", {
-    cwd: workspaceRoot,
-    encoding: "utf8",
-  }).trim();
-} catch {
-  // Fallback to reading package.json
-  try {
-    const packageJson = JSON.parse(
-      readFileSync(
-        join(workspaceRoot, "interfacectl-tooling/packages/interfacectl-cli/package.json"),
-        "utf8",
-      ),
-    );
-    cliVersion = packageJson.version;
-  } catch {
-    // Couldn't read package.json
-  }
+  cliResolution = resolveCliTool({ cwd: workspaceRoot });
+} catch (error) {
+  resolutionError = error instanceof Error ? error.message : String(error);
 }
 
-// Get schema checksum (if schema exists)
-let schemaChecksum = "schema not found";
-try {
-  const schemaPath = join(
-    workspaceRoot,
-    "interfacectl-tooling/packages/interfacectl-validator/dist/schema/web.surface.contract.schema.json",
-  );
-  if (existsSync(schemaPath)) {
-    const schemaContent = readFileSync(schemaPath);
-    const hash = createHash("sha256").update(schemaContent).digest("hex");
-    schemaChecksum = hash;
-  }
-} catch {
-  // Schema file doesn't exist or couldn't read it
-}
+const validatorPackageRoot = cliResolution
+  ? resolveValidatorPackageRoot(cliResolution)
+  : undefined;
+const schemaPath = resolveSchemaPath(validatorPackageRoot);
+const schemaChecksum = schemaPath
+  ? createHash("sha256").update(fs.readFileSync(schemaPath)).digest("hex")
+  : undefined;
+const gitSha = cliResolution?.repoRoot
+  ? runGit(cliResolution.repoRoot, ["rev-parse", "HEAD"])
+  : undefined;
 
 console.log("=== Validation Provenance ===");
-console.log(`Git SHA: ${gitSha}`);
-console.log(`Binary: ${binaryPath}`);
-console.log(`CLI Version: ${cliVersion}`);
+console.log(`CLI Source: ${cliResolution?.source ?? "unresolved"}`);
+console.log(`Binary: ${toDisplayPath(cliResolution?.path)}`);
+console.log(`CLI Version: ${cliResolution?.version ?? "unknown"}`);
+console.log(`CLI Repo Root: ${toDisplayPath(cliResolution?.repoRoot)}`);
+console.log(`CLI Repo SHA: ${gitSha ?? "unresolved"}`);
 console.log(`Workspace Root: ${workspaceRoot}`);
 console.log(`Contract: ${contractPath}`);
-console.log(`Schema SHA256: ${schemaChecksum}`);
+console.log(`Schema Path: ${toDisplayPath(schemaPath)}`);
+console.log(`Schema SHA256: ${schemaChecksum ?? "unresolved"}`);
 console.log("");
+
+if (strict) {
+  const missing = [];
+  if (!cliResolution?.source) missing.push("CLI source");
+  if (!cliResolution?.path) missing.push("CLI binary path");
+  if (!cliResolution?.version) missing.push("CLI version");
+  if (!schemaChecksum) missing.push("schema checksum");
+  if (
+    cliResolution?.source &&
+    cliResolution.source !== "installed-package" &&
+    cliResolution.source !== "explicit-cli" &&
+    !gitSha
+  ) {
+    missing.push("CLI repo SHA");
+  }
+
+  if (missing.length > 0) {
+    console.error(
+      `Provenance resolution failed: ${missing.join(", ")}${
+        resolutionError ? ` (${resolutionError})` : ""
+      }`,
+    );
+    process.exit(1);
+  }
+}

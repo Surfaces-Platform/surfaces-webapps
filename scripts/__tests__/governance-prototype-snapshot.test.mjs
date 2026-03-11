@@ -11,9 +11,14 @@ const repoRoot = path.resolve(path.join(path.dirname(fileURLToPath(import.meta.u
 function makeSandbox() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "governance-snapshot-"));
   fs.mkdirSync(path.join(dir, "scripts", "prototypes"), { recursive: true });
+  fs.mkdirSync(path.join(dir, "scripts", "lib"), { recursive: true });
   fs.copyFileSync(
     path.join(repoRoot, "scripts", "prototypes", "snapshot-governance-extraction.mjs"),
     path.join(dir, "scripts", "prototypes", "snapshot-governance-extraction.mjs"),
+  );
+  fs.copyFileSync(
+    path.join(repoRoot, "scripts", "lib", "interfacectl-tooling.mjs"),
+    path.join(dir, "scripts", "lib", "interfacectl-tooling.mjs"),
   );
   fs.mkdirSync(path.join(dir, "apps", "surfaceops-web", "prototypes", "governance", "p0004", "extraction"), {
     recursive: true,
@@ -78,6 +83,7 @@ process.exit(0);
 `,
   );
   fs.chmodSync(path.join(dir, "tools", "interfacectl", "packages", "interfacectl-cli", "dist", "index.js"), 0o755);
+  fs.chmodSync(path.join(dir, "scripts", "lib", "interfacectl-tooling.mjs"), 0o755);
 
   return dir;
 }

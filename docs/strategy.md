@@ -47,7 +47,7 @@ This happens before users experience failure.
 - One contract model compiles once and applies across multiple enforcement surfaces.
 
 ### Enforcement Proof Points (Current Implementation)
-- Generation time: pre-emit boundary check blocks banned shell-owned primitives via `tools/interfacectl/tools/check-generation-boundaries.mjs`; demo flow in `apps/surfaces-web/app/demos/generation/page.tsx`.
+- Generation time: pre-emit boundary check blocks banned shell-owned primitives via the shared interfacectl resolver (`node scripts/interfacectl-tool.mjs path guard`); demo flow in `apps/surfaces-web/app/demos/generation/page.tsx`.
 - CI/CD time: contract validation workflow in `.github/workflows/validate-contract.yml` runs edge smoke tests, `validate`, `validate-extracted`, and artifact upload.
 - Runtime (edge): adaptive route guard in `apps/surfaces-web/proxy.ts` validates proposed changes before render for `/adaptive/*`; demo route in `apps/surfaces-web/app/adaptive/[...slug]/page.tsx`.
 

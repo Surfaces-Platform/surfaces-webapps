@@ -5,14 +5,15 @@ import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 
+import {
+  resolveCliTool,
+  resolveGenerationGuardTool,
+} from "../lib/interfacectl-tooling.mjs";
+
 const VALID_TOOLS = new Set(["codex", "cursor", "lovable", "figma-make"]);
 const VALID_MODES = new Set(["workspace", "descriptor"]);
 
 const DEFAULT_CONTRACT_PATH = "contracts/surfaces.web.contract.json";
-const DEFAULT_INTERFACECTL_CLI =
-  "tools/interfacectl/packages/interfacectl-cli/dist/index.js";
-const DEFAULT_GENERATION_GUARD =
-  "tools/interfacectl/tools/check-generation-boundaries.mjs";
 const DEFAULT_DESCRIPTOR_PARITY_CONFIG =
   "contracts/generation-descriptor-parity.json";
 
@@ -164,33 +165,43 @@ function resolveRuntimePaths(request, options = {}) {
     cwd,
   );
 
-  const cliInput =
-    options.interfacectlCliPath ??
-    process.env.SURFACES_ADAPTER_INTERFACECTL_CLI ??
-    DEFAULT_INTERFACECTL_CLI;
+  const env = options.env ?? process.env;
+  const cliResolution = resolveCliTool({
+    cwd,
+    env,
+    cliPath:
+      options.interfacectlCliPath ??
+      env.SURFACES_ADAPTER_INTERFACECTL_CLI,
+    rootPath: options.interfacectlRoot ?? env.SURFACES_INTERFACECTL_ROOT,
+  });
 
-  const guardInput =
-    options.generationGuardPath ??
-    process.env.SURFACES_ADAPTER_GENERATION_GUARD ??
-    DEFAULT_GENERATION_GUARD;
+  const guardResolution = resolveGenerationGuardTool({
+    cwd,
+    env,
+    cliResolution,
+    guardPath:
+      options.generationGuardPath ??
+      env.SURFACES_ADAPTER_GENERATION_GUARD,
+    rootPath: options.interfacectlRoot ?? env.SURFACES_INTERFACECTL_ROOT,
+  });
 
   const descriptorParityConfigInput =
     options.descriptorParityConfigPath ??
-    process.env.SURFACES_ADAPTER_DESCRIPTOR_PARITY_CONFIG ??
+    env.SURFACES_ADAPTER_DESCRIPTOR_PARITY_CONFIG ??
     DEFAULT_DESCRIPTOR_PARITY_CONFIG;
 
   return {
     cwd,
     contractPath,
-    cliPath: resolvePathOrDefault(cliInput, undefined, cwd),
-    guardPath: resolvePathOrDefault(guardInput, undefined, cwd),
+    cliPath: cliResolution.path,
+    guardPath: guardResolution.path,
     descriptorParityConfigPath: resolvePathOrDefault(
       descriptorParityConfigInput,
       undefined,
       cwd,
     ),
     nodeBin: options.nodeBin ?? process.execPath,
-    env: options.env ?? process.env,
+    env,
   };
 }
 

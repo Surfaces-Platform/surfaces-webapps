@@ -8,7 +8,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 NODE_BIN="${NODE_BIN:-node}"
 CONTRACT_PATH="${CONTRACT_PATH:-$REPO_ROOT/contracts/surfaces.web.contract.json}"
-GUARD_PATH="${GUARD_PATH:-$REPO_ROOT/tools/interfacectl/tools/check-generation-boundaries.mjs}"
+GUARD_PATH="${GUARD_PATH:-}"
 RUN_EMITTER_PATH="${RUN_EMITTER_PATH:-$REPO_ROOT/scripts/lib/contract-runs.mjs}"
 SURFACE_ID="${SURFACE_ID:-surfaces-web}"
 SURFACES_WEB_URL="${SURFACES_WEB_URL:-http://localhost:3000}"
@@ -28,10 +28,13 @@ emit_run() {
     --finding-codes "$finding_codes" >/dev/null
 }
 
+command -v "$NODE_BIN" >/dev/null 2>&1 || fail "Node binary not found: $NODE_BIN"
+if [ -z "$GUARD_PATH" ]; then
+  GUARD_PATH="$("$NODE_BIN" "$REPO_ROOT/scripts/interfacectl-tool.mjs" path guard)"
+fi
 for required in "$CONTRACT_PATH" "$GUARD_PATH" "$RUN_EMITTER_PATH"; do
   [ -f "$required" ] || fail "Required file not found: $required"
 done
-command -v "$NODE_BIN" >/dev/null 2>&1 || fail "Node binary not found: $NODE_BIN"
 
 "$NODE_BIN" "$RUN_EMITTER_PATH" init --root "$REPO_ROOT" >/dev/null
 

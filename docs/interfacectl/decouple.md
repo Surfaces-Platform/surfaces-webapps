@@ -29,9 +29,10 @@ Validator builds copy the bundled schema automatically via `packages/interfacect
 
 ## Using the CLI from the Surfaces monorepo
 
-- Install the published CLI when you need to validate: `pnpm add -D @surfaces/interfacectl-cli`
-- (Optional) For one-off runs you can use a tarball or `pnpm dlx` pointing at the standalone repo.
-- After installation run `pnpm exec interfacectl validate --root . --contract contracts/surfaces.web.contract.json`
+- The repo now resolves interfacectl via `scripts/interfacectl-tool.mjs`.
+- Preferred sources, in order: explicit artifact paths, `SURFACES_INTERFACECTL_ROOT`, detected sibling checkout, installed package, then local submodule fallback.
+- The npm packages are not published in the public registry yet, so external installs currently require a tarball, git URL, or standalone checkout.
+- From `surfaces-webapps`, run `node scripts/interfacectl-tool.mjs run cli validate --root . --contract contracts/surfaces.web.contract.json`
 - Remember to keep `interfacectl.config.json` in sync with surface locations (see below).
 
 ## Local validation workflow
@@ -50,7 +51,7 @@ Validator builds copy the bundled schema automatically via `packages/interfacect
 
 Override with `--config <path>` or `SURFACES_CONFIG`.
 
-- Direct CLI usage: `pnpm exec interfacectl validate --root . --contract contracts/surfaces.web.contract.json`
+- Direct CLI usage: `node scripts/interfacectl-tool.mjs run cli validate --root . --contract contracts/surfaces.web.contract.json`
 - JSON output: append `--format json`
 - Write to a file: add `--out tmp/report.json`
 - Environment fallbacks:
@@ -62,14 +63,13 @@ Override with `--config <path>` or `SURFACES_CONFIG`.
 1. Update the source schema in the standalone repo (`packages/interfacectl-validator/src/schema/web.surface.contract.schema.json`).
 2. Re-run `pnpm -r run build` to copy the schema into `dist/schema/`.
 3. Bump versions via changesets and publish new packages.
-4. Consume the new version in the Surfaces monorepo (`pnpm add -D @surfaces/interfacectl-cli@<new version>`).
+4. Consume the new build in the Surfaces web estate via tarball, git reference, or `SURFACES_INTERFACECTL_ROOT`, then run the shared resolver-backed validation scripts.
 
 ## Definition of Done checklist
 
 - [ ] CLI and validator build without workspace assumptions (in the standalone repo).
 - [ ] Bundled schema copied into validator dist output.
 - [ ] Fixture portability test passes (`pnpm --filter @surfaces/interfacectl-cli run test` in the standalone repo).
-- [ ] `pnpm exec interfacectl validate --root . --contract contracts/surfaces.web.contract.json` succeeds when the CLI is installed locally.
+- [ ] `node scripts/interfacectl-tool.mjs run cli validate --root . --contract contracts/surfaces.web.contract.json` succeeds through the shared resolver.
 - [ ] New repository scaffold synced with CI, release workflow, and README.
 - [ ] Changeset recorded for any release-bound modifications.
-

@@ -18,6 +18,10 @@ function makeSandbox() {
 
   const demoDir = path.join(dir, "scripts", "demos");
   fs.mkdirSync(demoDir, { recursive: true });
+  fs.copyFileSync(
+    path.join(repoRoot, "scripts", "interfacectl-tool.mjs"),
+    path.join(dir, "scripts", "interfacectl-tool.mjs"),
+  );
   for (const scriptName of [
     "demo-bootstrap-contract.sh",
     "demo-generation.sh",
@@ -35,7 +39,13 @@ function makeSandbox() {
     path.join(repoRoot, "scripts", "lib", "contract-runs.mjs"),
     path.join(libDir, "contract-runs.mjs")
   );
+  fs.copyFileSync(
+    path.join(repoRoot, "scripts", "lib", "interfacectl-tooling.mjs"),
+    path.join(libDir, "interfacectl-tooling.mjs")
+  );
   fs.chmodSync(path.join(libDir, "contract-runs.mjs"), 0o755);
+  fs.chmodSync(path.join(dir, "scripts", "interfacectl-tool.mjs"), 0o755);
+  fs.chmodSync(path.join(libDir, "interfacectl-tooling.mjs"), 0o755);
 
   fs.mkdirSync(path.join(dir, "contracts", "generated"), { recursive: true });
   fs.writeFileSync(path.join(dir, "contracts", "surfaces.web.contract.json"), JSON.stringify({ ok: true }, null, 2));

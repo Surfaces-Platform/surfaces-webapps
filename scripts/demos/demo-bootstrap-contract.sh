@@ -9,7 +9,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 NODE_BIN="${NODE_BIN:-node}"
 PNPM_BIN="${PNPM_BIN:-pnpm}"
 
-CLI_PATH="${CLI_PATH:-$REPO_ROOT/tools/interfacectl/packages/interfacectl-cli/dist/index.js}"
+CLI_PATH="${CLI_PATH:-}"
 SURFACE_ID="${SURFACE_ID:-reference-target-web}"
 APP_ROOT="${APP_ROOT:-apps/reference-target-web}"
 CONTRACT_PATH="${CONTRACT_PATH:-$REPO_ROOT/contracts/generated/$SURFACE_ID.contract.json}"
@@ -41,10 +41,13 @@ emit_run() {
     --extraction-path "$extraction_path" >/dev/null
 }
 
-[ -f "$CLI_PATH" ] || fail "interfacectl CLI not found: $CLI_PATH"
-[ -f "$RUN_EMITTER_PATH" ] || fail "Run emitter not found: $RUN_EMITTER_PATH"
 command -v "$NODE_BIN" >/dev/null 2>&1 || fail "Node binary not found: $NODE_BIN"
 command -v "$PNPM_BIN" >/dev/null 2>&1 || fail "pnpm binary not found: $PNPM_BIN"
+if [ -z "$CLI_PATH" ]; then
+  CLI_PATH="$("$NODE_BIN" "$REPO_ROOT/scripts/interfacectl-tool.mjs" path cli)"
+fi
+[ -f "$CLI_PATH" ] || fail "interfacectl CLI not found: $CLI_PATH"
+[ -f "$RUN_EMITTER_PATH" ] || fail "Run emitter not found: $RUN_EMITTER_PATH"
 
 "$NODE_BIN" "$RUN_EMITTER_PATH" init --root "$REPO_ROOT" >/dev/null
 

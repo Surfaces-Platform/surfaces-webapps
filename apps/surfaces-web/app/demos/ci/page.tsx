@@ -11,12 +11,7 @@ export default function CiDemoPage() {
 {`- run: pnpm install --frozen-lockfile
 - run: pnpm examples:build-manifest
 - run: pnpm examples:test-edge
-- run: node tools/interfacectl/packages/interfacectl-cli/dist/index.js validate \\
-        --workspace-root . \\
-        --contract ./contracts/surfaces.web.contract.json \\
-        --format json \\
-        --exit-codes v2 \\
-        --out ./artifacts/interfacectl-report.json
+- run: pnpm run validate:ci
 
 # Icon policy outcomes in CI/CD time:
 # icon.source-disallowed + policy=warn   => warning visibility, exit 0

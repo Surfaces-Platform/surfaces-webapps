@@ -12,7 +12,7 @@ Or a single surface:
 pnpm run generate:contract
 ```
 
-The CLI is built from the `tools/interfacectl` submodule; run `pnpm run interfacectl:build` once if needed.
+The CLI is resolved through `scripts/interfacectl-tool.mjs` in this order: explicit env path, explicit repo root, detected sibling checkout, installed package, then the local `tools/interfacectl` fallback. During the current transition, the workspace still vendors that fallback mirror, so run `pnpm run interfacectl:build` when the resolved source is a standalone/sibling checkout or the vendored fallback.
 
 - `*.contract.json` — Schema-valid contract with `x_extracted` (routes, hasShell, designSystemComponents, authAware).
 - `*.extraction.json` — Machine-readable report and warnings.

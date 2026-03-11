@@ -20,3 +20,11 @@ When work in this repo requires changes to `interfacectl`, follow this cross-rep
 - run relevant tests in `../interfacectl` for the changed behavior
 - open/update the `interfacectl` PR first and capture its branch name and commit SHA
 - in the `surfaces-webapps` PR, link the `interfacectl` PR and document dependency order/blocking status
+
+When work spans repos or changes shared orchestration:
+- start from `/Users/mike/SurfacesPlatform` and run `pnpm workspace:status`
+- use the canonical clean worktrees defined in `../scripts/worktree/policy.json`
+- use resolver-backed commands such as `scripts/interfacectl-tool.mjs`, `pnpm cli:where:*`, and `pnpm validate:*`
+- prefer the sibling `../interfacectl` checkout or the canonical clean `.worktrees/interfacectl-main` baseline before falling back to `tools/interfacectl`
+- do not add new hardcoded `tools/interfacectl/...` paths to scripts, docs, or CI
+- treat `tools/interfacectl` as a vendored fallback mirror only; do not edit source files there directly

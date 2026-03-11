@@ -9,7 +9,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 NODE_BIN="${NODE_BIN:-node}"
 PNPM_BIN="${PNPM_BIN:-pnpm}"
 
-CLI_PATH="${CLI_PATH:-$REPO_ROOT/tools/interfacectl/packages/interfacectl-cli/dist/index.js}"
+CLI_PATH="${CLI_PATH:-}"
 SURFACE_ID="${SURFACE_ID:-reference-target-web}"
 APP_ROOT="${APP_ROOT:-apps/reference-target-web}"
 CONTRACT_PATH="${CONTRACT_PATH:-$REPO_ROOT/contracts/generated/$SURFACE_ID.contract.json}"
@@ -88,12 +88,15 @@ fs.writeFileSync(metaPath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
 ' "$ICON_PILOT_OUTPUT_DIR/icon.$mode.meta.json" "$mode" "$exit_code" "$severity"
 }
 
-for required in "$CLI_PATH" "$RUN_EMITTER_PATH"; do
-  [ -f "$required" ] || fail "Required file not found: $required"
-done
 [ -d "$APP_ROOT" ] || fail "App root not found: $APP_ROOT"
 command -v "$NODE_BIN" >/dev/null 2>&1 || fail "Node binary not found: $NODE_BIN"
 command -v "$PNPM_BIN" >/dev/null 2>&1 || fail "pnpm binary not found: $PNPM_BIN"
+if [ -z "$CLI_PATH" ]; then
+  CLI_PATH="$("$NODE_BIN" "$REPO_ROOT/scripts/interfacectl-tool.mjs" path cli)"
+fi
+for required in "$CLI_PATH" "$RUN_EMITTER_PATH"; do
+  [ -f "$required" ] || fail "Required file not found: $required"
+done
 case "$ICON_PILOT_MODE" in
 warn|strict|both) ;;
 *) fail "ICON_PILOT_MODE must be one of: warn, strict, both (got: $ICON_PILOT_MODE)" ;;

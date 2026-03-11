@@ -5,8 +5,8 @@ This checklist verifies that `interfacectl validate` works as designed: determin
 ## Assumptions
 
 1. Contract file lives at: `contracts/surfaces.web.contract.json`
-2. CLI dependency is installed locally when running checks (e.g., `pnpm add -D @surfaces/interfacectl-cli`).
-3. Validation command is invoked via `pnpm exec interfacectl validate`.
+2. The shared resolver can find the CLI via explicit env overrides, `SURFACES_INTERFACECTL_ROOT`, a sibling standalone checkout, an installed package, or the local submodule fallback.
+3. Validation command is invoked via `node scripts/interfacectl-tool.mjs run cli validate`.
 4. Validator is static/deterministic (no Next.js dev server, no runtime probing).
 
 ## Conventions
@@ -22,7 +22,7 @@ This checklist verifies that `interfacectl validate` works as designed: determin
 ## 1) Smoke test: command exists and runs
 
 1. Run:
-   1. `pnpm exec interfacectl validate`
+   1. `node scripts/interfacectl-tool.mjs run cli validate`
 2. Expect:
    1. PASS when repo is in a compliant state
    2. Output includes a summary (counts of errors/warnings) or clear success message

@@ -1,16 +1,21 @@
 #!/usr/bin/env bash
 # Generate extraction artifacts for platform surfaces (plus reference target).
-# Run from repo root. Requires interfacectl CLI built (pnpm interfacectl:build).
+# Run from repo root. Uses the shared interfacectl CLI resolver.
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-CLI="$REPO_ROOT/tools/interfacectl/packages/interfacectl-cli/dist/index.js"
+NODE_BIN="${NODE_BIN:-node}"
+CLI="${CLI:-}"
 OUT_DIR="$REPO_ROOT/contracts/generated"
 
-if [[ ! -f "$CLI" ]]; then
-  echo "interfacectl CLI not found. Run: pnpm interfacectl:build"
+command -v "$NODE_BIN" >/dev/null 2>&1 || {
+  echo "Node binary not found: $NODE_BIN" >&2
   exit 1
+}
+
+if [[ -z "$CLI" ]]; then
+  CLI="$("$NODE_BIN" "$REPO_ROOT/scripts/interfacectl-tool.mjs" path cli)"
 fi
 
 SURFACES=(
@@ -27,7 +32,7 @@ cd "$REPO_ROOT"
 for entry in "${SURFACES[@]}"; do
   IFS=: read -r surface app_root <<< "$entry"
   echo "Generating $surface..."
-  node "$CLI" generate-contract \
+  "$NODE_BIN" "$CLI" generate-contract \
     --app-root "$app_root" \
     --surface "$surface" \
     --out "$OUT_DIR/$surface.contract.json" \

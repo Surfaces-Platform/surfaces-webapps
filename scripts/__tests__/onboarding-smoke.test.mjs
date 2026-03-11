@@ -8,8 +8,10 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 
+import { resolveCliTool } from "../lib/interfacectl-tooling.mjs";
+
 const repoRoot = path.resolve(path.join(path.dirname(fileURLToPath(import.meta.url)), "../.."));
-const cliPath = path.join(repoRoot, "tools/interfacectl/packages/interfacectl-cli/dist/index.js");
+const cliPath = resolveCliTool({ cwd: repoRoot }).path;
 
 function sha256File(filePath) {
   const content = fs.readFileSync(filePath);
