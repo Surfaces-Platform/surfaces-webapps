@@ -61,6 +61,118 @@
   },
   "contractId": "surfaces.web",
   "description": "Interface expectations shared across InterfaceCTL, SurfaceOps, and Surfaces web experiences.",
+  "marketingProfiles": {
+    "layout": [
+      {
+        "heroContainerMode": "open-flow",
+        "heroVisualPlacement": "none",
+        "id": "marketing-open-flow-text-compact",
+        "sectionDividerMode": "border-top",
+        "sectionSpacingProfile": "compact"
+      },
+      {
+        "heroContainerMode": "open-flow",
+        "heroVisualPlacement": "none",
+        "id": "marketing-open-flow-text-roomy",
+        "sectionDividerMode": "border-top",
+        "sectionSpacingProfile": "roomy"
+      }
+    ],
+    "typography": [
+      {
+        "id": "marketing-mono",
+        "roles": [
+          {
+            "allowedTokens": [
+              "var(--marketing-mono-hero-eyebrow-family)",
+              "var(--marketing-mono-hero-eyebrow-size)",
+              "var(--marketing-mono-hero-eyebrow-line-height)",
+              "var(--marketing-mono-hero-eyebrow-letter-spacing)"
+            ],
+            "role": "heroEyebrow"
+          },
+          {
+            "allowedTokens": [
+              "var(--marketing-mono-hero-title-family)",
+              "var(--marketing-mono-hero-title-size)",
+              "var(--marketing-mono-hero-title-line-height)"
+            ],
+            "role": "heroTitle"
+          },
+          {
+            "allowedTokens": [
+              "var(--marketing-mono-hero-body-family)",
+              "var(--marketing-mono-hero-body-size)",
+              "var(--marketing-mono-hero-body-line-height)"
+            ],
+            "role": "heroBody"
+          },
+          {
+            "allowedTokens": [
+              "var(--marketing-mono-section-title-family)",
+              "var(--marketing-mono-section-title-size)",
+              "var(--marketing-mono-section-title-line-height)"
+            ],
+            "role": "sectionTitle"
+          },
+          {
+            "allowedTokens": [
+              "var(--marketing-mono-body-family)",
+              "var(--marketing-mono-body-size)",
+              "var(--marketing-mono-body-line-height)"
+            ],
+            "role": "body"
+          }
+        ]
+      },
+      {
+        "id": "marketing-sans",
+        "roles": [
+          {
+            "allowedTokens": [
+              "var(--marketing-sans-hero-eyebrow-family)",
+              "var(--marketing-sans-hero-eyebrow-size)",
+              "var(--marketing-sans-hero-eyebrow-line-height)",
+              "var(--marketing-sans-hero-eyebrow-letter-spacing)"
+            ],
+            "role": "heroEyebrow"
+          },
+          {
+            "allowedTokens": [
+              "var(--marketing-sans-hero-title-family)",
+              "var(--marketing-sans-hero-title-size)",
+              "var(--marketing-sans-hero-title-line-height)"
+            ],
+            "role": "heroTitle"
+          },
+          {
+            "allowedTokens": [
+              "var(--marketing-sans-hero-body-family)",
+              "var(--marketing-sans-hero-body-size)",
+              "var(--marketing-sans-hero-body-line-height)"
+            ],
+            "role": "heroBody"
+          },
+          {
+            "allowedTokens": [
+              "var(--marketing-sans-section-title-family)",
+              "var(--marketing-sans-section-title-size)",
+              "var(--marketing-sans-section-title-line-height)"
+            ],
+            "role": "sectionTitle"
+          },
+          {
+            "allowedTokens": [
+              "var(--marketing-sans-body-family)",
+              "var(--marketing-sans-body-size)",
+              "var(--marketing-sans-body-line-height)"
+            ],
+            "role": "body"
+          }
+        ]
+      }
+    ]
+  },
   "sections": [
     {
       "description": "Primary hero section introducing the surface intent.",
@@ -116,6 +228,8 @@
           ]
         },
         "landingPattern": {
+          "marketingLayoutPolicy": "warn",
+          "marketingLayoutProfile": "marketing-open-flow-text-compact",
           "pageBackgroundMode": "solid",
           "policy": "strict",
           "requireTopLevelSections": [
@@ -131,6 +245,8 @@
         },
         "maxContentWidth": 1120
       },
+      "marketingTypographyPolicy": "warn",
+      "marketingTypographyProfile": "marketing-mono",
       "owner": "",
       "phase0": {
         "authPosture": "auth-aware",
@@ -177,6 +293,8 @@
           ]
         },
         "landingPattern": {
+          "marketingLayoutPolicy": "warn",
+          "marketingLayoutProfile": "marketing-open-flow-text-roomy",
           "pageBackgroundMode": "solid",
           "policy": "strict",
           "requireTopLevelSections": [
@@ -192,6 +310,8 @@
         },
         "maxContentWidth": 1120
       },
+      "marketingTypographyPolicy": "warn",
+      "marketingTypographyProfile": "marketing-sans",
       "mustNotEmit": [
         "navigation",
         "footer",
@@ -308,8 +428,24 @@
             "layout-container"
           ]
         },
+        "landingPattern": {
+          "marketingLayoutPolicy": "warn",
+          "marketingLayoutProfile": "marketing-open-flow-text-compact",
+          "pageBackgroundMode": "solid",
+          "policy": "strict",
+          "requireTopLevelSections": [
+            "landing.hero",
+            "landing.actions"
+          ],
+          "sectionOrder": [
+            "landing.hero",
+            "landing.actions"
+          ]
+        },
         "maxContentWidth": 1120
       },
+      "marketingTypographyPolicy": "warn",
+      "marketingTypographyProfile": "marketing-mono",
       "owner": "",
       "phase0": {
         "authPosture": "auth-aware",

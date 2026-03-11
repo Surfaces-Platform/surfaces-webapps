@@ -8,6 +8,32 @@
   --contract-motion-duration: 120ms;
   --contract-motion-timing: linear;
   --font-geist-mono: 'JetBrains Mono', monospace;
+  --marketing-layout-hero-padding-top-compact: 128px;
+  --marketing-layout-hero-padding-bottom-compact: 80px;
+  --marketing-layout-section-padding-compact: 64px;
+  --marketing-layout-copy-max-width-wide: 720px;
+  --marketing-layout-copy-max-width: 640px;
+  --marketing-layout-body-max-width: 860px;
+  --marketing-layout-copy-gap-sm: 12px;
+  --marketing-layout-copy-gap-md: 16px;
+  --marketing-layout-copy-gap-lg: 24px;
+  --marketing-layout-card-padding: 24px;
+  --marketing-mono-hero-eyebrow-family: var(--font-geist-mono);
+  --marketing-mono-hero-eyebrow-size: 11px;
+  --marketing-mono-hero-eyebrow-line-height: 1.45;
+  --marketing-mono-hero-eyebrow-letter-spacing: 0.08em;
+  --marketing-mono-hero-title-family: var(--font-geist-mono);
+  --marketing-mono-hero-title-size: 22px;
+  --marketing-mono-hero-title-line-height: 1.35;
+  --marketing-mono-hero-body-family: var(--font-geist-mono);
+  --marketing-mono-hero-body-size: 14px;
+  --marketing-mono-hero-body-line-height: 1.6;
+  --marketing-mono-section-title-family: var(--font-geist-mono);
+  --marketing-mono-section-title-size: 16px;
+  --marketing-mono-section-title-line-height: 1.4;
+  --marketing-mono-body-family: Arial, Helvetica, sans-serif;
+  --marketing-mono-body-size: 12px;
+  --marketing-mono-body-line-height: 1.6;
 }
 
 @theme inline {
