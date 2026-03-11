@@ -83,23 +83,38 @@ export default function Home() {
         onSurfaceChange={handleSurfaceChange}
       />
       
-      <div className="contract-container max-w-[1040px]">
+      <div
+        className="contract-container max-w-[1040px]"
+        data-contract="page-container"
+        data-contract-typography-profile="marketing-mono"
+      >
         
         {/* Section 1 - Header */}
         <motion.section 
           data-contract-section="landing.hero"
+          data-contract-marketing-layout-profile="marketing-open-flow-text-compact"
+          data-contract-hero-container-mode="open-flow"
+          data-contract-hero-visual-placement="none"
+          data-contract-section-divider-mode="border-top"
+          data-contract-section-spacing-profile="compact"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
           variants={staggerContainerFast}
           className="pt-32 pb-28"
+          style={{
+            paddingTop: 'var(--marketing-layout-hero-padding-top-compact)',
+            paddingBottom: 'var(--marketing-layout-hero-padding-bottom-compact)'
+          }}
         >
           <motion.h1 
             variants={fadeVariants}
+            data-contract-copy-role="heroTitle"
             style={{ 
-              fontSize: '20px', 
+              fontFamily: 'var(--marketing-mono-hero-title-family)',
+              fontSize: 'var(--marketing-mono-hero-title-size)', 
               fontWeight: 600, 
-              lineHeight: 1.4, 
+              lineHeight: 'var(--marketing-mono-hero-title-line-height)', 
               marginBottom: '8px'
             }}
           >
@@ -108,9 +123,14 @@ export default function Home() {
           
           <motion.p 
             variants={fadeVariants}
+            data-contract-copy-role="heroEyebrow"
             style={{ 
-              fontSize: '12px', 
+              fontFamily: 'var(--marketing-mono-hero-eyebrow-family)',
+              fontSize: 'var(--marketing-mono-hero-eyebrow-size)', 
               fontWeight: 400,
+              lineHeight: 'var(--marketing-mono-hero-eyebrow-line-height)',
+              letterSpacing: 'var(--marketing-mono-hero-eyebrow-letter-spacing)',
+              textTransform: 'uppercase',
               color: colors.neutral[400],
               marginBottom: '24px'
             }}
@@ -120,11 +140,13 @@ export default function Home() {
           
           <motion.p 
             variants={fadeVariants}
+            data-contract-copy-role="heroBody"
             style={{ 
-              fontSize: '14px', 
+              fontFamily: 'var(--marketing-mono-hero-body-family)',
+              fontSize: 'var(--marketing-mono-hero-body-size)', 
               fontWeight: 400, 
-              lineHeight: 1.6,
-              maxWidth: '680px'
+              lineHeight: 'var(--marketing-mono-hero-body-line-height)',
+              maxWidth: 'var(--marketing-layout-copy-max-width-wide)'
             }}
           >
             interfacectl validates, enforces, and inspects interface contracts as executable truth.
@@ -161,9 +183,12 @@ export default function Home() {
           
           <motion.p 
             variants={fadeVariants}
+            data-contract-copy-role="body"
             style={{ 
-              fontSize: '12px', 
+              fontFamily: 'var(--marketing-mono-body-family)',
+              fontSize: 'var(--marketing-mono-body-size)', 
               fontWeight: 400,
+              lineHeight: 'var(--marketing-mono-body-line-height)',
               color: colors.neutral[400],
               marginTop: '12px'
             }}
@@ -184,20 +209,28 @@ export default function Home() {
         >
           <div className="grid grid-cols-12 gap-6">
             <motion.div variants={fadeVariants} className="col-span-4">
-              <h2 style={{ fontSize: '20px', fontWeight: 600, lineHeight: 1.4 }}>
+              <h2
+                data-contract-copy-role="sectionTitle"
+                style={{
+                  fontFamily: 'var(--marketing-mono-section-title-family)',
+                  fontSize: 'var(--marketing-mono-section-title-size)',
+                  fontWeight: 600,
+                  lineHeight: 'var(--marketing-mono-section-title-line-height)'
+                }}
+              >
                 What this tool is
               </h2>
             </motion.div>
             <motion.div 
               variants={fadeVariants} 
               className="col-span-7 col-start-6"
-              style={{ fontFamily: 'Inter, sans-serif' }}
+              style={{ fontFamily: 'var(--marketing-mono-body-family)' }}
             >
               <ul className="space-y-2" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                <li style={{ fontSize: '14px', lineHeight: 1.6 }}>Reads interface contracts</li>
-                <li style={{ fontSize: '14px', lineHeight: 1.6 }}>Validates implementations</li>
-                <li style={{ fontSize: '14px', lineHeight: 1.6 }}>Detects drift</li>
-                <li style={{ fontSize: '14px', lineHeight: 1.6 }}>Exits with explicit status codes</li>
+                <li data-contract-copy-role="body" style={{ fontSize: 'var(--marketing-mono-body-size)', lineHeight: 'var(--marketing-mono-body-line-height)' }}>Reads interface contracts</li>
+                <li data-contract-copy-role="body" style={{ fontSize: 'var(--marketing-mono-body-size)', lineHeight: 'var(--marketing-mono-body-line-height)' }}>Validates implementations</li>
+                <li data-contract-copy-role="body" style={{ fontSize: 'var(--marketing-mono-body-size)', lineHeight: 'var(--marketing-mono-body-line-height)' }}>Detects drift</li>
+                <li data-contract-copy-role="body" style={{ fontSize: 'var(--marketing-mono-body-size)', lineHeight: 'var(--marketing-mono-body-line-height)' }}>Exits with explicit status codes</li>
               </ul>
             </motion.div>
           </div>
@@ -214,7 +247,14 @@ export default function Home() {
         >
           <motion.h2 
             variants={fadeVariants}
-            style={{ fontSize: '20px', fontWeight: 600, marginBottom: '32px' }}
+            data-contract-copy-role="sectionTitle"
+            style={{
+              fontFamily: 'var(--marketing-mono-section-title-family)',
+              fontSize: 'var(--marketing-mono-section-title-size)',
+              fontWeight: 600,
+              lineHeight: 'var(--marketing-mono-section-title-line-height)',
+              marginBottom: '32px'
+            }}
           >
             Example Usage
           </motion.h2>
@@ -240,12 +280,13 @@ export default function Home() {
                   </pre>
                 </div>
                 <p 
+                  data-contract-copy-role="body"
                   style={{ 
-                    fontSize: '12px', 
+                    fontFamily: 'var(--marketing-mono-body-family)',
+                    fontSize: 'var(--marketing-mono-body-size)', 
                     fontWeight: 400,
                     color: colors.neutral[400],
-                    fontFamily: 'Inter, sans-serif',
-                    lineHeight: 1.5
+                    lineHeight: 'var(--marketing-mono-body-line-height)'
                   }}
                 >
                   {cmd.description}
