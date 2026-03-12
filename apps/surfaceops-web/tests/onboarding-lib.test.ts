@@ -1,86 +1,71 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import path from "node:path";
-import os from "node:os";
-import { createHash } from "node:crypto";
-
-function sha256(content: string): string {
-  return createHash("sha256").update(content).digest("hex");
-}
-
-async function createContractsSandbox() {
-  const root = await mkdtemp(path.join(os.tmpdir(), "surfaceops-onboarding-lib-"));
-  const contractsDir = path.join(root, "contracts");
-  await mkdir(path.join(contractsDir, "generated"), { recursive: true });
-  await writeFile(
-    path.join(contractsDir, "surfaces.web.contract.json"),
-    JSON.stringify({
-      contractId: "surfaces.web",
-      version: "0.1.0",
-      surfaces: [],
-      sections: [],
-      constraints: {
-        motion: { allowedDurationsMs: [120], allowedTimingFunctions: ["linear"] },
-      },
-    }, null, 2),
-    "utf-8",
-  );
-  return { root, contractsDir };
-}
 
 afterEach(() => {
-  delete process.env.SURFACEOPS_CONTRACTS_DIR;
   vi.resetModules();
+  vi.unstubAllGlobals();
 });
 
-describe("onboarding contracts helpers", () => {
-  it("validates onboarding requests", async () => {
-    const { root, contractsDir } = await createContractsSandbox();
-    process.env.SURFACEOPS_CONTRACTS_DIR = contractsDir;
-    const contracts = await import("@/lib/contracts");
-    const invalid = contracts.validateOnboardingRequest({ url: "not-a-url" });
-    expect(invalid.ok).toBe(false);
-    expect(invalid.errors.join(" ")).toContain("URL must be valid");
-    await rm(root, { recursive: true, force: true });
+describe("SurfaceOps onboarding route", () => {
+  it("returns auth_required when the shared engine reports a gate", async () => {
+    vi.doMock("@/lib/interfacectl-onboarding", () => ({
+      runSurfaceOpsOnboarding: vi.fn(async () => ({
+        state: "auth_required",
+        surfaceId: "example-com",
+        gateStatus: "login",
+        message: "Authentication is required.",
+      })),
+    }));
+
+    const { POST } = await import("@/app/api/onboarding/extract/route");
+    const response = await POST(
+      new Request("http://localhost/api/onboarding/extract", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ url: "https://example.com" }),
+      }),
+    );
+    const body = await response.json();
+    expect(response.status).toBe(409);
+    expect(body.state).toBe("auth_required");
+    expect(body.gateStatus).toBe("login");
   });
 
-  it("runOnboardingExtraction keeps canonical contract immutable and reports policy membership", async () => {
-    const { root, contractsDir } = await createContractsSandbox();
-    process.env.SURFACEOPS_CONTRACTS_DIR = contractsDir;
-    const canonicalPath = path.join(contractsDir, "surfaces.web.contract.json");
-    const beforeRaw = await readFile(canonicalPath, "utf-8");
-    const beforeHash = sha256(beforeRaw);
-    const contracts = await import("@/lib/contracts");
+  it("returns completed payload mapped from the shared engine", async () => {
+    vi.doMock("@/lib/interfacectl-onboarding", () => ({
+      runSurfaceOpsOnboarding: vi.fn(async () => ({
+        state: "completed",
+        surfaceId: "example-com",
+        runId: "run-123",
+        status: "warn",
+        gateStatus: "ok",
+        artifacts: {
+          reportPath: "/tmp/example-com.extraction.json",
+          contractPath: "/tmp/example-com.contract.json",
+        },
+        extractionReport: {
+          onboarding: {
+            detection: {
+              adapter: "remote-url-observer",
+              framework: "unknown",
+              profile: "web-first-run",
+            },
+          },
+        },
+      })),
+    }));
 
-    const result = contracts.runOnboardingExtraction({
-      url: "https://customer.example.com/dashboard?token=secret",
-      authMode: "browser-session",
-      extractMode: "remote-url",
-    });
-
-    expect(result.state).toBe("completed");
-    expect(result.surfaceId).toBe("customer-example-com-dashboard");
-    expect(result.inPolicyContract).toBe(false);
-    expect(result.extraction?.reportPath).toContain(".extraction.json");
-
-    const afterRaw = await readFile(canonicalPath, "utf-8");
-    const afterHash = sha256(afterRaw);
-    expect(afterHash).toBe(beforeHash);
-    const membership = contracts.getPolicyMembership("customer-example-com-dashboard");
-    expect(membership.inPolicyContract).toBe(false);
-
-    await rm(root, { recursive: true, force: true });
-  });
-
-  it("buildOnboardingArtifacts redacts sensitive URL query params", async () => {
-    const { root, contractsDir } = await createContractsSandbox();
-    process.env.SURFACEOPS_CONTRACTS_DIR = contractsDir;
-    const contracts = await import("@/lib/contracts");
-    const draft = contracts.buildOnboardingArtifacts({
-      url: "https://example.com/path?token=abc&foo=bar",
-    });
-    expect(draft.extraction.onboarding?.sourceUrl).toContain("token=REDACTED");
-    expect(draft.extraction.onboarding?.sourceUrl).toContain("foo=bar");
-    await rm(root, { recursive: true, force: true });
+    const { POST } = await import("@/app/api/onboarding/extract/route");
+    const response = await POST(
+      new Request("http://localhost/api/onboarding/extract", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ url: "https://example.com" }),
+      }),
+    );
+    const body = await response.json();
+    expect(response.status).toBe(200);
+    expect(body.state).toBe("completed");
+    expect(body.surfaceId).toBe("example-com");
+    expect(body.extraction.reportPath).toContain(".extraction.json");
   });
 });

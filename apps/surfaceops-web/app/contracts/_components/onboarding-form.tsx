@@ -14,7 +14,8 @@ export function OnboardingForm() {
   const [surfaceName, setSurfaceName] = useState("");
   const [surfaceId, setSurfaceId] = useState("");
   const [authMode, setAuthMode] = useState<"none" | "browser-session">("none");
-  const [extractMode, setExtractMode] = useState<"remote-url" | "local-root">("remote-url");
+  const [authProfileName, setAuthProfileName] = useState("");
+  const [continueOnGate, setContinueOnGate] = useState(false);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -29,7 +30,8 @@ export function OnboardingForm() {
           surfaceName: surfaceName.trim() || undefined,
           surfaceId: surfaceId.trim() || undefined,
           authMode,
-          extractMode,
+          authProfileName: authMode === "browser-session" ? authProfileName.trim() || undefined : undefined,
+          continueOnGate,
         }),
       });
       const data = (await response.json()) as {
@@ -132,24 +134,40 @@ export function OnboardingForm() {
               <option value="browser-session">browser-session</option>
             </select>
           </div>
-          <div>
-            <label style={{ fontSize: "12px", color: colors.neutral[600] }}>Extraction mode</label>
-            <select
-              value={extractMode}
-              onChange={(event) => setExtractMode(event.target.value as "remote-url" | "local-root")}
-              style={{
-                width: "100%",
-                borderRadius: "8px",
-                border: `1px solid ${colors.neutral[200]}`,
-                padding: "8px 10px",
-                fontSize: "13px",
-                backgroundColor: colors.neutral[0],
-              }}
-            >
-              <option value="remote-url">remote-url</option>
-              <option value="local-root">local-root</option>
-            </select>
-          </div>
+          {authMode === "browser-session" && (
+            <div>
+              <label style={{ fontSize: "12px", color: colors.neutral[600] }}>Saved auth profile</label>
+              <input
+                required
+                value={authProfileName}
+                onChange={(event) => setAuthProfileName(event.target.value)}
+                placeholder="example-profile"
+                style={{
+                  width: "100%",
+                  borderRadius: "8px",
+                  border: `1px solid ${colors.neutral[200]}`,
+                  padding: "8px 10px",
+                  fontSize: "13px",
+                }}
+              />
+            </div>
+          )}
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              fontSize: "12px",
+              color: colors.neutral[600],
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={continueOnGate}
+              onChange={(event) => setContinueOnGate(event.target.checked)}
+            />
+            Continue with provisional output if the URL resolves to a login or access-denied page
+          </label>
         </div>
       </details>
 

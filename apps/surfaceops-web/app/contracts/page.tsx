@@ -62,7 +62,7 @@ export default function ContractsPage() {
               marginBottom: "28px",
             }}
           >
-            Start onboarding by generating your first contract from a surface URL.
+            Start onboarding from a surface URL. Authenticated surfaces can reuse a saved interfacectl auth profile.
           </p>
           <OnboardingForm />
         </div>

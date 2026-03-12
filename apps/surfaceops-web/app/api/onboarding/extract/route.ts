@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
-import {
-  runOnboardingExtraction,
-  validateOnboardingRequest,
-  type OnboardingExtractRequest,
-} from "@/lib/contracts";
+import { getPolicyMembership } from "@/lib/contracts";
+import { runSurfaceOpsOnboarding, type SurfaceOpsOnboardingRequest } from "@/lib/interfacectl-onboarding";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  let payload: OnboardingExtractRequest;
+  let payload: SurfaceOpsOnboardingRequest;
   try {
-    payload = (await request.json()) as OnboardingExtractRequest;
+    payload = (await request.json()) as SurfaceOpsOnboardingRequest;
   } catch {
     return NextResponse.json(
       { state: "failed", error: "Invalid JSON payload." },
@@ -16,24 +16,54 @@ export async function POST(request: Request) {
     );
   }
 
-  const validation = validateOnboardingRequest(payload);
-  if (!validation.ok) {
+  try {
+    const result = await runSurfaceOpsOnboarding(payload);
+    if (result.state === "failed") {
+      return NextResponse.json(
+        { state: "failed", error: typeof result.message === "string" ? result.message : "Onboarding failed." },
+        { status: 400 },
+      );
+    }
+    if (result.state === "auth_required") {
+      return NextResponse.json(
+        {
+          state: "auth_required",
+          surfaceId: result.surfaceId,
+          gateStatus: result.gateStatus,
+          error: typeof result.message === "string" ? result.message : "Authentication is required.",
+        },
+        { status: 409 },
+      );
+    }
+
+    const membership = getPolicyMembership(String(result.surfaceId));
+    const extraction = (result.extractionReport ?? {}) as Record<string, unknown>;
+    const onboarding = (extraction.onboarding ?? {}) as Record<string, unknown>;
+    const detection = (onboarding.detection ?? {}) as Record<string, unknown>;
+    const artifacts = typeof result.artifacts === "object" && result.artifacts
+      ? result.artifacts as Record<string, unknown>
+      : {};
+
     return NextResponse.json(
-      { state: "failed", error: validation.errors.join(" ") },
-      { status: 400 },
+      {
+        state: "completed",
+        surfaceId: result.surfaceId,
+        runId: result.runId,
+        status: result.status,
+        gateStatus: result.gateStatus,
+        inPolicyContract: membership.inPolicyContract,
+        extraction: {
+          adapter: typeof detection.adapter === "string" ? detection.adapter : "unknown",
+          framework: typeof detection.framework === "string" ? detection.framework : "unknown",
+          profile: typeof detection.profile === "string" ? detection.profile : "web-first-run",
+          reportPath: typeof artifacts.reportPath === "string" ? artifacts.reportPath : undefined,
+          contractPath: typeof artifacts.contractPath === "string" ? artifacts.contractPath : undefined,
+        },
+      },
+      { status: 200 },
     );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unexpected onboarding failure.";
+    return NextResponse.json({ state: "failed", error: message }, { status: 500 });
   }
-
-  const result = runOnboardingExtraction({
-    url: payload.url,
-    surfaceName: payload.surfaceName,
-    surfaceId: payload.surfaceId,
-    authMode: payload.authMode === "browser-session" ? "browser-session" : "none",
-    extractMode: payload.extractMode === "local-root" ? "local-root" : "remote-url",
-  });
-
-  if (result.state === "failed") {
-    return NextResponse.json(result, { status: 500 });
-  }
-  return NextResponse.json(result, { status: 200 });
 }

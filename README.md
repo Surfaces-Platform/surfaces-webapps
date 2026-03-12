@@ -12,6 +12,8 @@ This monorepo contains five Next.js web applications for the Surfaces Platform:
 
 **First-time clone:** Day-to-day validation and generation require either a sibling standalone `../interfacectl` checkout or an explicit `SURFACES_INTERFACECTL_ROOT`.
 
+`interfacectl` remains the source of truth for reusable onboarding and validation behavior. This repo owns consumer integration, product UI, and repo-local smoke coverage only.
+
 ### Running Individual Apps
 
 Each app runs on its own port to allow concurrent development:

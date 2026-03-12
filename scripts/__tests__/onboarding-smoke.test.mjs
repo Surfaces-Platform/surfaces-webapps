@@ -94,9 +94,7 @@ test("onboarding smoke: API route direct call succeeds and returns policy member
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
-            url: "https://customer.example.com/dashboard?token=secret",
-            authMode: "browser-session",
-            extractMode: "remote-url"
+            url: "https://example.com/products"
           })
         });
         const res = await POST(req);
