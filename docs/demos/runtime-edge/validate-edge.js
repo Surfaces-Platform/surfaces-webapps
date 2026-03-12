@@ -53,7 +53,7 @@ function makeViolation(rule, policy, evidence) {
   return { rule, policy: effectivePolicy, severity: effectivePolicy === "strict" ? "error" : "warn", evidence };
 }
 
-// Quick smoke test (run with `node docs/interfacectl/examples/edge/validate-edge.js`)
+// Quick smoke test (run with `node docs/demos/runtime-edge/validate-edge.js`)
 if (import.meta.url === `file://${process.argv[1]}`) {
   const result = validateEdgeChange({
     surfaceId: "surfaces-web",

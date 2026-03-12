@@ -1,5 +1,6 @@
 import { ContextLinkCard } from '../_components/DocsSurfaceShell';
 import QuickStartSurfacePage, { NextContextLinks } from '../_components/QuickStartSurfacePage';
+import { interfacectlGenerationReferenceCards } from '../../../_shared/interfacectl-doc-links.js';
 
 const generationSnippet = `# 1) Start the adapter service (reference-target contract)
 pnpm run adapter:serve-generation -- \\
@@ -27,7 +28,7 @@ export default function GenerationQuickStartPage() {
       activeTab="generation"
       contextLabel="Generation Quick Start"
       title="Run Contract Enforcement During AI UI Generation"
-      summary="Use this flow at Generation time when Lovable or Figma Make produces new UI and you want immediate policy visibility before CI/CD time promotion."
+      summary="Use this repo-level Generation time workflow when Lovable or Figma Make produces new UI and you want immediate policy visibility before CI/CD time promotion. It is built on interfacectl, not a replacement for the canonical tooling docs."
       steps={[
         {
           title: 'Start adapter service.',
@@ -56,6 +57,7 @@ export default function GenerationQuickStartPage() {
       ]}
       snippetTitle="Copy/Paste Start"
       snippet={generationSnippet}
+      referenceCards={interfacectlGenerationReferenceCards}
       notes={[
         'Descriptor mode checks generation boundaries only (no full workspace validation).',
         'Descriptor parity is phased by surface; initial enforcement starts with reference-target-web.',

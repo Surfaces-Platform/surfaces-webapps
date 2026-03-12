@@ -1,20 +1,27 @@
 # interfacectl consumer documentation
 
-## Consumer role
+`surfaces-webapps` consumes `interfacectl`. It does not own contract schema, validation semantics, generator semantics, or enforcement behavior.
 
-surfaces-webapps consumes structured outputs from interfacectl.
-It does not redefine contract schema, validation semantics, or enforcement behavior.
-All enforcement meaning remains owned by interfacectl.
+Canonical platform docs live in the `interfacectl` repo:
 
----
+- https://github.com/Surfaces-Platform/interfacectl/blob/main/README.md
+- https://github.com/Surfaces-Platform/interfacectl/blob/main/API.md
+- https://github.com/Surfaces-Platform/interfacectl/blob/main/docs/contract-validation.md
+- https://github.com/Surfaces-Platform/interfacectl/blob/main/docs/runtime-edge.md
+- https://github.com/Surfaces-Platform/interfacectl/blob/main/docs/ai-generator-adapter-quickstart.md
+- https://github.com/Surfaces-Platform/interfacectl/blob/main/docs/ai-generator-adapter-api.md
+- https://github.com/Surfaces-Platform/interfacectl/blob/main/docs/ai-tool-playbooks.md
+- https://github.com/Surfaces-Platform/interfacectl/blob/main/docs/generator-consumption.md
+- https://github.com/Surfaces-Platform/interfacectl/blob/main/docs/shell-boundary.md
 
-## Contents
+Repo-local quick starts live on `surfaces-dev`:
 
-- [plans/README.md](./plans/README.md) — SurfaceOps UI phase index (Phase 2, 3, 5)
-- [contract-validation.md](./contract-validation.md) — How to run validation, CLI usage, CI integration
-- [decouple.md](./decouple.md) — Why interfacectl is a standalone repo and how releases work
-- [generator-consumption.md](./generator-consumption.md) — How generators consume contracts
-- [phase-4-reference.md](./phase-4-reference.md) — Pointer to interfacectl Phase 4 (runtime consumption)
-- [runtime-edge.md](./runtime-edge.md) — Runtime/edge enforcement guide with adapter stubs
-- [surfaceops-visibility.md](./surfaceops-visibility.md) — Spec stub for showing validation runs in SurfaceOps
-- [TESTING.md](./TESTING.md) — Contract validator test checklist
+- `surfaces-dev /generation`
+- `surfaces-dev /integration`
+- `surfaces-dev /runtime`
+
+Repo-local demos and product specs that used to live here were moved to:
+
+- `docs/demos/runtime-edge/`
+- `docs/demos/icon-strict-pilot.md`
+- `apps/surfaceops-web/docs/validation-visibility.md`

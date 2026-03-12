@@ -41,19 +41,18 @@ function buildValidExtractedFixture(surfaceId) {
 }
 
 test("runtime edge smoke examples remain healthy", () => {
-  const buildManifest = runNode(["docs/interfacectl/examples/edge/build-manifest.mjs"]);
+  const buildManifest = runNode(["docs/demos/runtime-edge/build-manifest.mjs"]);
   assert.equal(buildManifest.status, 0, buildManifest.stderr || buildManifest.stdout);
 
-  const testEdge = runNode(["docs/interfacectl/examples/edge/test-edge.mjs"]);
+  const testEdge = runNode(["docs/demos/runtime-edge/test-edge.mjs"]);
   assert.equal(testEdge.status, 0, testEdge.stderr || testEdge.stdout);
   assert.match(testEdge.stdout, /edge tests passed/);
 
   const validateEdgeModulePath = path.join(
     repoRoot,
     "docs",
-    "interfacectl",
-    "examples",
-    "edge",
+    "demos",
+    "runtime-edge",
     "validate-edge.js",
   );
   return import(`file://${validateEdgeModulePath}`).then(({ validateEdgeChange }) => {

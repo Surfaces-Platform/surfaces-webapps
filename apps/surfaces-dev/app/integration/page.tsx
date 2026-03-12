@@ -1,4 +1,5 @@
 import QuickStartSurfacePage, { NextContextLinks } from '../_components/QuickStartSurfacePage';
+import { interfacectlIntegrationReferenceCards } from '../../../_shared/interfacectl-doc-links.js';
 
 const integrationSnippet = `# Local/CI hard gate command
 pnpm run adapter:validate-generation -- \\
@@ -24,7 +25,7 @@ export default function IntegrationQuickStartPage() {
       activeTab="integration"
       contextLabel="Integration Quick Start"
       title="Integrate Adapter Enforcement Into Tooling And CI"
-      summary="Use this flow at CI/CD time to connect Generation time checks to promotion gates so hosted tools remain enforceable even when they cannot hard-block in-product."
+      summary="Use this repo-level CI/CD workflow to connect Generation time checks to promotion gates so hosted tools remain enforceable even when they cannot hard-block in-product. It is built on interfacectl, not a replacement for the canonical tooling docs."
       steps={[
         {
           title: 'Pick execution mode.',
@@ -57,6 +58,7 @@ export default function IntegrationQuickStartPage() {
       ]}
       snippetTitle="CI / Local Integration Command"
       snippet={integrationSnippet}
+      referenceCards={interfacectlIntegrationReferenceCards}
       notes={[
         'workspace mode runs generation guard plus interfacectl validate.',
         'CI/CD workspace validation remains the authoritative promotion gate, even when descriptor parity is enabled.',

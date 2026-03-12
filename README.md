@@ -176,7 +176,7 @@ pnpm cli:where:ci
 ```
 
 This runs `interfacectl validate` against the contract defined in `contracts/surfaces.web.contract.json`.
-For icon-source violation lifecycle and visibility details across `Generation time`, `CI/CD time`, and `Runtime (edge)`, see [docs/interfacectl/contract-validation.md#web-icon-source-policy-visibility](docs/interfacectl/contract-validation.md#web-icon-source-policy-visibility).
+For icon-source violation lifecycle and visibility details across `Generation time`, `CI/CD time`, and `Runtime (edge)`, see the canonical [`interfacectl` contract-validation reference](https://github.com/Surfaces-Platform/interfacectl/blob/main/docs/contract-validation.md).
 
 ### Phase 0 contract generation
 

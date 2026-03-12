@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import Navigation from '@surfaces/ui/components/Navigation';
 import { colors } from '@surfaces/ui/tokens/colors';
 import { fadeVariants, staggerContainerFast } from '@surfaces/ui/utils/motion';
+import { interfacectlDocsNavigationLinks } from '../../../_shared/interfacectl-doc-links.js';
 import {
   ContextLinkCard,
   surfacesDevBodyStyle,
@@ -32,6 +33,14 @@ export type QuickStartDetailSection = {
   ordered?: boolean;
 };
 
+export type QuickStartReferenceCard = {
+  href: string;
+  label: string;
+  description?: string;
+  eyebrow?: string;
+  external?: boolean;
+};
+
 export type QuickStartSurfacePageProps = {
   activeTab: 'generation' | 'integration' | 'runtime';
   title: string;
@@ -42,6 +51,7 @@ export type QuickStartSurfacePageProps = {
   snippet: string;
   notes?: string[];
   detailSections?: QuickStartDetailSection[];
+  referenceCards?: QuickStartReferenceCard[];
   actions?: ReactNode;
 };
 
@@ -61,6 +71,7 @@ export default function QuickStartSurfacePage({
   snippet,
   notes = [],
   detailSections = [],
+  referenceCards = [],
   actions
 }: QuickStartSurfacePageProps) {
   const handleSurfaceChange = (surface: 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev') => {
@@ -79,7 +90,7 @@ export default function QuickStartSurfacePage({
       <Navigation
         currentSurface="surfaces-dev"
         sections={surfacesDevNavSections}
-        utilities={[{ label: 'GitHub', href: '#github' }]}
+        utilities={interfacectlDocsNavigationLinks}
         theme="dark"
         currentContext={{ contentType: 'docs', subject: 'contracts' }}
         onSurfaceChange={handleSurfaceChange}
@@ -208,6 +219,56 @@ export default function QuickStartSurfacePage({
             ))}
           </motion.ol>
         </motion.section>
+
+        {referenceCards.length > 0 ? (
+          <motion.section
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainerFast}
+            className="py-16"
+            style={{ borderTop: `1px solid ${colors.neutral[800]}` }}
+          >
+            <motion.h2 variants={fadeVariants} style={{ fontSize: '16px', fontWeight: 600, marginBottom: '14px' }}>
+              <span
+                data-contract-copy-role="sectionTitle"
+                style={surfacesDevSectionTitleStyle}
+              >
+                Canonical interfacectl docs
+              </span>
+            </motion.h2>
+
+            <motion.p
+              variants={fadeVariants}
+              data-contract-copy-role="body"
+              style={{
+                marginTop: 0,
+                marginBottom: '14px',
+                maxWidth: '860px',
+                ...surfacesDevMutedBodyStyle
+              }}
+            >
+              This page is a repo-local quick start. Canonical generator, validation, and runtime semantics live in the
+              {' '}
+              <code>interfacectl</code>
+              {' '}
+              docs.
+            </motion.p>
+
+            <motion.div variants={fadeVariants} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {referenceCards.map((card) => (
+                <ContextLinkCard
+                  key={`${card.label}-${card.href}`}
+                  href={card.href}
+                  label={card.label}
+                  description={card.description}
+                  eyebrow={card.eyebrow ?? 'Canonical doc'}
+                  external={card.external}
+                />
+              ))}
+            </motion.div>
+          </motion.section>
+        ) : null}
 
         <motion.section
           initial="hidden"

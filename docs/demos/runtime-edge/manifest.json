@@ -3,6 +3,32 @@
   "version": "0.1.0",
   "surfaceId": "surfaces-web",
   "layout": {
+    "chromePolicy": {
+      "allowInsetShadow": true,
+      "allowOuterShadow": false,
+      "maxBorderRadiusPx": 8,
+      "policy": "strict",
+      "targets": [
+        "page-container",
+        "top-level-section",
+        "layout-container"
+      ]
+    },
+    "landingPattern": {
+      "pageBackgroundMode": "solid",
+      "policy": "strict",
+      "requireTopLevelSections": [
+        "landing.hero",
+        "landing.guidance",
+        "landing.actions"
+      ],
+      "sectionOrder": [
+        "landing.hero",
+        "landing.demos",
+        "landing.guidance",
+        "landing.actions"
+      ]
+    },
     "maxContentWidth": 1120
   },
   "color": {
