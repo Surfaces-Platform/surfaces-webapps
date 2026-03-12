@@ -69,9 +69,9 @@ test("onboarding smoke: CLI init non-interactive writes artifacts and lineage", 
     assert.ok(fs.existsSync(lineagePath), "Expected contract-lineage.json");
 
     const runs = JSON.parse(await fsp.readFile(runsPath, "utf8"));
-    assert.ok(runs.runs.some((entry) => entry.surfaceId === "smoke-surface" && entry.source === "bootstrap"));
+    assert.ok(runs.runs.some((entry) => entry.surfaceId === "smoke-surface" && entry.source === "generation"));
     const lineage = JSON.parse(await fsp.readFile(lineagePath, "utf8"));
-    assert.equal(lineage.surfaces["smoke-surface"]?.lastSource, "bootstrap");
+    assert.equal(lineage.surfaces["smoke-surface"]?.lastSource, "generation");
 
     const validator = run("node", [path.join(repoRoot, "scripts/validate-run-artifacts.mjs")], { cwd: sandbox });
     assert.equal(validator.status, 0, validator.stderr || validator.stdout);

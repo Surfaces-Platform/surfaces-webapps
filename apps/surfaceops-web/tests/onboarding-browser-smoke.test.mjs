@@ -5,7 +5,7 @@ import fsp from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import net from "node:net";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { setTimeout as wait } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
@@ -75,6 +75,15 @@ async function getFreePort() {
   });
 }
 
+function runOrThrow(cmd, args, options = {}) {
+  const result = spawnSync(cmd, args, {
+    cwd: options.cwd ?? appDir,
+    encoding: "utf8",
+    env: { ...process.env, ...(options.env ?? {}) },
+  });
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+}
+
 test("browser smoke: onboarding empty-state flow redirects to runs detail", { timeout: 120_000 }, async (t) => {
   let chromium;
   try {
@@ -88,6 +97,8 @@ test("browser smoke: onboarding empty-state flow redirects to runs detail", { ti
   const canonicalPath = path.join(sandbox, "contracts", "surfaces.web.contract.json");
   const beforeHash = sha256File(canonicalPath);
   const port = await getFreePort();
+
+  runOrThrow("pnpm", ["--filter", "@surfaces/platform-auth", "build"], { cwd: path.resolve(appDir, "../..") });
 
   const dev = spawn("pnpm", ["exec", "next", "dev", "--port", String(port), "--webpack"], {
     cwd: appDir,
