@@ -55,7 +55,7 @@ jobs:
 
       - name: Install interfacectl Playwright browser
         working-directory: interfacectl
-        run: pnpm exec playwright install chromium
+        run: pnpm --filter @surfaces/interfacectl-cli exec playwright install chromium
 
       - name: Onboarding smoke test (headless)
         run: pnpm run test:onboarding:smoke:headless
