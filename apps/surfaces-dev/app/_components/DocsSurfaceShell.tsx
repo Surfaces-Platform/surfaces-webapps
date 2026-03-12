@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import Navigation from '@surfaces/ui/components/Navigation';
 import { colors } from '@surfaces/ui/tokens/colors';
+import { interfacectlDocsNavigationLinks } from '../../../_shared/interfacectl-doc-links.js';
 
 export type SurfacesDevActiveTab = 'generation' | 'integration' | 'runtime' | 'guides';
 
@@ -79,7 +80,7 @@ export function SurfacesDevShell({
       <Navigation
         currentSurface="surfaces-dev"
         sections={surfacesDevNavSections}
-        utilities={[{ label: 'GitHub', href: '#github' }]}
+        utilities={interfacectlDocsNavigationLinks}
         theme="dark"
         currentContext={{ contentType: 'docs', subject: 'contracts' }}
         onSurfaceChange={handleSurfaceChange}
@@ -93,15 +94,21 @@ export function SurfacesDevShell({
 export function ContextLinkCard({
   href,
   label,
-  eyebrow = 'Read next'
+  eyebrow = 'Read next',
+  description,
+  external = false
 }: {
   href: string;
   label: string;
   eyebrow?: string;
+  description?: string;
+  external?: boolean;
 }) {
   return (
     <Link
       href={href}
+      target={external ? '_blank' : undefined}
+      rel={external ? 'noreferrer' : undefined}
       className="block p-4 rounded-[4px]"
       style={{
         ...surfacesDevCardStyle,
@@ -111,6 +118,11 @@ export function ContextLinkCard({
     >
       <span style={{ fontSize: '12px', color: colors.neutral[400], fontFamily: 'Inter, sans-serif' }}>{eyebrow}</span>
       <div style={{ marginTop: '4px', fontSize: '13px', fontWeight: 600 }}>{label}</div>
+      {description ? (
+        <p style={{ marginTop: '8px', marginBottom: 0, fontSize: '12px', lineHeight: 1.6, color: colors.neutral[400] }}>
+          {description}
+        </p>
+      ) : null}
     </Link>
   );
 }

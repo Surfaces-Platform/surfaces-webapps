@@ -1,4 +1,5 @@
 import QuickStartSurfacePage, { NextContextLinks } from '../_components/QuickStartSurfacePage';
+import { interfacectlRuntimeReferenceCards } from '../../../_shared/interfacectl-doc-links.js';
 
 const runtimeSnippet = `# 1) Build runtime manifest from canonical contract
 pnpm run generate:runtime-manifest
@@ -17,7 +18,7 @@ export default function RuntimeQuickStartPage() {
       activeTab="runtime"
       contextLabel="Runtime Quick Start"
       title="Enforce Contract Policy At Runtime"
-      summary="Use this Runtime (edge) flow to block strict live adaptive violations while still reporting warning-level diagnostics for review and cleanup."
+      summary="Use this repo-level Runtime (edge) workflow to block strict live adaptive violations while still reporting warning-level diagnostics for review and cleanup. It is built on interfacectl, not a replacement for the canonical runtime docs."
       steps={[
         {
           title: 'Generate runtime manifest.',
@@ -46,6 +47,7 @@ export default function RuntimeQuickStartPage() {
       ]}
       snippetTitle="Runtime Verification Commands"
       snippet={runtimeSnippet}
+      referenceCards={interfacectlRuntimeReferenceCards}
       notes={[
         'Runtime should block strict-policy findings only.',
         'Warn findings remain visible for remediation and policy hygiene.',

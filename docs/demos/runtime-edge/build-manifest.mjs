@@ -4,7 +4,7 @@ import path from "path";
 import url from "url";
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
-const root = path.resolve(__dirname, "../../../../"); // monorepo root
+const root = path.resolve(__dirname, "../../../"); // monorepo root
 const contractPath = path.join(root, "contracts/surfaces.web.contract.json");
 const outPath = path.join(__dirname, "manifest.json");
 

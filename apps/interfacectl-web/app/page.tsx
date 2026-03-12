@@ -1,63 +1,40 @@
 'use client';
 
+import Link from 'next/link';
 import { motion } from 'motion/react';
 import Navigation from '@surfaces/ui/components/Navigation';
 import { colors } from '@surfaces/ui/tokens/colors';
 import { fadeVariants, staggerContainerFast } from '@surfaces/ui/utils/motion';
+import {
+  interfacectlDiscoveryCards,
+  interfacectlDocsNavigationLinks,
+  interfacectlDocLinks
+} from '../../_shared/interfacectl-doc-links.js';
+
+const quickStartSteps = [
+  {
+    label: 'Install locally',
+    detail: 'pnpm add -D @surfaces/interfacectl-cli'
+  },
+  {
+    label: 'Start onboarding',
+    detail: 'interfacectl'
+  },
+  {
+    label: 'Run the canonical gate',
+    detail: 'interfacectl validate --contract <path>'
+  }
+];
 
 export default function Home() {
   const handleSurfaceChange = (surface: 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev') => {
     console.log('Surface change:', surface);
   };
 
-  // Command examples
-  const commands = [
-    {
-      command: 'interfacectl validate interface.json',
-      description: 'Validates an interface against its contract.'
-    },
-    {
-      command: 'interfacectl diff previous.json current.json',
-      description: 'Shows structural and language drift.'
-    },
-    {
-      command: 'interfacectl enforce interface.json --strict',
-      description: 'Fails on any contract violation.'
-    }
-  ];
-
-  // Exit states
-  const exitStates = [
-    {
-      code: '0',
-      label: 'Valid',
-      description: 'Interface conforms to contract.',
-      color: colors.contract.valid
-    },
-    {
-      code: '1',
-      label: 'Warning',
-      description: 'Minor deviation detected.',
-      color: colors.signal.warning
-    },
-    {
-      code: '2',
-      label: 'Drift detected',
-      description: 'Interface has diverged from definition.',
-      color: colors.signal.active
-    },
-    {
-      code: '3',
-      label: 'Invalid',
-      description: 'Contract violation. Change blocked.',
-      color: colors.contract.invalid
-    }
-  ];
-
   return (
-    <div 
+    <div
       className="min-h-screen w-full"
-      style={{ 
+      style={{
         backgroundColor: colors.neutral[900],
         fontFamily: 'JetBrains Mono, monospace',
         color: colors.neutral[0]
@@ -66,31 +43,25 @@ export default function Home() {
       <Navigation
         currentSurface="interfacectl"
         currentContext={{
-          contentType: 'commands',
+          contentType: 'docs',
           subject: 'validation'
         }}
         sections={[
-          { label: 'Install', href: '#install' },
-          { label: 'Usage', href: '#usage' },
-          { label: 'Commands', href: '#commands' },
-          { label: 'Specification', href: '#spec' }
+          { label: 'Start', href: '#start' },
+          { label: 'Docs', href: '#docs' }
         ]}
-        utilities={[
-          { label: 'GitHub', href: '#github' },
-          { label: 'v1.0.0', href: '#version' }
-        ]}
+        utilities={interfacectlDocsNavigationLinks}
         theme="dark"
         onSurfaceChange={handleSurfaceChange}
       />
-      
+
       <div
         className="contract-container max-w-[1040px]"
         data-contract="page-container"
         data-contract-typography-profile="marketing-mono"
       >
-        
-        {/* Section 1 - Header */}
-        <motion.section 
+        <motion.section
+          id="start"
           data-contract-section="landing.hero"
           data-contract-marketing-layout-profile="marketing-open-flow-text-compact"
           data-contract-hero-container-mode="open-flow"
@@ -101,151 +72,86 @@ export default function Home() {
           whileInView="visible"
           viewport={{ once: true }}
           variants={staggerContainerFast}
-          className="pt-32 pb-28"
+          className="pt-32 pb-24"
           style={{
             paddingTop: 'var(--marketing-layout-hero-padding-top-compact)',
             paddingBottom: 'var(--marketing-layout-hero-padding-bottom-compact)'
           }}
         >
-          <motion.h1 
+          <motion.p
+            variants={fadeVariants}
+            data-contract-copy-role="heroEyebrow"
+            style={{
+              margin: 0,
+              marginBottom: '14px',
+              fontFamily: 'var(--marketing-mono-hero-eyebrow-family)',
+              fontSize: 'var(--marketing-mono-hero-eyebrow-size)',
+              lineHeight: 'var(--marketing-mono-hero-eyebrow-line-height)',
+              letterSpacing: 'var(--marketing-mono-hero-eyebrow-letter-spacing)',
+              color: colors.signal.active,
+              textTransform: 'uppercase'
+            }}
+          >
+            Discovery Surface
+          </motion.p>
+
+          <motion.h1
             variants={fadeVariants}
             data-contract-copy-role="heroTitle"
-            style={{ 
+            style={{
               fontFamily: 'var(--marketing-mono-hero-title-family)',
-              fontSize: 'var(--marketing-mono-hero-title-size)', 
-              fontWeight: 600, 
-              lineHeight: 'var(--marketing-mono-hero-title-line-height)', 
-              marginBottom: '8px'
+              fontSize: 'var(--marketing-mono-hero-title-size)',
+              fontWeight: 600,
+              lineHeight: 'var(--marketing-mono-hero-title-line-height)',
+              marginBottom: '16px'
             }}
           >
             interfacectl
           </motion.h1>
-          
-          <motion.p 
-            variants={fadeVariants}
-            data-contract-copy-role="heroEyebrow"
-            style={{ 
-              fontFamily: 'var(--marketing-mono-hero-eyebrow-family)',
-              fontSize: 'var(--marketing-mono-hero-eyebrow-size)', 
-              fontWeight: 400,
-              lineHeight: 'var(--marketing-mono-hero-eyebrow-line-height)',
-              letterSpacing: 'var(--marketing-mono-hero-eyebrow-letter-spacing)',
-              textTransform: 'uppercase',
-              color: colors.neutral[400],
-              marginBottom: '24px'
-            }}
-          >
-            Command-line control for interface contracts.
-          </motion.p>
-          
-          <motion.p 
+
+          <motion.p
             variants={fadeVariants}
             data-contract-copy-role="heroBody"
-            style={{ 
+            style={{
               fontFamily: 'var(--marketing-mono-hero-body-family)',
-              fontSize: 'var(--marketing-mono-hero-body-size)', 
-              fontWeight: 400, 
+              fontSize: 'var(--marketing-mono-hero-body-size)',
               lineHeight: 'var(--marketing-mono-hero-body-line-height)',
-              maxWidth: 'var(--marketing-layout-copy-max-width-wide)'
+              maxWidth: 'var(--marketing-layout-copy-max-width-wide)',
+              marginBottom: '14px'
             }}
           >
-            interfacectl validates, enforces, and inspects interface contracts as executable truth.
+            interfacectl-web is a discovery surface. Canonical CLI, validation, runtime, and generator semantics live in the
+            {' '}
+            <code>interfacectl</code>
+            {' '}
+            repo docs.
           </motion.p>
-        </motion.section>
 
-        {/* Section 2 - Installation */}
-        <motion.section 
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={staggerContainerFast}
-          className="py-28"
-          style={{ borderTop: `1px solid ${colors.neutral[800]}` }}
-        >
-          <motion.div 
-            variants={fadeVariants}
-            className="p-6 rounded-[4px]"
-            style={{ 
-              backgroundColor: colors.neutral[800],
-              border: `1px solid ${colors.neutral[600]}`
-            }}
-          >
-            <pre style={{ 
-              fontSize: '13px', 
-              fontWeight: 400,
-              margin: 0,
-              color: colors.neutral[0],
-              fontFamily: 'JetBrains Mono, monospace'
-            }}>
-              brew install interfacectl
-            </pre>
-          </motion.div>
-          
-          <motion.p 
+          <motion.p
             variants={fadeVariants}
             data-contract-copy-role="body"
-            style={{ 
+            style={{
+              margin: 0,
               fontFamily: 'var(--marketing-mono-body-family)',
-              fontSize: 'var(--marketing-mono-body-size)', 
-              fontWeight: 400,
+              fontSize: 'var(--marketing-mono-body-size)',
               lineHeight: 'var(--marketing-mono-body-line-height)',
-              color: colors.neutral[400],
-              marginTop: '12px'
+              color: colors.neutral[400]
             }}
           >
-            Supports macOS, Linux, CI environments.
+            Use this page to start quickly, then jump to the canonical docs for specifics.
           </motion.p>
         </motion.section>
 
-        {/* Section 3 - What It Does */}
-        <motion.section 
+        <motion.section
           data-contract-section="landing.guidance"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
           variants={staggerContainerFast}
-          className="py-28"
+          className="py-24"
           style={{ borderTop: `1px solid ${colors.neutral[800]}` }}
         >
-          <div className="grid grid-cols-12 gap-6">
-            <motion.div variants={fadeVariants} className="col-span-4">
-              <h2
-                data-contract-copy-role="sectionTitle"
-                style={{
-                  fontFamily: 'var(--marketing-mono-section-title-family)',
-                  fontSize: 'var(--marketing-mono-section-title-size)',
-                  fontWeight: 600,
-                  lineHeight: 'var(--marketing-mono-section-title-line-height)'
-                }}
-              >
-                What this tool is
-              </h2>
-            </motion.div>
-            <motion.div 
-              variants={fadeVariants} 
-              className="col-span-7 col-start-6"
-              style={{ fontFamily: 'var(--marketing-mono-body-family)' }}
-            >
-              <ul className="space-y-2" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                <li data-contract-copy-role="body" style={{ fontSize: 'var(--marketing-mono-body-size)', lineHeight: 'var(--marketing-mono-body-line-height)' }}>Reads interface contracts</li>
-                <li data-contract-copy-role="body" style={{ fontSize: 'var(--marketing-mono-body-size)', lineHeight: 'var(--marketing-mono-body-line-height)' }}>Validates implementations</li>
-                <li data-contract-copy-role="body" style={{ fontSize: 'var(--marketing-mono-body-size)', lineHeight: 'var(--marketing-mono-body-line-height)' }}>Detects drift</li>
-                <li data-contract-copy-role="body" style={{ fontSize: 'var(--marketing-mono-body-size)', lineHeight: 'var(--marketing-mono-body-line-height)' }}>Exits with explicit status codes</li>
-              </ul>
-            </motion.div>
-          </div>
-        </motion.section>
-
-        {/* Section 4 - Example Usage */}
-        <motion.section 
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={staggerContainerFast}
-          className="py-28"
-          style={{ borderTop: `1px solid ${colors.neutral[800]}` }}
-        >
-          <motion.h2 
+          <motion.h2
             variants={fadeVariants}
             data-contract-copy-role="sectionTitle"
             style={{
@@ -253,221 +159,129 @@ export default function Home() {
               fontSize: 'var(--marketing-mono-section-title-size)',
               fontWeight: 600,
               lineHeight: 'var(--marketing-mono-section-title-line-height)',
-              marginBottom: '32px'
+              marginBottom: '18px'
             }}
           >
-            Example Usage
+            Start Here
           </motion.h2>
-          
-          <div className="space-y-6">
-            {commands.map((cmd, idx) => (
-              <motion.div key={idx} variants={fadeVariants}>
-                <div 
-                  className="p-4 rounded-[4px] mb-2"
-                  style={{ 
-                    backgroundColor: colors.neutral[800],
-                    border: `1px solid ${colors.neutral[600]}`
-                  }}
-                >
-                  <pre style={{ 
-                    fontSize: '13px', 
-                    fontWeight: 400,
-                    margin: 0,
-                    color: colors.neutral[0],
-                    fontFamily: 'JetBrains Mono, monospace'
-                  }}>
-                    {cmd.command}
-                  </pre>
-                </div>
-                <p 
-                  data-contract-copy-role="body"
-                  style={{ 
-                    fontFamily: 'var(--marketing-mono-body-family)',
-                    fontSize: 'var(--marketing-mono-body-size)', 
-                    fontWeight: 400,
-                    color: colors.neutral[400],
-                    lineHeight: 'var(--marketing-mono-body-line-height)'
-                  }}
-                >
-                  {cmd.description}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </motion.section>
 
-        {/* Section 5 - Exit States */}
-        <motion.section 
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={staggerContainerFast}
-          className="py-28"
-          style={{ borderTop: `1px solid ${colors.neutral[800]}` }}
-        >
-          <motion.h2 
+          <motion.pre
             variants={fadeVariants}
-            style={{ fontSize: '20px', fontWeight: 600, marginBottom: '32px' }}
+            className="rounded-[4px] p-5 overflow-x-auto"
+            style={{
+              margin: 0,
+              border: `1px solid ${colors.neutral[600]}`,
+              backgroundColor: colors.neutral[800],
+              color: colors.neutral[200],
+              fontSize: '12px',
+              lineHeight: 1.6
+            }}
           >
-            Exit States
-          </motion.h2>
-          
-          <div className="space-y-3">
-            {exitStates.map((state, idx) => (
-              <motion.div 
-                key={idx}
-                variants={fadeVariants}
-                className="flex items-baseline gap-6"
+{`pnpm add -D @surfaces/interfacectl-cli
+interfacectl
+interfacectl validate --contract <path>`}
+          </motion.pre>
+
+          <motion.div variants={fadeVariants} className="grid gap-4 md:grid-cols-3" style={{ marginTop: '18px' }}>
+            {quickStartSteps.map((step) => (
+              <div
+                key={step.label}
+                className="rounded-[4px] p-4"
+                style={{
+                  border: `1px solid ${colors.neutral[600]}`,
+                  backgroundColor: colors.neutral[800]
+                }}
               >
-                <div className="flex items-baseline gap-3 w-48">
-                  <span style={{ 
-                    fontSize: '13px', 
-                    fontWeight: 400,
-                    color: colors.neutral[400]
-                  }}>
-                    {state.code}
-                  </span>
-                  <span style={{ 
-                    fontSize: '13px', 
-                    fontWeight: 400,
-                    color: state.color
-                  }}>
-                    {state.label}
-                  </span>
-                </div>
-                <p style={{ 
-                  fontSize: '12px', 
-                  fontWeight: 400,
-                  color: colors.neutral[400],
-                  fontFamily: 'Inter, sans-serif',
-                  lineHeight: 1.5
-                }}>
-                  {state.description}
-                </p>
-              </motion.div>
+                <div style={{ fontSize: '12px', color: colors.neutral[400], marginBottom: '8px' }}>{step.label}</div>
+                <div style={{ fontSize: '13px', lineHeight: 1.7 }}>{step.detail}</div>
+              </div>
             ))}
-          </div>
+          </motion.div>
         </motion.section>
 
-        {/* Section 6 - When to Use This */}
-        <motion.section 
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={staggerContainerFast}
-          className="py-28"
-          style={{ borderTop: `1px solid ${colors.neutral[800]}` }}
-        >
-          <motion.h2 
-            variants={fadeVariants}
-            style={{ fontSize: '20px', fontWeight: 600, marginBottom: '32px' }}
-          >
-            When to Use This
-          </motion.h2>
-          
-          <div 
-            className="space-y-4 max-w-[680px]"
-            style={{ fontFamily: 'Inter, sans-serif' }}
-          >
-            <motion.p 
-              variants={fadeVariants}
-              style={{ fontSize: '14px', lineHeight: 1.6 }}
-            >
-              In CI pipelines to validate interface changes before merge.
-            </motion.p>
-            <motion.p 
-              variants={fadeVariants}
-              style={{ fontSize: '14px', lineHeight: 1.6 }}
-            >
-              During design system changes to ensure token adherence.
-            </motion.p>
-            <motion.p 
-              variants={fadeVariants}
-              style={{ fontSize: '14px', lineHeight: 1.6 }}
-            >
-              Before AI-generated interfaces ship to production.
-            </motion.p>
-          </div>
-        </motion.section>
-
-        {/* Section 7 - Relationship to the System */}
-        <motion.section 
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeVariants}
-          className="py-28"
-          style={{ borderTop: `1px solid ${colors.neutral[800]}` }}
-        >
-          <div className="max-w-[680px]">
-            <p style={{ 
-              fontSize: '14px', 
-              fontWeight: 400, 
-              lineHeight: 1.8
-            }}>
-              interfacectl is the executable surface of the Surfaces system.<br />
-              It does not interpret intent.<br />
-              It evaluates truth.
-            </p>
-          </div>
-        </motion.section>
-
-        {/* Section 8 - Closing */}
-        <motion.section 
+        <motion.section
+          id="docs"
           data-contract-section="landing.actions"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
           variants={staggerContainerFast}
-          className="py-28"
+          className="py-24"
           style={{ borderTop: `1px solid ${colors.neutral[800]}` }}
         >
-          <motion.p 
+          <motion.h2
             variants={fadeVariants}
-            style={{ 
-              fontSize: '14px', 
-              fontWeight: 400, 
-              lineHeight: 1.6,
-              marginBottom: '24px'
-            }}
-          >
-            If it passes interfacectl, it passes the contract.
-          </motion.p>
-          
-          <motion.button
-            variants={fadeVariants}
+            data-contract-copy-role="sectionTitle"
             style={{
-              fontSize: '12px',
-              fontWeight: 400,
-              padding: '8px 0',
-              backgroundColor: 'transparent',
-              color: colors.neutral[400],
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              transition: 'all var(--contract-motion-duration) var(--contract-motion-timing)'
+              fontFamily: 'var(--marketing-mono-section-title-family)',
+              fontSize: 'var(--marketing-mono-section-title-size)',
+              fontWeight: 600,
+              lineHeight: 'var(--marketing-mono-section-title-line-height)',
+              marginBottom: '18px'
             }}
           >
-            Read the specification →
-          </motion.button>
+            Canonical Docs
+          </motion.h2>
+
+          <motion.p
+            variants={fadeVariants}
+            data-contract-copy-role="body"
+            style={{
+              maxWidth: '820px',
+              marginTop: 0,
+              marginBottom: '18px',
+              fontFamily: 'var(--marketing-mono-body-family)',
+              fontSize: 'var(--marketing-mono-body-size)',
+              lineHeight: 'var(--marketing-mono-body-line-height)',
+              color: colors.neutral[400]
+            }}
+          >
+            Use the canonical docs for exact command behavior, exit codes, contract validation semantics, runtime guidance, and generator integration.
+          </motion.p>
+
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {interfacectlDiscoveryCards.map((card) => (
+              <motion.div key={card.href} variants={fadeVariants}>
+                <Link
+                  href={card.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block rounded-[4px] p-4"
+                  style={{
+                    backgroundColor: colors.neutral[800],
+                    border: `1px solid ${colors.neutral[600]}`,
+                    color: colors.neutral[0],
+                    textDecoration: 'none'
+                  }}
+                >
+                  <div style={{ fontSize: '12px', color: colors.neutral[400], marginBottom: '6px' }}>Canonical doc</div>
+                  <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>{card.label}</div>
+                  <p style={{ margin: 0, fontSize: '12px', lineHeight: 1.6, color: colors.neutral[400] }}>
+                    {card.description}
+                  </p>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div variants={fadeVariants} style={{ marginTop: '18px' }}>
+            <Link
+              href={interfacectlDocLinks.repo.href}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                color: colors.neutral[400],
+                textDecoration: 'none',
+                fontSize: '12px'
+              }}
+            >
+              Open the repo →
+            </Link>
+          </motion.div>
         </motion.section>
-
-        {/* Footer */}
-        <motion.footer 
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeVariants}
-          className="py-16"
-          style={{ borderTop: `1px solid ${colors.neutral[800]}` }}
-        >
-          <p style={{ fontSize: '12px', color: colors.neutral[600] }}>
-            © 2025 Surfaces Systems
-          </p>
-        </motion.footer>
-
       </div>
     </div>
   );
