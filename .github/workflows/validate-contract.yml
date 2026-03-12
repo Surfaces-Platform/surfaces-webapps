@@ -39,20 +39,16 @@ jobs:
             }
 
             const body = context.payload.pull_request?.body ?? "";
-            const match = body.match(/Surfaces-Platform\/interfacectl#(\d+)/i);
-            if (!match) {
-              core.setOutput("ref", "main");
+            const refMatch =
+              body.match(/Interfacectl ref:\s*([^\s]+)/i) ??
+              body.match(/Surfaces-Platform\/interfacectl@([^\s]+)/i);
+            if (refMatch) {
+              core.info(`Using interfacectl ref ${refMatch[1]}`);
+              core.setOutput("ref", refMatch[1]);
               return;
             }
 
-            const prNumber = Number(match[1]);
-            const pr = await github.rest.pulls.get({
-              owner: "Surfaces-Platform",
-              repo: "interfacectl",
-              pull_number: prNumber,
-            });
-            core.info(`Using interfacectl PR #${prNumber} head ref ${pr.data.head.ref}`);
-            core.setOutput("ref", pr.data.head.ref);
+            core.setOutput("ref", "main");
 
       - name: Checkout interfacectl
         uses: actions/checkout@v4
@@ -170,20 +166,16 @@ jobs:
             }
 
             const body = context.payload.pull_request?.body ?? "";
-            const match = body.match(/Surfaces-Platform\/interfacectl#(\d+)/i);
-            if (!match) {
-              core.setOutput("ref", "main");
+            const refMatch =
+              body.match(/Interfacectl ref:\s*([^\s]+)/i) ??
+              body.match(/Surfaces-Platform\/interfacectl@([^\s]+)/i);
+            if (refMatch) {
+              core.info(`Using interfacectl ref ${refMatch[1]}`);
+              core.setOutput("ref", refMatch[1]);
               return;
             }
 
-            const prNumber = Number(match[1]);
-            const pr = await github.rest.pulls.get({
-              owner: "Surfaces-Platform",
-              repo: "interfacectl",
-              pull_number: prNumber,
-            });
-            core.info(`Using interfacectl PR #${prNumber} head ref ${pr.data.head.ref}`);
-            core.setOutput("ref", pr.data.head.ref);
+            core.setOutput("ref", "main");
 
       - name: Checkout interfacectl
         uses: actions/checkout@v4
