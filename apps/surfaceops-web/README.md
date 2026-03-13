@@ -1,4 +1,10 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+`surfaceops-web` is the protected SurfaceOps application. It now hosts a project-centric contract workbench that:
+
+- connects a GitHub repo and canonical contract path
+- stores a mutable contract working copy in Postgres
+- runs Codex-based baseline vs guided reruns through canonical `interfacectl` commands
+- captures preview evidence and reviewed suggestions
+- publishes the approved draft as a branch + PR
 
 ## Getting Started
 
@@ -33,14 +39,29 @@ DATABASE_URL_UNPOOLED=postgres://... pnpm sync:run-artifacts:db -- --workspace-i
 Provider-side rollout steps (Vercel Marketplace + Neon preview branching):
 `docs/neon-vercel-rollout.md`
 
-### Generation workbench artifacts
+### Contract workbench prerequisites
 
-The protected `/contracts/governance` route now reads canonical generation benchmark artifacts from the filesystem.
+The protected `/contracts/governance` route is now project-backed. In addition to auth and Postgres, local development needs:
 
 ```bash
-# Optional override when benchmark artifacts live outside the repo root
-SURFACEOPS_BENCHMARKS_DIR=/absolute/path/to/artifacts/generation-benchmarks pnpm dev
+# Optional secret used to encrypt GitHub tokens and stored preview browser session state.
+SURFACEOPS_SECRET_KEY=replace-me
+
+# Optional blob/artifact root; defaults to repo-root/artifacts/surfaceops-blobs.
+SURFACEOPS_BLOB_ROOT=/absolute/path/to/blob-root
+
+# Optional temp clone root for managed rerun checkouts.
+SURFACEOPS_REPO_CLONE_ROOT=/absolute/path/to/repo-cache
+
+# Optional explicit interfacectl checkout when the resolver should prefer a specific local build.
+SURFACES_INTERFACECTL_ROOT=/absolute/path/to/interfacectl
 ```
+
+The managed rerun flow shells through resolver-backed `interfacectl` commands and the local `codex` CLI, so both must be available on the host. Preview URLs are project-configured per surface, and protected previews can reuse stored Playwright `storageState` JSON through the workbench.
+
+### Database migrations
+
+The contract workbench adds project, draft, rerun, auth-session, and publish tables in migration `005_contract_workbench_projects.sql`.
 
 ### Run the dev server
 
@@ -56,7 +77,7 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+You can start editing the app by modifying files under `app/` and `lib/`.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 

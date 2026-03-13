@@ -365,6 +365,24 @@ export function loadGenerationWorkbench(input: {
 }): GenerationWorkbenchData {
   const benchmarksDir = input.benchmarksDir ? path.resolve(input.benchmarksDir) : resolveBenchmarksDir();
   const benchmarkDir = path.join(benchmarksDir, input.benchmarkId);
+  return loadGenerationWorkbenchFromRoot({
+    benchmarkDir,
+    benchmarkId: input.benchmarkId,
+    benchmarksDir,
+    surfaceId: input.surfaceId,
+    attemptView: input.attemptView,
+  });
+}
+
+export function loadGenerationWorkbenchFromRoot(input: {
+  benchmarkDir: string;
+  benchmarkId: string;
+  benchmarksDir?: string;
+  surfaceId?: string | null;
+  attemptView?: string | null;
+}): GenerationWorkbenchData {
+  const benchmarksDir = input.benchmarksDir ? path.resolve(input.benchmarksDir) : path.dirname(input.benchmarkDir);
+  const benchmarkDir = path.resolve(input.benchmarkDir);
   const reportPath = path.join(benchmarkDir, "report", "benchmark-report.json");
   if (!fs.existsSync(reportPath)) {
     throw new Error(`Benchmark report not found at ${reportPath}.`);

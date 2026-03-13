@@ -123,7 +123,7 @@ export default function ContractsPage() {
               fontWeight: 600,
             }}
           >
-            Open Generation Workbench
+            Open Contract Workbench
           </Link>
         </div>
 
