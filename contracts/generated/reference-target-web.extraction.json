@@ -16,24 +16,48 @@
       "message": "requiredSections cannot be extracted from code in Phase 0; using placeholder."
     },
     {
-      "code": "allowedFonts.default",
-      "message": "allowedFonts cannot be extracted from code in Phase 0; using default."
+      "code": "ui-seed.motion.none-detected",
+      "message": "Descriptor warning during UI seed: No motion declarations detected for surface \"reference-target-web\"."
     },
     {
-      "code": "layout.default",
-      "message": "layout.maxContentWidth cannot be extracted from code in Phase 0; using default."
+      "code": "ui-seed.token.normalization-skipped",
+      "message": "Descriptor warning during UI seed: Could not normalize typography token \"var(--font-inter)\" because missing custom property definition."
+    },
+    {
+      "code": "ui-seed.motion.none-detected",
+      "message": "Motion constraints were not fully seeded from descriptors because no motion declarations were detected."
+    },
+    {
+      "code": "ui-seed.typography.normalization-skipped",
+      "message": "typography token normalization was skipped for 1 observed token because deterministic token definitions were unavailable."
     },
     {
       "code": "color-seed.motion.none-detected",
       "message": "Descriptor warning during color seed: No motion declarations detected for surface \"reference-target-web\"."
     },
     {
+      "code": "color-seed.token.normalization-skipped",
+      "message": "Descriptor warning during color seed: Could not normalize typography token \"var(--font-inter)\" because missing custom property definition."
+    },
+    {
       "code": "icon-seed.motion.none-detected",
       "message": "Descriptor warning during icon seed: No motion declarations detected for surface \"reference-target-web\"."
     },
     {
+      "code": "icon-seed.token.normalization-skipped",
+      "message": "Descriptor warning during icon seed: Could not normalize typography token \"var(--font-inter)\" because missing custom property definition."
+    },
+    {
       "code": "icon-seed.none-detected",
       "message": "Icon source policy was not seeded from extraction because no icon sources were detected."
+    },
+    {
+      "code": "chrome-seed.motion.none-detected",
+      "message": "Descriptor warning during chrome seed: No motion declarations detected for surface \"reference-target-web\"."
+    },
+    {
+      "code": "chrome-seed.token.normalization-skipped",
+      "message": "Descriptor warning during chrome seed: Could not normalize typography token \"var(--font-inter)\" because missing custom property definition."
     }
   ]
 }

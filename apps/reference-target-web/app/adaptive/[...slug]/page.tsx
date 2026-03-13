@@ -9,7 +9,11 @@ export default async function AdaptiveReferencePage({
   const path = slug?.join("/") || "(root)";
 
   return (
-    <main className="main" data-contract="page-container">
+    <main
+      className="main"
+      data-contract="page-container"
+      data-contract-container="page-container"
+    >
       <section className="section" data-contract-section="landing.hero">
         <h1 className="heroTitle">Reference Target Adaptive Test</h1>
         <p className="heroText">
