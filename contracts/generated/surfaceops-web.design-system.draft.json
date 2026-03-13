@@ -1,0 +1,385 @@
+{
+  "categories": {
+    "color": {
+      "aliases": [],
+      "canonicalValues": [
+        "rgba(15, 23, 42, 0.3)",
+        "var(--background)",
+        "var(--foreground)"
+      ],
+      "outliers": [],
+      "semanticGroups": [
+        "surface",
+        "text",
+        "accent"
+      ]
+    },
+    "icons": {
+      "allowedSources": [
+        "@heroicons/react/24/outline"
+      ],
+      "outliers": []
+    },
+    "layout": {
+      "canonicalTokens": [
+        {
+          "aliases": [],
+          "attributes": [
+            "width"
+          ],
+          "normalizedValue": "1120px",
+          "token": "var(--contract-max-width)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "gap"
+          ],
+          "normalizedValue": "120ms",
+          "token": "var(--contract-motion-duration)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "gap"
+          ],
+          "normalizedValue": "linear",
+          "token": "var(--contract-motion-timing)"
+        },
+        {
+          "aliases": [
+            "var(--marketing-sans-body-family)",
+            "var(--marketing-sans-hero-body-family)",
+            "var(--marketing-sans-hero-eyebrow-family)",
+            "var(--marketing-sans-hero-title-family)",
+            "var(--marketing-sans-section-title-family)"
+          ],
+          "attributes": [
+            "margin"
+          ],
+          "normalizedValue": "'inter', sans-serif",
+          "token": "var(--font-inter)"
+        },
+        {
+          "aliases": [
+            "var(--marketing-sans-hero-title-size)"
+          ],
+          "attributes": [
+            "margin",
+            "padding"
+          ],
+          "normalizedValue": "32px",
+          "token": "var(--marketing-layout-card-padding)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "margin",
+            "max-width"
+          ],
+          "normalizedValue": "720px",
+          "token": "var(--marketing-layout-copy-max-width-wide)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "margin",
+            "max-width"
+          ],
+          "normalizedValue": "640px",
+          "token": "var(--marketing-layout-copy-max-width)"
+        },
+        {
+          "aliases": [
+            "var(--marketing-layout-section-padding-roomy)"
+          ],
+          "attributes": [
+            "margin",
+            "padding-bottom",
+            "padding-top"
+          ],
+          "normalizedValue": "96px",
+          "token": "var(--marketing-layout-hero-padding-bottom-roomy)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "margin",
+            "padding-top"
+          ],
+          "normalizedValue": "128px",
+          "token": "var(--marketing-layout-hero-padding-top-roomy)"
+        },
+        {
+          "aliases": [
+            "var(--marketing-sans-hero-body-line-height)"
+          ],
+          "attributes": [
+            "margin"
+          ],
+          "normalizedValue": "1.6",
+          "token": "var(--marketing-sans-body-line-height)"
+        },
+        {
+          "aliases": [
+            "var(--marketing-sans-hero-body-size)",
+            "var(--marketing-sans-hero-eyebrow-size)"
+          ],
+          "attributes": [
+            "margin"
+          ],
+          "normalizedValue": "14px",
+          "token": "var(--marketing-sans-body-size)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "margin"
+          ],
+          "normalizedValue": "1.28px",
+          "token": "var(--marketing-sans-hero-eyebrow-letter-spacing)"
+        },
+        {
+          "aliases": [
+            "var(--marketing-sans-section-title-line-height)"
+          ],
+          "attributes": [
+            "margin"
+          ],
+          "normalizedValue": "1.4",
+          "token": "var(--marketing-sans-hero-eyebrow-line-height)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "margin"
+          ],
+          "normalizedValue": "1.2",
+          "token": "var(--marketing-sans-hero-title-line-height)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "margin"
+          ],
+          "normalizedValue": "20px",
+          "token": "var(--marketing-sans-section-title-size)"
+        }
+      ],
+      "containers": [
+        "contract-container"
+      ],
+      "maxContentWidth": 1120,
+      "outliers": [],
+      "radiusPx": null,
+      "semanticGroups": [
+        "container",
+        "shape",
+        "spacing"
+      ],
+      "shadowKinds": []
+    },
+    "motion": {
+      "aliases": [],
+      "canonicalTokens": [
+        {
+          "aliases": [],
+          "attributes": [
+            "transition"
+          ],
+          "normalizedValue": "120ms",
+          "token": "var(--contract-motion-duration)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "transition"
+          ],
+          "normalizedValue": "linear",
+          "token": "var(--contract-motion-timing)"
+        }
+      ],
+      "durationsMs": [
+        120
+      ],
+      "outliers": [],
+      "semanticGroups": [
+        "transition",
+        "animation"
+      ],
+      "timingFunctions": [
+        "linear"
+      ]
+    },
+    "structure": {
+      "outliers": [],
+      "primitives": [
+        {
+          "count": 1,
+          "role": "header",
+          "sources": [
+            "apps/surfaceops-web/app/contracts/governance/_components/project-workbench.tsx"
+          ]
+        },
+        {
+          "count": 1,
+          "role": "navigation",
+          "sources": [
+            "apps/surfaceops-web/app/layout.tsx"
+          ]
+        }
+      ],
+      "sections": [
+        "landing.actions",
+        "landing.guidance",
+        "landing.hero"
+      ],
+      "surfacePatterns": [
+        "task-oriented",
+        "shell"
+      ]
+    },
+    "typography": {
+      "aliases": [
+        "var(--marketing-sans-body-family)",
+        "var(--marketing-sans-hero-body-family)",
+        "var(--marketing-sans-hero-body-line-height)",
+        "var(--marketing-sans-hero-body-size)",
+        "var(--marketing-sans-hero-eyebrow-family)",
+        "var(--marketing-sans-hero-eyebrow-size)",
+        "var(--marketing-sans-hero-title-family)",
+        "var(--marketing-sans-section-title-family)",
+        "var(--marketing-sans-section-title-line-height)"
+      ],
+      "canonicalTokens": [
+        {
+          "aliases": [
+            "var(--marketing-sans-body-family)",
+            "var(--marketing-sans-hero-body-family)",
+            "var(--marketing-sans-hero-eyebrow-family)",
+            "var(--marketing-sans-hero-title-family)",
+            "var(--marketing-sans-section-title-family)"
+          ],
+          "attributes": [
+            "font-family"
+          ],
+          "normalizedValue": "inter, sans-serif",
+          "token": "var(--font-inter)"
+        },
+        {
+          "aliases": [
+            "var(--marketing-sans-hero-body-line-height)"
+          ],
+          "attributes": [
+            "line-height"
+          ],
+          "normalizedValue": "1.6",
+          "token": "var(--marketing-sans-body-line-height)"
+        },
+        {
+          "aliases": [
+            "var(--marketing-sans-hero-body-size)",
+            "var(--marketing-sans-hero-eyebrow-size)"
+          ],
+          "attributes": [
+            "font-size"
+          ],
+          "normalizedValue": "14px",
+          "token": "var(--marketing-sans-body-size)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "letter-spacing"
+          ],
+          "normalizedValue": "0.08em",
+          "token": "var(--marketing-sans-hero-eyebrow-letter-spacing)"
+        },
+        {
+          "aliases": [
+            "var(--marketing-sans-section-title-line-height)"
+          ],
+          "attributes": [
+            "line-height"
+          ],
+          "normalizedValue": "1.4",
+          "token": "var(--marketing-sans-hero-eyebrow-line-height)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "line-height"
+          ],
+          "normalizedValue": "1.2",
+          "token": "var(--marketing-sans-hero-title-line-height)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "font-size"
+          ],
+          "normalizedValue": "32px",
+          "token": "var(--marketing-sans-hero-title-size)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "font-size"
+          ],
+          "normalizedValue": "20px",
+          "token": "var(--marketing-sans-section-title-size)"
+        }
+      ],
+      "observedFamilies": [
+        "Arial",
+        "Helvetica",
+        "Inter",
+        "sans-serif",
+        "var(--font-inter)"
+      ],
+      "outliers": [
+        "Inter",
+        "sans-serif",
+        "var(--font-inter)"
+      ],
+      "roleCoverage": [
+        "body",
+        "heroBody",
+        "heroEyebrow",
+        "heroTitle",
+        "sectionTitle"
+      ],
+      "semanticGroups": [
+        "copy-roles"
+      ]
+    }
+  },
+  "confidence": 0.79,
+  "manualFollowUp": [
+    "Detected 5 font families; review whether all are intentional system choices."
+  ],
+  "mode": "adopt",
+  "schemaVersion": 1,
+  "summary": {
+    "existingSystemScore": 1,
+    "inconsistencyCount": 1,
+    "tokenCount": 25
+  },
+  "surfaceId": "surfaceops-web",
+  "surfaceName": "Surfaceops Web",
+  "warnings": [
+    {
+      "code": "allowedFonts.default",
+      "message": "allowedFonts cannot be extracted from code in Phase 0; using default."
+    },
+    {
+      "code": "layout.default",
+      "message": "layout.maxContentWidth cannot be extracted from code in Phase 0; using default."
+    },
+    {
+      "code": "requiredSections.omitted",
+      "message": "requiredSections cannot be extracted from code in Phase 0; using placeholder."
+    }
+  ],
+  "webSurfaceKind": "application"
+}

@@ -33,7 +33,9 @@ export function ProjectWorkbench({ data }: { data: ProjectWorkspaceData }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [draftText, setDraftText] = useState(data.draft.text);
-  const [authSessionKey, setAuthSessionKey] = useState(data.previewTargets[0]?.authSessionKey ?? "preview-default");
+  const [authSessionKey, setAuthSessionKey] = useState(
+    data.previewTargets[0]?.authSessionKey ?? "surfaceops-governance-preview",
+  );
   const [authStorageState, setAuthStorageState] = useState("{\n  \"cookies\": [],\n  \"origins\": []\n}");
   const [feedback, setFeedback] = useState<string | null>(null);
   const selectedWorkbench = data.selectedRunWorkbench;

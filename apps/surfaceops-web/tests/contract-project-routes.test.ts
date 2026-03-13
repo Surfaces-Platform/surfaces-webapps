@@ -80,7 +80,7 @@ describe("contract workbench routes", () => {
       new Request("http://localhost/api/contracts/projects/proj-1/reruns", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ surfaceId: "surfaces-web" }),
+        body: JSON.stringify({ surfaceId: "surfaceops-web" }),
       }),
       { params: Promise.resolve({ projectId: "proj-1" }) },
     );
@@ -95,9 +95,9 @@ describe("contract workbench routes", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          authSessionKey: "preview-default",
-          surfaceId: "surfaces-web",
-          previewOrigin: "https://preview.example.com",
+          authSessionKey: "surfaceops-governance-preview",
+          surfaceId: "surfaceops-web",
+          previewOrigin: "https://surfaceopsai-git-main-surfaces-platform.vercel.app/contracts/governance",
           storageState: { cookies: [], origins: [] },
         }),
       }),

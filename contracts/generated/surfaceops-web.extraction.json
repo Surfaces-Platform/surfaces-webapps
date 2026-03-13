@@ -1,21 +1,25 @@
 {
-  "appRoot": "apps/surfaceops-web",
+  "appRoot": "/Users/mike/SurfacesPlatform/.worktrees/surfaceops-benchmark-workbench/apps/surfaceops-web",
   "extracted": {
     "authAware": true,
     "designSystemComponents": [
       "Navigation"
     ],
     "hasShell": true,
+    "iconSources": [
+      "@heroicons/react/24/outline"
+    ],
     "routes": [
       "/",
+      "/api/contracts/github/repos",
+      "/api/contracts/projects",
+      "/api/contracts/projects/[projectId]/auth-sessions",
+      "/api/contracts/projects/[projectId]/draft",
+      "/api/contracts/projects/[projectId]/publish",
+      "/api/contracts/projects/[projectId]/reruns",
+      "/api/contracts/projects/[projectId]/reruns/[runId]/suggestions/[suggestionId]",
+      "/api/invite-request",
       "/api/onboarding/extract",
-      "/api/prototypes/governance/apply-accepted",
-      "/api/prototypes/governance/decision",
-      "/api/prototypes/governance/extract",
-      "/api/prototypes/governance/inspector-baseline",
-      "/api/prototypes/governance/inspector-bridge",
-      "/api/prototypes/governance/inspector-proxy",
-      "/api/prototypes/governance/snapshot",
       "/auth/callback",
       "/auth/login",
       "/auth/logout",
@@ -24,18 +28,29 @@
       "/contracts",
       "/contracts/[surfaceId]",
       "/contracts/governance",
-      "/contracts/governance/inspector",
+      "/contracts/governance/[projectId]",
       "/contracts/runs",
       "/contracts/runs/[surfaceId]",
       "/v1/ingest/events"
     ]
   },
+  "onboarding": {
+    "authMode": "none",
+    "detection": {
+      "adapter": "next-app-static-analysis",
+      "framework": "nextjs",
+      "profile": "web-first-run"
+    },
+    "extractMode": "local-root",
+    "sourceUrl": "file:///Users/mike/SurfacesPlatform/.worktrees/surfaceops-benchmark-workbench/apps/surfaceops-web"
+  },
+  "sourceHealth": {
+    "authMode": "none",
+    "confidence": "full",
+    "status": "ok"
+  },
   "surfaceId": "surfaceops-web",
   "warnings": [
-    {
-      "code": "requiredSections.omitted",
-      "message": "requiredSections cannot be extracted from code in Phase 0; using placeholder."
-    },
     {
       "code": "allowedFonts.default",
       "message": "allowedFonts cannot be extracted from code in Phase 0; using default."
@@ -43,6 +58,10 @@
     {
       "code": "layout.default",
       "message": "layout.maxContentWidth cannot be extracted from code in Phase 0; using default."
+    },
+    {
+      "code": "requiredSections.omitted",
+      "message": "requiredSections cannot be extracted from code in Phase 0; using placeholder."
     }
   ]
 }

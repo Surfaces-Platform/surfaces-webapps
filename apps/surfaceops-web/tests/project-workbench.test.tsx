@@ -22,15 +22,22 @@ function buildWorkspaceData(): ProjectWorkspaceData {
       githubOwner: "Surfaces-Platform",
       githubRepo: "surfaces-webapps",
       githubDefaultBranch: "main",
-      contractPath: "contracts/surfaces.web.contract.json",
+      contractPath: "contracts/generated/surfaceops-web.contract.json",
       surfaces: [
-        { id: "surfaces-web", label: "Surfaces Web", implementationBrief: "Implement the core marketing surface." },
+        {
+          id: "surfaceops-web",
+          label: "SurfaceOps Web",
+          implementationBrief:
+            "Implement the protected SurfaceOps contract workbench while preserving workspace auth, project selection, and the operator shell.",
+        },
       ],
       previewTargets: [
         {
-          surfaceId: "surfaces-web",
-          url: "https://preview.example.com",
-          authSessionKey: "preview-default",
+          surfaceId: "surfaceops-web",
+          url: "https://surfaceopsai-git-main-surfaces-platform.vercel.app/contracts/governance",
+          urlTemplate: "https://surfaceopsai-git-{branch}-surfaces-platform.vercel.app/contracts/governance",
+          waitFor: "Contract workbench",
+          authSessionKey: "surfaceops-governance-preview",
         },
       ],
       createdAt: "2026-03-13T00:00:00.000Z",
@@ -39,11 +46,11 @@ function buildWorkspaceData(): ProjectWorkspaceData {
       latestPublishId: null,
     },
     draft: {
-      text: "{\n  \"contractId\": \"surfaces.web\"\n}\n",
+      text: "{\n  \"contractId\": \"surfaceops-web.generated\"\n}\n",
       sha256: "a".repeat(64),
       updatedAt: "2026-03-13T00:05:00.000Z",
     },
-    selectedSurfaceId: "surfaces-web",
+    selectedSurfaceId: "surfaceops-web",
     selectedRunId: "run-123",
     selectedPanel: "compare",
     attemptView: "latest",
@@ -52,7 +59,7 @@ function buildWorkspaceData(): ProjectWorkspaceData {
         workspaceId: "ws-test",
         projectId: "proj-123",
         runId: "run-123",
-        surfaceId: "surfaces-web",
+        surfaceId: "surfaceops-web",
         status: "succeeded",
         tool: "codex",
         baseBranch: "main",
@@ -69,13 +76,20 @@ function buildWorkspaceData(): ProjectWorkspaceData {
     ],
     publishes: [],
     surfaces: [
-      { id: "surfaces-web", label: "Surfaces Web", implementationBrief: "Implement the core marketing surface." },
+      {
+        id: "surfaceops-web",
+        label: "SurfaceOps Web",
+        implementationBrief:
+          "Implement the protected SurfaceOps contract workbench while preserving workspace auth, project selection, and the operator shell.",
+      },
     ],
     previewTargets: [
       {
-        surfaceId: "surfaces-web",
-        url: "https://preview.example.com",
-        authSessionKey: "preview-default",
+        surfaceId: "surfaceops-web",
+        url: "https://surfaceopsai-git-main-surfaces-platform.vercel.app/contracts/governance",
+        urlTemplate: "https://surfaceopsai-git-{branch}-surfaces-platform.vercel.app/contracts/governance",
+        waitFor: "Contract workbench",
+        authSessionKey: "surfaceops-governance-preview",
       },
     ],
     selectedRunWorkbench: {
@@ -97,10 +111,10 @@ function buildWorkspaceData(): ProjectWorkspaceData {
         },
       },
       surfaces: [],
-      selectedSurfaceId: "surfaces-web",
+      selectedSurfaceId: "surfaceops-web",
       attemptView: "latest",
       comparison: {
-        surfaceId: "surfaces-web",
+        surfaceId: "surfaceops-web",
         tool: "codex",
         brief: { sha256: "b".repeat(64), baselinePath: "/tmp/baseline.md", guidedPath: "/tmp/guided.md" },
         baseline: {
@@ -213,7 +227,7 @@ function buildWorkspaceData(): ProjectWorkspaceData {
         },
       },
       baselineSummary: {
-        surfaceId: "surfaces-web",
+        surfaceId: "surfaceops-web",
         sessionId: "baseline",
         tool: "codex",
         guidanceMode: "unguided",
@@ -228,7 +242,7 @@ function buildWorkspaceData(): ProjectWorkspaceData {
         attempts: [],
       },
       guidedSummary: {
-        surfaceId: "surfaces-web",
+        surfaceId: "surfaceops-web",
         sessionId: "guided",
         tool: "codex",
         guidanceMode: "prepared",
@@ -244,7 +258,7 @@ function buildWorkspaceData(): ProjectWorkspaceData {
       },
       guidedPrepared: {
         summary: {
-          text: "Prepared guidance summary for surfaces-web.",
+          text: "Prepared guidance summary for surfaceops-web.",
           focusOrder: ["boundary", "sections"],
           requiredSectionIds: ["landing.hero"],
           checklist: [],

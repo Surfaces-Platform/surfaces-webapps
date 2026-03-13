@@ -4,6 +4,25 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { colors } from "@surfaces/ui/tokens/colors";
 
+const DEFAULT_PREVIEW_TARGETS = [
+  {
+    surfaceId: "surfaceops-web",
+    url: "https://surfaceopsai-git-main-surfaces-platform.vercel.app/contracts/governance",
+    urlTemplate: "https://surfaceopsai-git-{branch}-surfaces-platform.vercel.app/contracts/governance",
+    waitFor: "Contract workbench",
+    authSessionKey: "surfaceops-governance-preview",
+  },
+];
+
+const DEFAULT_SURFACES = [
+  {
+    id: "surfaceops-web",
+    label: "SurfaceOps Web",
+    implementationBrief:
+      "Implement the protected SurfaceOps contract workbench while preserving workspace auth, project selection, and the operator shell.",
+  },
+];
+
 function inputStyle() {
   return {
     width: "100%",
@@ -21,28 +40,10 @@ export function ProjectConnectForm() {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [previewTargetsJson, setPreviewTargetsJson] = useState(
-    JSON.stringify(
-      [
-        {
-          surfaceId: "surfaces-web",
-          url: "https://example.com",
-        },
-      ],
-      null,
-      2,
-    ),
+    JSON.stringify(DEFAULT_PREVIEW_TARGETS, null, 2),
   );
   const [surfacesJson, setSurfacesJson] = useState(
-    JSON.stringify(
-      [
-        {
-          id: "surfaces-web",
-          implementationBrief: "Implement the connected surface while preserving the product shell and contract.",
-        },
-      ],
-      null,
-      2,
-    ),
+    JSON.stringify(DEFAULT_SURFACES, null, 2),
   );
 
   async function onSubmit(formData: FormData) {
@@ -84,7 +85,7 @@ export function ProjectConnectForm() {
     >
       <div style={{ display: "grid", gap: 8 }}>
         <label htmlFor="name" style={{ fontSize: 13, fontWeight: 700 }}>Project name</label>
-        <input id="name" name="name" defaultValue="SurfaceOps Dogfood" style={inputStyle()} />
+        <input id="name" name="name" defaultValue="SurfaceOps Protected Dogfood" style={inputStyle()} />
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
         <div style={{ display: "grid", gap: 8 }}>
@@ -102,7 +103,12 @@ export function ProjectConnectForm() {
       </div>
       <div style={{ display: "grid", gap: 8 }}>
         <label htmlFor="contractPath" style={{ fontSize: 13, fontWeight: 700 }}>Canonical contract path</label>
-        <input id="contractPath" name="contractPath" defaultValue="contracts/surfaces.web.contract.json" style={inputStyle()} />
+        <input
+          id="contractPath"
+          name="contractPath"
+          defaultValue="contracts/generated/surfaceops-web.contract.json"
+          style={inputStyle()}
+        />
       </div>
       <div style={{ display: "grid", gap: 8 }}>
         <label htmlFor="previewTargets" style={{ fontSize: 13, fontWeight: 700 }}>Preview targets JSON</label>

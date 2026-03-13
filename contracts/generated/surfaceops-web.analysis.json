@@ -1,0 +1,541 @@
+{
+  "classification": {
+    "confidence": 0.79,
+    "confirmedKind": "application",
+    "inferredKind": "application",
+    "opposing": [
+      {
+        "key": "copy-role.dense",
+        "label": "Copy-role density",
+        "message": "Copy-role markers suggest a marketing-oriented page structure.",
+        "supports": "marketing",
+        "value": "5",
+        "weight": 2
+      },
+      {
+        "key": "landing.top-level",
+        "label": "Landing section structure",
+        "message": "Top-level landing-style sections were detected.",
+        "supports": "marketing",
+        "value": "landing.hero, landing.guidance, landing.actions",
+        "weight": 2
+      },
+      {
+        "key": "hero.present",
+        "label": "Hero signal",
+        "message": "A likely hero pattern was detected near the top of the surface.",
+        "supports": "marketing",
+        "value": "true",
+        "weight": 1
+      }
+    ],
+    "requiresConfirmation": false,
+    "scores": {
+      "application": 8,
+      "marketing": 5,
+      "unknown": 0
+    },
+    "supporting": [
+      {
+        "key": "auth.present",
+        "label": "Auth routes present",
+        "message": "Auth-aware routing was detected.",
+        "supports": "application",
+        "value": "true",
+        "weight": 3
+      },
+      {
+        "key": "route.application-family",
+        "label": "Application route families",
+        "message": "Detected account/settings/workspace-style routes.",
+        "supports": "application",
+        "value": "/api/contracts/projects, /api/contracts/projects/[projectId]/auth-sessions, /api/contracts/projects/[projectId]/draft, /api/contracts/projects/[projectId]/publish, /api/contracts/projects/[projectId]/reruns, /api/contracts/projects/[projectId]/reruns/[runId]/suggestions/[suggestionId]",
+        "weight": 2
+      },
+      {
+        "key": "route.multi-page",
+        "label": "Multi-route structure",
+        "message": "Detected 22 routes, suggesting task-oriented application structure.",
+        "supports": "application",
+        "value": "22",
+        "weight": 2
+      },
+      {
+        "key": "route.auth-hint",
+        "label": "Auth route hint",
+        "message": "Detected auth-oriented route names.",
+        "supports": "application",
+        "value": "/api/contracts/projects/[projectId]/auth-sessions, /auth/callback, /auth/login, /auth/logout, /auth/logout/complete, /auth/session",
+        "weight": 1
+      }
+    ]
+  },
+  "existingSystem": {
+    "mode": "adopt",
+    "reasons": [
+      "Repeated token references were detected across multiple UI categories.",
+      "Shared design-system component imports were detected.",
+      "Color usage already includes reusable variable-based values.",
+      "Icon usage is already consistent around one source library.",
+      "The observed system has a low inconsistency count."
+    ],
+    "score": 1
+  },
+  "extracted": {
+    "authAware": true,
+    "colors": [
+      {
+        "canonical": "rgba(15, 23, 42, 0.3)",
+        "count": 1,
+        "sources": [
+          "apps/surfaceops-web/app/globals.css"
+        ]
+      },
+      {
+        "canonical": "var(--background)",
+        "count": 1,
+        "sources": [
+          "apps/surfaceops-web/app/globals.css"
+        ]
+      },
+      {
+        "canonical": "var(--foreground)",
+        "count": 1,
+        "sources": [
+          "apps/surfaceops-web/app/globals.css"
+        ]
+      }
+    ],
+    "designSystemComponents": [
+      "Navigation"
+    ],
+    "fonts": [
+      {
+        "count": 1,
+        "sources": [
+          "apps/surfaceops-web/app/globals.css"
+        ],
+        "value": "Arial"
+      },
+      {
+        "count": 1,
+        "sources": [
+          "apps/surfaceops-web/app/globals.css"
+        ],
+        "value": "Helvetica"
+      },
+      {
+        "count": 1,
+        "sources": [
+          "apps/surfaceops-web/app/globals.css"
+        ],
+        "value": "Inter"
+      },
+      {
+        "count": 1,
+        "sources": [
+          "apps/surfaceops-web/app/globals.css"
+        ],
+        "value": "sans-serif"
+      },
+      {
+        "count": 1,
+        "sources": [
+          "apps/surfaceops-web/app/layout.tsx"
+        ],
+        "value": "var(--font-inter)"
+      }
+    ],
+    "hasShell": true,
+    "iconSources": [
+      {
+        "count": 1,
+        "sources": [
+          "packages/ui/src/icons/index.ts"
+        ],
+        "value": "@heroicons/react/24/outline"
+      }
+    ],
+    "layout": {
+      "chrome": {
+        "maxBorderRadiusPx": null,
+        "shadowKinds": []
+      },
+      "containers": [
+        "contract-container"
+      ],
+      "landingSignals": {
+        "copyRoleCount": 5,
+        "ctaCount": 0,
+        "heroSignal": true,
+        "nestedSections": [],
+        "pageBackgroundMode": "solid",
+        "sectionOrder": [
+          "landing.hero",
+          "landing.guidance",
+          "landing.actions"
+        ],
+        "topLevelSections": [
+          "landing.hero",
+          "landing.guidance",
+          "landing.actions"
+        ]
+      },
+      "maxContentWidth": 1120
+    },
+    "motion": [
+      {
+        "count": 1,
+        "durationMs": 120,
+        "sources": [
+          "apps/surfaceops-web/app/globals.css"
+        ],
+        "timingFunction": "linear"
+      }
+    ],
+    "primitives": [
+      {
+        "count": 1,
+        "role": "header",
+        "sources": [
+          "apps/surfaceops-web/app/contracts/governance/_components/project-workbench.tsx"
+        ]
+      },
+      {
+        "count": 1,
+        "role": "navigation",
+        "sources": [
+          "apps/surfaceops-web/app/layout.tsx"
+        ]
+      }
+    ],
+    "routes": [
+      "/",
+      "/api/contracts/github/repos",
+      "/api/contracts/projects",
+      "/api/contracts/projects/[projectId]/auth-sessions",
+      "/api/contracts/projects/[projectId]/draft",
+      "/api/contracts/projects/[projectId]/publish",
+      "/api/contracts/projects/[projectId]/reruns",
+      "/api/contracts/projects/[projectId]/reruns/[runId]/suggestions/[suggestionId]",
+      "/api/invite-request",
+      "/api/onboarding/extract",
+      "/auth/callback",
+      "/auth/login",
+      "/auth/logout",
+      "/auth/logout/complete",
+      "/auth/session",
+      "/contracts",
+      "/contracts/[surfaceId]",
+      "/contracts/governance",
+      "/contracts/governance/[projectId]",
+      "/contracts/runs",
+      "/contracts/runs/[surfaceId]",
+      "/v1/ingest/events"
+    ],
+    "sectionCount": 3,
+    "sections": [
+      "landing.actions",
+      "landing.guidance",
+      "landing.hero"
+    ],
+    "tokens": {
+      "layout": [
+        {
+          "aliases": [],
+          "attributes": [
+            "width"
+          ],
+          "normalizedValue": "1120px",
+          "token": "var(--contract-max-width)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "gap"
+          ],
+          "normalizedValue": "120ms",
+          "token": "var(--contract-motion-duration)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "gap"
+          ],
+          "normalizedValue": "linear",
+          "token": "var(--contract-motion-timing)"
+        },
+        {
+          "aliases": [
+            "var(--marketing-sans-body-family)",
+            "var(--marketing-sans-hero-body-family)",
+            "var(--marketing-sans-hero-eyebrow-family)",
+            "var(--marketing-sans-hero-title-family)",
+            "var(--marketing-sans-section-title-family)"
+          ],
+          "attributes": [
+            "margin"
+          ],
+          "normalizedValue": "'inter', sans-serif",
+          "token": "var(--font-inter)"
+        },
+        {
+          "aliases": [
+            "var(--marketing-sans-hero-title-size)"
+          ],
+          "attributes": [
+            "margin",
+            "padding"
+          ],
+          "normalizedValue": "32px",
+          "token": "var(--marketing-layout-card-padding)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "margin",
+            "max-width"
+          ],
+          "normalizedValue": "720px",
+          "token": "var(--marketing-layout-copy-max-width-wide)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "margin",
+            "max-width"
+          ],
+          "normalizedValue": "640px",
+          "token": "var(--marketing-layout-copy-max-width)"
+        },
+        {
+          "aliases": [
+            "var(--marketing-layout-section-padding-roomy)"
+          ],
+          "attributes": [
+            "margin",
+            "padding-bottom",
+            "padding-top"
+          ],
+          "normalizedValue": "96px",
+          "token": "var(--marketing-layout-hero-padding-bottom-roomy)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "margin",
+            "padding-top"
+          ],
+          "normalizedValue": "128px",
+          "token": "var(--marketing-layout-hero-padding-top-roomy)"
+        },
+        {
+          "aliases": [
+            "var(--marketing-sans-hero-body-line-height)"
+          ],
+          "attributes": [
+            "margin"
+          ],
+          "normalizedValue": "1.6",
+          "token": "var(--marketing-sans-body-line-height)"
+        },
+        {
+          "aliases": [
+            "var(--marketing-sans-hero-body-size)",
+            "var(--marketing-sans-hero-eyebrow-size)"
+          ],
+          "attributes": [
+            "margin"
+          ],
+          "normalizedValue": "14px",
+          "token": "var(--marketing-sans-body-size)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "margin"
+          ],
+          "normalizedValue": "1.28px",
+          "token": "var(--marketing-sans-hero-eyebrow-letter-spacing)"
+        },
+        {
+          "aliases": [
+            "var(--marketing-sans-section-title-line-height)"
+          ],
+          "attributes": [
+            "margin"
+          ],
+          "normalizedValue": "1.4",
+          "token": "var(--marketing-sans-hero-eyebrow-line-height)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "margin"
+          ],
+          "normalizedValue": "1.2",
+          "token": "var(--marketing-sans-hero-title-line-height)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "margin"
+          ],
+          "normalizedValue": "20px",
+          "token": "var(--marketing-sans-section-title-size)"
+        }
+      ],
+      "motion": [
+        {
+          "aliases": [],
+          "attributes": [
+            "transition"
+          ],
+          "normalizedValue": "120ms",
+          "token": "var(--contract-motion-duration)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "transition"
+          ],
+          "normalizedValue": "linear",
+          "token": "var(--contract-motion-timing)"
+        }
+      ],
+      "typography": [
+        {
+          "aliases": [
+            "var(--marketing-sans-body-family)",
+            "var(--marketing-sans-hero-body-family)",
+            "var(--marketing-sans-hero-eyebrow-family)",
+            "var(--marketing-sans-hero-title-family)",
+            "var(--marketing-sans-section-title-family)"
+          ],
+          "attributes": [
+            "font-family"
+          ],
+          "normalizedValue": "inter, sans-serif",
+          "token": "var(--font-inter)"
+        },
+        {
+          "aliases": [
+            "var(--marketing-sans-hero-body-line-height)"
+          ],
+          "attributes": [
+            "line-height"
+          ],
+          "normalizedValue": "1.6",
+          "token": "var(--marketing-sans-body-line-height)"
+        },
+        {
+          "aliases": [
+            "var(--marketing-sans-hero-body-size)",
+            "var(--marketing-sans-hero-eyebrow-size)"
+          ],
+          "attributes": [
+            "font-size"
+          ],
+          "normalizedValue": "14px",
+          "token": "var(--marketing-sans-body-size)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "letter-spacing"
+          ],
+          "normalizedValue": "0.08em",
+          "token": "var(--marketing-sans-hero-eyebrow-letter-spacing)"
+        },
+        {
+          "aliases": [
+            "var(--marketing-sans-section-title-line-height)"
+          ],
+          "attributes": [
+            "line-height"
+          ],
+          "normalizedValue": "1.4",
+          "token": "var(--marketing-sans-hero-eyebrow-line-height)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "line-height"
+          ],
+          "normalizedValue": "1.2",
+          "token": "var(--marketing-sans-hero-title-line-height)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "font-size"
+          ],
+          "normalizedValue": "32px",
+          "token": "var(--marketing-sans-hero-title-size)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "font-size"
+          ],
+          "normalizedValue": "20px",
+          "token": "var(--marketing-sans-section-title-size)"
+        }
+      ]
+    }
+  },
+  "inconsistencies": {
+    "findings": [
+      {
+        "category": "typography",
+        "code": "typography.multiple-families",
+        "message": "Detected 5 font families; review whether all are intentional system choices.",
+        "severity": "warning"
+      }
+    ]
+  },
+  "proposedContract": {
+    "phase0": {
+      "authPosture": "auth-first",
+      "expectsAuthRoutes": true,
+      "expectsDesignSystem": true,
+      "requiresShell": true
+    },
+    "sectionSeedMode": "observed",
+    "seedCounts": {
+      "colors": 3,
+      "iconSources": 1,
+      "layoutTokens": 15,
+      "motionTokens": 2,
+      "sections": 3,
+      "typographyTokens": 8
+    },
+    "suggestedMarketingProfile": false
+  },
+  "schemaVersion": 1,
+  "source": {
+    "appRoot": "apps/surfaceops-web",
+    "mode": "local-root"
+  },
+  "sourceHealth": {
+    "authMode": "none",
+    "confidence": "full",
+    "status": "ok"
+  },
+  "surfaceId": "surfaceops-web",
+  "surfaceName": "Surfaceops Web",
+  "warnings": [
+    {
+      "code": "allowedFonts.default",
+      "message": "allowedFonts cannot be extracted from code in Phase 0; using default."
+    },
+    {
+      "code": "layout.default",
+      "message": "layout.maxContentWidth cannot be extracted from code in Phase 0; using default."
+    },
+    {
+      "code": "requiredSections.omitted",
+      "message": "requiredSections cannot be extracted from code in Phase 0; using placeholder."
+    }
+  ]
+}
