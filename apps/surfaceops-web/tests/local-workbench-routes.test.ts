@@ -1,17 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { POST as POSTChat } from "@/app/api/contracts/local/chat/route";
 import { POST as POSTRerun } from "@/app/api/contracts/local/rerun/route";
+import { GET as GETRun } from "@/app/api/contracts/local/runs/[runId]/route";
 import { POST as POSTSuggestion } from "@/app/api/contracts/local/suggestions/[runId]/[suggestionId]/route";
 
 const mocked = vi.hoisted(() => ({
   appendLocalWorkbenchChatMessage: vi.fn(),
   startLocalWorkbenchRerun: vi.fn(),
+  loadLocalWorkbenchRunDetail: vi.fn(),
   reviewLocalWorkbenchSuggestion: vi.fn(),
 }));
 
 vi.mock("@/lib/local-workbench/service", () => ({
   appendLocalWorkbenchChatMessage: mocked.appendLocalWorkbenchChatMessage,
   startLocalWorkbenchRerun: mocked.startLocalWorkbenchRerun,
+  loadLocalWorkbenchRunDetail: mocked.loadLocalWorkbenchRunDetail,
   reviewLocalWorkbenchSuggestion: mocked.reviewLocalWorkbenchSuggestion,
 }));
 
@@ -58,5 +61,85 @@ describe("local workbench routes", () => {
     );
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ ok: true });
+  });
+
+  it("loads structured run detail", async () => {
+    mocked.loadLocalWorkbenchRunDetail.mockResolvedValue({
+      run: {
+        runId: "run-1",
+        status: "succeeded",
+        createdAt: "2026-03-13T12:00:00.000Z",
+        completedAt: "2026-03-13T12:00:10.000Z",
+        latestRunLabel: "Run run-1",
+        model: "openai/gpt-oss-20b",
+        currentPhase: null,
+        phaseHistory: [],
+        agentSummary: "Completed a bounded pass.",
+        noChanges: false,
+        toolCallCount: 2,
+        writeCount: 1,
+        lastToolName: "finish",
+        lastError: null,
+        transcriptPath: "/tmp/run-1/agent-trace.json",
+        touchedFiles: ["apps/reference-target-web/app/page.tsx"],
+        errorMessage: null,
+        baselinePreview: { path: null, dataUrl: null },
+        currentPreview: { path: null, dataUrl: null },
+        baselineSummaryPath: null,
+        currentSummaryPath: null,
+        suggestionsPath: null,
+        comparison: null,
+        suggestions: [],
+      },
+      transcript: [],
+      durationMs: 10_000,
+      previewDebug: {
+        baseline: {
+          url: "http://127.0.0.1:4010",
+          stdoutPath: "/tmp/run-1/baseline.preview.stdout.log",
+          stderrPath: "/tmp/run-1/baseline.preview.stderr.log",
+          stderrTail: ["ready"],
+        },
+        current: {
+          url: null,
+          stdoutPath: null,
+          stderrPath: null,
+          stderrTail: [],
+        },
+      },
+      lastToolCall: null,
+    });
+    const response = await GETRun(
+      new Request("http://localhost/api/contracts/local/runs/run-1"),
+      { params: Promise.resolve({ runId: "run-1" }) },
+    );
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      run: {
+        run: {
+          runId: "run-1",
+          status: "succeeded",
+        },
+        previewDebug: {
+          baseline: {
+            url: "http://127.0.0.1:4010",
+          },
+        },
+      },
+    });
+  });
+
+  it("returns 404 for missing run detail", async () => {
+    mocked.loadLocalWorkbenchRunDetail.mockResolvedValue(null);
+    const response = await GETRun(
+      new Request("http://localhost/api/contracts/local/runs/missing"),
+      { params: Promise.resolve({ runId: "missing" }) },
+    );
+    expect(response.status).toBe(404);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      error: "Run missing not found.",
+    });
   });
 });

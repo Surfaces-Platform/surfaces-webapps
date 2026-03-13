@@ -116,6 +116,9 @@ describe("runLocalLlmAgent", () => {
     expect(result.noChanges).toBe(false);
     expect(result.summary).toContain("reference target");
     expect(result.touchedFiles).toEqual(["apps/reference-target-web/app/page.tsx"]);
+    expect(result.toolCallCount).toBe(3);
+    expect(result.writeCount).toBe(1);
+    expect(result.lastToolName).toBe("finish");
     await expect(fs.readFile(pagePath, "utf8")).resolves.toContain("after");
 
     const [url, init] = vi.mocked(global.fetch).mock.calls[0] ?? [];
@@ -205,6 +208,8 @@ describe("runLocalLlmAgent", () => {
     });
 
     expect(result.noChanges).toBe(true);
+    expect(result.writeCount).toBe(0);
+    expect(result.lastToolName).toBe("finish");
     const secondRequest = vi.mocked(global.fetch).mock.calls[1]?.[1];
     expect(secondRequest?.body ? JSON.parse(String(secondRequest.body)).input : "").toContain(
       `${pagePath}:1:export default function Page() { return <div>hero</div>; }`,
@@ -972,6 +977,45 @@ describe("runLocalLlmAgent", () => {
         implementationBrief: "Make a small contract-guided change.",
       }),
     ).rejects.toThrow(/malformed arguments/i);
+  });
+
+  it("rejects tool-call budget exhaustion", async () => {
+    const repoRoot = await createRepo({
+      "apps/reference-target-web/app/page.tsx": "export default function Page() { return null; }\n",
+    });
+
+    global.fetch = vi.fn(async () =>
+      new Response(
+        JSON.stringify({
+          output: [
+            {
+              type: "function_call",
+              call_id: "call-1",
+              name: "list_allowed_files",
+              arguments: JSON.stringify({}),
+            },
+          ],
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
+    ) as typeof fetch;
+
+    await expect(
+      runLocalLlmAgent({
+        config: {
+          baseUrl: "http://localhost:1234/v1",
+          model: "openai/gpt-oss-20b",
+        },
+        repoRoot,
+        allowedRoots: ["apps/reference-target-web"],
+        preparedPayload: { summary: { text: "Keep the fixture deterministic." } },
+        implementationBrief: "Make a small contract-guided change.",
+        maxToolCalls: 0,
+      }),
+    ).rejects.toThrow(/Tool-call budget exceeded/i);
   });
 
   it("surfaces incomplete responses with LM Studio truncation guidance", async () => {

@@ -30,6 +30,9 @@ export interface LocalLlmAgentResult {
   summary: string;
   noChanges: boolean;
   agentInput: string;
+  toolCallCount: number;
+  writeCount: number;
+  lastToolName: ToolName | null;
 }
 
 export interface LocalContractShaperResult {
@@ -1501,6 +1504,9 @@ export async function runLocalLlmAgent(options: AgentOptions): Promise<LocalLlmA
               summary: String(result.summary ?? ""),
               noChanges: Boolean(result.noChanges),
               agentInput: initialAgentInput,
+              toolCallCount: toolCount.value,
+              writeCount: writeCount.value,
+              lastToolName: name,
             };
           }
         } catch (error) {

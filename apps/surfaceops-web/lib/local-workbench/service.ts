@@ -26,6 +26,10 @@ import type {
   LocalWorkbenchContractChange,
   LocalWorkbenchData,
   LocalWorkbenchDesignerNote,
+  LocalWorkbenchRunDetail,
+  LocalWorkbenchRunError,
+  LocalWorkbenchRunPhase,
+  LocalWorkbenchRunPhaseEntry,
   LocalWorkbenchRun,
   LocalWorkbenchSuggestion,
   StartLocalRerunResult,
@@ -46,11 +50,28 @@ const DEFAULT_LOCAL_LLM_MODEL = "openai/gpt-oss-120b";
 const CONTRACT_SESSION_SCHEMA_VERSION = 2;
 
 interface RunRecordFile {
-  schemaVersion: 1;
+  schemaVersion: number;
   runId: string;
   status: "running" | "succeeded" | "failed";
   createdAt: string;
   completedAt: string | null;
+  model: string | null;
+  currentPhase?: LocalWorkbenchRunPhase | null;
+  phaseHistory?: LocalWorkbenchRunPhaseEntry[];
+  agentSummary?: string | null;
+  noChanges?: boolean;
+  toolCallCount?: number;
+  writeCount?: number;
+  lastToolName?: string | null;
+  lastError?: LocalWorkbenchRunError | null;
+  baselinePreviewUrl?: string | null;
+  baselinePreviewStdoutPath?: string | null;
+  baselinePreviewStderrPath?: string | null;
+  baselinePreviewStderrTail?: string[];
+  currentPreviewUrl?: string | null;
+  currentPreviewStdoutPath?: string | null;
+  currentPreviewStderrPath?: string | null;
+  currentPreviewStderrTail?: string[];
   contractPath: string;
   preparedInputPath: string | null;
   baselineSessionDir: string | null;
@@ -67,6 +88,28 @@ interface RunRecordFile {
   explainabilityPath: string | null;
   touchedFiles: string[];
   errorMessage: string | null;
+}
+
+const RUN_PHASES: LocalWorkbenchRunPhase[] = [
+  "compile",
+  "prepare",
+  "baseline-validation",
+  "baseline-preview",
+  "agent",
+  "current-validation",
+  "current-preview",
+  "finalize",
+];
+const PREVIEW_STDERR_TAIL_LINES = 20;
+type PreviewLabel = "baseline" | "current";
+
+interface PreviewServerHandle {
+  child: ChildProcess;
+  url: string;
+  stdoutPath: string;
+  stderrPath: string;
+  getStderrTail: () => string[];
+  getOutputTail: () => string;
 }
 
 interface ContractDocument {
@@ -105,11 +148,6 @@ interface RunExplainabilityFile {
   agentInputPath: string | null;
   activeContractChanges: LocalWorkbenchContractChange[];
   activeDesignerNotes: LocalWorkbenchDesignerNote[];
-}
-
-interface StartedReferenceTargetServer {
-  child: ChildProcess;
-  getOutputTail: () => string;
 }
 
 interface AcceptedSuggestionBacklogFile {
@@ -151,6 +189,15 @@ function resolveTargetContractPath(): string {
 
 function resolveTargetAppPath(): string {
   return path.join(resolveWorkspaceRoot(), TARGET.appPath);
+}
+
+function resolvePrimaryWorkspaceRoot(): string {
+  const workspaceRoot = resolveWorkspaceRoot();
+  const parent = path.dirname(workspaceRoot);
+  if (path.basename(parent) === ".worktrees") {
+    return path.dirname(parent);
+  }
+  return workspaceRoot;
 }
 
 function resolveSurfaceRoot(): string {
@@ -219,6 +266,142 @@ function dataUrlForPng(filePath: string | null): string | null {
     return null;
   }
   return `data:image/png;base64,${fs.readFileSync(filePath).toString("base64")}`;
+}
+
+function buildStderrTail(existing: string[], chunk: string): string[] {
+  return `${existing.join("\n")}\n${chunk}`
+    .split(/\r?\n/)
+    .map((line) => line.trimEnd())
+    .filter(Boolean)
+    .slice(-PREVIEW_STDERR_TAIL_LINES);
+}
+
+function previewDebugPatch(
+  label: PreviewLabel,
+  value: {
+    url?: string | null;
+    stdoutPath?: string | null;
+    stderrPath?: string | null;
+    stderrTail?: string[];
+  },
+): Partial<RunRecordFile> {
+  if (label === "baseline") {
+    return {
+      ...(value.url !== undefined ? { baselinePreviewUrl: value.url } : {}),
+      ...(value.stdoutPath !== undefined ? { baselinePreviewStdoutPath: value.stdoutPath } : {}),
+      ...(value.stderrPath !== undefined ? { baselinePreviewStderrPath: value.stderrPath } : {}),
+      ...(value.stderrTail !== undefined ? { baselinePreviewStderrTail: value.stderrTail } : {}),
+    };
+  }
+  return {
+    ...(value.url !== undefined ? { currentPreviewUrl: value.url } : {}),
+    ...(value.stdoutPath !== undefined ? { currentPreviewStdoutPath: value.stdoutPath } : {}),
+    ...(value.stderrPath !== undefined ? { currentPreviewStderrPath: value.stderrPath } : {}),
+    ...(value.stderrTail !== undefined ? { currentPreviewStderrTail: value.stderrTail } : {}),
+  };
+}
+
+function resolveDependencySource(relativePath: string): string | null {
+  const workspaceRoot = resolveWorkspaceRoot();
+  const primaryRoot = resolvePrimaryWorkspaceRoot();
+  const candidates = [
+    path.join(workspaceRoot, relativePath),
+    primaryRoot === workspaceRoot ? null : path.join(primaryRoot, relativePath),
+  ].filter((entry): entry is string => Boolean(entry));
+
+  return candidates.find((candidate) => fs.existsSync(candidate)) ?? null;
+}
+
+function normalizePhaseHistory(value: unknown): LocalWorkbenchRunPhaseEntry[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value
+    .filter((entry): entry is Record<string, unknown> => Boolean(entry && typeof entry === "object"))
+    .map((entry): LocalWorkbenchRunPhaseEntry => {
+      const status: LocalWorkbenchRunPhaseEntry["status"] =
+        String(entry.status ?? "") === "failed"
+          ? "failed"
+          : String(entry.status ?? "") === "succeeded"
+            ? "succeeded"
+            : "running";
+      return {
+        phase: RUN_PHASES.includes(String(entry.phase ?? "") as LocalWorkbenchRunPhase)
+          ? (String(entry.phase) as LocalWorkbenchRunPhase)
+          : "compile",
+        status,
+        startedAt: String(entry.startedAt ?? ""),
+        completedAt: typeof entry.completedAt === "string" ? entry.completedAt : null,
+        message: typeof entry.message === "string" ? entry.message : null,
+      };
+    })
+    .filter((entry) => entry.startedAt);
+}
+
+function normalizeRunRecord(record: RunRecordFile): RunRecordFile {
+  return {
+    ...record,
+    schemaVersion: typeof record.schemaVersion === "number" ? record.schemaVersion : 2,
+    model: typeof record.model === "string" ? record.model : null,
+    currentPhase: RUN_PHASES.includes(String(record.currentPhase ?? "") as LocalWorkbenchRunPhase)
+      ? (String(record.currentPhase) as LocalWorkbenchRunPhase)
+      : null,
+    phaseHistory: normalizePhaseHistory(record.phaseHistory),
+    agentSummary: typeof record.agentSummary === "string" ? record.agentSummary : null,
+    noChanges: Boolean(record.noChanges),
+    toolCallCount: typeof record.toolCallCount === "number" ? record.toolCallCount : 0,
+    writeCount: typeof record.writeCount === "number" ? record.writeCount : 0,
+    lastToolName: typeof record.lastToolName === "string" ? record.lastToolName : null,
+    lastError:
+      record.lastError && typeof record.lastError === "object" && typeof record.lastError.message === "string"
+        ? {
+            phase: RUN_PHASES.includes(String((record.lastError as LocalWorkbenchRunError).phase ?? "") as LocalWorkbenchRunPhase)
+              ? (String((record.lastError as LocalWorkbenchRunError).phase) as LocalWorkbenchRunPhase)
+              : "unknown",
+            message: String((record.lastError as LocalWorkbenchRunError).message),
+          }
+        : null,
+    baselinePreviewUrl: typeof record.baselinePreviewUrl === "string" ? record.baselinePreviewUrl : null,
+    baselinePreviewStdoutPath: typeof record.baselinePreviewStdoutPath === "string" ? record.baselinePreviewStdoutPath : null,
+    baselinePreviewStderrPath: typeof record.baselinePreviewStderrPath === "string" ? record.baselinePreviewStderrPath : null,
+    baselinePreviewStderrTail: Array.isArray(record.baselinePreviewStderrTail)
+      ? record.baselinePreviewStderrTail.filter((entry): entry is string => typeof entry === "string")
+      : [],
+    currentPreviewUrl: typeof record.currentPreviewUrl === "string" ? record.currentPreviewUrl : null,
+    currentPreviewStdoutPath: typeof record.currentPreviewStdoutPath === "string" ? record.currentPreviewStdoutPath : null,
+    currentPreviewStderrPath: typeof record.currentPreviewStderrPath === "string" ? record.currentPreviewStderrPath : null,
+    currentPreviewStderrTail: Array.isArray(record.currentPreviewStderrTail)
+      ? record.currentPreviewStderrTail.filter((entry): entry is string => typeof entry === "string")
+      : [],
+  };
+}
+
+function withRunPhaseMessage(
+  phaseHistory: LocalWorkbenchRunPhaseEntry[],
+  phase: LocalWorkbenchRunPhase,
+  status: LocalWorkbenchRunPhaseEntry["status"],
+  message: string | null,
+): LocalWorkbenchRunPhaseEntry[] {
+  const nextHistory = [...phaseHistory];
+  const current = nextHistory.findLastIndex((entry) => entry.phase === phase);
+  if (current === -1) {
+    nextHistory.push({
+      phase,
+      status,
+      startedAt: new Date().toISOString(),
+      completedAt: status === "running" ? null : new Date().toISOString(),
+      message,
+    });
+    return nextHistory;
+  }
+  const previous = nextHistory[current];
+  nextHistory[current] = {
+    ...previous,
+    status,
+    completedAt: status === "running" ? previous.completedAt : new Date().toISOString(),
+    message: message ?? previous.message,
+  };
+  return nextHistory;
 }
 
 function summarizeContract(contract: ContractDocument) {
@@ -890,27 +1073,26 @@ async function runCommand(
   });
 }
 
-async function mirrorSandboxNodeModules(sandboxRoot: string): Promise<void> {
-  const workspaceRoot = resolveWorkspaceRoot();
-  const links = [
-    {
-      source: path.join(workspaceRoot, "node_modules"),
-      target: path.join(sandboxRoot, "node_modules"),
-    },
-    {
-      source: path.join(resolveTargetAppPath(), "node_modules"),
-      target: path.join(sandboxRoot, TARGET.appPath, "node_modules"),
-    },
-  ];
+async function linkDependencySource(source: string, target: string): Promise<void> {
+  await fsp.mkdir(path.dirname(target), { recursive: true });
+  await fsp.rm(target, { recursive: true, force: true });
+  await fsp.symlink(source, target, "junction");
+}
 
-  for (const { source, target } of links) {
-    if (!fs.existsSync(source)) {
-      continue;
-    }
-    await fsp.mkdir(path.dirname(target), { recursive: true });
-    await fsp.rm(target, { recursive: true, force: true });
-    await fsp.symlink(source, target, "junction");
+async function mirrorSandboxNodeModules(sandboxRoot: string): Promise<void> {
+  const rootNodeModules = resolveDependencySource("node_modules");
+  if (rootNodeModules) {
+    await linkDependencySource(rootNodeModules, path.join(sandboxRoot, "node_modules"));
   }
+}
+
+async function ensureSandboxPreviewDependencies(sandboxRoot: string): Promise<void> {
+  const relativePath = path.join(TARGET.appPath, "node_modules");
+  const source = resolveDependencySource(relativePath);
+  if (!source) {
+    return;
+  }
+  await linkDependencySource(source, path.join(sandboxRoot, TARGET.appPath, "node_modules"));
 }
 
 async function createSandbox(runId: string, label: string): Promise<string> {
@@ -961,8 +1143,8 @@ function formatProcessOutputTail(stdout: string, stderr: string, maxLines = 40):
   return combined.split(/\r?\n/).slice(-maxLines).join("\n");
 }
 
-function withServerOutput(message: string, server: StartedReferenceTargetServer): string {
-  const outputTail = server.getOutputTail();
+function withServerOutput(message: string, server?: PreviewServerHandle): string {
+  const outputTail = server?.getOutputTail() ?? "";
   if (!outputTail) {
     return message;
   }
@@ -991,13 +1173,10 @@ export function fatalServerResponseMessage(url: string, status: number, body: st
   return `reference-target-web dev server returned HTTP ${status} for ${url}: ${excerpt}`;
 }
 
-async function waitForUrlWithServerOutput(
-  url: string,
-  server: StartedReferenceTargetServer,
-): Promise<void> {
+async function waitForUrl(url: string, server?: PreviewServerHandle): Promise<void> {
   const deadline = Date.now() + 120_000;
   while (Date.now() < deadline) {
-    if (server.child.exitCode !== null) {
+    if (server?.child.exitCode !== null) {
       throw new Error(withServerOutput(`reference-target-web dev server exited before ${url} became ready.`, server));
     }
     try {
@@ -1019,7 +1198,14 @@ async function waitForUrlWithServerOutput(
   throw new Error(withServerOutput(`Timed out waiting for ${url}.`, server));
 }
 
-async function startReferenceTargetServer(workspaceRoot: string, port: number): Promise<StartedReferenceTargetServer> {
+async function startReferenceTargetServer(
+  workspaceRoot: string,
+  port: number,
+  paths: { stdoutPath: string; stderrPath: string },
+): Promise<PreviewServerHandle> {
+  await fsp.mkdir(path.dirname(paths.stdoutPath), { recursive: true });
+  const stdoutStream = fs.createWriteStream(paths.stdoutPath, { flags: "w" });
+  const stderrStream = fs.createWriteStream(paths.stderrPath, { flags: "w" });
   const child = spawn(
     "pnpm",
     ["exec", "next", "dev", "--port", String(port), "--hostname", "127.0.0.1", "--webpack"],
@@ -1031,22 +1217,36 @@ async function startReferenceTargetServer(workspaceRoot: string, port: number): 
   );
   let stdout = "";
   let stderr = "";
+  let stderrTail: string[] = [];
   child.stdout?.on("data", (chunk) => {
-    stdout += String(chunk);
+    const text = String(chunk);
+    stdout += text;
+    stdoutStream.write(text);
   });
   child.stderr?.on("data", (chunk) => {
-    stderr += String(chunk);
+    const text = String(chunk);
+    stderr += text;
+    stderrStream.write(text);
+    stderrTail = buildStderrTail(stderrTail, text);
   });
   child.on("exit", (code) => {
+    stdoutStream.end();
+    stderrStream.end();
     if (code && code !== 0) {
-      process.stderr.write(`reference-target-web dev server exited early (${code}): ${stderr}\n`);
+      process.stderr.write(
+        `reference-target-web dev server exited early (${code}): ${stderrTail.join("\n")}\n`,
+      );
     }
   });
   const server = {
     child,
+    url: `http://127.0.0.1:${port}`,
+    stdoutPath: paths.stdoutPath,
+    stderrPath: paths.stderrPath,
+    getStderrTail: () => [...stderrTail],
     getOutputTail: () => formatProcessOutputTail(stdout, stderr),
-  } satisfies StartedReferenceTargetServer;
-  await waitForUrlWithServerOutput(`http://127.0.0.1:${port}`, server);
+  } satisfies PreviewServerHandle;
+  await waitForUrl(server.url, server);
   return server;
 }
 
@@ -1081,7 +1281,7 @@ async function loadRunRecord(runId: string): Promise<RunRecordFile | null> {
   if (!(await fileExists(recordPath))) {
     return null;
   }
-  return readJsonFile<RunRecordFile>(recordPath);
+  return normalizeRunRecord(await readJsonFile<RunRecordFile>(recordPath));
 }
 
 async function listRunRecords(): Promise<RunRecordFile[]> {
@@ -1131,6 +1331,15 @@ async function buildRunView(record: RunRecordFile): Promise<LocalWorkbenchRun> {
     createdAt: record.createdAt,
     completedAt: record.completedAt,
     latestRunLabel: `Run ${record.runId.slice(0, 8)}`,
+    model: record.model ?? null,
+    currentPhase: record.currentPhase ?? null,
+    phaseHistory: record.phaseHistory ?? [],
+    agentSummary: record.agentSummary ?? null,
+    noChanges: Boolean(record.noChanges),
+    toolCallCount: record.toolCallCount ?? 0,
+    writeCount: record.writeCount ?? 0,
+    lastToolName: record.lastToolName ?? null,
+    lastError: record.lastError ?? null,
     transcriptPath: record.transcriptPath,
     touchedFiles: record.touchedFiles,
     errorMessage: record.errorMessage,
@@ -1150,6 +1359,89 @@ async function buildRunView(record: RunRecordFile): Promise<LocalWorkbenchRun> {
     suggestionsPath: record.suggestionsPath,
     comparison: baselineValidate && currentValidate ? buildComparison(baselineValidate, currentValidate) : null,
     suggestions,
+  };
+}
+
+async function loadTranscript(transcriptPath: string | null): Promise<LocalWorkbenchRunDetail["transcript"]> {
+  if (!transcriptPath || !(await fileExists(transcriptPath))) {
+    return [];
+  }
+  const payload = await readJsonFile<unknown>(transcriptPath);
+  if (!Array.isArray(payload)) {
+    return [];
+  }
+  return payload.filter((entry): entry is LocalWorkbenchRunDetail["transcript"][number] => {
+    if (!entry || typeof entry !== "object") {
+      return false;
+    }
+    const candidate = entry as Record<string, unknown>;
+    return typeof candidate.type === "string"
+      && candidate.payload !== null
+      && typeof candidate.payload === "object"
+      && typeof candidate.createdAt === "string";
+  });
+}
+
+function buildLastToolCall(transcript: LocalWorkbenchRunDetail["transcript"]): LocalWorkbenchRunDetail["lastToolCall"] {
+  for (let index = transcript.length - 1; index >= 0; index -= 1) {
+    const entry = transcript[index];
+    if (!entry) continue;
+    const type = String(entry.type ?? "");
+    if (type !== "tool" && type !== "finish") {
+      continue;
+    }
+    const payload = entry.payload && typeof entry.payload === "object" ? entry.payload as Record<string, unknown> : {};
+    return {
+      name: typeof payload.name === "string" ? payload.name : type,
+      args: payload.args && typeof payload.args === "object" && !Array.isArray(payload.args)
+        ? payload.args as Record<string, unknown>
+        : null,
+      result: payload.result && typeof payload.result === "object" && !Array.isArray(payload.result)
+        ? payload.result as Record<string, unknown>
+        : null,
+    };
+  }
+  return null;
+}
+
+function buildRunDurationMs(run: LocalWorkbenchRun): number | null {
+  const started = Date.parse(run.createdAt);
+  if (!Number.isFinite(started)) {
+    return null;
+  }
+  const completed = run.completedAt ? Date.parse(run.completedAt) : Date.now();
+  if (!Number.isFinite(completed)) {
+    return null;
+  }
+  return Math.max(0, completed - started);
+}
+
+export async function loadLocalWorkbenchRunDetail(runId: string): Promise<LocalWorkbenchRunDetail | null> {
+  const record = await loadRunRecord(runId);
+  if (!record) {
+    return null;
+  }
+  const run = await buildRunView(record);
+  const transcript = await loadTranscript(record.transcriptPath);
+  return {
+    run,
+    transcript,
+    durationMs: buildRunDurationMs(run),
+    previewDebug: {
+      baseline: {
+        url: record.baselinePreviewUrl ?? null,
+        stdoutPath: record.baselinePreviewStdoutPath ?? null,
+        stderrPath: record.baselinePreviewStderrPath ?? null,
+        stderrTail: record.baselinePreviewStderrTail ?? [],
+      },
+      current: {
+        url: record.currentPreviewUrl ?? null,
+        stdoutPath: record.currentPreviewStdoutPath ?? null,
+        stderrPath: record.currentPreviewStderrPath ?? null,
+        stderrTail: record.currentPreviewStderrTail ?? [],
+      },
+    },
+    lastToolCall: buildLastToolCall(transcript),
   };
 }
 
@@ -1255,7 +1547,46 @@ async function updateRunRecord(runId: string, update: Partial<RunRecordFile>): P
   if (!existing) {
     throw new Error(`Run ${runId} not found.`);
   }
-  await writeJsonFile(resolveRunRecordPath(runId), { ...existing, ...update });
+  await writeJsonFile(resolveRunRecordPath(runId), normalizeRunRecord({ ...existing, ...update }));
+}
+
+async function mutateRunRecord(
+  runId: string,
+  update: (record: RunRecordFile) => RunRecordFile,
+): Promise<RunRecordFile> {
+  const existing = await loadRunRecord(runId);
+  if (!existing) {
+    throw new Error(`Run ${runId} not found.`);
+  }
+  const next = normalizeRunRecord(update(existing));
+  await writeJsonFile(resolveRunRecordPath(runId), next);
+  return next;
+}
+
+async function startRunPhase(runId: string, phase: LocalWorkbenchRunPhase, message?: string): Promise<void> {
+  await mutateRunRecord(runId, (record) => ({
+    ...record,
+    currentPhase: phase,
+    phaseHistory: withRunPhaseMessage(record.phaseHistory ?? [], phase, "running", message ?? null),
+  }));
+}
+
+async function completeRunPhase(runId: string, phase: LocalWorkbenchRunPhase, message?: string): Promise<void> {
+  await mutateRunRecord(runId, (record) => ({
+    ...record,
+    currentPhase: phase,
+    phaseHistory: withRunPhaseMessage(record.phaseHistory ?? [], phase, "succeeded", message ?? null),
+  }));
+}
+
+async function failRunPhase(runId: string, phase: LocalWorkbenchRunPhase, message: string): Promise<void> {
+  await mutateRunRecord(runId, (record) => ({
+    ...record,
+    currentPhase: phase,
+    phaseHistory: withRunPhaseMessage(record.phaseHistory ?? [], phase, "failed", message),
+    lastError: { phase, message },
+    errorMessage: message,
+  }));
 }
 
 async function writeRunExplainability(input: {
@@ -1295,11 +1626,20 @@ export async function startLocalWorkbenchRerun(): Promise<StartLocalRerunResult>
   await fsp.mkdir(runDir, { recursive: true });
   await writeJsonFile(effectiveContractPath, session.workingContract);
   await writeJsonFile(resolveRunRecordPath(runId), {
-    schemaVersion: 1,
+    schemaVersion: 2,
     runId,
     status: "running",
     createdAt: new Date().toISOString(),
     completedAt: null,
+    model: llm.model,
+    currentPhase: null,
+    phaseHistory: [],
+    agentSummary: null,
+    noChanges: false,
+    toolCallCount: 0,
+    writeCount: 0,
+    lastToolName: null,
+    lastError: null,
     contractPath: effectiveContractPath,
     preparedInputPath: preparedPath,
     baselineSessionDir: null,
@@ -1316,20 +1656,53 @@ export async function startLocalWorkbenchRerun(): Promise<StartLocalRerunResult>
     explainabilityPath,
     touchedFiles: [],
     errorMessage: null,
+    baselinePreviewUrl: null,
+    baselinePreviewStdoutPath: null,
+    baselinePreviewStderrPath: null,
+    baselinePreviewStderrTail: [],
+    currentPreviewUrl: null,
+    currentPreviewStdoutPath: null,
+    currentPreviewStderrPath: null,
+    currentPreviewStderrTail: [],
   } satisfies RunRecordFile);
 
   const baselineSandbox = await createSandbox(runId, "baseline");
   const currentSandbox = await createSandbox(runId, "current");
+  let activePhase: LocalWorkbenchRunPhase | null = null;
+
+  async function runPhase<T>(
+    phase: LocalWorkbenchRunPhase,
+    message: string,
+    work: () => Promise<T>,
+  ): Promise<T> {
+    activePhase = phase;
+    await startRunPhase(runId, phase, message);
+    try {
+      const result = await work();
+      await completeRunPhase(runId, phase, message);
+      activePhase = null;
+      return result;
+    } catch (error) {
+      const failureMessage = error instanceof Error ? error.message : String(error);
+      await failRunPhase(runId, phase, failureMessage);
+      activePhase = null;
+      throw error;
+    }
+  }
 
   try {
-    await runInterfacectlCli(
-      ["compile", "--contract", effectiveContractPath, "--out", bundleRoot],
-      { cwd: resolveWorkspaceRoot() },
-    );
-    await runInterfacectlCli(
-      ["prepare-generation", "--bundle-root", bundleRoot, "--surface", TARGET.id, "--out", preparedPath],
-      { cwd: resolveWorkspaceRoot() },
-    );
+    await runPhase("compile", "Compile the canonical bundle for the local workbench.", async () => {
+      await runInterfacectlCli(
+        ["compile", "--contract", effectiveContractPath, "--out", bundleRoot],
+        { cwd: resolveWorkspaceRoot() },
+      );
+    });
+    await runPhase("prepare", "Prepare the agent-ready generation payload.", async () => {
+      await runInterfacectlCli(
+        ["prepare-generation", "--bundle-root", bundleRoot, "--surface", TARGET.id, "--out", preparedPath],
+        { cwd: resolveWorkspaceRoot() },
+      );
+    });
 
     const preparedPayload = await readJsonFile<Record<string, unknown>>(preparedPath);
 
@@ -1380,60 +1753,97 @@ export async function startLocalWorkbenchRerun(): Promise<StartLocalRerunResult>
       baselineAssessmentPath,
       buildAssessmentPayload("Baseline snapshot before local agent edits.", []),
     );
-    const baselinePort = await getAvailablePort();
-    const baselineServer = await startReferenceTargetServer(baselineSandbox, baselinePort);
-    try {
+    await runPhase("baseline-validation", "Record the untouched baseline validation state.", async () => {
       await runInterfacectlCli(
         ["record-generation-attempt", "--session-dir", baselineSessionDir, "--assessment-file", baselineAssessmentPath],
         { cwd: baselineSandbox },
       );
-      await runInterfacectlCli(
-        [
-          "capture-generation-preview",
-          "--session-dir",
-          baselineSessionDir,
-          "--attempt",
-          "1",
-          "--url",
-          `http://127.0.0.1:${baselinePort}`,
-        ],
-        { cwd: baselineSandbox },
-      );
+      const baselineSummaryPath = path.join(baselineSessionDir, "summary.json");
       await runInterfacectlCli(
         ["summarize-generation-session", "--session-dir", baselineSessionDir],
         { cwd: baselineSandbox, acceptExitCodes: [30] },
       );
-    } catch (error) {
-      throw new Error(withServerOutput(error instanceof Error ? error.message : String(error), baselineServer));
-    } finally {
-      await stopServer(baselineServer.child);
-    }
-
-    const agentResult = await runLocalLlmAgent({
-      config: llm,
-      repoRoot: currentSandbox,
-      allowedRoots: [TARGET.appPath],
-      preparedPayload,
-      implementationBrief: TARGET.implementationBrief,
-      acceptedSuggestions: activeAcceptedSuggestions,
-      effectiveContractSummary: contractSummaryText(session.workingContract),
-      activeDesignerNotes: session.activeDesignerNotes,
-    }).catch(async (error) => {
-      const transcript = extractTranscriptFromError(error);
-      if (transcript) {
-        await writeJsonFile(transcriptPath, transcript);
-      }
-      throw error;
+      await updateRunRecord(runId, { baselineSummaryPath });
     });
-    await writeJsonFile(transcriptPath, agentResult.transcript);
-    await fsp.writeFile(agentInputPath, agentResult.agentInput, "utf8");
-    await writeRunExplainability({
-      runId,
-      explainabilityPath,
-      effectiveContractPath,
-      agentInputPath,
-      activeContractChanges: session.activeContractChanges,
-      activeDesignerNotes: session.activeDesignerNotes,
+    await runPhase("baseline-preview", "Capture the baseline preview from the local sandbox.", async () => {
+      const baselinePort = await getAvailablePort();
+      const baselineLogs = {
+        stdoutPath: path.join(runDir, "baseline.preview.stdout.log"),
+        stderrPath: path.join(runDir, "baseline.preview.stderr.log"),
+      };
+      await ensureSandboxPreviewDependencies(baselineSandbox);
+      const baselineServer = await startReferenceTargetServer(baselineSandbox, baselinePort, baselineLogs);
+      await updateRunRecord(runId, {
+        ...previewDebugPatch("baseline", {
+          url: baselineServer.url,
+          stdoutPath: baselineServer.stdoutPath,
+          stderrPath: baselineServer.stderrPath,
+          stderrTail: [],
+        }),
+      });
+      try {
+        await waitForUrl(baselineServer.url, baselineServer);
+        await runInterfacectlCli(
+          [
+            "capture-generation-preview",
+            "--session-dir",
+            baselineSessionDir,
+            "--attempt",
+            "1",
+            "--url",
+            baselineServer.url,
+          ],
+          { cwd: baselineSandbox },
+        );
+        const baselinePreviewPath = path.join(baselineSessionDir, "attempts", `${RERUN_ATTEMPT}.preview.png`);
+        await updateRunRecord(runId, { baselinePreviewPath });
+      } finally {
+        await updateRunRecord(runId, {
+          ...previewDebugPatch("baseline", {
+            stderrTail: baselineServer.getStderrTail(),
+          }),
+        }).catch(() => undefined);
+        await stopServer(baselineServer.child);
+      }
+    });
+
+    const agentResult = await runPhase("agent", "Run the bounded LM Studio tool loop.", async () => {
+      const result = await runLocalLlmAgent({
+        config: llm,
+        repoRoot: currentSandbox,
+        allowedRoots: [TARGET.appPath],
+        preparedPayload,
+        implementationBrief: TARGET.implementationBrief,
+        acceptedSuggestions: activeAcceptedSuggestions,
+        effectiveContractSummary: contractSummaryText(session.workingContract),
+        activeDesignerNotes: session.activeDesignerNotes,
+      }).catch(async (error) => {
+        const transcript = extractTranscriptFromError(error);
+        if (transcript) {
+          await writeJsonFile(transcriptPath, transcript);
+        }
+        throw error;
+      });
+      await writeJsonFile(transcriptPath, result.transcript);
+      await fsp.writeFile(agentInputPath, result.agentInput, "utf8");
+      await writeRunExplainability({
+        runId,
+        explainabilityPath,
+        effectiveContractPath,
+        agentInputPath,
+        activeContractChanges: session.activeContractChanges,
+        activeDesignerNotes: session.activeDesignerNotes,
+      });
+      await updateRunRecord(runId, {
+        transcriptPath,
+        touchedFiles: result.touchedFiles,
+        agentSummary: result.summary,
+        noChanges: result.noChanges,
+        toolCallCount: result.toolCallCount,
+        writeCount: result.writeCount,
+        lastToolName: result.lastToolName,
+      });
+      return result;
     });
 
     const currentAssessmentPath = path.join(runDir, "current.assessment.json");
@@ -1447,34 +1857,59 @@ export async function startLocalWorkbenchRerun(): Promise<StartLocalRerunResult>
       ),
     );
 
-    const currentPort = await getAvailablePort();
-    const currentServer = await startReferenceTargetServer(currentSandbox, currentPort);
-    try {
+    await runPhase("current-validation", "Validate the post-agent implementation pass.", async () => {
       await runInterfacectlCli(
         ["record-generation-attempt", "--session-dir", currentSessionDir, "--assessment-file", currentAssessmentPath],
         { cwd: currentSandbox },
       );
-      await runInterfacectlCli(
-        [
-          "capture-generation-preview",
-          "--session-dir",
-          currentSessionDir,
-          "--attempt",
-          "1",
-          "--url",
-          `http://127.0.0.1:${currentPort}`,
-        ],
-        { cwd: currentSandbox },
-      );
+      const currentSummaryPath = path.join(currentSessionDir, "summary.json");
       await runInterfacectlCli(
         ["summarize-generation-session", "--session-dir", currentSessionDir],
         { cwd: currentSandbox, acceptExitCodes: [30] },
       );
-    } catch (error) {
-      throw new Error(withServerOutput(error instanceof Error ? error.message : String(error), currentServer));
-    } finally {
-      await stopServer(currentServer.child);
-    }
+      await updateRunRecord(runId, { currentSummaryPath });
+    });
+    await runPhase("current-preview", "Capture the post-agent preview from the local sandbox.", async () => {
+      const currentPort = await getAvailablePort();
+      const currentLogs = {
+        stdoutPath: path.join(runDir, "current.preview.stdout.log"),
+        stderrPath: path.join(runDir, "current.preview.stderr.log"),
+      };
+      await ensureSandboxPreviewDependencies(currentSandbox);
+      const currentServer = await startReferenceTargetServer(currentSandbox, currentPort, currentLogs);
+      await updateRunRecord(runId, {
+        ...previewDebugPatch("current", {
+          url: currentServer.url,
+          stdoutPath: currentServer.stdoutPath,
+          stderrPath: currentServer.stderrPath,
+          stderrTail: [],
+        }),
+      });
+      try {
+        await waitForUrl(currentServer.url, currentServer);
+        await runInterfacectlCli(
+          [
+            "capture-generation-preview",
+            "--session-dir",
+            currentSessionDir,
+            "--attempt",
+            "1",
+            "--url",
+            currentServer.url,
+          ],
+          { cwd: currentSandbox },
+        );
+        const currentPreviewPath = path.join(currentSessionDir, "attempts", `${RERUN_ATTEMPT}.preview.png`);
+        await updateRunRecord(runId, { currentPreviewPath });
+      } finally {
+        await updateRunRecord(runId, {
+          ...previewDebugPatch("current", {
+            stderrTail: currentServer.getStderrTail(),
+          }),
+        }).catch(() => undefined);
+        await stopServer(currentServer.child);
+      }
+    });
 
     const baselineValidate = await readJsonFile<Record<string, unknown>>(
       path.join(baselineSessionDir, "attempts", `${RERUN_ATTEMPT}.validate.json`),
@@ -1484,22 +1919,26 @@ export async function startLocalWorkbenchRerun(): Promise<StartLocalRerunResult>
     );
     const remainingAcceptedSuggestions = pruneAcceptedSuggestions(activeAcceptedSuggestions, currentValidate);
     await writeAcceptedSuggestions(remainingAcceptedSuggestions);
-    const comparison = buildComparison(baselineValidate, currentValidate);
-    const comparisonPath = path.join(runDir, "comparison.json");
-    await writeJsonFile(comparisonPath, comparison);
 
-    const suggestionsPath = path.join(runDir, "suggestions.json");
-    await writeJsonFile(suggestionsPath, {
-      runId,
-      suggestions: suggestionSummaryFromRun(preparedPayload, currentValidate, {
-        acceptedSuggestions: remainingAcceptedSuggestions,
-      }),
+    await runPhase("finalize", "Persist comparison metrics and structured suggestions.", async () => {
+      const comparison = buildComparison(baselineValidate, currentValidate);
+      const comparisonPath = path.join(runDir, "comparison.json");
+      await writeJsonFile(comparisonPath, comparison);
+
+      const suggestionsPath = path.join(runDir, "suggestions.json");
+      await writeJsonFile(suggestionsPath, {
+        runId,
+        suggestions: suggestionSummaryFromRun(preparedPayload, currentValidate, {
+          acceptedSuggestions: remainingAcceptedSuggestions,
+        }),
+      });
+
+      await updateRunRecord(runId, {
+        comparisonPath,
+        suggestionsPath,
+        touchedFiles: agentResult.touchedFiles,
+      });
     });
-
-    const baselinePreviewPath = path.join(baselineSessionDir, "attempts", `${RERUN_ATTEMPT}.preview.png`);
-    const currentPreviewPath = path.join(currentSessionDir, "attempts", `${RERUN_ATTEMPT}.preview.png`);
-    const baselineSummaryPath = path.join(baselineSessionDir, "summary.json");
-    const currentSummaryPath = path.join(currentSessionDir, "summary.json");
 
     const noOpAcceptedFailure = unresolvedAcceptedSuggestionNoopErrorMessage(
       agentResult.noChanges,
@@ -1508,15 +1947,6 @@ export async function startLocalWorkbenchRerun(): Promise<StartLocalRerunResult>
     );
     if (noOpAcceptedFailure) {
       await updateRunRecord(runId, {
-        baselinePreviewPath,
-        currentPreviewPath,
-        baselineSummaryPath,
-        currentSummaryPath,
-        comparisonPath,
-        suggestionsPath,
-        effectiveContractPath,
-        agentInputPath,
-        explainabilityPath,
         touchedFiles: agentResult.touchedFiles,
       });
       throw new Error(noOpAcceptedFailure);
@@ -1525,23 +1955,21 @@ export async function startLocalWorkbenchRerun(): Promise<StartLocalRerunResult>
     await updateRunRecord(runId, {
       status: "succeeded",
       completedAt: new Date().toISOString(),
-      baselinePreviewPath,
-      currentPreviewPath,
-      baselineSummaryPath,
-      currentSummaryPath,
-      comparisonPath,
-      suggestionsPath,
-      effectiveContractPath,
-      agentInputPath,
-      explainabilityPath,
+      currentPhase: null,
+      lastError: null,
       touchedFiles: agentResult.touchedFiles,
     });
     return { runId, status: "succeeded" };
   } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (activePhase) {
+      await failRunPhase(runId, activePhase, message).catch(() => undefined);
+    }
     await updateRunRecord(runId, {
       status: "failed",
       completedAt: new Date().toISOString(),
-      errorMessage: error instanceof Error ? error.message : String(error),
+      currentPhase: activePhase,
+      errorMessage: message,
     }).catch(() => undefined);
     return { runId, status: "failed" };
   } finally {

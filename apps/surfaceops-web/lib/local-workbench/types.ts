@@ -1,7 +1,17 @@
 export type LocalWorkbenchPreviewMode = "baseline" | "current";
-export type LocalWorkbenchTab = "controls" | "chat";
+export type LocalWorkbenchTab = "controls" | "trace" | "chat";
 export type LocalWorkbenchRunStatus = "idle" | "running" | "succeeded" | "failed";
 export type LocalSuggestionStatus = "proposed" | "accepted" | "rejected";
+export type LocalWorkbenchRunPhase =
+  | "compile"
+  | "prepare"
+  | "baseline-validation"
+  | "baseline-preview"
+  | "agent"
+  | "current-validation"
+  | "current-preview"
+  | "finalize";
+export type LocalWorkbenchRunPhaseStatus = "running" | "succeeded" | "failed";
 
 export interface LocalWorkbenchSuggestion {
   suggestionId: string;
@@ -36,12 +46,34 @@ export interface LocalWorkbenchComparison {
   resolvedFindingCodes: string[];
 }
 
+export interface LocalWorkbenchRunPhaseEntry {
+  phase: LocalWorkbenchRunPhase;
+  status: LocalWorkbenchRunPhaseStatus;
+  startedAt: string;
+  completedAt: string | null;
+  message: string | null;
+}
+
+export interface LocalWorkbenchRunError {
+  phase: LocalWorkbenchRunPhase | "unknown";
+  message: string;
+}
+
 export interface LocalWorkbenchRun {
   runId: string;
   status: LocalWorkbenchRunStatus;
   createdAt: string;
   completedAt: string | null;
   latestRunLabel: string;
+  model: string | null;
+  currentPhase: LocalWorkbenchRunPhase | null;
+  phaseHistory: LocalWorkbenchRunPhaseEntry[];
+  agentSummary: string | null;
+  noChanges: boolean;
+  toolCallCount: number;
+  writeCount: number;
+  lastToolName: string | null;
+  lastError: LocalWorkbenchRunError | null;
   transcriptPath: string | null;
   touchedFiles: string[];
   errorMessage: string | null;
@@ -61,6 +93,37 @@ export interface LocalWorkbenchRun {
   suggestionsPath: string | null;
   comparison: LocalWorkbenchComparison | null;
   suggestions: LocalWorkbenchSuggestion[];
+}
+
+export interface LocalWorkbenchTranscriptEntry {
+  type: "request" | "assistant" | "tool" | "finish";
+  payload: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface LocalWorkbenchRunDetail {
+  run: LocalWorkbenchRun;
+  transcript: LocalWorkbenchTranscriptEntry[];
+  durationMs: number | null;
+  previewDebug: {
+    baseline: {
+      url: string | null;
+      stdoutPath: string | null;
+      stderrPath: string | null;
+      stderrTail: string[];
+    };
+    current: {
+      url: string | null;
+      stdoutPath: string | null;
+      stderrPath: string | null;
+      stderrTail: string[];
+    };
+  };
+  lastToolCall: {
+    name: string;
+    args: Record<string, unknown> | null;
+    result: Record<string, unknown> | null;
+  } | null;
 }
 
 export interface LocalWorkbenchChatMessage {
