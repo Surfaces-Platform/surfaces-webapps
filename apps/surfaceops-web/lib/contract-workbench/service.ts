@@ -315,11 +315,14 @@ function buildGenerationPrompt(input: {
   return [
     `You are editing a web product repository for the surface "${input.surfaceId}".`,
     `Implementation brief:\n${input.brief}`,
+    "Work from the existing implementation in this repository. Prefer the smallest implementation-only changes that satisfy the brief.",
     input.guidanceMode === "prepared"
       ? `Use the prepared generation payload at ${input.preparedInputPath} as the primary contract-derived guidance.`
       : "Do not use any prepared-generation payload or raw contract guidance beyond the task brief.",
     `The canonical contract file in this workspace is ${input.contractPath}.`,
-    "Modify repository files directly. Do not commit changes. Finish when the implementation is complete.",
+    `Do not edit ${input.contractPath}.`,
+    "Do not add plans, design docs, or other new documentation unless the task explicitly requires them.",
+    "Modify repository implementation files directly. Do not commit changes. Finish when the implementation is complete.",
   ].join("\n\n");
 }
 
