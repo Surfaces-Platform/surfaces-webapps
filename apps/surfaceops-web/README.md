@@ -59,6 +59,14 @@ SURFACES_INTERFACECTL_ROOT=/absolute/path/to/interfacectl
 
 The managed rerun flow shells through resolver-backed `interfacectl` commands and the local `codex` CLI, so both must be available on the host. Preview URLs are project-configured per surface, and protected previews can reuse stored Playwright `storageState` JSON through the workbench.
 
+For the internal operator-hosted dogfood loop, local API/session checks can also use:
+
+```bash
+SURFACEOPS_TEST_BYPASS_AUTH=1
+```
+
+This bypass only applies in non-production and is intended for the local workbench host. Protected preview captures still rely on saved browser state plus Vercel deployment-protection bypass cookies generated on demand by the host.
+
 ### Database migrations
 
 The contract workbench adds project, draft, rerun, auth-session, and publish tables in migration `005_contract_workbench_projects.sql`.

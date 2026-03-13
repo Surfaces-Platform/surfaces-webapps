@@ -14,6 +14,10 @@ import {
 } from "./github";
 import { runInterfacectlCli } from "./interfacectl";
 import {
+  mergePreviewCookieIntoStorageState,
+  parseVercelBypassCookie,
+} from "./preview-auth";
+import {
   createContractProject,
   createContractProjectRun,
   createProjectPublish,
@@ -217,14 +221,65 @@ async function readJsonFile<T>(filePath: string): Promise<T> {
   return JSON.parse(await fsp.readFile(filePath, "utf8")) as T;
 }
 
+function vercelScope(): string {
+  return process.env.SURFACEOPS_VERCEL_SCOPE?.trim() || "surfaces-platform";
+}
+
+function previewPathFromUrl(url: string): string {
+  const target = new URL(url);
+  return `${target.pathname}${target.search}`;
+}
+
+async function requestVercelBypassCookie(url: string): Promise<string> {
+  const target = new URL(url);
+  const result = await runCommand(
+    "vercel",
+    [
+      "curl",
+      previewPathFromUrl(url),
+      "--deployment",
+      target.origin,
+      "--scope",
+      vercelScope(),
+      "--",
+      "--dump-header",
+      "-",
+      "--silent",
+      "--output",
+      os.devNull,
+      "-H",
+      "x-vercel-set-bypass-cookie: true",
+    ],
+    { cwd: process.cwd() },
+  );
+  return result.stdout;
+}
+
+async function createPreviewStorageStatePath(input: {
+  previewUrl: string;
+  baseStorageStatePath?: string | null;
+}): Promise<string> {
+  let baseState: Record<string, unknown> | null = null;
+  if (input.baseStorageStatePath) {
+    baseState = await readJsonFile<Record<string, unknown>>(input.baseStorageStatePath);
+  }
+  const cookie = parseVercelBypassCookie(
+    await requestVercelBypassCookie(input.previewUrl),
+    input.previewUrl,
+  );
+  const storageState = mergePreviewCookieIntoStorageState(baseState, cookie);
+  const tempDir = await fsp.mkdtemp(path.join(os.tmpdir(), "surfaceops-preview-auth-"));
+  const storageStatePath = path.join(tempDir, "storage-state.json");
+  await fsp.writeFile(storageStatePath, stringifyJson(storageState), "utf8");
+  return storageStatePath;
+}
+
 async function waitForPreview(url: string): Promise<void> {
   const deadline = Date.now() + 180_000;
   while (Date.now() < deadline) {
     try {
-      const response = await fetch(url, { method: "GET", redirect: "follow", cache: "no-store" });
-      if (response.ok) {
-        return;
-      }
+      await requestVercelBypassCookie(url);
+      return;
     } catch {}
     await new Promise((resolve) => setTimeout(resolve, 5_000));
   }
@@ -383,20 +438,29 @@ async function runOneGuidanceArm(input: {
     commitMessage: `SurfaceOps rerun ${input.runId} (${armName})`,
   });
   await waitForPreview(preview.url);
-  await runInterfacectlCli(
-    [
-      "capture-generation-preview",
-      "--session-dir",
-      sessionDir,
-      "--attempt",
-      "1",
-      "--url",
-      preview.url,
-      ...(preview.waitFor ? ["--wait-for", preview.waitFor] : []),
-      ...(input.authStorageStatePath ? ["--storage-state", input.authStorageStatePath] : []),
-    ],
-    { cwd: repoDir },
-  );
+  const previewStorageStatePath = await createPreviewStorageStatePath({
+    previewUrl: preview.url,
+    baseStorageStatePath: input.authStorageStatePath ?? null,
+  });
+  try {
+    await runInterfacectlCli(
+      [
+        "capture-generation-preview",
+        "--session-dir",
+        sessionDir,
+        "--attempt",
+        "1",
+        "--url",
+        preview.url,
+        ...(preview.waitFor ? ["--wait-for", preview.waitFor] : []),
+        "--storage-state",
+        previewStorageStatePath,
+      ],
+      { cwd: repoDir },
+    );
+  } finally {
+    await fsp.rm(path.dirname(previewStorageStatePath), { recursive: true, force: true }).catch(() => undefined);
+  }
   await runInterfacectlCli(
     [
       "summarize-generation-session",
