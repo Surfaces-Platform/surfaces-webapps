@@ -1,18 +1,26 @@
 import QuickStartSurfacePage, { NextContextLinks } from '../_components/QuickStartSurfacePage';
-import { interfacectlIntegrationReferenceCards } from '../../../_shared/interfacectl-doc-links.js';
 
 const integrationSnippet = `# Local/CI hard gate command
-pnpm run adapter:validate-generation -- \\
+node scripts/interfacectl-tool.mjs run cli compile \\
+  --contract /Users/mike/SurfacesPlatform/surfaces-webapps/contracts/surfaces.web.contract.json \\
+  --out /Users/mike/SurfacesPlatform/surfaces-webapps/artifacts/generation-bundles/surfaces-web
+
+node scripts/interfacectl-tool.mjs run cli prepare-generation \\
+  --bundle-root /Users/mike/SurfacesPlatform/surfaces-webapps/artifacts/generation-bundles/surfaces-web \\
+  --surface surfaces-web \\
+  --out /Users/mike/SurfacesPlatform/surfaces-webapps/artifacts/generation-inputs/surfaces-web.json
+
+node scripts/interfacectl-tool.mjs run cli validate-generation \\
   --tool codex \\
   --surface surfaces-web \\
   --mode workspace \\
   --workspace-root /Users/mike/SurfacesPlatform/surfaces-webapps \\
-  --contract /Users/mike/SurfacesPlatform/surfaces-webapps/contracts/surfaces.web.contract.json
+  --bundle-root /Users/mike/SurfacesPlatform/surfaces-webapps/artifacts/generation-bundles/surfaces-web
 
 # Exit behavior:
 # 0  => pass or warn
 # 30 => block (fail CI)
-# 10 => malformed request / missing contract
+# 10 => malformed request / missing bundle
 #
 # Icon policy behavior in workspace mode:
 # icon.source-disallowed + policy=warn   => status=warn, exit 0
@@ -25,7 +33,7 @@ export default function IntegrationQuickStartPage() {
       activeTab="integration"
       contextLabel="Integration Quick Start"
       title="Integrate Adapter Enforcement Into Tooling And CI"
-      summary="Use this repo-level CI/CD workflow to connect Generation time checks to promotion gates so hosted tools remain enforceable even when they cannot hard-block in-product. It is built on interfacectl, not a replacement for the canonical tooling docs."
+      summary="Use this flow at CI/CD time to connect Generation time checks to promotion gates so hosted tools remain enforceable even when they cannot hard-block in-product."
       steps={[
         {
           title: 'Pick execution mode.',
@@ -48,18 +56,23 @@ export default function IntegrationQuickStartPage() {
           detail: 'Run workspace adapter check in CI and fail on exit code 30.'
         },
         {
-          title: 'Pin canonical contract path.',
-          detail: 'Use contracts/surfaces.web.contract.json for canonical surfaces; use contracts/generated/reference-target-web.contract.json for reference-target demos.'
+          title: 'Compile and pin bundle artifacts.',
+          detail: 'Compile into artifacts/generation-bundles/<surface-id> and prepare the local-agent payload under artifacts/generation-inputs/<surface-id>.json.'
         },
         {
           title: 'Store adapter findings with build artifacts.',
           detail: 'Use findings evidence for remediation and auditability.'
+        },
+        {
+          title: 'Capture operator proof sessions separately.',
+          detail: 'When you need iteration history, use the canonical generation session commands to freeze one bundle and record each attempt before promotion.'
         }
       ]}
       snippetTitle="CI / Local Integration Command"
       snippet={integrationSnippet}
-      referenceCards={interfacectlIntegrationReferenceCards}
       notes={[
+        'generation:prepare is optional for the CI gate itself, but it keeps local-agent and CI inputs aligned on the same bundle revision.',
+        'Generation session commands live beside the CI path and are for tracked local-agent evaluation, not for replacing the final workspace gate.',
         'workspace mode runs generation guard plus interfacectl validate.',
         'CI/CD workspace validation remains the authoritative promotion gate, even when descriptor parity is enabled.',
         'Descriptor mode parity is phased by surface; do not promote solely on descriptor-mode pass/warn.',
