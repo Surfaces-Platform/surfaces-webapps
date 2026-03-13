@@ -14,7 +14,6 @@ SURFACE_ID="${SURFACE_ID:-reference-target-web}"
 APP_ROOT="${APP_ROOT:-apps/reference-target-web}"
 CONTRACT_PATH="${CONTRACT_PATH:-$REPO_ROOT/contracts/generated/$SURFACE_ID.contract.json}"
 EXTRACTED_PATH="${EXTRACTED_PATH:-$REPO_ROOT/contracts/generated/$SURFACE_ID.extraction.json}"
-RUN_EMITTER_PATH="${RUN_EMITTER_PATH:-$REPO_ROOT/scripts/lib/contract-runs.mjs}"
 SURFACEOPS_URL="${SURFACEOPS_URL:-http://localhost:3001}"
 
 SKIP_BUILD="${SKIP_BUILD:-0}"
@@ -30,9 +29,9 @@ emit_run() {
   local status="$1"
   local finding_codes="${2:-}"
   local report_path="${3:-}"
-  "$NODE_BIN" "$RUN_EMITTER_PATH" emit \
-    --root "$REPO_ROOT" \
-    --surface-id "$SURFACE_ID" \
+  "$NODE_BIN" "$CLI_PATH" emit-run-artifact \
+    --workspace-root "$REPO_ROOT" \
+    --surface "$SURFACE_ID" \
     --source ci \
     --status "$status" \
     --finding-codes "$finding_codes" \
@@ -94,15 +93,11 @@ command -v "$PNPM_BIN" >/dev/null 2>&1 || fail "pnpm binary not found: $PNPM_BIN
 if [ -z "$CLI_PATH" ]; then
   CLI_PATH="$("$NODE_BIN" "$REPO_ROOT/scripts/interfacectl-tool.mjs" path cli)"
 fi
-for required in "$CLI_PATH" "$RUN_EMITTER_PATH"; do
-  [ -f "$required" ] || fail "Required file not found: $required"
-done
+[ -f "$CLI_PATH" ] || fail "Required file not found: $CLI_PATH"
 case "$ICON_PILOT_MODE" in
 warn|strict|both) ;;
 *) fail "ICON_PILOT_MODE must be one of: warn, strict, both (got: $ICON_PILOT_MODE)" ;;
 esac
-
-"$NODE_BIN" "$RUN_EMITTER_PATH" init --root "$REPO_ROOT" >/dev/null
 
 tmp_dir="$(mktemp -d -t surfaces-demo-ci-XXXXXX)"
 trap 'rm -rf "$tmp_dir"' EXIT

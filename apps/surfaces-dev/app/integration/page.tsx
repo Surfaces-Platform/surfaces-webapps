@@ -71,7 +71,7 @@ export default function IntegrationQuickStartPage() {
       snippetTitle="CI / Local Integration Command"
       snippet={integrationSnippet}
       notes={[
-        'generation:prepare is optional for the CI gate itself, but it keeps local-agent and CI inputs aligned on the same bundle revision.',
+        'prepare-generation is optional for the CI gate itself, but it keeps local-agent and CI inputs aligned on the same bundle revision.',
         'Generation session commands live beside the CI path and are for tracked local-agent evaluation, not for replacing the final workspace gate.',
         'workspace mode runs generation guard plus interfacectl validate.',
         'CI/CD workspace validation remains the authoritative promotion gate, even when descriptor parity is enabled.',

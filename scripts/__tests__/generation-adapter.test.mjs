@@ -92,18 +92,12 @@ function parseTrailingJson(output) {
 test("consumer scripts are resolver-backed and local adapter implementation is removed", async () => {
   const packageJson = JSON.parse(await fsp.readFile(packageJsonPath, "utf8"));
 
-  assert.equal(
-    packageJson.scripts["generation:prepare"],
-    "node scripts/interfacectl-tool.mjs run cli prepare-generation",
-  );
-  assert.equal(
-    packageJson.scripts["adapter:validate-generation"],
-    "node scripts/interfacectl-tool.mjs run cli validate-generation",
-  );
-  assert.equal(
-    packageJson.scripts["adapter:serve-generation"],
-    "node scripts/interfacectl-tool.mjs run cli serve-generation-adapter",
-  );
+  assert.equal(packageJson.scripts["generation:prepare"], undefined);
+  assert.equal(packageJson.scripts["adapter:validate-generation"], undefined);
+  assert.equal(packageJson.scripts["adapter:serve-generation"], undefined);
+  assert.equal(packageJson.scripts["generation:pilot:init"], undefined);
+  assert.equal(packageJson.scripts["generation:pilot:attempt"], undefined);
+  assert.equal(packageJson.scripts["generation:pilot:summary"], undefined);
   assert.ok(
     !fs.existsSync(path.join(repoRoot, "scripts", "adapter", "generation-adapter-core.mjs")),
   );
@@ -113,9 +107,12 @@ test("consumer scripts are resolver-backed and local adapter implementation is r
   assert.ok(
     !fs.existsSync(path.join(repoRoot, "scripts", "adapter", "serve-generation-adapter.mjs")),
   );
+  assert.ok(!fs.existsSync(path.join(repoRoot, "scripts", "generation-pilot.mjs")));
+  assert.ok(!fs.existsSync(path.join(repoRoot, "scripts", "generation-pilot.config.json")));
+  assert.ok(!fs.existsSync(path.join(repoRoot, "scripts", "lib", "contract-runs.mjs")));
 });
 
-test("consumer smoke: compile bundle, prepare generation input under artifacts, and validate via upstream adapter", async () => {
+test("consumer smoke: compile, prepare, init session, and validate via direct upstream commands", async () => {
   const tempDir = await fsp.mkdtemp(path.join(os.tmpdir(), "surfaces-generation-consumer-"));
   const contractPath = path.join(tempDir, "contract.json");
   const descriptorPath = path.join(tempDir, "descriptor.json");
@@ -130,6 +127,14 @@ test("consumer smoke: compile bundle, prepare generation input under artifacts, 
     "artifacts",
     "generation-inputs",
     `consumer-smoke-${Date.now()}.json`,
+  );
+  const sessionId = `consumer-smoke-${Date.now()}`;
+  const sessionDir = path.join(
+    repoRoot,
+    "artifacts",
+    "generation-sessions",
+    "demo-surface",
+    sessionId,
   );
 
   try {
@@ -165,11 +170,12 @@ test("consumer smoke: compile bundle, prepare generation input under artifacts, 
     assert.ok(fs.existsSync(path.join(bundleRoot, "manifest.json")));
 
     const prepareResult = await runCommand(
-      "pnpm",
+      "node",
       [
+        "scripts/interfacectl-tool.mjs",
         "run",
-        "generation:prepare",
-        "--",
+        "cli",
+        "prepare-generation",
         "--bundle-root",
         bundleRoot,
         "--surface",
@@ -192,12 +198,39 @@ test("consumer smoke: compile bundle, prepare generation input under artifacts, 
     assert.equal(generationInput.contract.id, "consumer-smoke");
     assert.equal(generationInput.surface.surfaceId, "demo-surface");
 
-    const validateResult = await runCommand(
-      "pnpm",
+    const initSessionResult = await runCommand(
+      "node",
       [
+        "scripts/interfacectl-tool.mjs",
         "run",
-        "adapter:validate-generation",
-        "--",
+        "cli",
+        "init-generation-session",
+        "--bundle-root",
+        bundleRoot,
+        "--surface",
+        "demo-surface",
+        "--workspace-root",
+        repoRoot,
+        "--session",
+        sessionId,
+      ],
+      {
+        cwd: repoRoot,
+        env: {
+          SURFACES_INTERFACECTL_ROOT: interfacectlRoot,
+        },
+      },
+    );
+    assert.equal(initSessionResult.exitCode, 0, initSessionResult.stderr);
+    assert.ok(fs.existsSync(path.join(sessionDir, "session.json")));
+
+    const validateResult = await runCommand(
+      "node",
+      [
+        "scripts/interfacectl-tool.mjs",
+        "run",
+        "cli",
+        "validate-generation",
         "--tool",
         "codex",
         "--surface",
@@ -226,5 +259,6 @@ test("consumer smoke: compile bundle, prepare generation input under artifacts, 
     await fsp.rm(tempDir, { recursive: true, force: true });
     await fsp.rm(bundleRoot, { recursive: true, force: true });
     await fsp.rm(generationInputPath, { force: true });
+    await fsp.rm(sessionDir, { recursive: true, force: true });
   }
 });

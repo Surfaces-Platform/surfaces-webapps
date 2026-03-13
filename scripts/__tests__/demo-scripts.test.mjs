@@ -45,14 +45,9 @@ function makeSandbox() {
   const libDir = path.join(dir, "scripts", "lib");
   fs.mkdirSync(libDir, { recursive: true });
   fs.copyFileSync(
-    path.join(repoRoot, "scripts", "lib", "contract-runs.mjs"),
-    path.join(libDir, "contract-runs.mjs")
-  );
-  fs.copyFileSync(
     path.join(repoRoot, "scripts", "lib", "interfacectl-tooling.mjs"),
     path.join(libDir, "interfacectl-tooling.mjs")
   );
-  fs.chmodSync(path.join(libDir, "contract-runs.mjs"), 0o755);
   fs.chmodSync(path.join(dir, "scripts", "interfacectl-tool.mjs"), 0o755);
   fs.chmodSync(path.join(libDir, "interfacectl-tooling.mjs"), 0o755);
 
@@ -115,6 +110,7 @@ console.log("guard pass");
     path.join(interfacectlRoot, "packages", "interfacectl-cli", "dist", "index.js"),
     `#!/usr/bin/env node
 const fs = require("fs");
+const path = require("path");
 const args = process.argv.slice(2);
 const cmd = args[0];
 function value(flag) { const i = args.indexOf(flag); return i >= 0 ? args[i + 1] : undefined; }
@@ -206,6 +202,66 @@ if (cmd === "validate-extracted") {
     process.exit(10);
   }
   console.log(JSON.stringify({ ok: true, findings: [] }));
+  process.exit(0);
+}
+if (cmd === "emit-run-artifact") {
+  const workspaceRoot = value("--workspace-root") || process.cwd();
+  const surfaceId = value("--surface") || "surfaces-web";
+  const source = value("--source") || "generation";
+  const status = value("--status") || "unknown";
+  const findingCodes = (value("--finding-codes") || "").split(",").map((entry) => entry.trim()).filter(Boolean);
+  const extractionPath = value("--extraction-path");
+  const reportPath = value("--report-path");
+  const generatedDir = path.join(workspaceRoot, "contracts", "generated");
+  const runsPath = path.join(generatedDir, "contract-runs.json");
+  const lineagePath = path.join(generatedDir, "contract-lineage.json");
+  fs.mkdirSync(generatedDir, { recursive: true });
+  const runsDoc = fs.existsSync(runsPath)
+    ? JSON.parse(fs.readFileSync(runsPath, "utf8"))
+    : { schemaVersion: 2, runs: [] };
+  const lineageDoc = fs.existsSync(lineagePath)
+    ? JSON.parse(fs.readFileSync(lineagePath, "utf8"))
+    : { schemaVersion: 1, surfaces: {} };
+  const runId = "run-" + String(runsDoc.runs.length + 1);
+  const createdAt = new Date("2026-03-12T00:00:00.000Z").toISOString();
+  const record = {
+    runId,
+    workspaceId: "ws-local-default",
+    ingestedAt: createdAt,
+    createdAt,
+    surfaceId,
+    source,
+    contract: {
+      id: "surfaces.web",
+      version: "0.1.0",
+      sha256: "a".repeat(64),
+    },
+    artifacts: {
+      ...(extractionPath ? { extractionPath } : {}),
+      ...(reportPath ? { reportPath } : {}),
+    },
+    status,
+    findingCodes,
+    summary: {
+      errorCount: status === "fail" ? Math.max(1, findingCodes.length) : 0,
+      warnCount: status === "warn" ? Math.max(1, findingCodes.length) : 0,
+    },
+  };
+  runsDoc.schemaVersion = 2;
+  runsDoc.runs.push(record);
+  lineageDoc.schemaVersion = 1;
+  lineageDoc.surfaces[surfaceId] = {
+    lastRunId: runId,
+    lastRunAt: createdAt,
+    lastSource: source,
+    lastStatus: status,
+    contract: record.contract,
+    artifacts: record.artifacts,
+    findingCodes,
+  };
+  fs.writeFileSync(runsPath, JSON.stringify(runsDoc, null, 2));
+  fs.writeFileSync(lineagePath, JSON.stringify(lineageDoc, null, 2));
+  console.log(JSON.stringify({ ok: true, deduped: false, runId, surfaceId }));
   process.exit(0);
 }
 console.log(JSON.stringify({ ok: true }));

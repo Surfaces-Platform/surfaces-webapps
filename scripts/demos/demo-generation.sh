@@ -9,7 +9,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 NODE_BIN="${NODE_BIN:-node}"
 CONTRACT_PATH="${CONTRACT_PATH:-$REPO_ROOT/contracts/surfaces.web.contract.json}"
 GUARD_PATH="${GUARD_PATH:-}"
-RUN_EMITTER_PATH="${RUN_EMITTER_PATH:-$REPO_ROOT/scripts/lib/contract-runs.mjs}"
+CLI_PATH="${CLI_PATH:-}"
 SURFACE_ID="${SURFACE_ID:-surfaces-web}"
 SURFACES_WEB_URL="${SURFACES_WEB_URL:-http://localhost:3000}"
 
@@ -20,23 +20,24 @@ fail() { echo "[FAIL] $*" >&2; exit 1; }
 emit_run() {
   local status="$1"
   local finding_codes="${2:-}"
-  "$NODE_BIN" "$RUN_EMITTER_PATH" emit \
-    --root "$REPO_ROOT" \
-    --surface-id "$SURFACE_ID" \
+  "$NODE_BIN" "$CLI_PATH" emit-run-artifact \
+    --workspace-root "$REPO_ROOT" \
+    --surface "$SURFACE_ID" \
     --source generation \
     --status "$status" \
     --finding-codes "$finding_codes" >/dev/null
 }
 
 command -v "$NODE_BIN" >/dev/null 2>&1 || fail "Node binary not found: $NODE_BIN"
+if [ -z "$CLI_PATH" ]; then
+  CLI_PATH="$("$NODE_BIN" "$REPO_ROOT/scripts/interfacectl-tool.mjs" path cli)"
+fi
 if [ -z "$GUARD_PATH" ]; then
   GUARD_PATH="$("$NODE_BIN" "$REPO_ROOT/scripts/interfacectl-tool.mjs" path guard)"
 fi
-for required in "$CONTRACT_PATH" "$GUARD_PATH" "$RUN_EMITTER_PATH"; do
+for required in "$CONTRACT_PATH" "$GUARD_PATH" "$CLI_PATH"; do
   [ -f "$required" ] || fail "Required file not found: $required"
 done
-
-"$NODE_BIN" "$RUN_EMITTER_PATH" init --root "$REPO_ROOT" >/dev/null
 
 tmp_dir="$(mktemp -d -t surfaces-demo-generation-XXXXXX)"
 trap 'rm -rf "$tmp_dir"' EXIT
