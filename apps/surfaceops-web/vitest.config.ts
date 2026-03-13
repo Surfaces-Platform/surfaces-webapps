@@ -7,6 +7,7 @@ export default defineConfig({
     globals: false,
     include: [
       "tests/**/*.test.ts",
+      "tests/**/*.test.tsx",
     ],
     exclude: [
       "**/tests/onboarding-browser-smoke.test.mjs",

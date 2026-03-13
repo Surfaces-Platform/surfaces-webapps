@@ -7,12 +7,15 @@ import path from "node:path";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { fileURLToPath } from "node:url";
+import { findSiblingInterfacectlRepoRoot } from "../lib/interfacectl-tooling.mjs";
 
 const repoRoot = path.resolve(
   path.join(path.dirname(fileURLToPath(import.meta.url)), "../.."),
 );
 const packageJsonPath = path.join(repoRoot, "package.json");
-const interfacectlRoot = path.resolve(repoRoot, "..", "interfacectl-main");
+const interfacectlRoot =
+  findSiblingInterfacectlRepoRoot({ cwd: repoRoot }) ??
+  path.resolve(repoRoot, "..", "interfacectl");
 
 function runCommand(command, args, options = {}) {
   const child = spawn(command, args, {
@@ -113,6 +116,10 @@ test("consumer scripts are resolver-backed and local adapter implementation is r
 });
 
 test("consumer smoke: compile, prepare, init session, and validate via direct upstream commands", async () => {
+  assert.ok(
+    fs.existsSync(interfacectlRoot),
+    `Standalone interfacectl repo not found at ${interfacectlRoot}.`,
+  );
   const tempDir = await fsp.mkdtemp(path.join(os.tmpdir(), "surfaces-generation-consumer-"));
   const contractPath = path.join(tempDir, "contract.json");
   const descriptorPath = path.join(tempDir, "descriptor.json");

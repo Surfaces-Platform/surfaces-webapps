@@ -41,14 +41,25 @@ function uniquePaths(paths) {
 
 function getSiblingRepoCandidates(cwd) {
   const repoRoot = path.resolve(cwd);
-  const repoName = path.basename(repoRoot);
-  const repoParent = path.dirname(repoRoot);
-  const candidates = [path.join(repoParent, "interfacectl")];
+  const candidates = [];
+  let current = repoRoot;
 
-  if (repoName.startsWith("surfaces-webapps")) {
-    candidates.push(
-      path.join(repoParent, repoName.replace(/^surfaces-webapps/, "interfacectl")),
-    );
+  while (true) {
+    const repoName = path.basename(current);
+    const repoParent = path.dirname(current);
+    candidates.push(path.join(repoParent, "interfacectl"));
+
+    if (repoName.startsWith("surfaces-webapps")) {
+      candidates.push(
+        path.join(repoParent, repoName.replace(/^surfaces-webapps/, "interfacectl")),
+      );
+    }
+
+    if (repoParent === current) {
+      break;
+    }
+
+    current = repoParent;
   }
 
   return uniquePaths(candidates).filter((candidate) => candidate !== repoRoot);

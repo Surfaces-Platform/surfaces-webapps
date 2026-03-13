@@ -2,6 +2,7 @@ node_modules
 tmp/
 interfacectl-tooling/
 scratch/
+.scratch/
 scratch/secrets/
 .DS_Store
 
