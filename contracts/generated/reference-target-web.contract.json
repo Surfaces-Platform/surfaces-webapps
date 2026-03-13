@@ -23,18 +23,45 @@
     }
   },
   "contractId": "reference-target-web.generated",
-  "description": "Extracted from Next.js app (Phase 0).",
+  "description": "Generated from the reference target fixture and curated for deterministic workspace validation.",
   "sections": [
     {
-      "description": "Placeholder; sections not extracted in Phase 0.",
-      "id": "extracted.placeholder",
-      "intent": "extracted"
+      "description": "Hero introduction for the deterministic reference target fixture.",
+      "id": "landing.hero",
+      "intent": "hero"
+    },
+    {
+      "description": "Capability grid that groups the reference target cards.",
+      "id": "landing.capabilities",
+      "intent": "feature-grid"
+    },
+    {
+      "description": "Contract validation summary card within the capabilities grid.",
+      "id": "landing.contracts",
+      "intent": "contract-summary"
+    },
+    {
+      "description": "Token baseline card describing the design-token path.",
+      "id": "landing.tokens",
+      "intent": "token-summary"
+    },
+    {
+      "description": "Observability card describing deterministic simulation behaviors.",
+      "id": "landing.observability",
+      "intent": "observability-summary"
+    },
+    {
+      "description": "Optional destructive action simulation card for guard validation.",
+      "id": "landing.actions",
+      "intent": "destructive-action"
     }
   ],
   "surfaces": [
     {
       "allowedFonts": [
-        "sans-serif"
+        "Inter",
+        "sans-serif",
+        "var(--font-inter)"
       ],
       "displayName": "Reference Target Web",
       "icons": {
@@ -43,14 +70,75 @@
       },
       "id": "reference-target-web",
       "layout": {
-        "maxContentWidth": 1120
+        "chromePolicy": {
+          "allowInsetShadow": false,
+          "allowOuterShadow": false,
+          "maxBorderRadiusPx": 0,
+          "policy": "off",
+          "targets": [
+            "layout-container",
+            "page-container",
+            "top-level-section"
+          ]
+        },
+        "maxContentWidth": 1160,
+        "requiredContainers": [
+          "page-container"
+        ]
+      },
+      "phase0": {
+        "authPosture": "public",
+        "requiresShell": true
       },
       "requiredSections": [
-        "extracted.placeholder"
+        "landing.hero",
+        "landing.capabilities",
+        "landing.contracts",
+        "landing.tokens",
+        "landing.observability",
+        "landing.actions"
       ],
       "type": "web"
     }
   ],
+  "tokens": {
+    "layout": {
+      "allowedTokens": [
+        "var(--contract-max-width)"
+      ],
+      "policy": "warn",
+      "tokenMetadata": [
+        {
+          "aliases": [],
+          "attributes": [
+            "max-width"
+          ],
+          "normalizedValue": "1160px",
+          "token": "var(--contract-max-width)"
+        }
+      ]
+    },
+    "motion": {
+      "allowedTokens": [],
+      "policy": "warn"
+    },
+    "typography": {
+      "allowedTokens": [
+        "var(--font-inter)"
+      ],
+      "policy": "warn",
+      "tokenMetadata": [
+        {
+          "aliases": [],
+          "attributes": [
+            "font-family"
+          ],
+          "normalizedValue": "var(--font-inter)",
+          "token": "var(--font-inter)"
+        }
+      ]
+    }
+  },
   "version": "0.1.0",
   "x_extracted": {
     "authAware": false,

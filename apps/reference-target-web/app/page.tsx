@@ -75,7 +75,11 @@ export default async function Page({
         </nav>
       ) : null}
 
-      <main className="main" data-contract={simulateMissingPageContainer ? undefined : "page-container"}>
+      <main
+        className="main"
+        data-contract={simulateMissingPageContainer ? undefined : "page-container"}
+        data-contract-container={simulateMissingPageContainer ? undefined : "page-container"}
+      >
         <section className="section" data-contract-section="landing.hero" id="hero" style={heroStyle}>
           <h1 className="heroTitle">Contract-aware customer surface</h1>
           <p className="heroText">

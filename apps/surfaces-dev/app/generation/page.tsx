@@ -1,69 +1,84 @@
 import { ContextLinkCard } from '../_components/DocsSurfaceShell';
 import QuickStartSurfacePage, { NextContextLinks } from '../_components/QuickStartSurfacePage';
-import { interfacectlGenerationReferenceCards } from '../../../_shared/interfacectl-doc-links.js';
 
-const generationSnippet = `# 1) Start the adapter service (reference-target contract)
-pnpm run adapter:serve-generation -- \\
-  --contract /Users/mike/SurfacesPlatform/surfaces-webapps/contracts/generated/reference-target-web.contract.json
+const generationSnippet = `# 1) Compile the contract into a generation bundle
+node scripts/interfacectl-tool.mjs run cli compile \\
+  --contract /Users/mike/SurfacesPlatform/surfaces-webapps/contracts/surfaces.web.contract.json \\
+  --out /Users/mike/SurfacesPlatform/surfaces-webapps/artifacts/generation-bundles/surfaces-web
 
-# 2) Submit generated descriptor output
-curl -sS -X POST http://127.0.0.1:7777/surfaces.validateGeneration \\
-  -H 'content-type: application/json' \\
-  -d '{
-    "requestId":"gen-001",
-    "tool":"figma-make",
-    "surfaceId":"reference-target-web",
-    "mode":"descriptor",
-    "descriptor":[{
-      "surfaceId":"reference-target-web",
-      "primitives":[],
-      "colors":[{"value":"var(--background)","source":"generated.css"}],
-      "icons":[{"value":"@heroicons/react/24/outline","source":"generated.tsx"}]
-    }]
-  }'`;
+# 2) Resolve one surface into an agent-ready payload
+node scripts/interfacectl-tool.mjs run cli prepare-generation \\
+  --bundle-root /Users/mike/SurfacesPlatform/surfaces-webapps/artifacts/generation-bundles/surfaces-web \\
+  --surface surfaces-web \\
+  --out /Users/mike/SurfacesPlatform/surfaces-webapps/artifacts/generation-inputs/surfaces-web.json
+
+# 3) Generate or edit UI, then validate against the same bundle
+node scripts/interfacectl-tool.mjs run cli validate-generation \\
+  --tool codex \\
+  --surface surfaces-web \\
+  --mode workspace \\
+  --workspace-root /Users/mike/SurfacesPlatform/surfaces-webapps \\
+  --bundle-root /Users/mike/SurfacesPlatform/surfaces-webapps/artifacts/generation-bundles/surfaces-web
+
+# Optional: freeze one proof-loop session with attempt tracking
+node scripts/interfacectl-tool.mjs run cli init-generation-session \\
+  --bundle-root /Users/mike/SurfacesPlatform/surfaces-webapps/artifacts/generation-bundles/surfaces-web \\
+  --surface surfaces-web \\
+  --workspace-root /Users/mike/SurfacesPlatform/surfaces-webapps \\
+  --tool codex \\
+  --session codex-surfaces-web
+node scripts/interfacectl-tool.mjs run cli record-generation-attempt \\
+  --session-dir /Users/mike/SurfacesPlatform/surfaces-webapps/artifacts/generation-sessions/surfaces-web/codex-surfaces-web \\
+  --assessment-file /Users/mike/SurfacesPlatform/surfaces-webapps/artifacts/generation-sessions/surfaces-web/codex-surfaces-web/assessment.json
+node scripts/interfacectl-tool.mjs run cli summarize-generation-session \\
+  --session-dir /Users/mike/SurfacesPlatform/surfaces-webapps/artifacts/generation-sessions/surfaces-web/codex-surfaces-web`;
 
 export default function GenerationQuickStartPage() {
   return (
     <QuickStartSurfacePage
       activeTab="generation"
       contextLabel="Generation Quick Start"
-      title="Run Contract Enforcement During AI UI Generation"
-      summary="Use this repo-level Generation time workflow when Lovable or Figma Make produces new UI and you want immediate policy visibility before CI/CD time promotion. It is built on interfacectl, not a replacement for the canonical tooling docs."
+      title="Prepare Local Agent Input Before AI UI Generation"
+      summary="Use this flow when a local workspace agent needs one contract-aware payload before generation and a matching validation loop after code is written."
       steps={[
         {
-          title: 'Start adapter service.',
-          detail: 'Run the adapter once and keep it running while generating UI.'
+          title: 'Compile the bundle.',
+          detail: 'Generate a deterministic bundle for the target surface under artifacts/generation-bundles.'
         },
         {
-          title: 'Build descriptor payload from generated output.',
-          detail: 'Include surfaceId, emitted primitives, generated color values, and icon import sources.'
+          title: 'Prepare one surface payload.',
+          detail: 'Resolve the bundle into one agent-ready JSON document under artifacts/generation-inputs.'
         },
         {
-          title: 'Send descriptor to the adapter endpoint.',
-          detail: 'Use POST /surfaces.validateGeneration with tool, mode=descriptor, and descriptor array.'
+          title: 'Feed the prepared payload into the agent.',
+          detail: 'Use the prepared JSON for bundle-aware generation instead of loading the raw contract directly.'
         },
         {
-          title: 'Apply phased descriptor parity.',
-          detail: 'Descriptor mode enforces shell + color + icon policy for rollout-enabled surfaces (`contracts/generation-descriptor-parity.json`).'
+          title: 'Generate in the repo.',
+          detail: 'Let the agent edit code inside the workspace while staying inside the surface-owned boundary.'
         },
         {
-          title: 'Read status and findings.',
-          detail: 'pass continues, warn continues with visibility, block stops and requires regeneration/fix.'
+          title: 'Validate against the same bundle.',
+          detail: 'Run workspace mode validation after generation and treat block as a stop condition.'
         },
         {
-          title: 'Repeat until status is pass or acceptable warn.',
-          detail: 'Treat block as a hard stop for publish/export decisions.'
+          title: 'Repeat until pass or accepted warn.',
+          detail: 'Feed structured findings back into the next generation attempt.'
+        },
+        {
+          title: 'Use tracked sessions when you need iteration evidence.',
+          detail: 'init-generation-session, record-generation-attempt, and summarize-generation-session freeze inputs, record each validate result, and aggregate recurring issues.'
         }
       ]}
       snippetTitle="Copy/Paste Start"
       snippet={generationSnippet}
-      referenceCards={interfacectlGenerationReferenceCards}
       notes={[
-        'Descriptor mode checks generation boundaries only (no full workspace validation).',
-        'Descriptor parity is phased by surface; initial enforcement starts with reference-target-web.',
-        'For non-enforced surfaces, keep CI fallback as the authoritative promotion gate.',
-        'Use CI fallback later if your generator cannot hard-block inside its own UI.',
-        'Use the contract for your target surface: contracts/generated/reference-target-web.contract.json for reference-target demos, contracts/surfaces.web.contract.json for canonical surfaces.'
+        'prepare-generation is the local-agent handoff and keeps bundle semantics centralized in interfacectl.',
+        'Generation session commands are canonical interfacectl workflow, not repo-local wrappers.',
+        'Workspace mode validation remains the authoritative gate after code is written.',
+        'Hosted builders still stay on the descriptor + HTTP adapter path.',
+        'The prepared payload is tool-neutral and can be wrapped in Codex, Cursor, or Claude Code workflows.',
+        'Keep the compiled bundle and prepared JSON in artifacts/ so the same inputs can be reused across iterations.'
       ]}
       actions={
         <div className="space-y-3">

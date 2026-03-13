@@ -7,6 +7,7 @@
   --muted: #475569;
   --border: #dbe4f0;
   --accent: #0f3ea6;
+  --contract-max-width: 1160px;
   --max-content: 1160px;
 }
 
@@ -41,7 +42,7 @@ body {
 }
 
 .headerInner {
-  max-width: var(--max-content);
+  max-width: var(--contract-max-width);
   margin: 0 auto;
   padding: 0.8rem 1.25rem;
   display: flex;
@@ -65,7 +66,7 @@ body {
 }
 
 .main {
-  max-width: var(--max-content);
+  max-width: var(--contract-max-width);
   margin: 0 auto;
   padding: 2.5rem 1.25rem 4rem;
   display: grid;
@@ -116,7 +117,7 @@ body {
 }
 
 .secondaryNav {
-  max-width: var(--max-content);
+  max-width: var(--contract-max-width);
   margin: 0 auto;
   padding: 0.5rem 1.25rem;
   border-bottom: 1px dashed var(--border);
@@ -133,7 +134,7 @@ body {
 }
 
 .footer {
-  max-width: var(--max-content);
+  max-width: var(--contract-max-width);
   margin: 0 auto;
   padding: 1.2rem 1.25rem 2rem;
   color: var(--muted);

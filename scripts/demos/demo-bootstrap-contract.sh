@@ -13,7 +13,6 @@ CLI_PATH="${CLI_PATH:-}"
 SURFACE_ID="${SURFACE_ID:-reference-target-web}"
 APP_ROOT="${APP_ROOT:-apps/reference-target-web}"
 CONTRACT_PATH="${CONTRACT_PATH:-$REPO_ROOT/contracts/generated/$SURFACE_ID.contract.json}"
-RUN_EMITTER_PATH="${RUN_EMITTER_PATH:-$REPO_ROOT/scripts/lib/contract-runs.mjs}"
 
 SKIP_BUILD="${SKIP_BUILD:-0}"
 PROMOTE_BOOTSTRAP="${PROMOTE_BOOTSTRAP:-0}"
@@ -32,9 +31,9 @@ emit_run() {
   local status="$1"
   local finding_codes="${2:-}"
   local extraction_path="$3"
-  "$NODE_BIN" "$RUN_EMITTER_PATH" emit \
-    --root "$REPO_ROOT" \
-    --surface-id "$SURFACE_ID" \
+  "$NODE_BIN" "$CLI_PATH" emit-run-artifact \
+    --workspace-root "$REPO_ROOT" \
+    --surface "$SURFACE_ID" \
     --source bootstrap \
     --status "$status" \
     --finding-codes "$finding_codes" \
@@ -47,9 +46,6 @@ if [ -z "$CLI_PATH" ]; then
   CLI_PATH="$("$NODE_BIN" "$REPO_ROOT/scripts/interfacectl-tool.mjs" path cli)"
 fi
 [ -f "$CLI_PATH" ] || fail "interfacectl CLI not found: $CLI_PATH"
-[ -f "$RUN_EMITTER_PATH" ] || fail "Run emitter not found: $RUN_EMITTER_PATH"
-
-"$NODE_BIN" "$RUN_EMITTER_PATH" init --root "$REPO_ROOT" >/dev/null
 
 tmp_dir="$(mktemp -d -t surfaces-demo-bootstrap-XXXXXX)"
 trap 'rm -rf "$tmp_dir"' EXIT

@@ -8,7 +8,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 CURL_BIN="${CURL_BIN:-curl}"
 NODE_BIN="${NODE_BIN:-node}"
-RUN_EMITTER_PATH="${RUN_EMITTER_PATH:-$REPO_ROOT/scripts/lib/contract-runs.mjs}"
+CLI_PATH="${CLI_PATH:-}"
 
 REFERENCE_TARGET_URL="${REFERENCE_TARGET_URL:-http://localhost:3004}"
 SURFACEOPS_URL="${SURFACEOPS_URL:-http://localhost:3001}"
@@ -23,9 +23,9 @@ fail() { echo "[FAIL] $*" >&2; exit 1; }
 emit_run() {
   local status="$1"
   local finding_codes="${2:-}"
-  "$NODE_BIN" "$RUN_EMITTER_PATH" emit \
-    --root "$REPO_ROOT" \
-    --surface-id "$SURFACE_ID" \
+  "$NODE_BIN" "$CLI_PATH" emit-run-artifact \
+    --workspace-root "$REPO_ROOT" \
+    --surface "$SURFACE_ID" \
     --source runtime \
     --status "$status" \
     --finding-codes "$finding_codes" >/dev/null
@@ -33,8 +33,10 @@ emit_run() {
 
 command -v "$CURL_BIN" >/dev/null 2>&1 || fail "curl binary not found: $CURL_BIN"
 command -v "$NODE_BIN" >/dev/null 2>&1 || fail "Node binary not found: $NODE_BIN"
-[ -f "$RUN_EMITTER_PATH" ] || fail "Run emitter not found: $RUN_EMITTER_PATH"
-"$NODE_BIN" "$RUN_EMITTER_PATH" init --root "$REPO_ROOT" >/dev/null
+if [ -z "$CLI_PATH" ]; then
+  CLI_PATH="$("$NODE_BIN" "$REPO_ROOT/scripts/interfacectl-tool.mjs" path cli)"
+fi
+[ -f "$CLI_PATH" ] || fail "interfacectl CLI not found: $CLI_PATH"
 
 detect_raw_color_policy() {
   if [ ! -f "$EDGE_MANIFEST_PATH" ]; then

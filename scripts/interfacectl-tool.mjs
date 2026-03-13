@@ -61,10 +61,7 @@ function printInspection(kind) {
 
 function runResolvedTool(kind, args) {
   const tool = resolveTool(kind);
-  const normalizedArgs = [...args];
-  if (normalizedArgs[0] === "--") {
-    normalizedArgs.shift();
-  }
+  const normalizedArgs = args.filter((arg) => arg !== "--");
 
   const result = spawnSync(process.execPath, [tool.path, ...normalizedArgs], {
     cwd: process.cwd(),

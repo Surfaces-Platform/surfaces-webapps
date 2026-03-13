@@ -93,6 +93,25 @@ function loadProjectMap(mapPathOption) {
     fail(`Invalid project map shape: "allowedExternalProjects" must be an array in ${mapPath}`);
   }
 
+  if (parsed.disallowedScopes) {
+    if (!Array.isArray(parsed.disallowedScopes)) {
+      fail(`Invalid project map shape: "disallowedScopes" must be an array in ${mapPath}`);
+    }
+
+    for (const [index, entry] of parsed.disallowedScopes.entries()) {
+      if (!entry || typeof entry !== "object" || !entry.scopeSlug) {
+        fail(
+          `Invalid project map shape: disallowedScopes[${index}] must include "scopeSlug" in ${mapPath}`
+        );
+      }
+      if (entry.blockedProjectNames && !Array.isArray(entry.blockedProjectNames)) {
+        fail(
+          `Invalid project map shape: disallowedScopes[${index}].blockedProjectNames must be an array in ${mapPath}`
+        );
+      }
+    }
+  }
+
   return { mapPath, map: parsed };
 }
 
@@ -309,24 +328,28 @@ function parseJsonFromVercelOutput(output) {
   return JSON.parse(jsonText);
 }
 
-function commandAudit(map) {
+function listRemoteProjects(scopeSlug) {
   const result = runVercel(
-    ["project", "ls", "--scope", map.scopeSlug, "--json"],
+    ["project", "ls", "--scope", scopeSlug, "--json"],
     { capture: true }
   );
   const rawOutput = `${result.stdout ?? ""}${result.stderr ?? ""}`;
   if (result.status !== 0) {
-    fail(`Failed to list projects in scope ${map.scopeSlug}.\n${rawOutput.trim()}`);
+    fail(`Failed to list projects in scope ${scopeSlug}.\n${rawOutput.trim()}`);
   }
 
   let payload;
   try {
     payload = parseJsonFromVercelOutput(rawOutput);
   } catch (error) {
-    fail(`Failed to parse Vercel project list JSON: ${error.message}`);
+    fail(`Failed to parse Vercel project list JSON for scope ${scopeSlug}: ${error.message}`);
   }
 
-  const remoteProjects = Array.isArray(payload.projects) ? payload.projects : [];
+  return Array.isArray(payload.projects) ? payload.projects : [];
+}
+
+function commandAudit(map) {
+  const remoteProjects = listRemoteProjects(map.scopeSlug);
   const remoteByName = new Map(remoteProjects.map((project) => [project.name, project]));
 
   const managedEntries = Object.entries(map.apps).map(([appName, entry]) => ({
@@ -369,6 +392,11 @@ function commandAudit(map) {
     `Allowed external projects (${allowedExternal.size}): ${[...allowedExternal].sort((a, b) => a.localeCompare(b)).join(", ") || "<none>"}\n`
   );
   process.stdout.write(`Remote projects (${remoteProjects.length}) loaded.\n`);
+  if ((map.disallowedScopes ?? []).length > 0) {
+    process.stdout.write(
+      `Disallowed scopes (${map.disallowedScopes.length}): ${map.disallowedScopes.map((entry) => entry.scopeSlug).sort((a, b) => a.localeCompare(b)).join(", ")}\n`
+    );
+  }
 
   let failures = 0;
   if (missingManaged.length > 0) {
@@ -396,13 +424,38 @@ function commandAudit(map) {
     }
   }
 
+  for (const scopeEntry of map.disallowedScopes ?? []) {
+    const disallowedProjects = listRemoteProjects(scopeEntry.scopeSlug);
+    const blockedNames = new Set([
+      ...managedNames,
+      ...((scopeEntry.blockedProjectNames ?? []).map(String)),
+    ]);
+    const matches = disallowedProjects
+      .map((project) => project.name)
+      .filter((projectName) => blockedNames.has(projectName))
+      .sort((a, b) => a.localeCompare(b));
+
+    process.stdout.write(
+      `Disallowed scope ${scopeEntry.scopeSlug} remote projects (${disallowedProjects.length}) loaded.\n`
+    );
+
+    if (matches.length > 0) {
+      failures += matches.length;
+      for (const projectName of matches) {
+        process.stderr.write(
+          `ERROR disallowed project in scope ${scopeEntry.scopeSlug}: ${projectName}\n`
+        );
+      }
+    }
+  }
+
   if (failures > 0) {
     fail(
-      `\nProject audit found ${failures} issue(s). Update scripts/vercel/project-map.json (apps or allowedExternalProjects) or remove unknown projects.`
+      `\nProject audit found ${failures} issue(s). Update scripts/vercel/project-map.json (apps, allowedExternalProjects, or disallowedScopes) or remove the conflicting projects.`
     );
   }
 
-  process.stdout.write("Project audit passed: no unknown or missing managed projects.\n");
+  process.stdout.write("Project audit passed: no unknown, missing, or disallowed projects.\n");
 }
 
 function ensureCanonicalLink(map, appName) {
