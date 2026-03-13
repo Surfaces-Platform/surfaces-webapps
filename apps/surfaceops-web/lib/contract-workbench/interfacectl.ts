@@ -20,6 +20,28 @@ function resolveResolverScript(): string {
   return path.join(resolveRepoRoot(), "scripts", "interfacectl-tool.mjs");
 }
 
+function defaultInterfacectlRoot(): string | null {
+  const repoRoot = resolveRepoRoot();
+  const repoParent = path.dirname(repoRoot);
+  const workspaceParent = path.dirname(repoParent);
+  const candidates = [
+    path.join(repoParent, "interfacectl"),
+    path.join(repoParent, "interfacectl-main"),
+    path.join(workspaceParent, "interfacectl"),
+    path.join(workspaceParent, ".worktrees", "interfacectl-main"),
+  ];
+
+  for (const candidate of candidates) {
+    if (
+      fs.existsSync(path.join(candidate, "packages", "interfacectl-cli", "dist", "index.js")) &&
+      fs.existsSync(path.join(candidate, "packages", "interfacectl-validator", "package.json"))
+    ) {
+      return candidate;
+    }
+  }
+  return null;
+}
+
 export interface InterfacectlResult {
   stdout: string;
   stderr: string;
@@ -32,8 +54,14 @@ export async function runInterfacectlCli(
     env?: NodeJS.ProcessEnv;
   },
 ): Promise<InterfacectlResult> {
+  const detectedRoot = process.env.SURFACES_INTERFACECTL_ROOT ? null : defaultInterfacectlRoot();
   const env = {
     ...process.env,
+    ...(process.env.SURFACES_INTERFACECTL_ROOT
+      ? {}
+      : detectedRoot
+        ? { SURFACES_INTERFACECTL_ROOT: detectedRoot }
+        : {}),
     ...options.env,
   };
   const resolver = resolveResolverScript();
