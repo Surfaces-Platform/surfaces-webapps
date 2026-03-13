@@ -26,18 +26,21 @@ Common commands:
 # Migrations (prefer direct/unpooled URL)
 DATABASE_URL_UNPOOLED=postgres://... pnpm migrate
 
-# Backfill governance state into DB
-DATABASE_URL_UNPOOLED=postgres://... pnpm backfill:governance:db -- --workspace-id ws-local-default
-
-# Verify DB/FS parity for governance artifacts
-DATABASE_URL_UNPOOLED=postgres://... pnpm verify:governance:db-parity -- --workspace-id ws-local-default
-
 # Sync contract-runs artifacts into DB
 DATABASE_URL_UNPOOLED=postgres://... pnpm sync:run-artifacts:db -- --workspace-id ws-local-default
 ```
 
 Provider-side rollout steps (Vercel Marketplace + Neon preview branching):
 `docs/neon-vercel-rollout.md`
+
+### Generation workbench artifacts
+
+The protected `/contracts/governance` route now reads canonical generation benchmark artifacts from the filesystem.
+
+```bash
+# Optional override when benchmark artifacts live outside the repo root
+SURFACEOPS_BENCHMARKS_DIR=/absolute/path/to/artifacts/generation-benchmarks pnpm dev
+```
 
 ### Run the dev server
 
