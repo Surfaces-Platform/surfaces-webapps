@@ -12,14 +12,13 @@ import { findSiblingInterfacectlRepoRoot } from "../lib/interfacectl-tooling.mjs
 const repoRoot = path.resolve(
   path.join(path.dirname(fileURLToPath(import.meta.url)), "../.."),
 );
-const workspaceRoot = path.resolve(repoRoot, "..", "..");
 const checkerModulePath = path.join(repoRoot, "scripts", "check-elevated-cards.mjs");
 const validateContractScriptPath = path.join(repoRoot, "scripts", "validate-contract.sh");
-const sharedInterfacectlRoot = [
-  findSiblingInterfacectlRepoRoot({ cwd: repoRoot }),
-  path.join(workspaceRoot, ".worktrees", "interfacectl-main"),
-  path.join(workspaceRoot, "interfacectl"),
-].find((candidate) => typeof candidate === "string" && fs.existsSync(candidate));
+const sharedInterfacectlRoot = findSiblingInterfacectlRepoRoot({ cwd: repoRoot });
+assert.ok(
+  sharedInterfacectlRoot,
+  `Unable to resolve a standalone interfacectl checkout from ${repoRoot}.`,
+);
 const sharedSchemaPath = path.join(
   sharedInterfacectlRoot,
   "packages",

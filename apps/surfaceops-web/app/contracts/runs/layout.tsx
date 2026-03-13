@@ -2,12 +2,12 @@ import { getSession } from "@surfaces/platform-auth";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { colors } from "@surfaces/ui/tokens/colors";
-import { isSurfaceOpsAuthBypassEnabled } from "@/lib/auth-bypass";
+import { isSurfaceOpsAuthBypassEnabled, isSurfaceOpsLocalWorkbenchEnabled } from "@/lib/auth-bypass";
 
 export default async function RunsLayout({
   children,
 }: { children: React.ReactNode }) {
-  const bypassAuth = isSurfaceOpsAuthBypassEnabled();
+  const bypassAuth = isSurfaceOpsAuthBypassEnabled() || isSurfaceOpsLocalWorkbenchEnabled();
   if (!bypassAuth) {
     const headersList = await headers();
     const req = new Request("http://localhost", {

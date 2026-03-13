@@ -43,6 +43,7 @@ function defaultInterfacectlRoot(): string | null {
 }
 
 export interface InterfacectlResult {
+  exitCode: number;
   stdout: string;
   stderr: string;
 }
@@ -52,6 +53,7 @@ export async function runInterfacectlCli(
   options: {
     cwd: string;
     env?: NodeJS.ProcessEnv;
+    acceptExitCodes?: number[];
   },
 ): Promise<InterfacectlResult> {
   const detectedRoot = process.env.SURFACES_INTERFACECTL_ROOT ? null : defaultInterfacectlRoot();
@@ -81,11 +83,13 @@ export async function runInterfacectlCli(
     });
     child.on("error", reject);
     child.on("close", (code) => {
-      if (code !== 0) {
+      const exitCode = typeof code === "number" ? code : 1;
+      const acceptedExitCodes = new Set([0, ...(options.acceptExitCodes ?? [])]);
+      if (!acceptedExitCodes.has(exitCode)) {
         reject(
           new Error(
             [
-              `interfacectl exited with code ${code}.`,
+              `interfacectl exited with code ${exitCode}.`,
               stderr.trim(),
               stdout.trim(),
             ].filter(Boolean).join("\n"),
@@ -93,7 +97,11 @@ export async function runInterfacectlCli(
         );
         return;
       }
-      resolve({ stdout, stderr });
+      resolve({ exitCode, stdout, stderr });
     });
   });
+}
+
+export function resolveWorkspaceRoot(start = process.cwd()): string {
+  return resolveRepoRoot(start);
 }

@@ -7,3 +7,10 @@ export function isSurfaceOpsAuthBypassEnabled(): boolean {
   }
   return process.env.VERCEL_ENV === "preview";
 }
+
+export function isSurfaceOpsLocalWorkbenchEnabled(): boolean {
+  if (process.env.SURFACEOPS_LOCAL_WORKBENCH === "1") {
+    return true;
+  }
+  return process.env.NODE_ENV !== "production";
+}

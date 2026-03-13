@@ -109,7 +109,7 @@ export default function ContractsPage() {
           }}
         >
           <div style={{ fontSize: "13px", color: colors.neutral[600], marginBottom: "8px" }}>
-            New in dogfood
+            Local reference target
           </div>
           <Link
             href="/contracts/governance"
@@ -123,7 +123,7 @@ export default function ContractsPage() {
               fontWeight: 600,
             }}
           >
-            Open Contract Workbench
+            Open Local Workbench
           </Link>
         </div>
 
