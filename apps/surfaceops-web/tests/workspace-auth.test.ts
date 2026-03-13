@@ -20,6 +20,7 @@ describe("workspace auth bypass", () => {
     vi.resetModules();
     vi.clearAllMocks();
     delete process.env.SURFACEOPS_TEST_WORKSPACE_ID;
+    delete process.env.VERCEL_ENV;
     process.env.SURFACEOPS_TEST_BYPASS_AUTH = "1";
     (process.env as Record<string, string | undefined>).NODE_ENV = "test";
   });
@@ -42,5 +43,16 @@ describe("workspace auth bypass", () => {
       workspaceId: "ws-dogfood",
     });
     expect(mocked.getSession).not.toHaveBeenCalled();
+  });
+
+  it("allows the bypass in preview deployments when the explicit flag is set", async () => {
+    (process.env as Record<string, string | undefined>).NODE_ENV = "production";
+    process.env.VERCEL_ENV = "preview";
+    const module = await import("@/lib/workspace-auth");
+
+    expect(await module.requireWorkspaceSession(new Request("https://surfaceopsai-git-main-surfaces-platform.vercel.app/contracts"))).toMatchObject({
+      workspaceId: "ws-local-default",
+    });
+    expect(mocked.requireSession).not.toHaveBeenCalled();
   });
 });

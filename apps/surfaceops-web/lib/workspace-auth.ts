@@ -1,5 +1,6 @@
 import { getSession, requireSession } from "@surfaces/platform-auth";
 import { headers } from "next/headers";
+import { isSurfaceOpsAuthBypassEnabled } from "./auth-bypass";
 import { getDefaultWorkspaceId, normalizeWorkspaceId } from "./workspace";
 
 export interface WorkspaceSession {
@@ -10,10 +11,7 @@ export interface WorkspaceSession {
 }
 
 function shouldBypassWorkspaceAuth(): boolean {
-  return (
-    process.env.SURFACEOPS_TEST_BYPASS_AUTH === "1" &&
-    process.env.NODE_ENV !== "production"
-  );
+  return isSurfaceOpsAuthBypassEnabled();
 }
 
 function buildBypassWorkspaceSession(): WorkspaceSession {
