@@ -26,6 +26,12 @@ function createSandbox() {
     scopeSlug: "surfaces-platform",
     orgId: "team_test123",
     allowedExternalProjects: ["design-judgment-kit"],
+    disallowedScopes: [
+      {
+        scopeSlug: "mikelong-design",
+        blockedProjectNames: ["surfaces-webapps", "surfaces-webapps-main"],
+      },
+    ],
     apps: {
       "surfaceops-web": {
         path: "apps/surfaceops-web",
@@ -37,31 +43,44 @@ function createSandbox() {
         projectName: "interfacectl.com",
         projectId: "prj_interfacectl",
       },
+      "reference-target-web": {
+        path: "apps/reference-target-web",
+        projectName: "reference-target-web",
+        projectId: "prj_reference_target",
+        requiredLocalLink: false,
+      },
     },
   };
-  const remoteProjects = [
-    { name: "surfaceops.ai", id: "prj_surfaceops" },
-    { name: "interfacectl.com", id: "prj_interfacectl" },
-    { name: "design-judgment-kit", id: "prj_design_kit" },
-  ];
+  const remoteProjectsByScope = {
+    "surfaces-platform": [
+      { name: "surfaceops.ai", id: "prj_surfaceops" },
+      { name: "interfacectl.com", id: "prj_interfacectl" },
+      { name: "reference-target-web", id: "prj_reference_target" },
+      { name: "design-judgment-kit", id: "prj_design_kit" },
+    ],
+    "mikelong-design": [],
+  };
 
   fs.writeFileSync(path.join(scriptsDir, "project-map.json"), JSON.stringify(projectMap, null, 2));
 
   for (const [appName, appConfig] of Object.entries(projectMap.apps)) {
     const appDir = path.join(dir, appConfig.path);
-    fs.mkdirSync(path.join(appDir, ".vercel"), { recursive: true });
-    fs.writeFileSync(
-      path.join(appDir, ".vercel", "project.json"),
-      JSON.stringify(
-        {
-          projectId: appConfig.projectId,
-          orgId: projectMap.orgId,
-          projectName: appConfig.projectName,
-        },
-        null,
-        2
-      )
-    );
+    fs.mkdirSync(appDir, { recursive: true });
+    if (appConfig.requiredLocalLink !== false) {
+      fs.mkdirSync(path.join(appDir, ".vercel"), { recursive: true });
+      fs.writeFileSync(
+        path.join(appDir, ".vercel", "project.json"),
+        JSON.stringify(
+          {
+            projectId: appConfig.projectId,
+            orgId: projectMap.orgId,
+            projectName: appConfig.projectName,
+          },
+          null,
+          2
+        )
+      );
+    }
     assert.ok(fs.existsSync(path.join(dir, "apps", appName)));
   }
 
@@ -79,7 +98,7 @@ const path = require("path");
 const args = process.argv.slice(2);
 const map = JSON.parse(process.env.MOCK_VERCEL_MAP_JSON || "{}");
 const appEntries = Object.values(map.apps || {});
-const remoteProjects = JSON.parse(process.env.MOCK_VERCEL_REMOTE_PROJECTS || "[]");
+const remoteProjectsByScope = JSON.parse(process.env.MOCK_VERCEL_REMOTE_PROJECTS_BY_SCOPE || "{}");
 const logPath = process.env.MOCK_VERCEL_LOG;
 
 if (logPath) {
@@ -91,10 +110,15 @@ function findArg(flag) {
   return idx >= 0 ? args[idx + 1] : undefined;
 }
 
+function projectsForScope(scope) {
+  return remoteProjectsByScope[scope] || [];
+}
+
 if (args[0] === "project" && args[1] === "inspect") {
   const projectName = args[2];
+  const scope = findArg("--scope") || map.scopeSlug;
   const match =
-    remoteProjects.find((project) => project.name === projectName) ??
+    projectsForScope(scope).find((project) => project.name === projectName) ??
     appEntries.find((entry) => entry.projectName === projectName);
   if (!match) {
     console.error("Project not found");
@@ -105,12 +129,13 @@ if (args[0] === "project" && args[1] === "inspect") {
 }
 
 if (args[0] === "project" && args[1] === "ls" && args.includes("--json")) {
+  const scope = findArg("--scope") || map.scopeSlug;
   console.log("Vercel CLI 50.1.6");
-  console.log("Fetching projects in surfaces-platform");
+  console.log("Fetching projects in " + scope);
   console.log(
     JSON.stringify(
       {
-        projects: remoteProjects.map((project) => ({
+        projects: projectsForScope(scope).map((project) => ({
           name: project.name,
           id: project.id,
         })),
@@ -174,7 +199,7 @@ process.exit(0);
     dir,
     safeCliPath,
     projectMap,
-    remoteProjects,
+    remoteProjectsByScope,
     binDir,
     logPath,
   };
@@ -188,7 +213,7 @@ function runSafeCli(sandbox, args) {
       ...process.env,
       PATH: `${sandbox.binDir}:${process.env.PATH}`,
       MOCK_VERCEL_MAP_JSON: JSON.stringify(sandbox.projectMap),
-      MOCK_VERCEL_REMOTE_PROJECTS: JSON.stringify(sandbox.remoteProjects),
+      MOCK_VERCEL_REMOTE_PROJECTS_BY_SCOPE: JSON.stringify(sandbox.remoteProjectsByScope),
       MOCK_VERCEL_LOG: sandbox.logPath,
     },
   });
@@ -201,7 +226,8 @@ test("check passes when local app links match canonical map", () => {
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.match(result.stdout, /OK surfaceops-web -> surfaceops.ai/);
   assert.match(result.stdout, /OK interfacectl-web -> interfacectl.com/);
-  assert.match(result.stdout, /Checked 2 app link\(s\)\./);
+  assert.match(result.stdout, /SKIP reference-target-web -> local link optional and currently missing/);
+  assert.match(result.stdout, /Checked 3 app link\(s\)\./);
 });
 
 test("check skips optional app when local link is missing", () => {
@@ -219,6 +245,7 @@ test("check skips optional app when local link is missing", () => {
 
   const result = runSafeCli(sandbox, ["check"]);
   assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.match(result.stdout, /SKIP reference-target-web -> local link optional and currently missing/);
   assert.match(result.stdout, /SKIP surfaces-dev -> local link optional and currently missing/);
 });
 
@@ -339,13 +366,15 @@ test("audit passes when only managed and allowlisted external projects exist", (
   const output = `${result.stdout}\n${result.stderr}`;
 
   assert.equal(result.status, 0, output);
+  assert.match(output, /Managed projects \(3\): interfacectl\.com, reference-target-web, surfaceops\.ai/);
   assert.match(output, /Allowed external projects \(1\): design-judgment-kit/);
-  assert.match(output, /Project audit passed: no unknown or missing managed projects/);
+  assert.match(output, /Disallowed scopes \(1\): mikelong-design/);
+  assert.match(output, /Project audit passed: no unknown, missing, or disallowed projects/);
 });
 
 test("audit fails on unknown team project", () => {
   const sandbox = createSandbox();
-  sandbox.remoteProjects.push({ name: "surfaceops-web", id: "prj_zombie" });
+  sandbox.remoteProjectsByScope["surfaces-platform"].push({ name: "surfaceops-web", id: "prj_zombie" });
   const result = runSafeCli(sandbox, ["audit"]);
   const output = `${result.stdout}\n${result.stderr}`;
 
@@ -356,7 +385,7 @@ test("audit fails on unknown team project", () => {
 
 test("audit fails on managed project id mismatch", () => {
   const sandbox = createSandbox();
-  sandbox.remoteProjects = sandbox.remoteProjects.map((project) =>
+  sandbox.remoteProjectsByScope["surfaces-platform"] = sandbox.remoteProjectsByScope["surfaces-platform"].map((project) =>
     project.name === "surfaceops.ai"
       ? { ...project, id: "prj_wrong_surfaceops" }
       : project
@@ -369,4 +398,32 @@ test("audit fails on managed project id mismatch", () => {
     output,
     /ERROR managed project ID mismatch: surfaceops.ai expected prj_surfaceops got prj_wrong_surfaceops/
   );
+});
+
+test("audit fails on stray repo-accidental project in disallowed scope", () => {
+  const sandbox = createSandbox();
+  sandbox.remoteProjectsByScope["mikelong-design"].push({
+    name: "surfaces-webapps-main",
+    id: "prj_stray_surfaces_webapps_main",
+  });
+
+  const result = runSafeCli(sandbox, ["audit"]);
+  const output = `${result.stdout}\n${result.stderr}`;
+
+  assert.notEqual(result.status, 0);
+  assert.match(output, /ERROR disallowed project in scope mikelong-design: surfaces-webapps-main/);
+});
+
+test("audit fails on managed canonical app name in disallowed scope", () => {
+  const sandbox = createSandbox();
+  sandbox.remoteProjectsByScope["mikelong-design"].push({
+    name: "reference-target-web",
+    id: "prj_shadow_reference_target",
+  });
+
+  const result = runSafeCli(sandbox, ["audit"]);
+  const output = `${result.stdout}\n${result.stderr}`;
+
+  assert.notEqual(result.status, 0);
+  assert.match(output, /ERROR disallowed project in scope mikelong-design: reference-target-web/);
 });

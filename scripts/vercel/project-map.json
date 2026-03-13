@@ -4,6 +4,15 @@
   "allowedExternalProjects": [
     "design-judgment-kit"
   ],
+  "disallowedScopes": [
+    {
+      "scopeSlug": "mikelong-design",
+      "blockedProjectNames": [
+        "surfaces-webapps",
+        "surfaces-webapps-main"
+      ]
+    }
+  ],
   "apps": {
     "surfaces-web": {
       "path": "apps/surfaces-web",
@@ -24,6 +33,12 @@
       "path": "apps/surfaces-dev",
       "projectName": "surfaces.dev",
       "projectId": "prj_Xm7DqhUwGVsvt2sTgZamZvC6vQLK",
+      "requiredLocalLink": false
+    },
+    "reference-target-web": {
+      "path": "apps/reference-target-web",
+      "projectName": "reference-target-web",
+      "projectId": "prj_ijvQltP6xTLMKYglKqX58tzHZk3B",
       "requiredLocalLink": false
     }
   }
