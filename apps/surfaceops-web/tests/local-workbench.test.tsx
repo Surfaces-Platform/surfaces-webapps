@@ -17,6 +17,15 @@ function buildRun(overrides: Partial<LocalWorkbenchRun> = {}): LocalWorkbenchRun
     createdAt: "2026-03-14T16:19:04.000Z",
     completedAt: "2026-03-14T16:19:27.000Z",
     latestRunLabel: "Run 20260314",
+    model: "openai/gpt-oss-120b",
+    currentPhase: null,
+    phaseHistory: [],
+    agentSummary: null,
+    noChanges: false,
+    toolCallCount: 2,
+    writeCount: 1,
+    lastToolName: "finish",
+    lastError: null,
     transcriptPath: null,
     touchedFiles: ["apps/reference-target-web/app/globals.css"],
     errorMessage: null,
@@ -128,6 +137,8 @@ describe("LocalWorkbench", () => {
     expect(html).toContain("Technical context");
     expect(html).toContain("Recent runs");
     expect(html).toContain("Open all runs");
+    expect(html).toContain("trace");
+    expect(html).toContain("Inspect trace");
     expect(html).toContain("Preview unavailable");
     expect(html).not.toContain("Current state");
     expect(html).not.toContain("History");
@@ -195,6 +206,52 @@ describe("LocalWorkbench", () => {
     expect(html).toContain("Add contract-compliant motion declarations.");
     expect(html).toContain("accepted suggestions remain unresolved");
     expect(html).not.toContain("Accepted guidance active");
+  });
+
+  it("renders trace inspection around the selected run without replacing the controls shell", () => {
+    const tracedRun = buildRun({
+      currentPhase: "current-preview",
+      phaseHistory: [
+        {
+          phase: "compile",
+          status: "succeeded",
+          startedAt: "2026-03-14T16:19:04.000Z",
+          completedAt: "2026-03-14T16:19:06.000Z",
+          message: "Compiled successfully.",
+        },
+        {
+          phase: "current-preview",
+          status: "failed",
+          startedAt: "2026-03-14T16:19:20.000Z",
+          completedAt: "2026-03-14T16:19:27.000Z",
+          message: "Preview server exited before screenshot capture.",
+        },
+      ],
+      agentSummary: "Patched the hero shell and retried preview capture.",
+      writeCount: 2,
+      lastToolName: "screenshot_preview",
+      lastError: {
+        phase: "current-preview",
+        message: "Preview server exited before screenshot capture.",
+      },
+    });
+
+    const html = renderToStaticMarkup(React.createElement(LocalWorkbench, {
+      data: buildData({
+        latestRun: tracedRun,
+        runs: [tracedRun],
+      }),
+      initialTab: "trace",
+    }));
+
+    expect(html).toContain("Trace summary");
+    expect(html).toContain("Phase timeline");
+    expect(html).toContain("Preview debug");
+    expect(html).toContain("Last tool activity");
+    expect(html).toContain("Run history");
+    expect(html).toContain("Preview server exited before screenshot capture.");
+    expect(html).toContain("Tool calls: 2");
+    expect(html).toContain("Writes: 2");
   });
 
   it("keeps chat primary and hides implementation debug behind a collapsed section", () => {

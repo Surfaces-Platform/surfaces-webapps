@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --port 3001 --webpack",
+    "dev:local-workbench": "node scripts/dev-local-workbench.mjs",
     "prebuild": "pnpm --filter @surfaces/platform-auth build",
     "build": "next build",
     "start": "next start",

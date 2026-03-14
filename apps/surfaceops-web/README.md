@@ -14,6 +14,13 @@
 The local `/contracts/governance` route uses the reference target fixture and does not require Auth0, Postgres, GitHub tokens, or remote preview setup. Local development needs:
 
 ```bash
+# The dedicated startup command injects these defaults automatically:
+#   SURFACEOPS_LOCAL_WORKBENCH=1
+#   SURFACEOPS_LOCAL_LLM_BASE_URL=http://127.0.0.1:1234/v1
+#   SURFACEOPS_LOCAL_LLM_MODEL=openai/gpt-oss-120b
+#
+# Optional overrides still work if you export them before startup:
+
 # Optional explicit local-workbench flag. In local development it is enabled automatically,
 # but setting this keeps intent explicit.
 SURFACEOPS_LOCAL_WORKBENCH=1
@@ -46,6 +53,9 @@ The local rerun flow shells through canonical `interfacectl` commands and a loca
    The workbench uses the OpenAI Responses API shape with function tools and defaults to `openai/gpt-oss-120b`.
    Leave LM Studio `Limit Response Length` disabled. If a preset still shows a numeric cap such as `1000`, keep it unchecked.
 2. Start local `surfaceops-web`.
+   ```bash
+   pnpm dev:surfaceops:local-workbench
+   ```
 3. Open `/contracts/governance`.
 4. Click `Run local LLM`.
 5. Review:
@@ -59,8 +69,10 @@ Artifacts are written under `SURFACEOPS_LOCAL_RUNS_DIR` (or the default `.scratc
 
 ### Run the dev server
 
+From the repo root:
+
 ```bash
-pnpm dev
+pnpm dev:surfaceops:local-workbench
 ```
 
 Open [http://localhost:3001/contracts/governance](http://localhost:3001/contracts/governance).

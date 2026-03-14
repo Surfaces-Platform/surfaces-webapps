@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { colors } from "@surfaces/ui/tokens/colors";
 import type {
   LocalSuggestionStatus,
   LocalWorkbenchData,
   LocalWorkbenchRun,
+  LocalWorkbenchRunDetail,
+  LocalWorkbenchRunPhase,
   LocalWorkbenchTab,
 } from "@/lib/local-workbench/types";
 
@@ -260,6 +262,39 @@ function nextActionCopy({
   return "If the latest result is close, refine in chat. If you need another implementation pass, regenerate.";
 }
 
+function phaseLabel(phase: LocalWorkbenchRunPhase) {
+  switch (phase) {
+    case "compile":
+      return "Compile";
+    case "prepare":
+      return "Prepare";
+    case "baseline-validation":
+      return "Baseline validation";
+    case "baseline-preview":
+      return "Baseline preview";
+    case "agent":
+      return "Agent loop";
+    case "current-validation":
+      return "Current validation";
+    case "current-preview":
+      return "Current preview";
+    case "finalize":
+      return "Finalize";
+    default:
+      return phase;
+  }
+}
+
+function formatDuration(durationMs: number | null) {
+  if (durationMs === null) {
+    return "unknown";
+  }
+  if (durationMs < 1_000) {
+    return `${durationMs}ms`;
+  }
+  return `${(durationMs / 1000).toFixed(durationMs >= 10_000 ? 0 : 1)}s`;
+}
+
 export function LocalWorkbench({
   data,
   initialTab = "controls",
@@ -274,6 +309,10 @@ export function LocalWorkbench({
   const [tab, setTab] = useState<LocalWorkbenchTab>(initialTab);
   const [chatDraft, setChatDraft] = useState("");
   const [pendingAction, setPendingAction] = useState<"rerun" | "chat" | "suggestion" | null>(null);
+  const [selectedRunId, setSelectedRunId] = useState<string | null>(data.latestRun?.runId ?? data.runs[0]?.runId ?? null);
+  const [selectedDetail, setSelectedDetail] = useState<LocalWorkbenchRunDetail | null>(null);
+  const [detailError, setDetailError] = useState<string | null>(null);
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false);
 
   const latestRun = data.latestRun;
   const latestError = latestRun?.errorMessage ?? null;
@@ -292,12 +331,57 @@ export function LocalWorkbench({
   const openSuggestions = suggestions.filter((suggestion) => hasSuggestionStatus(["proposed"], suggestion.status));
   const showGuidance = activeAcceptedSuggestions.length > 0 || openSuggestions.length > 0;
   const recentRuns = data.runs.slice(0, 3);
+  const selectedRunSummary = data.runs.find((entry) => entry.runId === selectedRunId) ?? latestRun ?? null;
+  const activeTraceRun = selectedDetail?.run ?? selectedRunSummary ?? null;
+  const previewDebug = selectedDetail?.previewDebug ?? null;
   const showImplementationDebug = Boolean(
     data.latestRunAgentInput.path
       || data.latestRunAgentInput.content
       || latestRun?.effectiveContractPath
       || latestRun?.explainabilityPath,
   );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetail(runId: string) {
+      setIsLoadingDetail(true);
+      setDetailError(null);
+      try {
+        const response = await fetch(`/api/contracts/local/runs/${encodeURIComponent(runId)}`);
+        const json = await response.json();
+        if (!response.ok || !json.ok) {
+          throw new Error(json.error ?? `Could not load run ${runId}.`);
+        }
+        if (!cancelled) {
+          setSelectedDetail(json.run as LocalWorkbenchRunDetail);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setSelectedDetail(null);
+          setDetailError(error instanceof Error ? error.message : String(error));
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoadingDetail(false);
+        }
+      }
+    }
+
+    if (!selectedRunId) {
+      setSelectedDetail(null);
+      setDetailError(null);
+      setIsLoadingDetail(false);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    void loadDetail(selectedRunId);
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedRunId]);
 
   async function startRerun() {
     const response = await fetch("/api/contracts/local/rerun", {
@@ -309,6 +393,7 @@ export function LocalWorkbench({
     if (!response.ok || !json.ok) {
       throw new Error(json.error ?? "Local rerun failed.");
     }
+    setSelectedRunId(json.run.runId);
     setFeedback(
       json.run.status === "failed"
         ? `Regeneration ${json.run.runId} failed. Review the latest failure details before trying again.`
@@ -393,7 +478,7 @@ export function LocalWorkbench({
 
           <div style={{ display: "grid", gap: 10, justifyItems: "end" }}>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
-              {(["controls", "chat"] as const).map((nextTab) => (
+              {(["controls", "trace", "chat"] as const).map((nextTab) => (
                 <button key={nextTab} type="button" onClick={() => setTab(nextTab)} style={pill(tab === nextTab)}>
                   {nextTab}
                 </button>
@@ -744,11 +829,241 @@ export function LocalWorkbench({
                             {compactErrorMessage(run.errorMessage)}
                           </div>
                         ) : null}
+                        <div style={{ marginTop: 10 }}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedRunId(run.runId);
+                              setTab("trace");
+                            }}
+                            style={secondaryButton()}
+                          >
+                            Inspect trace
+                          </button>
+                        </div>
                       </article>
                     ))}
                   </div>
                 )}
               </section>
+            </aside>
+          </div>
+        ) : tab === "trace" ? (
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]" style={{ alignItems: "start" }}>
+            <section style={{ display: "grid", gap: 18 }}>
+              {!activeTraceRun ? (
+                <section style={{ ...shellPanel(), padding: 18, fontSize: 13, color: colors.neutral[600] }}>
+                  Run the local LLM once to populate the trace timeline and preview debug details.
+                </section>
+              ) : (
+                <>
+                  <section style={{ ...shellPanel(), padding: 18, display: "grid", gap: 14 }}>
+                    <div>
+                      <strong style={{ display: "block", fontSize: 15, marginBottom: 6 }}>Trace summary</strong>
+                      <div style={{ fontSize: 12, color: colors.neutral[600] }}>
+                        Inspect the selected run without changing the decision-first controls flow.
+                      </div>
+                    </div>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <div style={{ border: `1px solid ${colors.neutral[200]}`, borderRadius: 14, padding: 14 }}>
+                        <div style={{ display: "grid", gap: 6, fontSize: 13, color: colors.neutral[800] }}>
+                          <div>Run: {activeTraceRun.latestRunLabel}</div>
+                          <div>Status: <span style={{ color: statusTone(activeTraceRun.status), fontWeight: 700 }}>{activeTraceRun.status}</span></div>
+                          <div>Model: {activeTraceRun.model ?? data.localModel.model ?? "unknown"}</div>
+                          <div>Duration: {formatDuration(selectedDetail?.durationMs ?? null)}</div>
+                          <div>Tool calls: {activeTraceRun.toolCallCount}</div>
+                          <div>Writes: {activeTraceRun.writeCount}</div>
+                          <div>Last tool: {activeTraceRun.lastToolName ?? "none recorded"}</div>
+                        </div>
+                      </div>
+                      <div style={{ border: `1px solid ${colors.neutral[200]}`, borderRadius: 14, padding: 14 }}>
+                        <div style={{ display: "grid", gap: 6, fontSize: 13, color: colors.neutral[800] }}>
+                          <div>Created: {new Date(activeTraceRun.createdAt).toLocaleString()}</div>
+                          <div>Completed: {activeTraceRun.completedAt ? new Date(activeTraceRun.completedAt).toLocaleString() : "still running"}</div>
+                          <div>Contract snapshot: {activeTraceRun.effectiveContractPath ?? "Unavailable"}</div>
+                          <div>Explainability artifact: {activeTraceRun.explainabilityPath ?? "Unavailable"}</div>
+                          <div>Agent input path: {activeTraceRun.agentInputPath ?? "Unavailable"}</div>
+                          {activeTraceRun.agentSummary ? <div>Finish summary: {activeTraceRun.agentSummary}</div> : null}
+                        </div>
+                      </div>
+                    </div>
+                    {activeTraceRun.lastError ? (
+                      <div style={{ fontSize: 13, color: "#b91c1c" }}>
+                        Failure: {activeTraceRun.lastError.phase === "unknown" ? "Unknown phase" : phaseLabel(activeTraceRun.lastError.phase)} · {activeTraceRun.lastError.message}
+                      </div>
+                    ) : null}
+                  </section>
+
+                  <section style={{ ...shellPanel(), padding: 18, display: "grid", gap: 14 }}>
+                    <div>
+                      <strong style={{ display: "block", fontSize: 15, marginBottom: 6 }}>Phase timeline</strong>
+                      <div style={{ fontSize: 12, color: colors.neutral[600] }}>
+                        The full trace stays attached to the selected run, including failed preview phases.
+                      </div>
+                    </div>
+                    <div style={{ display: "grid", gap: 10 }}>
+                      {activeTraceRun.phaseHistory.length === 0 ? (
+                        <div style={{ fontSize: 13, color: colors.neutral[600] }}>No phase history recorded for this run.</div>
+                      ) : (
+                        activeTraceRun.phaseHistory.map((entry) => (
+                          <article key={`${entry.phase}-${entry.startedAt}`} style={{ border: `1px solid ${colors.neutral[200]}`, borderRadius: 12, padding: 12 }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 4, alignItems: "center" }}>
+                              <strong style={{ fontSize: 13 }}>{phaseLabel(entry.phase)}</strong>
+                              <span style={{ ...statusChip(entry.status), width: "fit-content" }}>{entry.status}</span>
+                            </div>
+                            <div style={{ fontSize: 12, color: colors.neutral[600] }}>
+                              {new Date(entry.startedAt).toLocaleString()}
+                              {entry.completedAt ? ` → ${new Date(entry.completedAt).toLocaleTimeString()}` : ""}
+                            </div>
+                            {entry.message ? (
+                              <div style={{ fontSize: 12, color: colors.neutral[600], marginTop: 6 }}>{entry.message}</div>
+                            ) : null}
+                          </article>
+                        ))
+                      )}
+                    </div>
+                  </section>
+
+                  <section style={{ ...shellPanel(), padding: 18, display: "grid", gap: 14 }}>
+                    <div>
+                      <strong style={{ display: "block", fontSize: 15, marginBottom: 6 }}>Preview debug</strong>
+                      <div style={{ fontSize: 12, color: colors.neutral[600] }}>
+                        These server logs help explain preview startup and capture failures.
+                      </div>
+                    </div>
+                    {isLoadingDetail ? (
+                      <div style={{ fontSize: 13, color: colors.neutral[600] }}>Loading preview debug...</div>
+                    ) : detailError ? (
+                      <div style={{ fontSize: 13, color: "#b91c1c" }}>{detailError}</div>
+                    ) : previewDebug ? (
+                      <div className="grid gap-3 md:grid-cols-2">
+                        {(["baseline", "current"] as const).map((label) => {
+                          const details = previewDebug[label];
+                          const hasDebug = details.url || details.stdoutPath || details.stderrPath || details.stderrTail.length > 0;
+                          return (
+                            <article key={label} style={{ border: `1px solid ${colors.neutral[200]}`, borderRadius: 12, padding: 12 }}>
+                              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>
+                                {label === "baseline" ? "Baseline preview" : "Current preview"}
+                              </div>
+                              {hasDebug ? (
+                                <div style={{ display: "grid", gap: 6, fontSize: 12, color: colors.neutral[800] }}>
+                                  <div>URL: {details.url ?? "not recorded"}</div>
+                                  <div>stdout log: {details.stdoutPath ?? "not recorded"}</div>
+                                  <div>stderr log: {details.stderrPath ?? "not recorded"}</div>
+                                  <div>stderr tail:</div>
+                                  <pre style={{ margin: 0, padding: 12, fontSize: 12, lineHeight: 1.6, whiteSpace: "pre-wrap", backgroundColor: "#f8fafc", borderRadius: 12, overflowX: "auto" }}>
+                                    {details.stderrTail.length > 0 ? details.stderrTail.join("\n") : "No stderr output recorded."}
+                                  </pre>
+                                </div>
+                              ) : (
+                                <div style={{ fontSize: 13, color: colors.neutral[600] }}>
+                                  No preview-server debug details were recorded for this run.
+                                </div>
+                              )}
+                            </article>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 13, color: colors.neutral[600] }}>
+                        No preview debug information is available for this run yet.
+                      </div>
+                    )}
+                  </section>
+
+                  <section style={{ ...shellPanel(), padding: 18, display: "grid", gap: 14 }}>
+                    <div>
+                      <strong style={{ display: "block", fontSize: 15, marginBottom: 6 }}>Last tool activity</strong>
+                      <div style={{ fontSize: 12, color: colors.neutral[600] }}>
+                        The most recent tool payload helps explain the final agent step before completion or failure.
+                      </div>
+                    </div>
+                    {isLoadingDetail ? (
+                      <div style={{ fontSize: 13, color: colors.neutral[600] }}>Loading run detail...</div>
+                    ) : detailError ? (
+                      <div style={{ fontSize: 13, color: "#b91c1c" }}>{detailError}</div>
+                    ) : selectedDetail?.lastToolCall ? (
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <div style={{ border: `1px solid ${colors.neutral[200]}`, borderRadius: 12, padding: 12 }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>
+                            Last tool: {selectedDetail.lastToolCall.name}
+                          </div>
+                          <pre style={{ margin: 0, padding: 12, fontSize: 12, lineHeight: 1.6, whiteSpace: "pre-wrap", backgroundColor: "#f8fafc", borderRadius: 12, overflowX: "auto" }}>
+                            {JSON.stringify(selectedDetail.lastToolCall.args, null, 2)}
+                          </pre>
+                        </div>
+                        <div style={{ border: `1px solid ${colors.neutral[200]}`, borderRadius: 12, padding: 12 }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>Tool result</div>
+                          <pre style={{ margin: 0, padding: 12, fontSize: 12, lineHeight: 1.6, whiteSpace: "pre-wrap", backgroundColor: "#f8fafc", borderRadius: 12, overflowX: "auto" }}>
+                            {JSON.stringify(selectedDetail.lastToolCall.result, null, 2)}
+                          </pre>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 13, color: colors.neutral[600] }}>
+                        No tool activity was recorded for this run yet.
+                      </div>
+                    )}
+                  </section>
+                </>
+              )}
+            </section>
+
+            <aside style={{ display: "grid", gap: 18 }}>
+              <section style={{ ...shellPanel(), padding: 18, display: "grid", gap: 14 }}>
+                <div>
+                  <strong style={{ display: "block", fontSize: 15, marginBottom: 6 }}>Run history</strong>
+                  <div style={{ fontSize: 12, color: colors.neutral[600] }}>
+                    Pick any run to inspect its phase history and preview debug artifacts.
+                  </div>
+                </div>
+                {data.runs.length === 0 ? (
+                  <div style={{ fontSize: 13, color: colors.neutral[600] }}>No local reruns recorded yet.</div>
+                ) : (
+                  <div style={{ display: "grid", gap: 10 }}>
+                    {data.runs.map((run) => {
+                      const isSelected = run.runId === activeTraceRun?.runId;
+                      return (
+                        <button
+                          key={run.runId}
+                          type="button"
+                          onClick={() => setSelectedRunId(run.runId)}
+                          style={{
+                            textAlign: "left",
+                            border: `1px solid ${isSelected ? colors.structure.primary : colors.neutral[200]}`,
+                            backgroundColor: isSelected ? "#eef2ff" : colors.neutral[0],
+                            borderRadius: 12,
+                            padding: 12,
+                            cursor: "pointer",
+                          }}
+                        >
+                          <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 4 }}>
+                            <strong style={{ fontSize: 13 }}>{run.latestRunLabel}</strong>
+                            <span style={{ fontSize: 12, color: statusTone(run.status) }}>{run.status}</span>
+                          </div>
+                          <div style={{ fontSize: 12, color: colors.neutral[600] }}>
+                            {new Date(run.createdAt).toLocaleString()}
+                          </div>
+                          <div style={{ fontSize: 12, color: colors.neutral[600], marginTop: 4 }}>
+                            {run.currentPhase ? `${phaseLabel(run.currentPhase)} · ` : ""}
+                            {run.touchedFiles.join(", ") || "No touched files"}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
+
+              <details style={{ ...shellPanel(), padding: 18 }}>
+                <summary style={{ cursor: "pointer", fontSize: 15, fontWeight: 700 }}>Trace context</summary>
+                <div style={{ display: "grid", gap: 10, marginTop: 14, fontSize: 12, color: colors.neutral[600] }}>
+                  <div>Configured: {data.localModel.configured ? "yes" : "no"}</div>
+                  <div>Model: {data.localModel.model ?? "Unavailable"}</div>
+                  <div>Base URL: {data.localModel.baseUrl ?? "Unavailable"}</div>
+                  <div>Run root: {data.runRoot}</div>
+                </div>
+              </details>
             </aside>
           </div>
         ) : (
