@@ -115,7 +115,7 @@ function toneStyles(tone: StateTone) {
     border: `1px solid ${colors.neutral[200]}`,
     backgroundColor: colors.neutral[0],
     accent: colors.neutral[900],
-    text: colors.neutral[700],
+    text: colors.neutral[600],
     chipBackground: colors.neutral[100],
   } as const;
 }
@@ -553,7 +553,7 @@ export function LocalWorkbench({
               <section style={{ ...shellPanel(), padding: 18, display: "grid", gap: 12 }}>
                 <div>
                   <strong style={{ display: "block", fontSize: 15, marginBottom: 6 }}>Next action</strong>
-                  <div style={{ fontSize: 13, lineHeight: 1.7, color: colors.neutral[700] }}>
+                  <div style={{ fontSize: 13, lineHeight: 1.7, color: colors.neutral[600] }}>
                     {nextActionCopy({
                       latestRun,
                       latestRunOperatorNote,
@@ -740,7 +740,7 @@ export function LocalWorkbench({
                           {run.touchedFiles.join(", ") || "No touched files"}
                         </div>
                         {run.errorMessage ? (
-                          <div style={{ fontSize: 12, color: colors.neutral[700], marginTop: 8, lineHeight: 1.5 }}>
+                          <div style={{ fontSize: 12, color: colors.neutral[600], marginTop: 8, lineHeight: 1.5 }}>
                             {compactErrorMessage(run.errorMessage)}
                           </div>
                         ) : null}

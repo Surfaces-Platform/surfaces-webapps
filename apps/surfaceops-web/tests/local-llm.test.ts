@@ -998,7 +998,12 @@ describe("runLocalLlmAgent", () => {
       allowedRoots: ["apps/reference-target-web"],
       preparedPayload: { summary: { text: "Keep the fixture deterministic." } },
       implementationBrief: "Make a small contract-guided change.",
-    }).catch((cause) => cause as Error & { transcript?: Array<Record<string, unknown>> });
+    }).then(
+      () => {
+        throw new Error("Expected runLocalLlmAgent to reject for incomplete responses.");
+      },
+      (cause) => cause as Error & { transcript?: Array<Record<string, unknown>> },
+    );
 
     expect(error.message).toContain('Limit Response Length');
     expect(error.message).toContain("status=incomplete");
