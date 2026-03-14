@@ -78,6 +78,8 @@ export interface LocalWorkbenchRun {
   touchedFiles: string[];
   errorMessage: string | null;
   effectiveContractPath: string | null;
+  guidanceStrategy: string | null;
+  guidanceHandoffPath: string | null;
   agentInputPath: string | null;
   explainabilityPath: string | null;
   baselinePreview: {
@@ -186,6 +188,7 @@ export interface LocalWorkbenchData {
   activeContractChanges: LocalWorkbenchContractChange[];
   activeDesignerNotes: LocalWorkbenchDesignerNote[];
   latestRunAgentInput: LocalWorkbenchAgentInput;
+  latestRunGuidanceHandoff: LocalWorkbenchAgentInput;
   chat: LocalWorkbenchChatMessage[];
   localModel: {
     configured: boolean;

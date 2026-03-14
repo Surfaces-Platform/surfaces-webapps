@@ -53,6 +53,7 @@ type ToolName =
   | "apply_text_edits"
   | "finish";
 
+type GuidanceStrategy = "prompt-summary" | "json-primary" | "unguided";
 type TextEditOperation =
   | {
     kind: "replace";
@@ -89,7 +90,9 @@ interface AgentOptions {
   config: LocalLlmConfig;
   repoRoot: string;
   allowedRoots: string[];
-  preparedPayload: Record<string, unknown>;
+  preparedPayload?: Record<string, unknown>;
+  guidanceStrategy?: GuidanceStrategy;
+  guidanceHandoff?: Record<string, unknown> | null;
   implementationBrief: string;
   acceptedSuggestions?: LocalWorkbenchAcceptedSuggestion[];
   effectiveContractSummary?: string;
@@ -265,7 +268,8 @@ async function searchAllowedFiles(repoRoot: string, allowedRoots: string[], patt
 }
 
 function buildSystemPrompt(options: AgentOptions) {
-  const guidanceSummary = buildPreparedGuidanceSummary(options.preparedPayload);
+  const guidanceStrategy = resolveGuidanceStrategy(options);
+  const handoffSection = buildGuidanceSection(options, guidanceStrategy);
   const acceptedSuggestionSummary = buildAcceptedSuggestionSummary(options.acceptedSuggestions ?? []);
   const designerNoteSummary = buildDesignerNoteSummary(options.activeDesignerNotes ?? []);
   return [
@@ -284,10 +288,16 @@ function buildSystemPrompt(options: AgentOptions) {
     "Make one focused implementation pass that resolves every active accepted suggestion you can address in the touched file set, then call finish.",
     "If no justified implementation change is needed, call finish with noChanges=true.",
     "After any successful apply_text_edits call, finish must use noChanges=false.",
-    options.effectiveContractSummary ? `Effective working contract:\n${options.effectiveContractSummary}` : null,
+    `Guidance strategy: ${guidanceStrategy}`,
+    guidanceStrategy === "json-primary" && options.guidanceHandoff
+      ? "Use the canonical guidance handoff JSON as the primary source of contract truth for this implementation pass."
+      : null,
+    guidanceStrategy !== "json-primary" && !options.guidanceHandoff && options.effectiveContractSummary
+      ? `Effective working contract:\n${options.effectiveContractSummary}`
+      : null,
     acceptedSuggestionSummary,
     designerNoteSummary,
-    `Prepared contract guidance:\n${guidanceSummary}`,
+    handoffSection,
   ].filter(Boolean).join("\n\n");
 }
 
@@ -313,6 +323,133 @@ function compactList(values: string[], maxItems = 6): string {
     return unique.join(", ");
   }
   return `${unique.slice(0, maxItems).join(", ")} (+${unique.length - maxItems} more)`;
+}
+
+function compactJsonPrimaryPromptContext(guidanceHandoff: Record<string, unknown>): JsonRecord {
+  const handoff = asRecord(guidanceHandoff);
+  const runtimeGuidance = asRecord(handoff.runtimeGuidance);
+  const jsonPrimary = asRecord(handoff.jsonPrimary);
+  const summary = asRecord(jsonPrimary.summary);
+  const generation = asRecord(jsonPrimary.generation);
+  const structure = asRecord(generation.structure);
+  const layout = asRecord(generation.layout);
+  const boundary = asRecord(generation.boundary);
+  const visual = asRecord(generation.visual);
+  const constraints = asRecord(jsonPrimary.constraints);
+  const color = asRecord(constraints.color);
+  const motion = asRecord(constraints.motion);
+  const tokens = asRecord(constraints.tokens);
+  const typographyTokens = asRecord(tokens.typography);
+  const layoutTokens = asRecord(tokens.layout);
+  const motionTokens = asRecord(tokens.motion);
+  const contract = asRecord(jsonPrimary.contract);
+  const mustNotEmit = asStringArray(boundary.mustNotEmit).slice(0, 8);
+  const shellOwns = asStringArray(boundary.shellOwns).slice(0, 8);
+  const requiredSectionIds = asStringArray(structure.requiredSectionIds).slice(0, 8);
+  const topRepairCodes = Array.isArray(summary.topRepairs)
+    ? summary.topRepairs
+        .map((entry) => asRecord(entry))
+        .map((entry) => (typeof entry.code === "string" ? entry.code : ""))
+        .filter(Boolean)
+        .slice(0, 6)
+    : [];
+
+  return {
+    guidanceStrategy: handoff.guidanceStrategy,
+    runtimeGuidance: {
+      findingCodes: asStringArray(runtimeGuidance.findingCodes).slice(0, 8),
+      matchedRepairCodes: asStringArray(runtimeGuidance.matchedRepairCodes).slice(0, 8),
+    },
+    jsonPrimary: {
+      contract: {
+        ...(typeof contract.id === "string" ? { id: contract.id } : {}),
+        ...(typeof contract.version === "string" ? { version: contract.version } : {}),
+      },
+      structure: {
+        ...(typeof structure.sectionCount === "number" ? { sectionCount: structure.sectionCount } : {}),
+        requiredSectionIds,
+      },
+      layout: {
+        ...(typeof layout.maxContentWidth === "number" ? { maxContentWidth: layout.maxContentWidth } : {}),
+        requiredContainers: asStringArray(layout.requiredContainers).slice(0, 8),
+        ...(mustNotEmit.length > 0 ? { mustNotEmit } : {}),
+        ...(shellOwns.length > 0 ? { shellOwns } : {}),
+      },
+      visual: {
+        allowedFonts: asStringArray(visual.allowedFonts).slice(0, 8),
+        color: {
+          ...(typeof color.policy === "string" ? { policy: color.policy } : {}),
+          allowedValues: asStringArray(color.allowedValues).slice(0, 12),
+        },
+        motion: {
+          allowedDurationsMs: Array.isArray(motion.allowedDurationsMs)
+            ? motion.allowedDurationsMs.filter((value): value is number => typeof value === "number").slice(0, 6)
+            : [],
+          allowedTimingFunctions: asStringArray(motion.allowedTimingFunctions).slice(0, 6),
+        },
+        tokens: {
+          typography: asStringArray(typographyTokens.allowedTokens).slice(0, 8),
+          layout: asStringArray(layoutTokens.allowedTokens).slice(0, 8),
+          motion: asStringArray(motionTokens.allowedTokens).slice(0, 8),
+        },
+      },
+      summary: {
+        ...(typeof summary.text === "string" ? { text: summary.text } : {}),
+        focusOrder: asStringArray(summary.focusOrder).slice(0, 6),
+        topRepairCodes,
+      },
+    },
+  };
+}
+
+function resolveGuidanceStrategy(options: AgentOptions): GuidanceStrategy {
+  const explicit = options.guidanceStrategy;
+  if (explicit === "prompt-summary" || explicit === "json-primary" || explicit === "unguided") {
+    return explicit;
+  }
+  const handoff = asRecord(options.guidanceHandoff);
+  const handoffStrategy = handoff.guidanceStrategy;
+  if (handoffStrategy === "prompt-summary" || handoffStrategy === "json-primary" || handoffStrategy === "unguided") {
+    return handoffStrategy;
+  }
+  return "prompt-summary";
+}
+
+function buildGuidanceSection(options: AgentOptions, guidanceStrategy: GuidanceStrategy): string | null {
+  const handoff = asRecord(options.guidanceHandoff);
+  if (guidanceStrategy === "json-primary" && options.guidanceHandoff) {
+    const compactHandoff = compactJsonPrimaryPromptContext(options.guidanceHandoff);
+    return [
+      "Canonical guidance handoff (JSON):",
+      JSON.stringify(compactHandoff),
+    ].join("\n");
+  }
+
+  if (guidanceStrategy === "prompt-summary" && options.guidanceHandoff) {
+    const promptSummary = asRecord(handoff.promptSummary);
+    const sections = [
+      typeof promptSummary.effectiveContractSummary === "string"
+        ? `Effective working contract:\n${promptSummary.effectiveContractSummary}`
+        : options.effectiveContractSummary
+          ? `Effective working contract:\n${options.effectiveContractSummary}`
+          : null,
+      typeof promptSummary.preparedGuidanceSummary === "string"
+        ? `Prepared contract guidance:\n${promptSummary.preparedGuidanceSummary}`
+        : options.preparedPayload
+          ? `Prepared contract guidance:\n${buildPreparedGuidanceSummary(options.preparedPayload)}`
+          : null,
+    ].filter(Boolean);
+    return sections.length > 0 ? sections.join("\n\n") : null;
+  }
+
+  if (guidanceStrategy === "unguided") {
+    return null;
+  }
+
+  if (options.preparedPayload) {
+    return `Prepared contract guidance:\n${buildPreparedGuidanceSummary(options.preparedPayload)}`;
+  }
+  return null;
 }
 
 function extractRepairEntries(repairMap: unknown): JsonRecord[] {

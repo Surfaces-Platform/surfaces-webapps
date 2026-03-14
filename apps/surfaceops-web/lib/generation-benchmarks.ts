@@ -3,6 +3,54 @@ import path from "node:path";
 
 export type AttemptView = "first" | "latest";
 
+export interface BenchmarkCohortManifest {
+  schemaVersion: 1;
+  cohortId: string;
+  generatedAt: string;
+  profileId: string;
+  profileName: string;
+  surfaceId: string;
+  tool: string;
+  guidanceStrategies: string[];
+  comparisonPairs: Array<{
+    baselineGuidanceStrategy: string;
+    guidedGuidanceStrategy: string;
+  }>;
+  brief: {
+    path: string;
+    sha256: string;
+  };
+  model: {
+    baseUrl: string;
+    model: string;
+    fingerprint: string;
+  };
+  paths: {
+    benchmarkDir: string;
+    effectiveContractPath: string;
+    preparedInputPath: string;
+    reportJsonPath: string;
+    reportMarkdownPath: string;
+  };
+  sessions: Array<{
+    guidanceStrategy: string;
+    sessionId: string;
+    sessionDir: string;
+    transcriptPath: string;
+    guidanceHandoffPath: string;
+    agentInputPath: string;
+    explainabilityPath: string;
+    summaryPath: string;
+    previewPath: string | null;
+  }>;
+  comparisons: Array<{
+    baselineGuidanceStrategy: string;
+    guidedGuidanceStrategy: string;
+    comparisonDir: string;
+    comparisonPath: string;
+  }>;
+}
+
 interface BenchmarkReport {
   generatedAt: string;
   comparisons: Array<{
@@ -10,9 +58,19 @@ interface BenchmarkReport {
     surfaceId: string;
     tool: string;
     meetsGoal: boolean;
+    baselineGuidanceStrategy: string;
+    guidedGuidanceStrategy: string;
     guidedFewerFirstAttemptBlockingFindings: boolean;
     guidedReachedAcceptableNoLater: boolean;
     guidedRubricBetterDimensions: string[];
+    heuristics?: {
+      unresolvedAcceptedSuggestionRate?: number | null;
+      noChangesAfterEditFailureCount?: number;
+      recoverableToolErrorCount?: number;
+      touchedFilesPerResolvedFinding?: number | null;
+      repeatedFindingCarryoverCount?: number;
+      rerunsToAcceptableOutcome?: number | null;
+    };
   }>;
   suggestions: Array<{
     suggestionsPath: string;
@@ -50,6 +108,13 @@ interface Assessment {
   responsiveness: string;
   notes: string;
   touchedFiles?: string[];
+  heuristics?: {
+    unresolvedAcceptedSuggestionCount?: number;
+    unresolvedAcceptedSuggestionRate?: number | null;
+    noChangesAfterEditFailureCount?: number;
+    recoverableToolErrorCount?: number;
+    touchedFilesPerResolvedFinding?: number | null;
+  };
 }
 
 interface ComparisonAttemptSnapshot {
@@ -67,7 +132,7 @@ interface ComparisonAttemptSnapshot {
 interface ComparisonSnapshot {
   sessionId: string;
   sessionDir: string;
-  guidanceMode: string;
+  guidanceStrategy: string;
   attemptCount: number;
   firstAcceptableAttempt: number | null;
   latestOutcome: string;
@@ -81,6 +146,11 @@ interface ComparisonSnapshot {
     category: string;
     actionType: string;
   }>;
+  heuristics?: {
+    latestAttempt?: Assessment["heuristics"];
+    repeatedFindingCarryoverCount?: number;
+    rerunsToAcceptableOutcome?: number | null;
+  };
 }
 
 interface ComparisonArtifact {
@@ -113,6 +183,11 @@ interface ComparisonArtifact {
     guidedRubricBetterDimensions: string[];
     meetsGoal: boolean;
   };
+  heuristics?: {
+    baseline?: ComparisonSnapshot["heuristics"];
+    guided?: ComparisonSnapshot["heuristics"];
+    delta?: BenchmarkReport["comparisons"][number]["heuristics"];
+  };
   paths: {
     baselineSessionDir: string;
     guidedSessionDir: string;
@@ -123,7 +198,7 @@ interface SessionSummary {
   surfaceId: string;
   sessionId: string;
   tool: string;
-  guidanceMode: string;
+  guidanceStrategy: string;
   attemptCount: number;
   firstPassAttempt: number | null;
   firstAcceptableAttempt: number | null;
@@ -135,10 +210,16 @@ interface SessionSummary {
     rationale: string;
     findingCodes: string[];
   } | null;
+  heuristics?: {
+    latestAttempt?: Assessment["heuristics"];
+    repeatedFindingCarryoverCount?: number;
+    rerunsToAcceptableOutcome?: number | null;
+  };
   paths: {
     sessionPath: string;
     bundleRoot: string;
     preparedInputPath: string | null;
+    guidanceHandoffPath?: string | null;
   };
   attempts: Array<{
     attemptNumber: number;
@@ -211,17 +292,25 @@ export interface BenchmarkListItem {
   generatedAt: string;
   surfaceIds: string[];
   reportPath: string;
+  profileName: string | null;
+  guidanceStrategies: string[];
+  modelFingerprint: string | null;
 }
 
 export interface GenerationWorkbenchData {
   benchmarksDir: string;
   benchmarkId: string;
   benchmarkDir: string;
+  manifest: BenchmarkCohortManifest | null;
   report: BenchmarkReport;
   surfaces: BenchmarkReport["comparisons"];
   selectedSurfaceId: string;
   attemptView: AttemptView;
   comparison: ComparisonArtifact;
+  comparisonLabels: {
+    baseline: string;
+    guided: string;
+  };
   selectedAttemptSnapshots: {
     baseline: ComparisonAttemptSnapshot;
     guided: ComparisonAttemptSnapshot;
@@ -315,12 +404,22 @@ export function listGenerationBenchmarks(benchmarksDir = resolveBenchmarksDir())
         return null;
       }
       const report = readJson<BenchmarkReport>(reportPath);
+      const manifest = readOptionalJson<BenchmarkCohortManifest>(path.join(rootDir, "manifest.json"));
+      const guidanceStrategies = manifest?.guidanceStrategies?.length
+        ? manifest.guidanceStrategies
+        : [...new Set(report.comparisons.flatMap((item) => [
+          item.baselineGuidanceStrategy,
+          item.guidedGuidanceStrategy,
+        ].filter(Boolean)))];
       return {
         id: entry.name,
         rootDir,
         generatedAt: report.generatedAt,
         surfaceIds: report.comparisons.map((item) => item.surfaceId),
         reportPath,
+        profileName: manifest?.profileName ?? null,
+        guidanceStrategies,
+        modelFingerprint: manifest?.model.fingerprint ?? null,
       } satisfies BenchmarkListItem;
     })
     .filter((entry): entry is BenchmarkListItem => Boolean(entry))
@@ -383,6 +482,7 @@ export function loadGenerationWorkbenchFromRoot(input: {
 }): GenerationWorkbenchData {
   const benchmarksDir = input.benchmarksDir ? path.resolve(input.benchmarksDir) : path.dirname(input.benchmarkDir);
   const benchmarkDir = path.resolve(input.benchmarkDir);
+  const manifest = readOptionalJson<BenchmarkCohortManifest>(path.join(benchmarkDir, "manifest.json"));
   const reportPath = path.join(benchmarkDir, "report", "benchmark-report.json");
   if (!fs.existsSync(reportPath)) {
     throw new Error(`Benchmark report not found at ${reportPath}.`);
@@ -421,11 +521,16 @@ export function loadGenerationWorkbenchFromRoot(input: {
     benchmarksDir,
     benchmarkId: input.benchmarkId,
     benchmarkDir,
+    manifest,
     report,
     surfaces: report.comparisons,
     selectedSurfaceId,
     attemptView,
     comparison,
+    comparisonLabels: {
+      baseline: comparison.baseline.guidanceStrategy,
+      guided: comparison.guided.guidanceStrategy,
+    },
     selectedAttemptSnapshots,
     baselineSummary,
     guidedSummary,
