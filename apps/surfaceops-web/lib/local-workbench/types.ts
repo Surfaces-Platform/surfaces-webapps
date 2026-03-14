@@ -13,6 +13,16 @@ export interface LocalWorkbenchSuggestion {
   rationale?: string;
 }
 
+export interface LocalWorkbenchAcceptedSuggestion {
+  findingCode: string;
+  findingMessage: string;
+  summary: string;
+  suggestedPath: string;
+  rationale?: string;
+  sourceRunId: string;
+  acceptedAt: string;
+}
+
 export interface LocalWorkbenchComparison {
   baselineStatus: string;
   currentStatus: string;
@@ -35,6 +45,9 @@ export interface LocalWorkbenchRun {
   transcriptPath: string | null;
   touchedFiles: string[];
   errorMessage: string | null;
+  effectiveContractPath: string | null;
+  agentInputPath: string | null;
+  explainabilityPath: string | null;
   baselinePreview: {
     path: string | null;
     dataUrl: string | null;
@@ -52,9 +65,36 @@ export interface LocalWorkbenchRun {
 
 export interface LocalWorkbenchChatMessage {
   id: string;
-  role: "system" | "assistant";
+  role: "system" | "assistant" | "user";
   title: string;
   content: string;
+  createdAt: string;
+}
+
+export interface LocalWorkbenchContractChange {
+  id: string;
+  field:
+    | "color.allowedValues"
+    | "color.policy"
+    | "surfaces.reference-target-web.layout.maxContentWidth"
+    | "surfaces.reference-target-web.allowedFonts";
+  action: "set" | "add";
+  value: string | number;
+  summary: string;
+  createdAt: string;
+  sourceMessageId: string;
+}
+
+export interface LocalWorkbenchDesignerNote {
+  id: string;
+  content: string;
+  createdAt: string;
+  sourceMessageId: string;
+}
+
+export interface LocalWorkbenchAgentInput {
+  path: string | null;
+  content: string | null;
 }
 
 export interface LocalWorkbenchData {
@@ -78,6 +118,11 @@ export interface LocalWorkbenchData {
   };
   latestRun: LocalWorkbenchRun | null;
   runs: LocalWorkbenchRun[];
+  activeAcceptedSuggestions: LocalWorkbenchAcceptedSuggestion[];
+  latestRunOperatorNote: string | null;
+  activeContractChanges: LocalWorkbenchContractChange[];
+  activeDesignerNotes: LocalWorkbenchDesignerNote[];
+  latestRunAgentInput: LocalWorkbenchAgentInput;
   chat: LocalWorkbenchChatMessage[];
   localModel: {
     configured: boolean;

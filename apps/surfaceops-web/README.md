@@ -20,7 +20,7 @@ SURFACEOPS_LOCAL_WORKBENCH=1
 
 # Required local model config (OpenAI-compatible API).
 SURFACEOPS_LOCAL_LLM_BASE_URL=http://127.0.0.1:1234/v1
-SURFACEOPS_LOCAL_LLM_MODEL=openai/gpt-oss-20b
+SURFACEOPS_LOCAL_LLM_MODEL=openai/gpt-oss-120b
 
 # Optional override for another LM Studio tool-capable model.
 # SURFACEOPS_LOCAL_LLM_MODEL=qwen/qwen3-coder-30b
@@ -43,7 +43,8 @@ The local rerun flow shells through canonical `interfacectl` commands and a loca
 ### First local loop
 
 1. Start LM Studio locally with the OpenAI-compatible server enabled on `http://127.0.0.1:1234/v1`.
-   The workbench uses the OpenAI Responses API shape with function tools and defaults to `openai/gpt-oss-20b`.
+   The workbench uses the OpenAI Responses API shape with function tools and defaults to `openai/gpt-oss-120b`.
+   Leave LM Studio `Limit Response Length` disabled. If a preset still shows a numeric cap such as `1000`, keep it unchecked.
 2. Start local `surfaceops-web`.
 3. Open `/contracts/governance`.
 4. Click `Run local LLM`.
