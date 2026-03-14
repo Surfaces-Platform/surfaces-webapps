@@ -33,6 +33,7 @@
     "demo:generation": "./scripts/demos/demo-generation.sh",
     "demo:ci:surfaceops": "./scripts/demos/demo-ci-surfaceops.sh",
     "demo:runtime:surfaceops": "./scripts/demos/demo-runtime-surfaceops.sh",
+    "benchmark:reference-target-web": "pnpm --filter surfaceops-web benchmark:reference-target-web",
     "surfaceops:sync-run-artifacts:db": "pnpm --filter surfaceops-web sync:run-artifacts:db",
     "pilot:icons:reference-target": "node ./scripts/verify-icon-strict-pilot.mjs",
     "demo:all:visual": "pnpm run demo:bootstrap:promote && pnpm run demo:generation && pnpm run demo:ci:surfaceops && pnpm run demo:runtime:surfaceops",

@@ -1,9 +1,10 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { spawn, type ChildProcess } from "node:child_process";
 import fs from "node:fs";
 import fsp from "node:fs/promises";
 import net from "node:net";
 import path from "node:path";
+import type { BenchmarkCohortManifest } from "@/lib/generation-benchmarks";
 import { runInterfacectlCli, resolveWorkspaceRoot } from "@/lib/interfacectl";
 import {
   defaultSuggestedPathForKnownFinding,
@@ -34,20 +35,21 @@ import type {
   LocalWorkbenchSuggestion,
   StartLocalRerunResult,
 } from "./types";
+import {
+  REFERENCE_TARGET,
+  REFERENCE_TARGET_BENCHMARK_PROFILE,
+  type ReferenceTargetBenchmarkProfile,
+  type ReferenceTargetGuidanceStrategy,
+} from "./reference-target";
 
-const TARGET = {
-  id: "reference-target-web",
-  label: "Reference Target Web",
-  appPath: "apps/reference-target-web",
-  contractPath: "contracts/generated/reference-target-web.contract.json",
-  implementationBrief:
-    "Refine the reference target UI to better match the contract-guided surface while preserving deterministic fixture behavior.",
-};
+const TARGET = REFERENCE_TARGET;
 
 const RERUN_ATTEMPT = "001";
 const DEFAULT_LOCAL_LLM_BASE_URL = "http://127.0.0.1:1234/v1";
 const DEFAULT_LOCAL_LLM_MODEL = "openai/gpt-oss-120b";
 const CONTRACT_SESSION_SCHEMA_VERSION = 2;
+const IMPLEMENTATION_GUIDANCE_STRATEGY = "json-primary";
+type ImplementationGuidanceStrategy = ReferenceTargetGuidanceStrategy;
 
 interface RunRecordFile {
   schemaVersion: number;
@@ -74,6 +76,8 @@ interface RunRecordFile {
   currentPreviewStderrTail?: string[];
   contractPath: string;
   preparedInputPath: string | null;
+  guidanceStrategy: string | null;
+  guidanceHandoffPath: string | null;
   baselineSessionDir: string | null;
   currentSessionDir: string | null;
   baselinePreviewPath: string | null;
@@ -141,13 +145,57 @@ interface ContractSessionFile {
 }
 
 interface RunExplainabilityFile {
-  schemaVersion: 1;
+  schemaVersion: 2;
   runId: string;
   createdAt: string;
   effectiveContractPath: string | null;
   agentInputPath: string | null;
+  guidanceStrategy: string | null;
+  guidanceHandoffPath: string | null;
   activeContractChanges: LocalWorkbenchContractChange[];
   activeDesignerNotes: LocalWorkbenchDesignerNote[];
+}
+
+interface FrozenRuntimeGuidancePaths {
+  acceptedSuggestionsPath: string;
+  designerNotesPath: string;
+}
+
+interface ReferenceTargetImplementationSessionResult {
+  guidanceStrategy: ImplementationGuidanceStrategy;
+  sessionId: string;
+  sessionDir: string;
+  transcriptPath: string;
+  guidanceHandoffPath: string;
+  agentInputPath: string;
+  explainabilityPath: string;
+  summaryPath: string;
+  previewPath: string | null;
+  touchedFiles: string[];
+  noChanges: boolean;
+  validate: Record<string, unknown>;
+  comparison: LocalWorkbenchComparison | null;
+  remainingAcceptedSuggestions: LocalWorkbenchAcceptedSuggestion[];
+}
+
+interface BenchmarkComparisonPair {
+  baselineGuidanceStrategy: ImplementationGuidanceStrategy;
+  guidedGuidanceStrategy: ImplementationGuidanceStrategy;
+}
+
+interface LocalLlmAgentBudgets {
+  maxTurns?: number;
+  maxToolCalls?: number;
+  maxWallTimeMs?: number;
+}
+
+export interface ReferenceTargetBenchmarkCohortResult {
+  cohortId: string;
+  benchmarkDir: string;
+  manifestPath: string;
+  reportPath: string | null;
+  comparisonPaths: string[];
+  sessionDirs: string[];
 }
 
 interface AcceptedSuggestionBacklogFile {
@@ -1259,7 +1307,11 @@ async function stopServer(child: ChildProcess): Promise<void> {
   }
 }
 
-export function buildAssessmentPayload(notes: string, touchedFiles: string[]) {
+export function buildAssessmentPayload(
+  notes: string,
+  touchedFiles: string[],
+  heuristics?: Record<string, number | null | undefined>,
+) {
   return {
     structure: "partial",
     components: "partial",
@@ -1268,9 +1320,42 @@ export function buildAssessmentPayload(notes: string, touchedFiles: string[]) {
     responsiveness: "partial",
     notes,
     touchedFiles,
+    ...(heuristics ? { heuristics } : {}),
   };
 }
 
+function countRecoverableToolErrors(transcript: LocalLlmTranscriptEntry[]): number {
+  return transcript.filter((entry) =>
+    entry.type === "tool" &&
+    entry.payload &&
+    typeof entry.payload === "object" &&
+    "error" in entry.payload
+  ).length;
+}
+
+function buildAttemptHeuristics(input: {
+  transcript: LocalLlmTranscriptEntry[];
+  noChanges: boolean;
+  touchedFiles: string[];
+  originalAcceptedSuggestions: LocalWorkbenchAcceptedSuggestion[];
+  remainingAcceptedSuggestions: LocalWorkbenchAcceptedSuggestion[];
+  resolvedFindingCodes: string[];
+}): Record<string, number | null> {
+  const unresolvedAcceptedSuggestionCount = input.remainingAcceptedSuggestions.length;
+  const unresolvedAcceptedSuggestionRate = input.originalAcceptedSuggestions.length > 0
+    ? unresolvedAcceptedSuggestionCount / input.originalAcceptedSuggestions.length
+    : null;
+  const resolvedFindingCount = input.resolvedFindingCodes.length;
+  return {
+    unresolvedAcceptedSuggestionCount,
+    unresolvedAcceptedSuggestionRate,
+    noChangesAfterEditFailureCount: input.noChanges && input.touchedFiles.length > 0 ? 1 : 0,
+    recoverableToolErrorCount: countRecoverableToolErrors(input.transcript),
+    touchedFilesPerResolvedFinding: resolvedFindingCount > 0
+      ? input.touchedFiles.length / resolvedFindingCount
+      : null,
+  };
+}
 function extractTranscriptFromError(error: unknown): LocalLlmTranscriptEntry[] | null {
   const transcript = error && typeof error === "object" ? (error as { transcript?: unknown }).transcript : undefined;
   return Array.isArray(transcript) ? (transcript as LocalLlmTranscriptEntry[]) : null;
@@ -1344,6 +1429,8 @@ async function buildRunView(record: RunRecordFile): Promise<LocalWorkbenchRun> {
     touchedFiles: record.touchedFiles,
     errorMessage: record.errorMessage,
     effectiveContractPath: record.effectiveContractPath,
+    guidanceStrategy: record.guidanceStrategy,
+    guidanceHandoffPath: record.guidanceHandoffPath,
     agentInputPath: record.agentInputPath,
     explainabilityPath: record.explainabilityPath,
     baselinePreview: {
@@ -1457,6 +1544,10 @@ export async function loadLocalWorkbenchData(): Promise<LocalWorkbenchData> {
     path: latestRun?.agentInputPath ?? null,
     content: await readTextFile(latestRun?.agentInputPath ?? null),
   };
+  const latestRunGuidanceHandoff: LocalWorkbenchAgentInput = {
+    path: latestRun?.guidanceHandoffPath ?? null,
+    content: await readTextFile(latestRun?.guidanceHandoffPath ?? null),
+  };
   return {
     enabled: true,
     runRoot: resolveSurfaceRoot(),
@@ -1475,6 +1566,7 @@ export async function loadLocalWorkbenchData(): Promise<LocalWorkbenchData> {
     activeContractChanges: session.activeContractChanges,
     activeDesignerNotes: session.activeDesignerNotes,
     latestRunAgentInput,
+    latestRunGuidanceHandoff,
     chat: buildChatMessages(session),
     localModel: {
       configured: true,
@@ -1594,18 +1686,354 @@ async function writeRunExplainability(input: {
   explainabilityPath: string;
   effectiveContractPath: string | null;
   agentInputPath: string | null;
+  guidanceStrategy: string | null;
+  guidanceHandoffPath: string | null;
   activeContractChanges: LocalWorkbenchContractChange[];
   activeDesignerNotes: LocalWorkbenchDesignerNote[];
 }): Promise<void> {
   await writeJsonFile(input.explainabilityPath, {
-    schemaVersion: 1,
+    schemaVersion: 2,
     runId: input.runId,
     createdAt: new Date().toISOString(),
     effectiveContractPath: input.effectiveContractPath,
     agentInputPath: input.agentInputPath,
+    guidanceStrategy: input.guidanceStrategy,
+    guidanceHandoffPath: input.guidanceHandoffPath,
     activeContractChanges: input.activeContractChanges,
     activeDesignerNotes: input.activeDesignerNotes,
   } satisfies RunExplainabilityFile);
+}
+
+function buildRunId(): string {
+  return new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 14);
+}
+
+function sha256String(value: string): string {
+  return createHash("sha256").update(value).digest("hex");
+}
+
+function buildLocalModelFingerprint(config: LocalLlmConfig): string {
+  return sha256String(JSON.stringify({
+    baseUrl: config.baseUrl,
+    model: config.model,
+  }));
+}
+
+function normalizeReferenceTargetBenchmarkStrategies(
+  strategies?: ImplementationGuidanceStrategy[],
+): ImplementationGuidanceStrategy[] {
+  const source = strategies?.length ? strategies : REFERENCE_TARGET_BENCHMARK_PROFILE.defaultStrategies;
+  const unique = [...new Set(source)];
+  const allowed = unique.filter((entry): entry is ImplementationGuidanceStrategy =>
+    entry === "prompt-summary" || entry === "json-primary" || entry === "unguided",
+  );
+
+  if (allowed.length !== unique.length) {
+    throw new Error("Reference-target benchmark cohorts only support prompt-summary, json-primary, and unguided.");
+  }
+  if (!allowed.includes("prompt-summary") || !allowed.includes("json-primary")) {
+    throw new Error("Reference-target benchmark cohorts must include prompt-summary and json-primary.");
+  }
+  if (allowed.length < 2) {
+    throw new Error("Reference-target benchmark cohorts require at least two guidance strategies.");
+  }
+
+  const ordered: ImplementationGuidanceStrategy[] = [];
+  if (allowed.includes("unguided")) {
+    ordered.push("unguided");
+  }
+  ordered.push("prompt-summary", "json-primary");
+  return ordered.filter((entry, index, values) => allowed.includes(entry) && values.indexOf(entry) === index);
+}
+
+export function buildReferenceTargetBenchmarkComparisonPairs(
+  strategies: ImplementationGuidanceStrategy[],
+): BenchmarkComparisonPair[] {
+  const normalized = normalizeReferenceTargetBenchmarkStrategies(strategies);
+  if (normalized.length === 2) {
+    return [{
+      baselineGuidanceStrategy: normalized[0],
+      guidedGuidanceStrategy: normalized[1],
+    }];
+  }
+  return [
+    {
+      baselineGuidanceStrategy: "unguided",
+      guidedGuidanceStrategy: "prompt-summary",
+    },
+    {
+      baselineGuidanceStrategy: "unguided",
+      guidedGuidanceStrategy: "json-primary",
+    },
+    {
+      baselineGuidanceStrategy: "prompt-summary",
+      guidedGuidanceStrategy: "json-primary",
+    },
+  ];
+}
+
+async function writeFrozenTextFile(filePath: string, content: string): Promise<{ path: string; sha256: string }> {
+  const normalized = `${content.trim()}\n`;
+  await fsp.mkdir(path.dirname(filePath), { recursive: true });
+  await fsp.writeFile(filePath, normalized, "utf8");
+  return {
+    path: filePath,
+    sha256: sha256String(normalized),
+  };
+}
+
+async function writeFrozenRuntimeGuidancePaths(
+  runDir: string,
+  acceptedSuggestions: LocalWorkbenchAcceptedSuggestion[],
+  designerNotes: LocalWorkbenchDesignerNote[],
+): Promise<FrozenRuntimeGuidancePaths> {
+  const acceptedSuggestionsPath = path.join(runDir, "accepted-suggestions.runtime.json");
+  const designerNotesPath = path.join(runDir, "designer-notes.runtime.json");
+  await writeJsonFile(acceptedSuggestionsPath, {
+    suggestions: acceptedSuggestions.map((suggestion) => ({
+      findingCode: suggestion.findingCode,
+      findingMessage: suggestion.findingMessage,
+      summary: suggestion.summary,
+      suggestedPath: suggestion.suggestedPath,
+      ...(suggestion.rationale ? { rationale: suggestion.rationale } : {}),
+    })),
+  });
+  await writeJsonFile(designerNotesPath, {
+    designerNotes: designerNotes.map((note) => note.content),
+  });
+  return {
+    acceptedSuggestionsPath,
+    designerNotesPath,
+  };
+}
+
+async function initReferenceTargetGenerationSession(input: {
+  bundleRoot: string;
+  sessionsRoot: string;
+  sandboxRoot: string;
+  sessionId: string;
+  guidanceStrategy: ImplementationGuidanceStrategy;
+  briefFile: string;
+}): Promise<string> {
+  await runInterfacectlCli(
+    [
+      "init-generation-session",
+      "--bundle-root",
+      input.bundleRoot,
+      "--surface",
+      TARGET.id,
+      "--workspace-root",
+      input.sandboxRoot,
+      "--tool",
+      "local-llm",
+      "--guidance-strategy",
+      input.guidanceStrategy,
+      "--brief-file",
+      input.briefFile,
+      "--session",
+      input.sessionId,
+      "--artifacts-root",
+      input.sessionsRoot,
+    ],
+    { cwd: input.sandboxRoot },
+  );
+  return path.join(input.sessionsRoot, TARGET.id, input.sessionId);
+}
+
+async function recordReferenceTargetAttemptAndPreview(input: {
+  sandboxRoot: string;
+  sessionDir: string;
+  assessmentPath: string;
+  summarizeAfterCapture?: boolean;
+}): Promise<void> {
+  const port = await getAvailablePort();
+  await ensureSandboxPreviewDependencies(input.sandboxRoot);
+  const previewLogDir = path.dirname(input.assessmentPath);
+  const server = await startReferenceTargetServer(input.sandboxRoot, port, {
+    stdoutPath: path.join(previewLogDir, "preview.stdout.log"),
+    stderrPath: path.join(previewLogDir, "preview.stderr.log"),
+  });
+  try {
+    await runInterfacectlCli(
+      ["record-generation-attempt", "--session-dir", input.sessionDir, "--assessment-file", input.assessmentPath],
+      { cwd: input.sandboxRoot },
+    );
+    await runInterfacectlCli(
+      [
+        "capture-generation-preview",
+        "--session-dir",
+        input.sessionDir,
+        "--attempt",
+        "1",
+        "--url",
+        server.url,
+      ],
+      { cwd: input.sandboxRoot },
+    );
+    if (input.summarizeAfterCapture) {
+      await runInterfacectlCli(
+        ["summarize-generation-session", "--session-dir", input.sessionDir],
+        { cwd: input.sandboxRoot, acceptExitCodes: [30] },
+      );
+    }
+  } catch (error) {
+    throw new Error(withServerOutput(error instanceof Error ? error.message : String(error), server));
+  } finally {
+    await stopServer(server.child);
+  }
+}
+
+async function runReferenceTargetImplementationSession(input: {
+  llm: LocalLlmConfig;
+  runId: string;
+  artifactBaseDir: string;
+  sessionsRoot: string;
+  bundleRoot: string;
+  preparedPayload: Record<string, unknown>;
+  effectiveContractPath: string;
+  effectiveContract: ContractDocument;
+  implementationBrief: string;
+  guidanceStrategy: ImplementationGuidanceStrategy;
+  briefFile: string;
+  sessionId: string;
+  sandboxLabel: string;
+  runtimeGuidancePaths: FrozenRuntimeGuidancePaths;
+  runtimeGuidance: {
+    acceptedSuggestions: LocalWorkbenchAcceptedSuggestion[];
+    designerNotes: LocalWorkbenchDesignerNote[];
+  };
+  activeContractChanges: LocalWorkbenchContractChange[];
+  baselineValidate?: Record<string, unknown> | null;
+  agentBudgets?: LocalLlmAgentBudgets;
+}): Promise<ReferenceTargetImplementationSessionResult> {
+  const transcriptPath = path.join(input.artifactBaseDir, "agent-trace.json");
+  const guidanceHandoffPath = path.join(input.artifactBaseDir, "guidance-handoff.json");
+  const agentInputPath = path.join(input.artifactBaseDir, "agent-input.txt");
+  const explainabilityPath = path.join(input.artifactBaseDir, "explainability.json");
+  const assessmentPath = path.join(input.artifactBaseDir, "attempt.assessment.json");
+  await fsp.mkdir(input.artifactBaseDir, { recursive: true });
+
+  const sandboxRoot = await createSandbox(input.runId, input.sandboxLabel);
+  try {
+    const sessionDir = await initReferenceTargetGenerationSession({
+      bundleRoot: input.bundleRoot,
+      sessionsRoot: input.sessionsRoot,
+      sandboxRoot,
+      sessionId: input.sessionId,
+      guidanceStrategy: input.guidanceStrategy,
+      briefFile: input.briefFile,
+    });
+
+    await runInterfacectlCli(
+      [
+        "prepare-generation-handoff",
+        "--session-dir",
+        sessionDir,
+        "--guidance-strategy",
+        input.guidanceStrategy,
+        "--accepted-suggestions",
+        input.runtimeGuidancePaths.acceptedSuggestionsPath,
+        "--designer-notes",
+        input.runtimeGuidancePaths.designerNotesPath,
+        "--out",
+        guidanceHandoffPath,
+      ],
+      { cwd: sandboxRoot },
+    );
+    const guidanceHandoff = await readJsonFile<Record<string, unknown>>(guidanceHandoffPath);
+
+    const agentResult = await runLocalLlmAgent({
+      config: input.llm,
+      repoRoot: sandboxRoot,
+      allowedRoots: [TARGET.appPath],
+      guidanceStrategy: input.guidanceStrategy,
+      guidanceHandoff,
+      preparedPayload: input.preparedPayload,
+      implementationBrief: input.implementationBrief,
+      acceptedSuggestions: input.runtimeGuidance.acceptedSuggestions,
+      effectiveContractSummary: contractSummaryText(input.effectiveContract),
+      activeDesignerNotes: input.runtimeGuidance.designerNotes,
+      maxTurns: input.agentBudgets?.maxTurns,
+      maxToolCalls: input.agentBudgets?.maxToolCalls,
+      maxWallTimeMs: input.agentBudgets?.maxWallTimeMs,
+    }).catch(async (error) => {
+      const transcript = extractTranscriptFromError(error);
+      if (transcript) {
+        await writeJsonFile(transcriptPath, transcript);
+      }
+      throw error;
+    });
+    await writeJsonFile(transcriptPath, agentResult.transcript);
+    await fsp.writeFile(agentInputPath, agentResult.agentInput, "utf8");
+    await writeRunExplainability({
+      runId: input.runId,
+      explainabilityPath,
+      effectiveContractPath: input.effectiveContractPath,
+      agentInputPath,
+      guidanceStrategy: input.guidanceStrategy,
+      guidanceHandoffPath,
+      activeContractChanges: input.activeContractChanges,
+      activeDesignerNotes: input.runtimeGuidance.designerNotes,
+    });
+
+    const assessmentNotes = agentResult.noChanges
+      ? "Current snapshot after local LLM reported no-op."
+      : "Current snapshot after local LLM implementation pass.";
+    await writeJsonFile(
+      assessmentPath,
+      buildAssessmentPayload(assessmentNotes, agentResult.touchedFiles),
+    );
+    await recordReferenceTargetAttemptAndPreview({
+      sandboxRoot,
+      sessionDir,
+      assessmentPath,
+      summarizeAfterCapture: false,
+    });
+
+    const validate = await readJsonFile<Record<string, unknown>>(
+      path.join(sessionDir, "attempts", `${RERUN_ATTEMPT}.validate.json`),
+    );
+    const comparison = input.baselineValidate ? buildComparison(input.baselineValidate, validate) : null;
+    const remainingAcceptedSuggestions = pruneAcceptedSuggestions(input.runtimeGuidance.acceptedSuggestions, validate);
+    const assessmentPayload = buildAssessmentPayload(
+      assessmentNotes,
+      agentResult.touchedFiles,
+      buildAttemptHeuristics({
+        transcript: agentResult.transcript,
+        noChanges: agentResult.noChanges,
+        touchedFiles: agentResult.touchedFiles,
+        originalAcceptedSuggestions: input.runtimeGuidance.acceptedSuggestions,
+        remainingAcceptedSuggestions,
+        resolvedFindingCodes: comparison?.resolvedFindingCodes ?? [],
+      }),
+    );
+    const attemptAssessmentPath = path.join(sessionDir, "attempts", `${RERUN_ATTEMPT}.assessment.json`);
+    await writeJsonFile(assessmentPath, assessmentPayload);
+    await writeJsonFile(attemptAssessmentPath, assessmentPayload);
+    await runInterfacectlCli(
+      ["summarize-generation-session", "--session-dir", sessionDir],
+      { cwd: sandboxRoot, acceptExitCodes: [30] },
+    );
+
+    return {
+      guidanceStrategy: input.guidanceStrategy,
+      sessionId: input.sessionId,
+      sessionDir,
+      transcriptPath,
+      guidanceHandoffPath,
+      agentInputPath,
+      explainabilityPath,
+      summaryPath: path.join(sessionDir, "summary.json"),
+      previewPath: path.join(sessionDir, "attempts", `${RERUN_ATTEMPT}.preview.png`),
+      touchedFiles: agentResult.touchedFiles,
+      noChanges: agentResult.noChanges,
+      validate,
+      comparison,
+      remainingAcceptedSuggestions,
+    };
+  } finally {
+    await removeSandbox(sandboxRoot).catch(() => undefined);
+  }
 }
 
 export async function startLocalWorkbenchRerun(): Promise<StartLocalRerunResult> {
@@ -1613,7 +2041,7 @@ export async function startLocalWorkbenchRerun(): Promise<StartLocalRerunResult>
   const session = await loadOrInitContractSession();
   const activeAcceptedSuggestions = await loadAcceptedSuggestions();
 
-  const runId = new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 14);
+  const runId = buildRunId();
   const runDir = resolveRunDirectory(runId);
   const bundleRoot = path.join(runDir, "bundle");
   const preparedPath = path.join(runDir, "prepared-input.json");
@@ -1642,6 +2070,8 @@ export async function startLocalWorkbenchRerun(): Promise<StartLocalRerunResult>
     lastError: null,
     contractPath: effectiveContractPath,
     preparedInputPath: preparedPath,
+    guidanceStrategy: IMPLEMENTATION_GUIDANCE_STRATEGY,
+    guidanceHandoffPath: null,
     baselineSessionDir: null,
     currentSessionDir: null,
     baselinePreviewPath: null,
@@ -1705,7 +2135,6 @@ export async function startLocalWorkbenchRerun(): Promise<StartLocalRerunResult>
     });
 
     const preparedPayload = await readJsonFile<Record<string, unknown>>(preparedPath);
-
     await runInterfacectlCli(
       [
         "init-generation-session",
@@ -1746,7 +2175,11 @@ export async function startLocalWorkbenchRerun(): Promise<StartLocalRerunResult>
 
     const baselineSessionDir = path.join(sessionsRoot, TARGET.id, "baseline");
     const currentSessionDir = path.join(sessionsRoot, TARGET.id, "current");
-    await updateRunRecord(runId, { baselineSessionDir, currentSessionDir });
+    await updateRunRecord(runId, {
+      baselineSessionDir,
+      currentSessionDir,
+      guidanceStrategy: IMPLEMENTATION_GUIDANCE_STRATEGY,
+    });
 
     const baselineAssessmentPath = path.join(runDir, "baseline.assessment.json");
     await writeJsonFile(
@@ -1831,6 +2264,8 @@ export async function startLocalWorkbenchRerun(): Promise<StartLocalRerunResult>
         explainabilityPath,
         effectiveContractPath,
         agentInputPath,
+        guidanceStrategy: IMPLEMENTATION_GUIDANCE_STRATEGY,
+        guidanceHandoffPath: null,
         activeContractChanges: session.activeContractChanges,
         activeDesignerNotes: session.activeDesignerNotes,
       });
@@ -1976,6 +2411,193 @@ export async function startLocalWorkbenchRerun(): Promise<StartLocalRerunResult>
     await removeSandbox(currentSandbox).catch(() => undefined);
     await removeSandbox(baselineSandbox).catch(() => undefined);
   }
+}
+
+export async function runReferenceTargetBenchmarkCohort(input: {
+  strategies?: ImplementationGuidanceStrategy[];
+  cohortId?: string;
+  profile?: ReferenceTargetBenchmarkProfile;
+} = {}): Promise<ReferenceTargetBenchmarkCohortResult> {
+  const profile = input.profile ?? REFERENCE_TARGET_BENCHMARK_PROFILE;
+  const guidanceStrategies = normalizeReferenceTargetBenchmarkStrategies(
+    input.strategies ?? profile.defaultStrategies,
+  );
+  const comparisonPairs = buildReferenceTargetBenchmarkComparisonPairs(guidanceStrategies);
+  const cohortId = input.cohortId?.trim() || buildRunId();
+  const workspaceRoot = resolveWorkspaceRoot();
+  const benchmarkDir = path.join(workspaceRoot, "artifacts", "generation-benchmarks", cohortId);
+  const reportDir = path.join(benchmarkDir, "report");
+  const comparisonsDir = path.join(benchmarkDir, "comparisons");
+  const strategyArtifactsDir = path.join(benchmarkDir, "strategies");
+  const sessionsRoot = path.join(workspaceRoot, "artifacts", "generation-sessions");
+  const bundleRoot = path.join(benchmarkDir, "bundle");
+  const preparedPath = path.join(benchmarkDir, "prepared-input.json");
+  const effectiveContractPath = path.join(benchmarkDir, "effective-contract.json");
+  const briefPath = path.join(benchmarkDir, "implementation-brief.md");
+  const manifestPath = path.join(benchmarkDir, "manifest.json");
+
+  await fsp.mkdir(benchmarkDir, { recursive: true });
+  const effectiveContract = await readJsonFile<ContractDocument>(resolveTargetContractPath());
+  await writeJsonFile(effectiveContractPath, effectiveContract);
+  const frozenBrief = await writeFrozenTextFile(briefPath, profile.implementationBrief);
+  const runtimeGuidancePaths = await writeFrozenRuntimeGuidancePaths(
+    benchmarkDir,
+    profile.acceptedSuggestions,
+    profile.designerNotes,
+  );
+
+  await runInterfacectlCli(
+    ["compile", "--contract", effectiveContractPath, "--out", bundleRoot],
+    { cwd: workspaceRoot },
+  );
+  await runInterfacectlCli(
+    ["prepare-generation", "--bundle-root", bundleRoot, "--surface", TARGET.id, "--out", preparedPath],
+    { cwd: workspaceRoot },
+  );
+
+  const preparedPayload = await readJsonFile<Record<string, unknown>>(preparedPath);
+  const llm = resolveLocalLlmConfig();
+  const benchmarkAgentBudgets: LocalLlmAgentBudgets = {
+    maxTurns: 32,
+    maxToolCalls: 64,
+    maxWallTimeMs: 300_000,
+  };
+  const sessionResults: ReferenceTargetImplementationSessionResult[] = [];
+
+  for (const guidanceStrategy of guidanceStrategies) {
+    sessionResults.push(await runReferenceTargetImplementationSession({
+      llm,
+      runId: cohortId,
+      artifactBaseDir: path.join(strategyArtifactsDir, guidanceStrategy),
+      sessionsRoot,
+      bundleRoot,
+      preparedPayload,
+      effectiveContractPath,
+      effectiveContract,
+      implementationBrief: profile.implementationBrief,
+      guidanceStrategy,
+      briefFile: frozenBrief.path,
+      sessionId: `${cohortId}/${guidanceStrategy}`,
+      sandboxLabel: `benchmark-${guidanceStrategy}`,
+      runtimeGuidancePaths,
+      runtimeGuidance: {
+        acceptedSuggestions: profile.acceptedSuggestions,
+        designerNotes: profile.designerNotes,
+      },
+      activeContractChanges: [],
+      agentBudgets: benchmarkAgentBudgets,
+    }));
+  }
+
+  const comparisonPaths: string[] = [];
+  const manifestComparisons: BenchmarkCohortManifest["comparisons"] = [];
+  for (const pair of comparisonPairs) {
+    const baseline = sessionResults.find((result) => result.guidanceStrategy === pair.baselineGuidanceStrategy);
+    const guided = sessionResults.find((result) => result.guidanceStrategy === pair.guidedGuidanceStrategy);
+    if (!baseline || !guided) {
+      throw new Error(
+        `Could not resolve benchmark sessions for ${pair.baselineGuidanceStrategy} vs ${pair.guidedGuidanceStrategy}.`,
+      );
+    }
+    const comparisonResult = await runInterfacectlCli(
+      [
+        "compare-generation-sessions",
+        "--baseline-session-dir",
+        baseline.sessionDir,
+        "--guided-session-dir",
+        guided.sessionDir,
+        "--out-dir",
+        path.join(comparisonsDir, `${pair.baselineGuidanceStrategy}--vs--${pair.guidedGuidanceStrategy}`),
+      ],
+      { cwd: workspaceRoot },
+    );
+    const comparisonPath = parseJson<{ paths?: { jsonPath?: string } }>(
+      comparisonResult.stdout,
+      "benchmark comparison output",
+    ).paths?.jsonPath ?? null;
+    if (!comparisonPath) {
+      throw new Error(
+        `interfacectl did not return a comparison JSON path for ${pair.baselineGuidanceStrategy} vs ${pair.guidedGuidanceStrategy}.`,
+      );
+    }
+    comparisonPaths.push(comparisonPath);
+    manifestComparisons.push({
+      baselineGuidanceStrategy: pair.baselineGuidanceStrategy,
+      guidedGuidanceStrategy: pair.guidedGuidanceStrategy,
+      comparisonDir: path.dirname(comparisonPath),
+      comparisonPath,
+    });
+  }
+
+  const reportOutput = await runInterfacectlCli(
+    [
+      "summarize-generation-benchmark",
+      "--comparisons",
+      comparisonPaths.join(","),
+      "--out-dir",
+      reportDir,
+    ],
+    { cwd: workspaceRoot },
+  );
+  const reportPaths = parseJson<{ paths?: { jsonPath?: string; markdownPath?: string } }>(
+    reportOutput.stdout,
+    "benchmark summary output",
+  ).paths ?? {};
+  const reportPath = reportPaths.jsonPath ?? path.join(reportDir, "benchmark-report.json");
+  const reportMarkdownPath = reportPaths.markdownPath ?? path.join(reportDir, "benchmark-report.md");
+
+  const manifest = {
+    schemaVersion: 1,
+    cohortId,
+    generatedAt: new Date().toISOString(),
+    profileId: profile.profileId,
+    profileName: profile.profileName,
+    surfaceId: profile.surfaceId,
+    tool: profile.tool,
+    guidanceStrategies,
+    comparisonPairs: comparisonPairs.map((pair) => ({
+      baselineGuidanceStrategy: pair.baselineGuidanceStrategy,
+      guidedGuidanceStrategy: pair.guidedGuidanceStrategy,
+    })),
+    brief: {
+      path: frozenBrief.path,
+      sha256: frozenBrief.sha256,
+    },
+    model: {
+      baseUrl: llm.baseUrl,
+      model: llm.model,
+      fingerprint: buildLocalModelFingerprint(llm),
+    },
+    paths: {
+      benchmarkDir,
+      effectiveContractPath,
+      preparedInputPath: preparedPath,
+      reportJsonPath: reportPath,
+      reportMarkdownPath,
+    },
+    sessions: sessionResults.map((result) => ({
+      guidanceStrategy: result.guidanceStrategy,
+      sessionId: result.sessionId,
+      sessionDir: result.sessionDir,
+      transcriptPath: result.transcriptPath,
+      guidanceHandoffPath: result.guidanceHandoffPath,
+      agentInputPath: result.agentInputPath,
+      explainabilityPath: result.explainabilityPath,
+      summaryPath: result.summaryPath,
+      previewPath: result.previewPath,
+    })),
+    comparisons: manifestComparisons,
+  } satisfies BenchmarkCohortManifest;
+  await writeJsonFile(manifestPath, manifest);
+
+  return {
+    cohortId,
+    benchmarkDir,
+    manifestPath,
+    reportPath,
+    comparisonPaths,
+    sessionDirs: sessionResults.map((result) => result.sessionDir),
+  };
 }
 
 export async function reviewLocalWorkbenchSuggestion(input: {

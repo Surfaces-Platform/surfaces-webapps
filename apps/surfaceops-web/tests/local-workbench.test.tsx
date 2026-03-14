@@ -30,6 +30,8 @@ function buildRun(overrides: Partial<LocalWorkbenchRun> = {}): LocalWorkbenchRun
     touchedFiles: ["apps/reference-target-web/app/globals.css"],
     errorMessage: null,
     effectiveContractPath: "/tmp/surfaceops-local-runs/reference-target-web/runs/20260314091904/effective-contract.json",
+    guidanceStrategy: null,
+    guidanceHandoffPath: null,
     agentInputPath: "/tmp/surfaceops-local-runs/reference-target-web/runs/20260314091904/agent-input.txt",
     explainabilityPath: "/tmp/surfaceops-local-runs/reference-target-web/runs/20260314091904/explainability.json",
     baselinePreview: { path: null, dataUrl: null },
@@ -70,6 +72,10 @@ function buildData(overrides: Partial<LocalWorkbenchData> = {}): LocalWorkbenchD
     activeContractChanges: [],
     activeDesignerNotes: [],
     latestRunAgentInput: {
+      path: null,
+      content: null,
+    },
+    latestRunGuidanceHandoff: {
       path: null,
       content: null,
     },

@@ -12,6 +12,7 @@
     "type-check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "benchmark:reference-target-web": "tsx scripts/run-reference-target-benchmark.ts",
     "migrate": "tsx scripts/run-migrations.ts",
     "sync:run-artifacts:db": "tsx scripts/sync-run-artifacts-to-db.ts"
   },
