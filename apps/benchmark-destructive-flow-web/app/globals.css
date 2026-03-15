@@ -1,0 +1,168 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #fff6f0;
+  --surface: #ffffff;
+  --surface-alt: #fff0e5;
+  --text: #211922;
+  --muted: #685d68;
+  --border: #ebd8d5;
+  --accent: #b8422f;
+  --page-width: 1040px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-inter), Inter, sans-serif;
+  line-height: 1.5;
+}
+
+.flowPage {
+  min-height: 100vh;
+}
+
+.flowHeader {
+  background: rgba(255, 255, 255, 0.94);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+}
+
+.flowHeaderInner {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: 1rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.eyebrow {
+  color: var(--accent);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+}
+
+.flowNav {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 0.9rem;
+}
+
+.flowNav a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.flowMain {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.flowIntro,
+.flowPanel {
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  padding: 1.25rem;
+}
+
+.heroTitle {
+  margin: 0.15rem 0 0;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.05;
+}
+
+.heroText {
+  margin: 0;
+  max-width: 60ch;
+  color: var(--muted);
+}
+
+.flowGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.flowPanel {
+  background: var(--surface-alt);
+}
+
+.flowPanel h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.flowPanel p,
+.flowPanel li {
+  color: var(--muted);
+}
+
+.fieldGroup {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: 0.9rem;
+}
+
+.flowInput {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.75rem 0.85rem;
+  background: white;
+  color: var(--text);
+  font: inherit;
+}
+
+.dangerButton {
+  margin-top: 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  color: white;
+  padding: 0.7rem 1rem;
+  font: inherit;
+}
+
+.dangerButton:disabled {
+  opacity: 0.45;
+}
+
+.pill {
+  display: inline-flex;
+  margin-top: 0.6rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, white);
+  padding: 0.25rem 0.55rem;
+  font-size: 0.78rem;
+  color: var(--accent);
+}
+
+.reviewList {
+  padding-left: 1rem;
+}
+
+.confirmToggle {
+  display: flex;
+  gap: 0.65rem;
+  margin-top: 1rem;
+  color: var(--muted);
+}

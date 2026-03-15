@@ -7,6 +7,17 @@ import path from "node:path";
 import type { BenchmarkCohortManifest } from "@/lib/generation-benchmarks";
 import { runInterfacectlCli, resolveWorkspaceRoot } from "@/lib/interfacectl";
 import {
+  BENCHMARK_FIXTURE_IDS,
+  getBenchmarkFixture,
+  getBenchmarkFixtureProfile,
+  REFERENCE_TARGET_FIXTURE,
+  type BenchmarkFixture,
+  type BenchmarkFixtureGuidanceHints,
+  type BenchmarkFixtureId,
+  type BenchmarkFixtureProfile,
+  type BenchmarkGuidanceStrategy,
+} from "./benchmark-fixtures";
+import {
   defaultSuggestedPathForKnownFinding,
   defaultSummaryForKnownFinding,
   suggestionSummaryNeedsRefresh,
@@ -49,7 +60,7 @@ const DEFAULT_LOCAL_LLM_BASE_URL = "http://127.0.0.1:1234/v1";
 const DEFAULT_LOCAL_LLM_MODEL = "openai/gpt-oss-120b";
 const CONTRACT_SESSION_SCHEMA_VERSION = 2;
 const IMPLEMENTATION_GUIDANCE_STRATEGY = "json-primary";
-type ImplementationGuidanceStrategy = ReferenceTargetGuidanceStrategy;
+type ImplementationGuidanceStrategy = BenchmarkGuidanceStrategy;
 
 interface RunRecordFile {
   schemaVersion: number;
@@ -189,14 +200,17 @@ interface LocalLlmAgentBudgets {
   maxWallTimeMs?: number;
 }
 
-export interface ReferenceTargetBenchmarkCohortResult {
+export interface BenchmarkCohortResult {
   cohortId: string;
   benchmarkDir: string;
   manifestPath: string;
   reportPath: string | null;
   comparisonPaths: string[];
   sessionDirs: string[];
+  surfaceIds: string[];
 }
+
+export type ReferenceTargetBenchmarkCohortResult = BenchmarkCohortResult;
 
 interface AcceptedSuggestionBacklogFile {
   schemaVersion: 1;
@@ -539,37 +553,170 @@ function isGenericSuggestionSummary(summary: string, findingCode: string): boole
   return !trimmed || trimmed === `Review and refine ${findingCode}.` || trimmed === `Review and refine ${findingCode}`;
 }
 
-function isGenericSuggestionPath(suggestedPath: string): boolean {
-  const normalized = suggestedPath.trim().replace(/\\/g, "/").replace(/\/+$/, "");
-  return !normalized || normalized === TARGET.appPath;
+interface SuggestionGuidanceContext {
+  appPath: string;
+  guidanceHints?: BenchmarkFixtureGuidanceHints | null;
 }
 
-function defaultSuggestedPathForFinding(findingCode: string, locationFile: string | null): string {
+function buildFindingGuidanceContext(
+  context: SuggestionGuidanceContext | null | undefined,
+  suggestedPath: string | null = null,
+) {
+  return {
+    appPath: context?.appPath,
+    suggestedPath,
+    guidanceHints: context?.guidanceHints,
+  };
+}
+
+function asTrimmedStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value
+    .map((entry) => (typeof entry === "string" ? entry.trim() : ""))
+    .filter(Boolean);
+}
+
+function resolveSectionPath(
+  sectionIds: string[],
+  context: SuggestionGuidanceContext | null | undefined,
+): string | null {
+  const sectionPaths = context?.guidanceHints?.sectionPaths ?? {};
+  for (const sectionId of sectionIds) {
+    const nextPath = sectionPaths[sectionId];
+    if (nextPath?.trim()) {
+      return nextPath;
+    }
+  }
+  return context?.guidanceHints?.primaryPagePath ?? null;
+}
+
+function resolveRepairGuidance(input: {
+  findingCode: string;
+  findingMessage: string;
+  repair: Record<string, unknown> | null;
+  locationFile: string | null;
+  context: SuggestionGuidanceContext | null | undefined;
+}): { summary: string | null; suggestedPath: string | null } {
+  const action = asRecord(input.repair?.action) ?? {};
+  const actionType = typeof action.type === "string" ? action.type : "";
+  const stylesPath = input.context?.guidanceHints?.stylesPath ?? `${input.context?.appPath ?? TARGET.appPath}/app/globals.css`;
+  const pageFramePath = input.context?.guidanceHints?.pageFramePath ?? input.context?.guidanceHints?.primaryPagePath ?? `${input.context?.appPath ?? TARGET.appPath}/app/page.tsx`;
+  const widthPath = input.context?.guidanceHints?.widthPath ?? stylesPath;
+
+  switch (actionType) {
+    case "ensure-required-sections": {
+      const sectionIds = asTrimmedStringArray(action.sectionIds);
+      const suggestedPath = resolveSectionPath(sectionIds, input.context) ?? input.locationFile ?? pageFramePath;
+      const sectionSummary = sectionIds.length > 0 ? sectionIds.join(", ") : "the required contract sections";
+      return {
+        suggestedPath,
+        summary: `Restore ${sectionSummary} in ${suggestedPath} using real data-contract-section markers while preserving the existing fixture structure.`,
+      };
+    }
+    case "restrict-motion-durations":
+      return {
+        suggestedPath: stylesPath,
+        summary: `Update ${stylesPath} so the existing motion declarations use literal 120ms timing and stay attached to selectors already rendered by the fixture.`,
+      };
+    case "restrict-motion-timing":
+      return {
+        suggestedPath: stylesPath,
+        summary: `Update ${stylesPath} so the existing motion declarations use literal linear timing and stay attached to selectors already rendered by the fixture.`,
+      };
+    case "restrict-fonts": {
+      const allowedFonts = asTrimmedStringArray(action.allowedFonts);
+      return {
+        suggestedPath: stylesPath,
+        summary: `Update ${stylesPath} so rendered text uses only the allowed font stack${allowedFonts.length > 0 ? ` (${allowedFonts.join(", ")})` : ""}.`,
+      };
+    }
+    case "reduce-content-width": {
+      const maxContentWidth = typeof action.maxContentWidth === "number" ? action.maxContentWidth : null;
+      return {
+        suggestedPath: widthPath,
+        summary: `Reduce the page-frame width in ${widthPath}${maxContentWidth ? ` so the rendered surface does not exceed ${maxContentWidth}px` : ""}.`,
+      };
+    }
+    default:
+      break;
+  }
+
+  switch (input.findingCode) {
+    case "layout.container-missing":
+    case "layout.pageframe.container-not-found":
+      return {
+        suggestedPath: pageFramePath,
+        summary: `Restore the required page-container marker in ${pageFramePath}.`,
+      };
+    case "layout.pageframe.maxwidth-mismatch":
+    case "layout.pageframe.minwidth-mismatch":
+    case "layout.pageframe.padding-mismatch":
+    case "layout.pageframe.non-deterministic-value":
+    case "layout.pageframe.unextractable-value":
+      return {
+        suggestedPath: widthPath,
+        summary: input.findingMessage?.trim()
+          ? `Address ${input.findingCode} in ${widthPath}: ${input.findingMessage.trim()}`
+          : `Restore the required page-frame sizing rules in ${widthPath}.`,
+      };
+    default:
+      return {
+        summary: null,
+        suggestedPath: null,
+      };
+  }
+}
+
+function isGenericSuggestionPath(suggestedPath: string, appPath: string): boolean {
+  const normalized = suggestedPath.trim().replace(/\\/g, "/").replace(/\/+$/, "");
+  return !normalized || normalized === appPath;
+}
+
+function defaultSuggestedPathForFinding(
+  findingCode: string,
+  locationFile: string | null,
+  context: SuggestionGuidanceContext | null | undefined = null,
+): string {
   if (locationFile?.trim()) {
     return locationFile.trim();
   }
-  const knownPath = defaultSuggestedPathForKnownFinding(findingCode);
+  const knownPath = defaultSuggestedPathForKnownFinding(
+    findingCode,
+    buildFindingGuidanceContext(context, locationFile),
+  );
   if (knownPath) {
     return knownPath;
   }
   switch (findingCode) {
     case "layout.container-missing":
+    case "layout.pageframe.container-not-found":
+      return context?.guidanceHints?.pageFramePath ?? context?.guidanceHints?.primaryPagePath ?? `${context?.appPath ?? TARGET.appPath}/app/page.tsx`;
     case "section.missing":
     case "section.unexpected":
-      return `${TARGET.appPath}/app/page.tsx`;
+      return context?.guidanceHints?.primaryPagePath ?? `${context?.appPath ?? TARGET.appPath}/app/page.tsx`;
     default:
-      return TARGET.appPath;
+      return context?.appPath ?? TARGET.appPath;
   }
 }
 
-function defaultSummaryForFinding(findingCode: string, findingMessage: string): string {
-  const knownSummary = defaultSummaryForKnownFinding(findingCode);
+function defaultSummaryForFinding(
+  findingCode: string,
+  findingMessage: string,
+  context: SuggestionGuidanceContext | null | undefined = null,
+): string {
+  const knownSummary = defaultSummaryForKnownFinding(
+    findingCode,
+    buildFindingGuidanceContext(context),
+  );
   if (knownSummary) {
     return knownSummary;
   }
   switch (findingCode) {
     case "layout.container-missing":
-      return "Restore the required page-container marker on the main surface container.";
+    case "layout.pageframe.container-not-found":
+      return `Restore the required page-container marker in ${context?.guidanceHints?.pageFramePath ?? `${context?.appPath ?? TARGET.appPath}/app/page.tsx`}.`;
     default:
       return findingMessage?.trim() ? `Address ${findingCode}: ${findingMessage.trim()}` : `Review and refine ${findingCode}.`;
   }
@@ -580,13 +727,14 @@ function enrichSuggestionGuidance<T extends {
   findingMessage: string;
   summary: string;
   suggestedPath: string;
-}>(suggestion: T, locationFile: string | null = null): T {
-  const nextSuggestedPath = isGenericSuggestionPath(suggestion.suggestedPath)
-    ? defaultSuggestedPathForFinding(suggestion.findingCode, locationFile)
+}>(suggestion: T, locationFile: string | null = null, context: SuggestionGuidanceContext | null | undefined = null): T {
+  const appPath = context?.appPath ?? TARGET.appPath;
+  const nextSuggestedPath = isGenericSuggestionPath(suggestion.suggestedPath, appPath)
+    ? defaultSuggestedPathForFinding(suggestion.findingCode, locationFile, context)
     : suggestion.suggestedPath;
   const nextSummary = (isGenericSuggestionSummary(suggestion.summary, suggestion.findingCode)
     || suggestionSummaryNeedsRefresh(suggestion.summary, suggestion.findingCode))
-    ? defaultSummaryForFinding(suggestion.findingCode, suggestion.findingMessage)
+    ? defaultSummaryForFinding(suggestion.findingCode, suggestion.findingMessage, context)
     : suggestion.summary;
   return {
     ...suggestion,
@@ -595,7 +743,10 @@ function enrichSuggestionGuidance<T extends {
   };
 }
 
-function normalizeAcceptedSuggestion(entry: unknown): LocalWorkbenchAcceptedSuggestion | null {
+function normalizeAcceptedSuggestion(
+  entry: unknown,
+  context: SuggestionGuidanceContext | null | undefined = null,
+): LocalWorkbenchAcceptedSuggestion | null {
   const record = asRecord(entry);
   if (!record) {
     return null;
@@ -617,7 +768,7 @@ function normalizeAcceptedSuggestion(entry: unknown): LocalWorkbenchAcceptedSugg
     sourceRunId,
     acceptedAt,
     ...(typeof record.rationale === "string" ? { rationale: record.rationale } : {}),
-  });
+  }, null, context);
 }
 
 async function loadAcceptedSuggestions(): Promise<LocalWorkbenchAcceptedSuggestion[]> {
@@ -998,6 +1149,7 @@ export function suggestionSummaryFromRun(
   options: {
     reviewedPayload?: Record<string, unknown> | null;
     acceptedSuggestions?: LocalWorkbenchAcceptedSuggestion[];
+    fixture?: BenchmarkFixture | null;
   } = {},
 ): LocalWorkbenchSuggestion[] {
   const repairMap = extractRepairEntries(preparedPayload.repairMap);
@@ -1023,14 +1175,27 @@ export function suggestionSummaryFromRun(
       const location = asRecord(finding.location);
       const locationFile = typeof location?.file === "string" && location.file.trim() ? location.file.trim() : null;
       const repair = repairMap.find((entry) => entry.code === code) ?? null;
+      const guidanceContext = options.fixture
+        ? {
+            appPath: options.fixture.appPath,
+            guidanceHints: options.fixture.guidanceHints,
+          } satisfies SuggestionGuidanceContext
+        : null;
       const suggestionId = `suggestion-${index + 1}`;
       const reviewed = reviewedBySuggestionId.get(suggestionId) ?? reviewedByFindingCode.get(code);
       const accepted = acceptedByFindingCode.get(code);
       const reviewedSummary = typeof reviewed?.summary === "string" ? reviewed.summary : null;
       const reviewedPath = typeof reviewed?.suggestedPath === "string" ? reviewed.suggestedPath : null;
       const reviewedRationale = typeof reviewed?.rationale === "string" ? reviewed.rationale : null;
-      const repairSummary = repair ? String(repair.summary ?? repair.code ?? code) : null;
-      const repairPath = repair ? String(repair.path ?? TARGET.appPath) : null;
+      const repairGuidance = resolveRepairGuidance({
+        findingCode: code,
+        findingMessage: String(finding.message ?? code),
+        repair,
+        locationFile,
+        context: guidanceContext,
+      });
+      const repairSummary = repairGuidance.summary ?? (repair ? String(repair.summary ?? repair.code ?? code) : null);
+      const repairPath = repairGuidance.suggestedPath ?? (repair ? String(repair.path ?? options.fixture?.appPath ?? TARGET.appPath) : null);
       const status = accepted
         ? "accepted"
         : (reviewed ? String(reviewed.status ?? "proposed") : "proposed") as LocalSuggestionStatus;
@@ -1039,10 +1204,10 @@ export function suggestionSummaryFromRun(
         findingCode: code,
         findingMessage: String(finding.message ?? code),
         summary: accepted?.summary ?? reviewedSummary ?? repairSummary ?? `Review and refine ${code}.`,
-        suggestedPath: accepted?.suggestedPath ?? reviewedPath ?? repairPath ?? locationFile ?? TARGET.appPath,
+        suggestedPath: accepted?.suggestedPath ?? reviewedPath ?? repairPath ?? locationFile ?? options.fixture?.appPath ?? TARGET.appPath,
         status,
         ...((accepted?.rationale ?? reviewedRationale) ? { rationale: accepted?.rationale ?? reviewedRationale! } : {}),
-      }, locationFile);
+      }, locationFile, guidanceContext);
     });
 }
 
@@ -1064,6 +1229,52 @@ function buildComparison(
     newFindingCodes: currentCodes.filter((code) => !baselineCodes.includes(code)),
     resolvedFindingCodes: baselineCodes.filter((code) => !currentCodes.includes(code)),
   };
+}
+
+function toAcceptedSuggestion(
+  suggestion: LocalWorkbenchSuggestion,
+  sourceRunId: string,
+  acceptedAt: string,
+): LocalWorkbenchAcceptedSuggestion {
+  return {
+    findingCode: suggestion.findingCode,
+    findingMessage: suggestion.findingMessage,
+    summary: suggestion.summary,
+    suggestedPath: suggestion.suggestedPath,
+    sourceRunId,
+    acceptedAt,
+    ...(suggestion.rationale ? { rationale: suggestion.rationale } : {}),
+  };
+}
+
+function mergeBenchmarkAcceptedSuggestions(input: {
+  fixture: BenchmarkFixture;
+  baselineSuggestions: LocalWorkbenchSuggestion[];
+  profileAcceptedSuggestions: LocalWorkbenchAcceptedSuggestion[];
+  sourceRunId: string;
+  acceptedAt: string;
+}): LocalWorkbenchAcceptedSuggestion[] {
+  const guidanceContext = {
+    appPath: input.fixture.appPath,
+    guidanceHints: input.fixture.guidanceHints,
+  } satisfies SuggestionGuidanceContext;
+  const merged = new Map<string, LocalWorkbenchAcceptedSuggestion>();
+
+  for (const suggestion of input.baselineSuggestions) {
+    merged.set(
+      suggestion.findingCode,
+      toAcceptedSuggestion(suggestion, input.sourceRunId, input.acceptedAt),
+    );
+  }
+
+  for (const suggestion of input.profileAcceptedSuggestions) {
+    merged.set(
+      suggestion.findingCode,
+      enrichSuggestionGuidance({ ...suggestion }, null, guidanceContext),
+    );
+  }
+
+  return [...merged.values()];
 }
 
 function buildChatMessages(session: ContractSessionFile): LocalWorkbenchChatMessage[] {
@@ -1134,22 +1345,54 @@ async function mirrorSandboxNodeModules(sandboxRoot: string): Promise<void> {
   }
 }
 
-async function ensureSandboxPreviewDependencies(sandboxRoot: string): Promise<void> {
-  const relativePath = path.join(TARGET.appPath, "node_modules");
+async function ensureSandboxPreviewDependencies(
+  sandboxRoot: string,
+  appPath: string = TARGET.appPath,
+): Promise<void> {
+  const relativePath = path.join(appPath, "node_modules");
   const source = resolveDependencySource(relativePath);
   if (!source) {
     return;
   }
-  await linkDependencySource(source, path.join(sandboxRoot, TARGET.appPath, "node_modules"));
+  await linkDependencySource(source, path.join(sandboxRoot, appPath, "node_modules"));
 }
 
-async function createSandbox(runId: string, label: string): Promise<string> {
+async function syncWorkingTreeIntoSandbox(sourceRoot: string, sandboxRoot: string): Promise<void> {
+  await runCommand(
+    "rsync",
+    [
+      "-a",
+      "--delete",
+      "--exclude=.git",
+      "--exclude=node_modules",
+      "--exclude=.next",
+      "--exclude=artifacts",
+      "--exclude=.scratch",
+      `${sourceRoot}/`,
+      `${sandboxRoot}/`,
+    ],
+    { cwd: sourceRoot },
+  );
+}
+
+async function createSandbox(
+  runId: string,
+  label: string,
+  options: {
+    includeWorkingTree?: boolean;
+    sourceRoot?: string;
+  } = {},
+): Promise<string> {
   const sandboxRoot = path.join(resolveSandboxRoot(), runId, label);
   await fsp.mkdir(path.dirname(sandboxRoot), { recursive: true });
   await fsp.rm(sandboxRoot, { recursive: true, force: true });
   await runCommand("git", ["worktree", "add", "--detach", sandboxRoot, "HEAD"], {
     cwd: resolveWorkspaceRoot(),
   });
+  await fsp.mkdir(sandboxRoot, { recursive: true });
+  if (options.includeWorkingTree) {
+    await syncWorkingTreeIntoSandbox(options.sourceRoot ?? resolveWorkspaceRoot(), sandboxRoot);
+  }
   await mirrorSandboxNodeModules(sandboxRoot);
   return sandboxRoot;
 }
@@ -1191,12 +1434,12 @@ function formatProcessOutputTail(stdout: string, stderr: string, maxLines = 40):
   return combined.split(/\r?\n/).slice(-maxLines).join("\n");
 }
 
-function withServerOutput(message: string, server?: PreviewServerHandle): string {
+function withServerOutput(message: string, server?: PreviewServerHandle, surfaceId: string = TARGET.id): string {
   const outputTail = server?.getOutputTail() ?? "";
   if (!outputTail) {
     return message;
   }
-  return `${message}\n\nreference-target-web logs:\n${outputTail}`;
+  return `${message}\n\n${surfaceId} logs:\n${outputTail}`;
 }
 
 function summarizeServerResponseBody(body: string, maxChars = 600): string {
@@ -1210,46 +1453,52 @@ function summarizeServerResponseBody(body: string, maxChars = 600): string {
   return normalized.length > maxChars ? `${normalized.slice(0, maxChars - 3)}...` : normalized;
 }
 
-export function fatalServerResponseMessage(url: string, status: number, body: string): string | null {
+export function fatalServerResponseMessage(
+  url: string,
+  status: number,
+  body: string,
+  surfaceId: string = TARGET.id,
+): string | null {
   if (status < 500) {
     return null;
   }
   const excerpt = summarizeServerResponseBody(body);
   if (!excerpt) {
-    return `reference-target-web dev server returned HTTP ${status} for ${url}.`;
+    return `${surfaceId} dev server returned HTTP ${status} for ${url}.`;
   }
-  return `reference-target-web dev server returned HTTP ${status} for ${url}: ${excerpt}`;
+  return `${surfaceId} dev server returned HTTP ${status} for ${url}: ${excerpt}`;
 }
 
-async function waitForUrl(url: string, server?: PreviewServerHandle): Promise<void> {
+async function waitForUrl(url: string, server?: PreviewServerHandle, surfaceId: string = TARGET.id): Promise<void> {
   const deadline = Date.now() + 120_000;
   while (Date.now() < deadline) {
     if (server?.child.exitCode !== null) {
-      throw new Error(withServerOutput(`reference-target-web dev server exited before ${url} became ready.`, server));
+      throw new Error(withServerOutput(`${surfaceId} dev server exited before ${url} became ready.`, server, surfaceId));
     }
     try {
       const response = await fetch(url);
       if (response.ok) {
         return;
       }
-      const fatalResponse = fatalServerResponseMessage(url, response.status, await response.text());
+      const fatalResponse = fatalServerResponseMessage(url, response.status, await response.text(), surfaceId);
       if (fatalResponse) {
-        throw new Error(withServerOutput(fatalResponse, server));
+        throw new Error(withServerOutput(fatalResponse, server, surfaceId));
       }
     } catch (error) {
-      if (error instanceof Error && error.message.includes("reference-target-web dev server returned HTTP")) {
+      if (error instanceof Error && error.message.includes(`${surfaceId} dev server returned HTTP`)) {
         throw error;
       }
     }
     await new Promise((resolve) => setTimeout(resolve, 2_000));
   }
-  throw new Error(withServerOutput(`Timed out waiting for ${url}.`, server));
+  throw new Error(withServerOutput(`Timed out waiting for ${url}.`, server, surfaceId));
 }
 
 async function startReferenceTargetServer(
   workspaceRoot: string,
   port: number,
   paths: { stdoutPath: string; stderrPath: string },
+  fixture: BenchmarkFixture = REFERENCE_TARGET_FIXTURE,
 ): Promise<PreviewServerHandle> {
   await fsp.mkdir(path.dirname(paths.stdoutPath), { recursive: true });
   const stdoutStream = fs.createWriteStream(paths.stdoutPath, { flags: "w" });
@@ -1258,7 +1507,7 @@ async function startReferenceTargetServer(
     "pnpm",
     ["exec", "next", "dev", "--port", String(port), "--hostname", "127.0.0.1", "--webpack"],
     {
-      cwd: path.join(workspaceRoot, TARGET.appPath),
+      cwd: path.join(workspaceRoot, fixture.appPath),
       env: { ...process.env },
       stdio: ["ignore", "pipe", "pipe"],
     },
@@ -1282,7 +1531,7 @@ async function startReferenceTargetServer(
     stderrStream.end();
     if (code && code !== 0) {
       process.stderr.write(
-        `reference-target-web dev server exited early (${code}): ${stderrTail.join("\n")}\n`,
+        `${fixture.id} dev server exited early (${code}): ${stderrTail.join("\n")}\n`,
       );
     }
   });
@@ -1294,7 +1543,7 @@ async function startReferenceTargetServer(
     getStderrTail: () => [...stderrTail],
     getOutputTail: () => formatProcessOutputTail(stdout, stderr),
   } satisfies PreviewServerHandle;
-  await waitForUrl(server.url, server);
+  await waitForUrl(server.url, server, fixture.id);
   return server;
 }
 
@@ -1719,23 +1968,24 @@ function buildLocalModelFingerprint(config: LocalLlmConfig): string {
   }));
 }
 
-function normalizeReferenceTargetBenchmarkStrategies(
-  strategies?: ImplementationGuidanceStrategy[],
+function normalizeBenchmarkStrategies(
+  strategies: ImplementationGuidanceStrategy[] | undefined,
+  defaultStrategies: ImplementationGuidanceStrategy[],
 ): ImplementationGuidanceStrategy[] {
-  const source = strategies?.length ? strategies : REFERENCE_TARGET_BENCHMARK_PROFILE.defaultStrategies;
+  const source = strategies?.length ? strategies : defaultStrategies;
   const unique = [...new Set(source)];
   const allowed = unique.filter((entry): entry is ImplementationGuidanceStrategy =>
     entry === "prompt-summary" || entry === "json-primary" || entry === "unguided",
   );
 
   if (allowed.length !== unique.length) {
-    throw new Error("Reference-target benchmark cohorts only support prompt-summary, json-primary, and unguided.");
+    throw new Error("Benchmark cohorts only support prompt-summary, json-primary, and unguided.");
   }
   if (!allowed.includes("prompt-summary") || !allowed.includes("json-primary")) {
-    throw new Error("Reference-target benchmark cohorts must include prompt-summary and json-primary.");
+    throw new Error("Benchmark cohorts must include prompt-summary and json-primary.");
   }
   if (allowed.length < 2) {
-    throw new Error("Reference-target benchmark cohorts require at least two guidance strategies.");
+    throw new Error("Benchmark cohorts require at least two guidance strategies.");
   }
 
   const ordered: ImplementationGuidanceStrategy[] = [];
@@ -1746,10 +1996,10 @@ function normalizeReferenceTargetBenchmarkStrategies(
   return ordered.filter((entry, index, values) => allowed.includes(entry) && values.indexOf(entry) === index);
 }
 
-export function buildReferenceTargetBenchmarkComparisonPairs(
+function buildBenchmarkComparisonPairs(
   strategies: ImplementationGuidanceStrategy[],
 ): BenchmarkComparisonPair[] {
-  const normalized = normalizeReferenceTargetBenchmarkStrategies(strategies);
+  const normalized = normalizeBenchmarkStrategies(strategies, REFERENCE_TARGET_BENCHMARK_PROFILE.defaultStrategies);
   if (normalized.length === 2) {
     return [{
       baselineGuidanceStrategy: normalized[0],
@@ -1770,6 +2020,12 @@ export function buildReferenceTargetBenchmarkComparisonPairs(
       guidedGuidanceStrategy: "json-primary",
     },
   ];
+}
+
+export function buildReferenceTargetBenchmarkComparisonPairs(
+  strategies: ImplementationGuidanceStrategy[],
+): BenchmarkComparisonPair[] {
+  return buildBenchmarkComparisonPairs(strategies);
 }
 
 async function writeFrozenTextFile(filePath: string, content: string): Promise<{ path: string; sha256: string }> {
@@ -1795,6 +2051,8 @@ async function writeFrozenRuntimeGuidancePaths(
       findingMessage: suggestion.findingMessage,
       summary: suggestion.summary,
       suggestedPath: suggestion.suggestedPath,
+      sourceRunId: suggestion.sourceRunId,
+      acceptedAt: suggestion.acceptedAt,
       ...(suggestion.rationale ? { rationale: suggestion.rationale } : {}),
     })),
   });
@@ -1808,6 +2066,7 @@ async function writeFrozenRuntimeGuidancePaths(
 }
 
 async function initReferenceTargetGenerationSession(input: {
+  fixture: BenchmarkFixture;
   bundleRoot: string;
   sessionsRoot: string;
   sandboxRoot: string;
@@ -1821,7 +2080,7 @@ async function initReferenceTargetGenerationSession(input: {
       "--bundle-root",
       input.bundleRoot,
       "--surface",
-      TARGET.id,
+      input.fixture.id,
       "--workspace-root",
       input.sandboxRoot,
       "--tool",
@@ -1837,22 +2096,23 @@ async function initReferenceTargetGenerationSession(input: {
     ],
     { cwd: input.sandboxRoot },
   );
-  return path.join(input.sessionsRoot, TARGET.id, input.sessionId);
+  return path.join(input.sessionsRoot, input.fixture.id, input.sessionId);
 }
 
 async function recordReferenceTargetAttemptAndPreview(input: {
+  fixture: BenchmarkFixture;
   sandboxRoot: string;
   sessionDir: string;
   assessmentPath: string;
   summarizeAfterCapture?: boolean;
 }): Promise<void> {
   const port = await getAvailablePort();
-  await ensureSandboxPreviewDependencies(input.sandboxRoot);
+  await ensureSandboxPreviewDependencies(input.sandboxRoot, input.fixture.appPath);
   const previewLogDir = path.dirname(input.assessmentPath);
   const server = await startReferenceTargetServer(input.sandboxRoot, port, {
     stdoutPath: path.join(previewLogDir, "preview.stdout.log"),
     stderrPath: path.join(previewLogDir, "preview.stderr.log"),
-  });
+  }, input.fixture);
   try {
     await runInterfacectlCli(
       ["record-generation-attempt", "--session-dir", input.sessionDir, "--assessment-file", input.assessmentPath],
@@ -1877,13 +2137,54 @@ async function recordReferenceTargetAttemptAndPreview(input: {
       );
     }
   } catch (error) {
-    throw new Error(withServerOutput(error instanceof Error ? error.message : String(error), server));
+    throw new Error(withServerOutput(error instanceof Error ? error.message : String(error), server, input.fixture.id));
   } finally {
     await stopServer(server.child);
   }
 }
 
+async function collectReferenceTargetBenchmarkBaselineValidate(input: {
+  fixture: BenchmarkFixture;
+  runId: string;
+  artifactBaseDir: string;
+  sessionsRoot: string;
+  bundleRoot: string;
+  briefFile: string;
+}): Promise<Record<string, unknown>> {
+  const sandboxRoot = await createSandbox(input.runId, `benchmark-baseline-seed-${input.fixture.id}`, {
+    includeWorkingTree: true,
+  });
+  try {
+    const sessionDir = await initReferenceTargetGenerationSession({
+      fixture: input.fixture,
+      bundleRoot: input.bundleRoot,
+      sessionsRoot: input.sessionsRoot,
+      sandboxRoot,
+      sessionId: `${input.runId}/baseline-seed`,
+      guidanceStrategy: "unguided",
+      briefFile: input.briefFile,
+    });
+    await fsp.mkdir(input.artifactBaseDir, { recursive: true });
+    const assessmentPath = path.join(input.artifactBaseDir, "attempt.assessment.json");
+    await writeJsonFile(
+      assessmentPath,
+      buildAssessmentPayload("Baseline snapshot before benchmark repair guidance.", []),
+    );
+    await runInterfacectlCli(
+      ["record-generation-attempt", "--session-dir", sessionDir, "--assessment-file", assessmentPath],
+      { cwd: sandboxRoot },
+    );
+    const validatePath = path.join(sessionDir, "attempts", `${RERUN_ATTEMPT}.validate.json`);
+    const validate = await readJsonFile<Record<string, unknown>>(validatePath);
+    await writeJsonFile(path.join(input.artifactBaseDir, "attempt.validate.json"), validate);
+    return validate;
+  } finally {
+    await removeSandbox(sandboxRoot).catch(() => undefined);
+  }
+}
+
 async function runReferenceTargetImplementationSession(input: {
+  fixture: BenchmarkFixture;
   llm: LocalLlmConfig;
   runId: string;
   artifactBaseDir: string;
@@ -1913,9 +2214,12 @@ async function runReferenceTargetImplementationSession(input: {
   const assessmentPath = path.join(input.artifactBaseDir, "attempt.assessment.json");
   await fsp.mkdir(input.artifactBaseDir, { recursive: true });
 
-  const sandboxRoot = await createSandbox(input.runId, input.sandboxLabel);
+  const sandboxRoot = await createSandbox(input.runId, input.sandboxLabel, {
+    includeWorkingTree: true,
+  });
   try {
     const sessionDir = await initReferenceTargetGenerationSession({
+      fixture: input.fixture,
       bundleRoot: input.bundleRoot,
       sessionsRoot: input.sessionsRoot,
       sandboxRoot,
@@ -1945,7 +2249,9 @@ async function runReferenceTargetImplementationSession(input: {
     const agentResult = await runLocalLlmAgent({
       config: input.llm,
       repoRoot: sandboxRoot,
-      allowedRoots: [TARGET.appPath],
+      allowedRoots: [input.fixture.appPath],
+      surfaceId: input.fixture.id,
+      guidanceHints: input.fixture.guidanceHints,
       guidanceStrategy: input.guidanceStrategy,
       guidanceHandoff,
       preparedPayload: input.preparedPayload,
@@ -1984,6 +2290,7 @@ async function runReferenceTargetImplementationSession(input: {
       buildAssessmentPayload(assessmentNotes, agentResult.touchedFiles),
     );
     await recordReferenceTargetAttemptAndPreview({
+      fixture: input.fixture,
       sandboxRoot,
       sessionDir,
       assessmentPath,
@@ -2413,119 +2720,205 @@ export async function startLocalWorkbenchRerun(): Promise<StartLocalRerunResult>
   }
 }
 
-export async function runReferenceTargetBenchmarkCohort(input: {
+function normalizeBenchmarkFixtureIds(
+  fixtureIds?: string[],
+): BenchmarkFixtureId[] {
+  const source = fixtureIds?.length ? fixtureIds : BENCHMARK_FIXTURE_IDS;
+  const unique = [...new Set(source)];
+  const allowedFixtureIds = new Set<string>(BENCHMARK_FIXTURE_IDS);
+  const normalized = unique.map((fixtureId) => {
+    if (!allowedFixtureIds.has(fixtureId)) {
+      throw new Error(`Unknown benchmark fixture: ${fixtureId}`);
+    }
+    return fixtureId as BenchmarkFixtureId;
+  });
+  if (normalized.length === 0) {
+    throw new Error("Benchmark cohorts require at least one fixture.");
+  }
+  return normalized;
+}
+
+export async function runBenchmarkCohort(input: {
+  fixtureIds?: string[];
   strategies?: ImplementationGuidanceStrategy[];
   cohortId?: string;
-  profile?: ReferenceTargetBenchmarkProfile;
-} = {}): Promise<ReferenceTargetBenchmarkCohortResult> {
-  const profile = input.profile ?? REFERENCE_TARGET_BENCHMARK_PROFILE;
-  const guidanceStrategies = normalizeReferenceTargetBenchmarkStrategies(
-    input.strategies ?? profile.defaultStrategies,
-  );
-  const comparisonPairs = buildReferenceTargetBenchmarkComparisonPairs(guidanceStrategies);
+  profilesByFixtureId?: Partial<Record<BenchmarkFixtureId, BenchmarkFixtureProfile>>;
+} = {}): Promise<BenchmarkCohortResult> {
+  const fixtureIds = normalizeBenchmarkFixtureIds(input.fixtureIds);
+  const defaultStrategies = getBenchmarkFixtureProfile(fixtureIds[0]!).defaultStrategies;
+  const guidanceStrategies = normalizeBenchmarkStrategies(input.strategies, defaultStrategies);
+  const comparisonPairs = buildBenchmarkComparisonPairs(guidanceStrategies);
   const cohortId = input.cohortId?.trim() || buildRunId();
   const workspaceRoot = resolveWorkspaceRoot();
   const benchmarkDir = path.join(workspaceRoot, "artifacts", "generation-benchmarks", cohortId);
   const reportDir = path.join(benchmarkDir, "report");
-  const comparisonsDir = path.join(benchmarkDir, "comparisons");
-  const strategyArtifactsDir = path.join(benchmarkDir, "strategies");
   const sessionsRoot = path.join(workspaceRoot, "artifacts", "generation-sessions");
-  const bundleRoot = path.join(benchmarkDir, "bundle");
-  const preparedPath = path.join(benchmarkDir, "prepared-input.json");
-  const effectiveContractPath = path.join(benchmarkDir, "effective-contract.json");
-  const briefPath = path.join(benchmarkDir, "implementation-brief.md");
   const manifestPath = path.join(benchmarkDir, "manifest.json");
 
   await fsp.mkdir(benchmarkDir, { recursive: true });
-  const effectiveContract = await readJsonFile<ContractDocument>(resolveTargetContractPath());
-  await writeJsonFile(effectiveContractPath, effectiveContract);
-  const frozenBrief = await writeFrozenTextFile(briefPath, profile.implementationBrief);
-  const runtimeGuidancePaths = await writeFrozenRuntimeGuidancePaths(
-    benchmarkDir,
-    profile.acceptedSuggestions,
-    profile.designerNotes,
-  );
-
-  await runInterfacectlCli(
-    ["compile", "--contract", effectiveContractPath, "--out", bundleRoot],
-    { cwd: workspaceRoot },
-  );
-  await runInterfacectlCli(
-    ["prepare-generation", "--bundle-root", bundleRoot, "--surface", TARGET.id, "--out", preparedPath],
-    { cwd: workspaceRoot },
-  );
-
-  const preparedPayload = await readJsonFile<Record<string, unknown>>(preparedPath);
   const llm = resolveLocalLlmConfig();
   const benchmarkAgentBudgets: LocalLlmAgentBudgets = {
     maxTurns: 32,
     maxToolCalls: 64,
     maxWallTimeMs: 300_000,
   };
-  const sessionResults: ReferenceTargetImplementationSessionResult[] = [];
-
-  for (const guidanceStrategy of guidanceStrategies) {
-    sessionResults.push(await runReferenceTargetImplementationSession({
-      llm,
-      runId: cohortId,
-      artifactBaseDir: path.join(strategyArtifactsDir, guidanceStrategy),
-      sessionsRoot,
-      bundleRoot,
-      preparedPayload,
-      effectiveContractPath,
-      effectiveContract,
-      implementationBrief: profile.implementationBrief,
-      guidanceStrategy,
-      briefFile: frozenBrief.path,
-      sessionId: `${cohortId}/${guidanceStrategy}`,
-      sandboxLabel: `benchmark-${guidanceStrategy}`,
-      runtimeGuidancePaths,
-      runtimeGuidance: {
-        acceptedSuggestions: profile.acceptedSuggestions,
-        designerNotes: profile.designerNotes,
-      },
-      activeContractChanges: [],
-      agentBudgets: benchmarkAgentBudgets,
-    }));
-  }
-
   const comparisonPaths: string[] = [];
-  const manifestComparisons: BenchmarkCohortManifest["comparisons"] = [];
-  for (const pair of comparisonPairs) {
-    const baseline = sessionResults.find((result) => result.guidanceStrategy === pair.baselineGuidanceStrategy);
-    const guided = sessionResults.find((result) => result.guidanceStrategy === pair.guidedGuidanceStrategy);
-    if (!baseline || !guided) {
-      throw new Error(
-        `Could not resolve benchmark sessions for ${pair.baselineGuidanceStrategy} vs ${pair.guidedGuidanceStrategy}.`,
-      );
-    }
-    const comparisonResult = await runInterfacectlCli(
-      [
-        "compare-generation-sessions",
-        "--baseline-session-dir",
-        baseline.sessionDir,
-        "--guided-session-dir",
-        guided.sessionDir,
-        "--out-dir",
-        path.join(comparisonsDir, `${pair.baselineGuidanceStrategy}--vs--${pair.guidedGuidanceStrategy}`),
-      ],
+  const allSessionDirs: string[] = [];
+  const manifestFixtures: NonNullable<BenchmarkCohortManifest["fixtures"]> = [];
+
+  for (const fixtureId of fixtureIds) {
+    const fixture = getBenchmarkFixture(fixtureId);
+    const profile = input.profilesByFixtureId?.[fixtureId] ?? getBenchmarkFixtureProfile(fixtureId);
+    const fixtureDir = path.join(benchmarkDir, "fixtures", fixture.id);
+    const comparisonsDir = path.join(fixtureDir, "comparisons");
+    const strategyArtifactsDir = path.join(fixtureDir, "strategies");
+    const bundleRoot = path.join(fixtureDir, "bundle");
+    const preparedPath = path.join(fixtureDir, "prepared-input.json");
+    const effectiveContractPath = path.join(fixtureDir, "effective-contract.json");
+    const briefPath = path.join(fixtureDir, "implementation-brief.md");
+    const baselineSeedDir = path.join(fixtureDir, "baseline-seed");
+
+    await fsp.mkdir(fixtureDir, { recursive: true });
+    const effectiveContract = await readJsonFile<ContractDocument>(
+      path.join(workspaceRoot, fixture.contractPath),
+    );
+    await writeJsonFile(effectiveContractPath, effectiveContract);
+    const frozenBrief = await writeFrozenTextFile(briefPath, profile.implementationBrief);
+
+    await runInterfacectlCli(
+      ["compile", "--contract", effectiveContractPath, "--out", bundleRoot],
       { cwd: workspaceRoot },
     );
-    const comparisonPath = parseJson<{ paths?: { jsonPath?: string } }>(
-      comparisonResult.stdout,
-      "benchmark comparison output",
-    ).paths?.jsonPath ?? null;
-    if (!comparisonPath) {
-      throw new Error(
-        `interfacectl did not return a comparison JSON path for ${pair.baselineGuidanceStrategy} vs ${pair.guidedGuidanceStrategy}.`,
-      );
+    await runInterfacectlCli(
+      ["prepare-generation", "--bundle-root", bundleRoot, "--surface", fixture.id, "--out", preparedPath],
+      { cwd: workspaceRoot },
+    );
+
+    const preparedPayload = await readJsonFile<Record<string, unknown>>(preparedPath);
+    const baselineValidate = await collectReferenceTargetBenchmarkBaselineValidate({
+      fixture,
+      runId: cohortId,
+      artifactBaseDir: baselineSeedDir,
+      sessionsRoot,
+      bundleRoot,
+      briefFile: frozenBrief.path,
+    });
+    const acceptedAt = new Date().toISOString();
+    const acceptedSuggestions = mergeBenchmarkAcceptedSuggestions({
+      fixture,
+      baselineSuggestions: suggestionSummaryFromRun(preparedPayload, baselineValidate, { fixture }),
+      profileAcceptedSuggestions: profile.acceptedSuggestions,
+      sourceRunId: `${cohortId}/baseline-seed`,
+      acceptedAt,
+    });
+    const runtimeGuidancePaths = await writeFrozenRuntimeGuidancePaths(
+      fixtureDir,
+      acceptedSuggestions,
+      profile.designerNotes,
+    );
+
+    const sessionResults: ReferenceTargetImplementationSessionResult[] = [];
+    for (const guidanceStrategy of guidanceStrategies) {
+      sessionResults.push(await runReferenceTargetImplementationSession({
+        fixture,
+        llm,
+        runId: cohortId,
+        artifactBaseDir: path.join(strategyArtifactsDir, guidanceStrategy),
+        sessionsRoot,
+        bundleRoot,
+        preparedPayload,
+        effectiveContractPath,
+        effectiveContract,
+        implementationBrief: profile.implementationBrief,
+        guidanceStrategy,
+        briefFile: frozenBrief.path,
+        sessionId: `${cohortId}/${guidanceStrategy}`,
+        sandboxLabel: `benchmark-${fixture.id}-${guidanceStrategy}`,
+        runtimeGuidancePaths,
+        runtimeGuidance: {
+          acceptedSuggestions,
+          designerNotes: profile.designerNotes,
+        },
+        activeContractChanges: [],
+        baselineValidate,
+        agentBudgets: benchmarkAgentBudgets,
+      }));
     }
-    comparisonPaths.push(comparisonPath);
-    manifestComparisons.push({
-      baselineGuidanceStrategy: pair.baselineGuidanceStrategy,
-      guidedGuidanceStrategy: pair.guidedGuidanceStrategy,
-      comparisonDir: path.dirname(comparisonPath),
-      comparisonPath,
+
+    const manifestComparisons: NonNullable<BenchmarkCohortManifest["fixtures"]>[number]["comparisons"] = [];
+    for (const pair of comparisonPairs) {
+      const baseline = sessionResults.find((result) => result.guidanceStrategy === pair.baselineGuidanceStrategy);
+      const guided = sessionResults.find((result) => result.guidanceStrategy === pair.guidedGuidanceStrategy);
+      if (!baseline || !guided) {
+        throw new Error(
+          `Could not resolve benchmark sessions for ${fixture.id}: ${pair.baselineGuidanceStrategy} vs ${pair.guidedGuidanceStrategy}.`,
+        );
+      }
+      const comparisonResult = await runInterfacectlCli(
+        [
+          "compare-generation-sessions",
+          "--baseline-session-dir",
+          baseline.sessionDir,
+          "--guided-session-dir",
+          guided.sessionDir,
+          "--out-dir",
+          path.join(comparisonsDir, `${pair.baselineGuidanceStrategy}--vs--${pair.guidedGuidanceStrategy}`),
+        ],
+        { cwd: workspaceRoot },
+      );
+      const comparisonPath = parseJson<{ paths?: { jsonPath?: string } }>(
+        comparisonResult.stdout,
+        "benchmark comparison output",
+      ).paths?.jsonPath ?? null;
+      if (!comparisonPath) {
+        throw new Error(
+          `interfacectl did not return a comparison JSON path for ${fixture.id}: ${pair.baselineGuidanceStrategy} vs ${pair.guidedGuidanceStrategy}.`,
+        );
+      }
+      comparisonPaths.push(comparisonPath);
+      manifestComparisons.push({
+        baselineGuidanceStrategy: pair.baselineGuidanceStrategy,
+        guidedGuidanceStrategy: pair.guidedGuidanceStrategy,
+        comparisonDir: path.dirname(comparisonPath),
+        comparisonPath,
+      });
+    }
+
+    allSessionDirs.push(...sessionResults.map((result) => result.sessionDir));
+    manifestFixtures.push({
+      fixtureId: fixture.id,
+      profileId: profile.profileId,
+      profileName: profile.profileName,
+      surfaceId: profile.surfaceId,
+      tool: profile.tool,
+      comparisonPairs: comparisonPairs.map((pair) => ({
+        baselineGuidanceStrategy: pair.baselineGuidanceStrategy,
+        guidedGuidanceStrategy: pair.guidedGuidanceStrategy,
+      })),
+      brief: {
+        path: frozenBrief.path,
+        sha256: frozenBrief.sha256,
+      },
+      paths: {
+        fixtureDir,
+        effectiveContractPath,
+        preparedInputPath: preparedPath,
+        acceptedSuggestionsPath: runtimeGuidancePaths.acceptedSuggestionsPath,
+        designerNotesPath: runtimeGuidancePaths.designerNotesPath,
+        baselineValidatePath: path.join(baselineSeedDir, "attempt.validate.json"),
+      },
+      sessions: sessionResults.map((result) => ({
+        guidanceStrategy: result.guidanceStrategy,
+        sessionId: result.sessionId,
+        sessionDir: result.sessionDir,
+        transcriptPath: result.transcriptPath,
+        guidanceHandoffPath: result.guidanceHandoffPath,
+        agentInputPath: result.agentInputPath,
+        explainabilityPath: result.explainabilityPath,
+        summaryPath: result.summaryPath,
+        previewPath: result.previewPath,
+      })),
+      comparisons: manifestComparisons,
     });
   }
 
@@ -2547,22 +2940,13 @@ export async function runReferenceTargetBenchmarkCohort(input: {
   const reportMarkdownPath = reportPaths.markdownPath ?? path.join(reportDir, "benchmark-report.md");
 
   const manifest = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     cohortId,
     generatedAt: new Date().toISOString(),
-    profileId: profile.profileId,
-    profileName: profile.profileName,
-    surfaceId: profile.surfaceId,
-    tool: profile.tool,
+    suiteId: "surfaceops-benchmark-suite/default",
+    suiteName: "SurfaceOps Benchmark Fixture Suite",
+    tool: "local-llm",
     guidanceStrategies,
-    comparisonPairs: comparisonPairs.map((pair) => ({
-      baselineGuidanceStrategy: pair.baselineGuidanceStrategy,
-      guidedGuidanceStrategy: pair.guidedGuidanceStrategy,
-    })),
-    brief: {
-      path: frozenBrief.path,
-      sha256: frozenBrief.sha256,
-    },
     model: {
       baseUrl: llm.baseUrl,
       model: llm.model,
@@ -2570,23 +2954,10 @@ export async function runReferenceTargetBenchmarkCohort(input: {
     },
     paths: {
       benchmarkDir,
-      effectiveContractPath,
-      preparedInputPath: preparedPath,
       reportJsonPath: reportPath,
       reportMarkdownPath,
     },
-    sessions: sessionResults.map((result) => ({
-      guidanceStrategy: result.guidanceStrategy,
-      sessionId: result.sessionId,
-      sessionDir: result.sessionDir,
-      transcriptPath: result.transcriptPath,
-      guidanceHandoffPath: result.guidanceHandoffPath,
-      agentInputPath: result.agentInputPath,
-      explainabilityPath: result.explainabilityPath,
-      summaryPath: result.summaryPath,
-      previewPath: result.previewPath,
-    })),
-    comparisons: manifestComparisons,
+    fixtures: manifestFixtures,
   } satisfies BenchmarkCohortManifest;
   await writeJsonFile(manifestPath, manifest);
 
@@ -2596,8 +2967,24 @@ export async function runReferenceTargetBenchmarkCohort(input: {
     manifestPath,
     reportPath,
     comparisonPaths,
-    sessionDirs: sessionResults.map((result) => result.sessionDir),
+    sessionDirs: allSessionDirs,
+    surfaceIds: fixtureIds,
   };
+}
+
+export async function runReferenceTargetBenchmarkCohort(input: {
+  strategies?: ImplementationGuidanceStrategy[];
+  cohortId?: string;
+  profile?: ReferenceTargetBenchmarkProfile;
+} = {}): Promise<ReferenceTargetBenchmarkCohortResult> {
+  return runBenchmarkCohort({
+    fixtureIds: [REFERENCE_TARGET.id],
+    strategies: input.strategies,
+    cohortId: input.cohortId,
+    profilesByFixtureId: input.profile
+      ? { [REFERENCE_TARGET.id]: input.profile }
+      : undefined,
+  });
 }
 
 export async function reviewLocalWorkbenchSuggestion(input: {

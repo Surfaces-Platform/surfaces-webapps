@@ -1,0 +1,141 @@
+{
+  "$schema": "https://contracts.surfaces.local/web.surface.contract.schema.json",
+  "color": {
+    "allowedValues": [
+      "rgba(255, 255, 255, 0.92)",
+      "var(--accent)",
+      "var(--bg)",
+      "var(--muted)",
+      "var(--surface-alt)",
+      "var(--surface)",
+      "var(--text)",
+      "white"
+    ],
+    "policy": "warn"
+  },
+  "constraints": {
+    "motion": {
+      "allowedDurationsMs": [
+        180,
+        220
+      ],
+      "allowedTimingFunctions": [
+        "ease"
+      ]
+    }
+  },
+  "contractId": "benchmark-async-data-web.generated",
+  "description": "Extracted from Next.js app (Phase 0).",
+  "sections": [
+    {
+      "id": "data.hero",
+      "description": "Server-rendered hero summary for the async dashboard.",
+      "intent": "hero"
+    },
+    {
+      "id": "data.stream",
+      "description": "Primary async stream lane for dashboard events.",
+      "intent": "stream"
+    },
+    {
+      "id": "data.queue",
+      "description": "Queued review lane for async dashboard data.",
+      "intent": "queue"
+    },
+    {
+      "id": "data.health",
+      "description": "Health counters panel for the async dashboard.",
+      "intent": "health"
+    }
+  ],
+  "surfaces": [
+    {
+      "allowedFonts": [
+        "Inter",
+        "sans-serif",
+        "var(--font-inter)"
+      ],
+      "displayName": "Benchmark Async Data Web",
+      "icons": {
+        "allowedSources": [],
+        "policy": "warn"
+      },
+      "id": "benchmark-async-data-web",
+      "layout": {
+        "chromePolicy": {
+          "allowInsetShadow": false,
+          "allowOuterShadow": false,
+          "maxBorderRadiusPx": 0,
+          "policy": "off",
+          "targets": [
+            "layout-container",
+            "page-container",
+            "top-level-section"
+          ]
+        },
+        "maxContentWidth": 1120,
+        "requiredContainers": [
+          "page-container"
+        ]
+      },
+      "requiredSections": [
+        "data.hero",
+        "data.stream",
+        "data.queue",
+        "data.health"
+      ],
+      "type": "web",
+      "phase0": {
+        "authPosture": "public",
+        "requiresShell": true
+      }
+    }
+  ],
+  "tokens": {
+    "layout": {
+      "allowedTokens": [
+        "var(--page-width)"
+      ],
+      "policy": "warn",
+      "tokenMetadata": [
+        {
+          "aliases": [],
+          "attributes": [
+            "max-width"
+          ],
+          "normalizedValue": "1180px",
+          "token": "var(--page-width)"
+        }
+      ]
+    },
+    "motion": {
+      "allowedTokens": [],
+      "policy": "warn"
+    },
+    "typography": {
+      "allowedTokens": [
+        "var(--font-inter)"
+      ],
+      "policy": "warn",
+      "tokenMetadata": [
+        {
+          "aliases": [],
+          "attributes": [
+            "font-family"
+          ],
+          "normalizedValue": "var(--font-inter)",
+          "token": "var(--font-inter)"
+        }
+      ]
+    }
+  },
+  "version": "0.1.0",
+  "x_extracted": {
+    "authAware": false,
+    "designSystemComponents": [],
+    "hasShell": true,
+    "routes": [
+      "/"
+    ]
+  }
+}

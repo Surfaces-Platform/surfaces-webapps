@@ -1,0 +1,140 @@
+{
+  "$schema": "https://contracts.surfaces.local/web.surface.contract.schema.json",
+  "color": {
+    "allowedValues": [
+      "rgba(255, 255, 255, 0.94)",
+      "var(--accent)",
+      "var(--bg)",
+      "var(--muted)",
+      "var(--surface-alt)",
+      "var(--surface)",
+      "var(--text)",
+      "white"
+    ],
+    "policy": "warn"
+  },
+  "constraints": {
+    "motion": {
+      "allowedDurationsMs": [
+        120
+      ],
+      "allowedTimingFunctions": [
+        "linear"
+      ]
+    }
+  },
+  "contractId": "benchmark-destructive-flow-web.generated",
+  "description": "Extracted from Next.js app (Phase 0).",
+  "sections": [
+    {
+      "id": "flow.intro",
+      "description": "Introductory framing for the destructive workflow.",
+      "intent": "intro"
+    },
+    {
+      "id": "flow.request",
+      "description": "Request capture step for the destructive workflow.",
+      "intent": "form"
+    },
+    {
+      "id": "flow.review",
+      "description": "Review checklist step for the destructive workflow.",
+      "intent": "review"
+    },
+    {
+      "id": "flow.confirm",
+      "description": "Explicit confirm step for the destructive workflow.",
+      "intent": "confirm"
+    }
+  ],
+  "surfaces": [
+    {
+      "allowedFonts": [
+        "Inter",
+        "sans-serif",
+        "var(--font-inter)"
+      ],
+      "displayName": "Benchmark Destructive Flow Web",
+      "icons": {
+        "allowedSources": [],
+        "policy": "warn"
+      },
+      "id": "benchmark-destructive-flow-web",
+      "layout": {
+        "chromePolicy": {
+          "allowInsetShadow": false,
+          "allowOuterShadow": false,
+          "maxBorderRadiusPx": 0,
+          "policy": "off",
+          "targets": [
+            "layout-container",
+            "page-container",
+            "top-level-section"
+          ]
+        },
+        "maxContentWidth": 1040,
+        "requiredContainers": [
+          "page-container"
+        ]
+      },
+      "requiredSections": [
+        "flow.intro",
+        "flow.request",
+        "flow.review",
+        "flow.confirm"
+      ],
+      "type": "web",
+      "phase0": {
+        "authPosture": "public",
+        "requiresShell": true
+      }
+    }
+  ],
+  "tokens": {
+    "layout": {
+      "allowedTokens": [
+        "var(--page-width)"
+      ],
+      "policy": "warn",
+      "tokenMetadata": [
+        {
+          "aliases": [],
+          "attributes": [
+            "max-width"
+          ],
+          "normalizedValue": "1040px",
+          "token": "var(--page-width)"
+        }
+      ]
+    },
+    "motion": {
+      "allowedTokens": [],
+      "policy": "warn"
+    },
+    "typography": {
+      "allowedTokens": [
+        "var(--font-inter)"
+      ],
+      "policy": "warn",
+      "tokenMetadata": [
+        {
+          "aliases": [],
+          "attributes": [
+            "font-family"
+          ],
+          "normalizedValue": "var(--font-inter)",
+          "token": "var(--font-inter)"
+        }
+      ]
+    }
+  },
+  "version": "0.1.0",
+  "x_extracted": {
+    "authAware": false,
+    "designSystemComponents": [],
+    "hasShell": true,
+    "routes": [
+      "/"
+    ]
+  }
+}

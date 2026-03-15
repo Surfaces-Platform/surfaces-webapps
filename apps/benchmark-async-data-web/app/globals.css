@@ -1,0 +1,163 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #eff7f8;
+  --surface: #ffffff;
+  --surface-alt: #f7fbfb;
+  --text: #13222b;
+  --muted: #55717d;
+  --line: #d2e2e6;
+  --accent: #0f6b78;
+  --page-width: 1180px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-inter), Inter, sans-serif;
+  line-height: 1.5;
+}
+
+.asyncPage {
+  min-height: 100vh;
+}
+
+.asyncHeader {
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.asyncHeaderInner {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: 1rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.asyncNav {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 0.8rem;
+}
+
+.asyncNav a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.asyncMain {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.heroPanel,
+.streamCard,
+.queueRail,
+.healthPanel {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+  padding: 1.25rem;
+}
+
+.heroTitle {
+  margin: 0.15rem 0 0;
+  font-size: clamp(2.1rem, 4vw, 3rem);
+  line-height: 1.04;
+}
+
+.heroPanel p {
+  margin: 0.5rem 0 0;
+  color: var(--muted);
+}
+
+.asyncGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr);
+  gap: 1rem;
+}
+
+.streamCard {
+  background: var(--surface-alt);
+  transition: transform 220ms ease;
+}
+
+.streamCard h3,
+.queueRail h3,
+.healthPanel h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.streamCard p,
+.queueRail p,
+.healthPanel p,
+.statusRow {
+  margin-top: 0.5rem;
+  color: var(--muted);
+}
+
+.queueRail {
+  display: grid;
+  gap: 0.85rem;
+  transition: box-shadow 180ms ease;
+}
+
+.retryButton {
+  width: fit-content;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  color: white;
+  padding: 0.7rem 1rem;
+  font: inherit;
+}
+
+.statusRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.healthPanel {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(239, 247, 248, 0.98));
+}
+
+@media (max-width: 860px) {
+  .asyncHeaderInner,
+  .statusRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .asyncGrid {
+    grid-template-columns: 1fr;
+  }
+}

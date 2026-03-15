@@ -26,8 +26,8 @@ function defaultInterfacectlRoot(): string | null {
   const workspaceParent = path.dirname(repoParent);
   const candidates = [
     path.join(repoParent, "interfacectl"),
-    path.join(repoParent, "interfacectl-main"),
     path.join(workspaceParent, "interfacectl"),
+    path.join(repoParent, "interfacectl-main"),
     path.join(workspaceParent, ".worktrees", "interfacectl-main"),
   ];
 

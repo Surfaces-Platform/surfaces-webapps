@@ -1,0 +1,147 @@
+{
+  "$schema": "https://contracts.surfaces.local/web.surface.contract.schema.json",
+  "color": {
+    "allowedValues": [
+      "rgba(255, 255, 255, 0.9)",
+      "var(--accent)",
+      "var(--bg)",
+      "var(--muted)",
+      "var(--surface-alt)",
+      "var(--surface)",
+      "var(--text)"
+    ],
+    "policy": "warn"
+  },
+  "constraints": {
+    "motion": {
+      "allowedDurationsMs": [
+        120
+      ],
+      "allowedTimingFunctions": [
+        "linear"
+      ]
+    }
+  },
+  "contractId": "benchmark-shared-shell-web.generated",
+  "description": "Extracted from Next.js app (Phase 0).",
+  "sections": [
+    {
+      "id": "dashboard.hero",
+      "description": "Shared shell landing hero for the home route.",
+      "intent": "hero"
+    },
+    {
+      "id": "dashboard.overview",
+      "description": "Overview cards for the shared dashboard landing route.",
+      "intent": "overview"
+    },
+    {
+      "id": "reports.metrics",
+      "description": "Route-local reports metrics section that should exist beside audit.",
+      "intent": "metrics"
+    },
+    {
+      "id": "reports.audit",
+      "description": "Route-local reports audit section.",
+      "intent": "audit"
+    },
+    {
+      "id": "settings.controls",
+      "description": "Settings controls section rendered from the shared shell.",
+      "intent": "controls"
+    }
+  ],
+  "surfaces": [
+    {
+      "allowedFonts": [
+        "Inter",
+        "sans-serif",
+        "var(--font-inter)"
+      ],
+      "displayName": "Benchmark Shared Shell Web",
+      "icons": {
+        "allowedSources": [],
+        "policy": "warn"
+      },
+      "id": "benchmark-shared-shell-web",
+      "layout": {
+        "chromePolicy": {
+          "allowInsetShadow": false,
+          "allowOuterShadow": false,
+          "maxBorderRadiusPx": 0,
+          "policy": "off",
+          "targets": [
+            "layout-container",
+            "page-container",
+            "top-level-section"
+          ]
+        },
+        "maxContentWidth": 1120,
+        "requiredContainers": [
+          "page-container"
+        ]
+      },
+      "requiredSections": [
+        "dashboard.hero",
+        "dashboard.overview",
+        "reports.metrics",
+        "reports.audit",
+        "settings.controls"
+      ],
+      "type": "web",
+      "phase0": {
+        "authPosture": "public",
+        "requiresShell": true
+      }
+    }
+  ],
+  "tokens": {
+    "layout": {
+      "allowedTokens": [
+        "var(--shell-width)"
+      ],
+      "policy": "warn",
+      "tokenMetadata": [
+        {
+          "aliases": [],
+          "attributes": [
+            "max-width"
+          ],
+          "normalizedValue": "1220px",
+          "token": "var(--shell-width)"
+        }
+      ]
+    },
+    "motion": {
+      "allowedTokens": [],
+      "policy": "warn"
+    },
+    "typography": {
+      "allowedTokens": [
+        "var(--font-inter)"
+      ],
+      "policy": "warn",
+      "tokenMetadata": [
+        {
+          "aliases": [],
+          "attributes": [
+            "font-family"
+          ],
+          "normalizedValue": "var(--font-inter)",
+          "token": "var(--font-inter)"
+        }
+      ]
+    }
+  },
+  "version": "0.1.0",
+  "x_extracted": {
+    "authAware": false,
+    "designSystemComponents": [],
+    "hasShell": true,
+    "routes": [
+      "/",
+      "/reports",
+      "/settings"
+    ]
+  }
+}

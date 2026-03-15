@@ -1,0 +1,155 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #f4f2eb;
+  --surface: #fffcf5;
+  --surface-alt: #f6efe2;
+  --text: #1d1b16;
+  --muted: #6c655a;
+  --line: #ddd0b8;
+  --accent: #6b4a20;
+  --page-width: 1320px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-inter), Inter, sans-serif;
+  line-height: 1.5;
+}
+
+.designPage {
+  min-height: 100vh;
+}
+
+.designHeader {
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 252, 245, 0.92);
+}
+
+.designHeaderInner {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: 1rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.eyebrow {
+  color: var(--accent);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+}
+
+.designNav {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 0.8rem;
+}
+
+.designNav a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.designMain {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.designHero,
+.tokenCard,
+.metricBar,
+.auditPanel {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+  padding: 1.25rem;
+}
+
+.heroTitle {
+  margin: 0.15rem 0 0;
+  font-size: clamp(2.1rem, 4vw, 3.2rem);
+  line-height: 1.02;
+}
+
+.designHero h2 {
+  margin: 0.25rem 0 0.75rem;
+}
+
+.designHero p {
+  margin: 0;
+  max-width: 62ch;
+  color: var(--muted);
+}
+
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, white);
+  padding: 0.28rem 0.6rem;
+  font-size: 0.74rem;
+  color: var(--accent);
+  transition: color 180ms ease;
+}
+
+.tokenGrid,
+.metricGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.tokenCard {
+  background: var(--surface-alt);
+  transition: transform 180ms ease;
+}
+
+.tokenCard h3,
+.metricBar h3,
+.auditPanel h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.tokenCard p,
+.metricBar p,
+.auditPanel p {
+  margin-top: 0.5rem;
+  color: var(--muted);
+}
+
+.metricBar {
+  background: white;
+  transition: box-shadow 220ms ease;
+}
+
+.metricValue {
+  display: block;
+  margin-top: 0.6rem;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.auditPanel {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(246, 239, 226, 0.95));
+}

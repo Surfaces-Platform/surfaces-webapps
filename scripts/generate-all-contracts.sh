@@ -24,6 +24,10 @@ SURFACES=(
   "interfacectl-web:apps/interfacectl-web"
   "surfaces-dev:apps/surfaces-dev"
   "reference-target-web:apps/reference-target-web"
+  "benchmark-shared-shell-web:apps/benchmark-shared-shell-web"
+  "benchmark-destructive-flow-web:apps/benchmark-destructive-flow-web"
+  "benchmark-design-tokens-web:apps/benchmark-design-tokens-web"
+  "benchmark-async-data-web:apps/benchmark-async-data-web"
 )
 
 mkdir -p "$OUT_DIR"
@@ -38,5 +42,8 @@ for entry in "${SURFACES[@]}"; do
     --out "$OUT_DIR/$surface.contract.json" \
     --report-out "$OUT_DIR/$surface.extraction.json"
 done
+
+echo "Applying benchmark contract overlays..."
+"$NODE_BIN" "$REPO_ROOT/scripts/apply-benchmark-contract-overlays.mjs"
 
 echo "Done. Artifacts in contracts/generated/"
