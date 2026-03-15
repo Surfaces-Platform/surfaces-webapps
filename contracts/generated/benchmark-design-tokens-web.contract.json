@@ -1,0 +1,140 @@
+{
+  "$schema": "https://contracts.surfaces.local/web.surface.contract.schema.json",
+  "color": {
+    "allowedValues": [
+      "rgba(255, 252, 245, 0.92)",
+      "var(--accent)",
+      "var(--bg)",
+      "var(--muted)",
+      "var(--surface-alt)",
+      "var(--surface)",
+      "var(--text)",
+      "white"
+    ],
+    "policy": "warn"
+  },
+  "constraints": {
+    "motion": {
+      "allowedDurationsMs": [
+        120
+      ],
+      "allowedTimingFunctions": [
+        "linear"
+      ]
+    }
+  },
+  "contractId": "benchmark-design-tokens-web.generated",
+  "description": "Extracted from Next.js app (Phase 0).",
+  "sections": [
+    {
+      "id": "design.hero",
+      "description": "Hero framing for the dense design token benchmark.",
+      "intent": "hero"
+    },
+    {
+      "id": "design.palette",
+      "description": "Reusable token card matrix for palette coverage.",
+      "intent": "palette"
+    },
+    {
+      "id": "design.metrics",
+      "description": "Metric strip summarizing token-system counts.",
+      "intent": "metrics"
+    },
+    {
+      "id": "design.audit",
+      "description": "Audit panel assembled from a shared component.",
+      "intent": "audit"
+    }
+  ],
+  "surfaces": [
+    {
+      "allowedFonts": [
+        "Inter",
+        "sans-serif",
+        "var(--font-inter)"
+      ],
+      "displayName": "Benchmark Design Tokens Web",
+      "icons": {
+        "allowedSources": [],
+        "policy": "warn"
+      },
+      "id": "benchmark-design-tokens-web",
+      "layout": {
+        "chromePolicy": {
+          "allowInsetShadow": false,
+          "allowOuterShadow": false,
+          "maxBorderRadiusPx": 0,
+          "policy": "off",
+          "targets": [
+            "layout-container",
+            "page-container",
+            "top-level-section"
+          ]
+        },
+        "maxContentWidth": 1320,
+        "requiredContainers": [
+          "page-container"
+        ]
+      },
+      "requiredSections": [
+        "design.hero",
+        "design.palette",
+        "design.metrics",
+        "design.audit"
+      ],
+      "type": "web",
+      "phase0": {
+        "authPosture": "public",
+        "requiresShell": true
+      }
+    }
+  ],
+  "tokens": {
+    "layout": {
+      "allowedTokens": [
+        "var(--page-width)"
+      ],
+      "policy": "warn",
+      "tokenMetadata": [
+        {
+          "aliases": [],
+          "attributes": [
+            "max-width"
+          ],
+          "normalizedValue": "1320px",
+          "token": "var(--page-width)"
+        }
+      ]
+    },
+    "motion": {
+      "allowedTokens": [],
+      "policy": "warn"
+    },
+    "typography": {
+      "allowedTokens": [
+        "var(--font-inter)"
+      ],
+      "policy": "warn",
+      "tokenMetadata": [
+        {
+          "aliases": [],
+          "attributes": [
+            "font-family"
+          ],
+          "normalizedValue": "var(--font-inter)",
+          "token": "var(--font-inter)"
+        }
+      ]
+    }
+  },
+  "version": "0.1.0",
+  "x_extracted": {
+    "authAware": false,
+    "designSystemComponents": [],
+    "hasShell": true,
+    "routes": [
+      "/"
+    ]
+  }
+}

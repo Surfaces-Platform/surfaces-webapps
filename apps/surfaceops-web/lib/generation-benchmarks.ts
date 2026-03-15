@@ -3,15 +3,12 @@ import path from "node:path";
 
 export type AttemptView = "first" | "latest";
 
-export interface BenchmarkCohortManifest {
-  schemaVersion: 1;
-  cohortId: string;
-  generatedAt: string;
+export interface BenchmarkCohortManifestFixture {
+  fixtureId: string;
   profileId: string;
   profileName: string;
   surfaceId: string;
   tool: string;
-  guidanceStrategies: string[];
   comparisonPairs: Array<{
     baselineGuidanceStrategy: string;
     guidedGuidanceStrategy: string;
@@ -20,17 +17,13 @@ export interface BenchmarkCohortManifest {
     path: string;
     sha256: string;
   };
-  model: {
-    baseUrl: string;
-    model: string;
-    fingerprint: string;
-  };
   paths: {
-    benchmarkDir: string;
+    fixtureDir: string;
     effectiveContractPath: string;
     preparedInputPath: string;
-    reportJsonPath: string;
-    reportMarkdownPath: string;
+    acceptedSuggestionsPath: string;
+    designerNotesPath: string;
+    baselineValidatePath: string;
   };
   sessions: Array<{
     guidanceStrategy: string;
@@ -49,6 +42,57 @@ export interface BenchmarkCohortManifest {
     comparisonDir: string;
     comparisonPath: string;
   }>;
+}
+
+export interface BenchmarkCohortManifest {
+  schemaVersion: 1 | 2;
+  cohortId: string;
+  generatedAt: string;
+  tool: string;
+  guidanceStrategies: string[];
+  suiteId?: string;
+  suiteName?: string;
+  profileId?: string;
+  profileName?: string;
+  surfaceId?: string;
+  comparisonPairs?: Array<{
+    baselineGuidanceStrategy: string;
+    guidedGuidanceStrategy: string;
+  }>;
+  brief?: {
+    path: string;
+    sha256: string;
+  };
+  model: {
+    baseUrl: string;
+    model: string;
+    fingerprint: string;
+  };
+  paths: {
+    benchmarkDir: string;
+    effectiveContractPath?: string;
+    preparedInputPath?: string;
+    reportJsonPath: string;
+    reportMarkdownPath: string;
+  };
+  sessions?: Array<{
+    guidanceStrategy: string;
+    sessionId: string;
+    sessionDir: string;
+    transcriptPath: string;
+    guidanceHandoffPath: string;
+    agentInputPath: string;
+    explainabilityPath: string;
+    summaryPath: string;
+    previewPath: string | null;
+  }>;
+  comparisons?: Array<{
+    baselineGuidanceStrategy: string;
+    guidedGuidanceStrategy: string;
+    comparisonDir: string;
+    comparisonPath: string;
+  }>;
+  fixtures?: BenchmarkCohortManifestFixture[];
 }
 
 interface BenchmarkReport {
@@ -411,13 +455,20 @@ export function listGenerationBenchmarks(benchmarksDir = resolveBenchmarksDir())
           item.baselineGuidanceStrategy,
           item.guidedGuidanceStrategy,
         ].filter(Boolean)))];
+      const manifestSurfaceIds = manifest?.fixtures?.length
+        ? manifest.fixtures.map((fixture) => fixture.surfaceId)
+        : manifest?.surfaceId
+          ? [manifest.surfaceId]
+          : [];
       return {
         id: entry.name,
         rootDir,
         generatedAt: report.generatedAt,
-        surfaceIds: report.comparisons.map((item) => item.surfaceId),
+        surfaceIds: manifestSurfaceIds.length > 0
+          ? manifestSurfaceIds
+          : report.comparisons.map((item) => item.surfaceId),
         reportPath,
-        profileName: manifest?.profileName ?? null,
+        profileName: manifest?.suiteName ?? manifest?.profileName ?? null,
         guidanceStrategies,
         modelFingerprint: manifest?.model.fingerprint ?? null,
       } satisfies BenchmarkListItem;

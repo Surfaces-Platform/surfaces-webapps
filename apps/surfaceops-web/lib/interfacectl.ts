@@ -26,12 +26,12 @@ function defaultInterfacectlRoot(): string | null {
   const workspaceParent = path.dirname(repoParent);
   const candidates = [
     path.join(repoParent, "interfacectl"),
-    path.join(repoParent, "interfacectl-main"),
     path.join(workspaceParent, "interfacectl"),
+    path.join(repoParent, "interfacectl-main"),
     path.join(workspaceParent, ".worktrees", "interfacectl-main"),
-  ];
+  ].map((candidate) => path.resolve(candidate));
 
-  for (const candidate of candidates) {
+  for (const candidate of [...new Set(candidates)]) {
     if (
       fs.existsSync(path.join(candidate, "packages", "interfacectl-cli", "dist", "index.js")) &&
       fs.existsSync(path.join(candidate, "packages", "interfacectl-validator", "package.json"))

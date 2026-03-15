@@ -4,6 +4,7 @@ import fsp from "node:fs/promises";
 import path from "node:path";
 import postcss from "postcss";
 import ts from "typescript";
+import type { BenchmarkFixtureGuidanceHints } from "./benchmark-fixtures";
 import { CSS_NAMED_COLOR_NAMES, normalizeCssNamedColor } from "./css-named-colors";
 import { promptInstructionsForFinding } from "./finding-guidance";
 import type {
@@ -90,6 +91,8 @@ interface AgentOptions {
   config: LocalLlmConfig;
   repoRoot: string;
   allowedRoots: string[];
+  surfaceId?: string;
+  guidanceHints?: BenchmarkFixtureGuidanceHints | null;
   preparedPayload?: Record<string, unknown>;
   guidanceStrategy?: GuidanceStrategy;
   guidanceHandoff?: Record<string, unknown> | null;
@@ -270,11 +273,11 @@ async function searchAllowedFiles(repoRoot: string, allowedRoots: string[], patt
 function buildSystemPrompt(options: AgentOptions) {
   const guidanceStrategy = resolveGuidanceStrategy(options);
   const handoffSection = buildGuidanceSection(options, guidanceStrategy);
-  const acceptedSuggestionSummary = buildAcceptedSuggestionSummary(options.acceptedSuggestions ?? []);
+  const acceptedSuggestionSummary = buildAcceptedSuggestionSummary(options);
   const designerNoteSummary = buildDesignerNoteSummary(options.activeDesignerNotes ?? []);
   return [
     "You are a bounded local UI implementation agent.",
-    "Target surface: reference-target-web.",
+    `Target surface: ${options.surfaceId ?? "reference-target-web"}.`,
     `Implementation brief:\n${options.implementationBrief.trim()}`,
     `Allowed write roots: ${options.allowedRoots.join(", ")}`,
     "Forbidden paths include contracts, docs, CI, SurfaceOps app code, and any file outside the allowed write roots.",
@@ -464,25 +467,33 @@ function extractRepairEntries(repairMap: unknown): JsonRecord[] {
   return repairs.filter((entry): entry is JsonRecord => Boolean(entry && typeof entry === "object" && !Array.isArray(entry)));
 }
 
-function buildAcceptedSuggestionSummary(acceptedSuggestions: LocalWorkbenchAcceptedSuggestion[]): string | null {
+function buildAcceptedSuggestionSummary(options: AgentOptions): string | null {
+  const acceptedSuggestions = options.acceptedSuggestions ?? [];
   if (acceptedSuggestions.length === 0) {
     return null;
   }
   return [
-    "Accepted suggestions to address (treat these as pending implementation work, not optional review notes):",
+    "Accepted findings to implement:",
     ...acceptedSuggestions.map((suggestion, index) =>
       [
-        `${index + 1}. ${suggestion.findingCode}: ${suggestion.summary}`,
+        `${index + 1}. ${suggestion.findingCode}`,
         `Path: ${suggestion.suggestedPath}`,
-        ...promptInstructionsForFinding(suggestion.findingCode).map((instruction) => `Validator satisfaction: ${instruction}`),
+        `Fix: ${suggestion.summary}`,
+        promptInstructionsForFinding(suggestion.findingCode, {
+          appPath: options.allowedRoots[0],
+          suggestedPath: suggestion.suggestedPath,
+          guidanceHints: options.guidanceHints,
+        })[0]
+          ? `Constraint: ${promptInstructionsForFinding(suggestion.findingCode, {
+            appPath: options.allowedRoots[0],
+            suggestedPath: suggestion.suggestedPath,
+            guidanceHints: options.guidanceHints,
+          })[0]}`
+          : null,
         suggestion.rationale ? `Rationale: ${suggestion.rationale}` : null,
       ].filter(Boolean).join("\n"),
     ),
-    "Read the suggested path for each accepted finding before deciding whether noChanges=true is justified.",
-    "If multiple accepted suggestions point to the same file, resolve them together before finish.",
-    "When an accepted suggestion requires a concrete declaration or token definition, make sure an apply_text_edits call actually inserts it.",
-    "If you edit files and an accepted finding would still remain unresolved, the patch did not satisfy validator semantics. Prefer another targeted patch over a generic finish.",
-    "These accepted findings remain active until validation no longer reports them or the user rejects them.",
+    "Resolve accepted findings before finish; combine same-file fixes when possible.",
   ].join("\n");
 }
 
@@ -1091,7 +1102,8 @@ function isRecoverableToolError(error: unknown): error is LocalLlmAgentError {
   return (
     error instanceof LocalLlmAgentError
     && (
-      error.message.includes("apply_text_edits failed for")
+      error.message.includes("Forbidden file path:")
+      || error.message.includes("apply_text_edits failed for")
       || error.message.includes("apply_text_edits validation failed for")
       || error.message.includes("File not found:")
       || error.message.includes("noChanges=true after writing files")

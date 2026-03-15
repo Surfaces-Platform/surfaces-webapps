@@ -310,20 +310,15 @@ describe("runLocalLlmAgent", () => {
 
     const [_, init] = vi.mocked(global.fetch).mock.calls[0] ?? [];
     const input = init?.body ? JSON.parse(String(init.body)).input : "";
-    expect(input).toContain("Accepted suggestions to address (treat these as pending implementation work, not optional review notes):");
+    expect(input).toContain("Accepted findings to implement:");
     expect(input).toContain("Path: apps/reference-target-web/app/globals.css");
+    expect(input).toContain("Fix: Add contract-compliant motion declarations in existing styles using 120ms linear timing without changing the fixture structure.");
+    expect(input).toContain("Constraint: Patch an existing selector already used by the fixture, such as .header, .section, or .card, and add a real transition or animation declaration using literal 120ms linear timing.");
     expect(input).toContain("literal 120ms linear timing");
-    expect(input).toContain("real transition or animation declaration");
-    expect(input).toContain(".header, .section, or .card");
-    expect(input).toContain("Do not introduce var(--contract-motion-duration) or var(--contract-motion-timing) on this surface.");
-    expect(input).toContain("Do not rely on comments, standalone variables, ad hoc motion token names, or unused helper classes as the primary fix.");
     expect(input).toContain("Before any apply_text_edits call, you must call read_file on that exact path in this session.");
     expect(input).toContain("Use apply_text_edits for small localized patches only. Do not rewrite full files.");
-    expect(input).toContain("Read the suggested path for each accepted finding before deciding whether noChanges=true is justified.");
-    expect(input).toContain("If multiple accepted suggestions point to the same file, resolve them together before finish.");
-    expect(input).toContain("When an accepted suggestion requires a concrete declaration or token definition, make sure an apply_text_edits call actually inserts it.");
     expect(input).toContain("After any successful apply_text_edits call, finish must use noChanges=false.");
-    expect(input).toContain("If you edit files and an accepted finding would still remain unresolved, the patch did not satisfy validator semantics.");
+    expect(input).toContain("Resolve accepted findings before finish; combine same-file fixes when possible.");
     expect(input).toContain("Effective working contract:");
     expect(input).toContain("Max content width: 2000");
     expect(input).toContain("Active designer notes that are not yet schema-backed contract fields:");
@@ -493,10 +488,11 @@ describe("runLocalLlmAgent", () => {
     );
   });
 
-  it("rejects forbidden edit paths", async () => {
+  it("returns forbidden edit paths to the model so it can recover", async () => {
     const repoRoot = await createRepo({
       "apps/reference-target-web/app/page.tsx": "export default function Page() { return null; }\n",
     });
+    const pagePath = path.join(repoRoot, "apps", "reference-target-web", "app", "page.tsx");
 
     mockFetchSequence([
       toolResponse(
@@ -513,20 +509,43 @@ describe("runLocalLlmAgent", () => {
         },
         "call-1",
       ),
+      toolResponse("read_file", { path: "apps/reference-target-web/app/page.tsx" }, "call-2"),
+      toolResponse(
+        "apply_text_edits",
+        {
+          path: "apps/reference-target-web/app/page.tsx",
+          edits: [
+            {
+              kind: "replace",
+              oldText: "return null;",
+              newText: "return <div>updated</div>;",
+            },
+          ],
+        },
+        "call-3",
+      ),
+      toolResponse("finish", { summary: "Updated the page after correcting the target path.", noChanges: false }, "call-4"),
     ]);
 
-    await expect(
-      runLocalLlmAgent({
-        config: {
-          baseUrl: "http://localhost:1234/v1",
-          model: "openai/gpt-oss-20b",
-        },
-        repoRoot,
-        allowedRoots: ["apps/reference-target-web"],
-        preparedPayload: { summary: { text: "Keep the fixture deterministic." } },
-        implementationBrief: "Make a small contract-guided change.",
-      }),
-    ).rejects.toThrow(/Forbidden file path/);
+    const result = await runLocalLlmAgent({
+      config: {
+        baseUrl: "http://localhost:1234/v1",
+        model: "openai/gpt-oss-20b",
+      },
+      repoRoot,
+      allowedRoots: ["apps/reference-target-web"],
+      preparedPayload: { summary: { text: "Keep the fixture deterministic." } },
+      implementationBrief: "Make a small contract-guided change.",
+    });
+
+    expect(result.noChanges).toBe(false);
+    expect(result.touchedFiles).toEqual(["apps/reference-target-web/app/page.tsx"]);
+    await expect(fs.readFile(pagePath, "utf8")).resolves.toContain("<div>updated</div>");
+
+    const retryRequest = vi.mocked(global.fetch).mock.calls[1]?.[1];
+    expect(retryRequest?.body ? JSON.parse(String(retryRequest.body)).input : "").toContain(
+      "Forbidden file path: docs/strategy.md",
+    );
   });
 
   it("returns unread edit errors to the model so it can recover", async () => {

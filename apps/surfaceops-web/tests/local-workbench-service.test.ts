@@ -47,12 +47,18 @@ import {
   loadLocalWorkbenchData,
   pruneAcceptedSuggestions,
   reviewLocalWorkbenchSuggestion,
+  runBenchmarkCohort,
   startLocalWorkbenchRerun,
   suggestionSummaryFromRun,
   unresolvedAcceptedSuggestionCodes,
   unresolvedAcceptedSuggestionNoopErrorMessage,
 } from "@/lib/local-workbench/service";
 import type { LocalWorkbenchAcceptedSuggestion, LocalWorkbenchRun } from "@/lib/local-workbench/types";
+import {
+  BENCHMARK_SHARED_SHELL_FIXTURE,
+  getBenchmarkFixture,
+  getBenchmarkFixtureProfile,
+} from "@/lib/local-workbench/benchmark-fixtures";
 
 async function seedContract(workspaceRoot: string): Promise<void> {
   const contractPath = path.join(workspaceRoot, "contracts", "generated", "reference-target-web.contract.json");
@@ -141,6 +147,362 @@ function buildAcceptedSuggestion(overrides: Partial<LocalWorkbenchAcceptedSugges
     acceptedAt: "2026-03-13T21:24:00.000Z",
     ...overrides,
   };
+}
+
+async function seedBenchmarkSandboxDependencies(workspaceRoot: string, fixtureIds: string[]): Promise<void> {
+  await fs.mkdir(path.join(workspaceRoot, "node_modules"), { recursive: true });
+  for (const fixtureId of fixtureIds) {
+    const fixture = getBenchmarkFixture(fixtureId);
+    await fs.mkdir(path.join(workspaceRoot, fixture.appPath, "node_modules"), { recursive: true });
+  }
+}
+
+async function seedBenchmarkContracts(workspaceRoot: string, fixtureIds: string[]): Promise<void> {
+  for (const fixtureId of fixtureIds) {
+    const fixture = getBenchmarkFixture(fixtureId);
+    const contractPath = path.join(workspaceRoot, fixture.contractPath);
+    await fs.mkdir(path.dirname(contractPath), { recursive: true });
+    await fs.writeFile(
+      contractPath,
+      JSON.stringify({
+        contractId: `${fixtureId}.generated`,
+        version: "0.1.0",
+        description: `${fixtureId} generated fixture contract.`,
+        surfaces: [
+          {
+            id: fixtureId,
+            allowedFonts: ["Inter", "var(--font-inter)", "sans-serif"],
+            layout: { maxContentWidth: 1120, requiredContainers: ["page-container"] },
+            requiredSections: [],
+          },
+        ],
+        constraints: {
+          motion: {
+            allowedDurationsMs: [120],
+            allowedTimingFunctions: ["linear"],
+          },
+        },
+      }),
+      "utf8",
+    );
+  }
+}
+
+function installBenchmarkCliMocks(input: {
+  workspaceRoot: string;
+  baselineFindingsByFixtureId?: Record<string, Array<Record<string, unknown>>>;
+  strategyFindingsByFixtureId?: Record<string, Record<string, Array<Record<string, unknown>>>>;
+  repairMapByFixtureId?: Record<string, Array<Record<string, unknown>>>;
+}): void {
+  const baselineFindingsByFixtureId = input.baselineFindingsByFixtureId ?? {};
+  const strategyFindingsByFixtureId = input.strategyFindingsByFixtureId ?? {};
+  const repairMapByFixtureId = input.repairMapByFixtureId ?? {};
+
+  mockedInterfacectl.runInterfacectlCli.mockImplementation(async (args: string[]) => {
+    const [command] = args;
+
+    if (command === "compile") {
+      const outDir = args[args.indexOf("--out") + 1]!;
+      await fs.mkdir(outDir, { recursive: true });
+      return { stdout: "", stderr: "" };
+    }
+
+    if (command === "prepare-generation") {
+      const surfaceId = args[args.indexOf("--surface") + 1]!;
+      const outPath = args[args.indexOf("--out") + 1]!;
+      await fs.mkdir(path.dirname(outPath), { recursive: true });
+      await fs.writeFile(
+        outPath,
+        JSON.stringify({ repairMap: repairMapByFixtureId[surfaceId] ?? [] }),
+        "utf8",
+      );
+      return { stdout: "", stderr: "" };
+    }
+
+    if (command === "init-generation-session") {
+      const surfaceId = args[args.indexOf("--surface") + 1]!;
+      const sessionId = args[args.indexOf("--session") + 1]!;
+      const artifactsRoot = args[args.indexOf("--artifacts-root") + 1]!;
+      const sessionDir = path.join(artifactsRoot, surfaceId, sessionId);
+      await fs.mkdir(path.join(sessionDir, "attempts"), { recursive: true });
+      await fs.writeFile(path.join(sessionDir, "session.json"), JSON.stringify({ sessionId, surfaceId }), "utf8");
+      return { stdout: "", stderr: "" };
+    }
+
+    if (command === "record-generation-attempt") {
+      const sessionDir = args[args.indexOf("--session-dir") + 1]!;
+      const pathParts = sessionDir.split(path.sep);
+      const surfaceId = pathParts[pathParts.length - 3]!;
+      const strategy = path.basename(sessionDir);
+      const findings = strategy === "baseline-seed"
+        ? (baselineFindingsByFixtureId[surfaceId] ?? [])
+        : (strategyFindingsByFixtureId[surfaceId]?.[strategy] ?? []);
+      const status = findings.length > 0 ? "warn" : "pass";
+      await fs.mkdir(path.join(sessionDir, "attempts"), { recursive: true });
+      await fs.writeFile(
+        path.join(sessionDir, "attempts", "001.validate.json"),
+        JSON.stringify({ status, findings }),
+        "utf8",
+      );
+      return { stdout: "", stderr: "" };
+    }
+
+    if (command === "prepare-generation-handoff") {
+      const outPath = args[args.indexOf("--out") + 1]!;
+      await fs.mkdir(path.dirname(outPath), { recursive: true });
+      await fs.writeFile(outPath, JSON.stringify({ runtimeGuidance: {} }), "utf8");
+      return { stdout: "", stderr: "" };
+    }
+
+    if (command === "capture-generation-preview") {
+      const sessionDir = args[args.indexOf("--session-dir") + 1]!;
+      await fs.writeFile(path.join(sessionDir, "attempts", "001.preview.png"), "");
+      return { stdout: "", stderr: "" };
+    }
+
+    if (command === "summarize-generation-session") {
+      const sessionDir = args[args.indexOf("--session-dir") + 1]!;
+      const pathParts = sessionDir.split(path.sep);
+      const surfaceId = pathParts[pathParts.length - 3]!;
+      const strategy = path.basename(sessionDir);
+      const validatePath = path.join(sessionDir, "attempts", "001.validate.json");
+      const validate = JSON.parse(await fs.readFile(validatePath, "utf8")) as {
+        status: string;
+        findings: Array<{ code?: string }>;
+      };
+      await fs.writeFile(
+        path.join(sessionDir, "summary.json"),
+        JSON.stringify({
+          surfaceId,
+          sessionId: path.relative(path.join(input.workspaceRoot, "artifacts", "generation-sessions", surfaceId), sessionDir),
+          tool: "local-llm",
+          guidanceStrategy: strategy,
+          attemptCount: 1,
+          firstPassAttempt: validate.status === "pass" ? 1 : null,
+          firstAcceptableAttempt: 1,
+          latestStatus: validate.status,
+          latestOutcome: validate.status,
+          latestAssessment: null,
+          latestReview: null,
+          heuristics: {
+            latestAttempt: {
+              unresolvedAcceptedSuggestionRate: validate.findings.length > 0 ? 1 : 0,
+            },
+            repeatedFindingCarryoverCount: 0,
+            rerunsToAcceptableOutcome: 1,
+          },
+          paths: {
+            sessionPath: path.join(sessionDir, "session.json"),
+            bundleRoot: path.join(input.workspaceRoot, "artifacts", "generation-benchmarks", "bundle"),
+            preparedInputPath: path.join(path.dirname(path.dirname(sessionDir)), "prepared-input.json"),
+          },
+          attempts: [
+            {
+              attemptNumber: 1,
+              status: validate.status,
+              outcome: validate.status,
+              findingCodes: validate.findings.map((finding) => String(finding.code ?? "")),
+              assessmentPath: path.join(sessionDir, "attempts", "001.assessment.json"),
+              metadataPath: path.join(sessionDir, "attempts", "001.metadata.json"),
+              validatePath,
+            },
+          ],
+        }),
+        "utf8",
+      );
+      return { stdout: "", stderr: "" };
+    }
+
+    if (command === "compare-generation-sessions") {
+      const baselineSessionDir = args[args.indexOf("--baseline-session-dir") + 1]!;
+      const guidedSessionDir = args[args.indexOf("--guided-session-dir") + 1]!;
+      const outDir = args[args.indexOf("--out-dir") + 1]!;
+      const baselineSummary = JSON.parse(await fs.readFile(path.join(baselineSessionDir, "summary.json"), "utf8"));
+      const guidedSummary = JSON.parse(await fs.readFile(path.join(guidedSessionDir, "summary.json"), "utf8"));
+      const comparisonPath = path.join(outDir, "comparison.json");
+      await fs.mkdir(outDir, { recursive: true });
+      await fs.writeFile(
+        comparisonPath,
+        JSON.stringify({
+          surfaceId: baselineSummary.surfaceId,
+          tool: "local-llm",
+          brief: {
+            sha256: "brief-hash",
+            baselinePath: path.join(path.dirname(outDir), "implementation-brief.md"),
+            guidedPath: path.join(path.dirname(outDir), "implementation-brief.md"),
+          },
+          baseline: {
+            sessionId: baselineSummary.sessionId,
+            sessionDir: baselineSessionDir,
+            guidanceStrategy: baselineSummary.guidanceStrategy,
+            attemptCount: 1,
+            firstAcceptableAttempt: 1,
+            latestOutcome: baselineSummary.latestOutcome,
+            firstAttempt: {
+              attemptNumber: 1,
+              status: baselineSummary.latestStatus,
+              outcome: baselineSummary.latestOutcome,
+              findingCount: baselineSummary.attempts[0].findingCodes.length,
+              blockingFindingCount: 0,
+              warningFindingCount: baselineSummary.attempts[0].findingCodes.length,
+              findingCodes: baselineSummary.attempts[0].findingCodes,
+              assessment: {
+                structure: "partial",
+                components: "partial",
+                boundary: "partial",
+                visual: "partial",
+                responsiveness: "partial",
+                notes: "Benchmark baseline attempt.",
+              },
+            },
+            latestAttempt: {
+              attemptNumber: 1,
+              status: baselineSummary.latestStatus,
+              outcome: baselineSummary.latestOutcome,
+              findingCount: baselineSummary.attempts[0].findingCodes.length,
+              blockingFindingCount: 0,
+              warningFindingCount: baselineSummary.attempts[0].findingCodes.length,
+              findingCodes: baselineSummary.attempts[0].findingCodes,
+              assessment: {
+                structure: "partial",
+                components: "partial",
+                boundary: "partial",
+                visual: "partial",
+                responsiveness: "partial",
+                notes: "Benchmark baseline attempt.",
+              },
+            },
+            recurringFindingCodes: [],
+            recurringRepairCodes: [],
+          },
+          guided: {
+            sessionId: guidedSummary.sessionId,
+            sessionDir: guidedSessionDir,
+            guidanceStrategy: guidedSummary.guidanceStrategy,
+            attemptCount: 1,
+            firstAcceptableAttempt: 1,
+            latestOutcome: guidedSummary.latestOutcome,
+            firstAttempt: {
+              attemptNumber: 1,
+              status: guidedSummary.latestStatus,
+              outcome: guidedSummary.latestOutcome,
+              findingCount: guidedSummary.attempts[0].findingCodes.length,
+              blockingFindingCount: 0,
+              warningFindingCount: guidedSummary.attempts[0].findingCodes.length,
+              findingCodes: guidedSummary.attempts[0].findingCodes,
+              assessment: {
+                structure: "strong",
+                components: "strong",
+                boundary: "strong",
+                visual: "strong",
+                responsiveness: "strong",
+                notes: "Benchmark guided attempt.",
+              },
+            },
+            latestAttempt: {
+              attemptNumber: 1,
+              status: guidedSummary.latestStatus,
+              outcome: guidedSummary.latestOutcome,
+              findingCount: guidedSummary.attempts[0].findingCodes.length,
+              blockingFindingCount: 0,
+              warningFindingCount: guidedSummary.attempts[0].findingCodes.length,
+              findingCodes: guidedSummary.attempts[0].findingCodes,
+              assessment: {
+                structure: "strong",
+                components: "strong",
+                boundary: "strong",
+                visual: "strong",
+                responsiveness: "strong",
+                notes: "Benchmark guided attempt.",
+              },
+            },
+            recurringFindingCodes: [],
+            recurringRepairCodes: [],
+          },
+          delta: {
+            firstAttemptVerdict: { baseline: baselineSummary.latestOutcome, guided: guidedSummary.latestOutcome },
+            firstAttemptFindingCountDelta: guidedSummary.attempts[0].findingCodes.length - baselineSummary.attempts[0].findingCodes.length,
+            firstAttemptBlockingFindingCountDelta: 0,
+            firstAttemptWarningFindingCountDelta: guidedSummary.attempts[0].findingCodes.length - baselineSummary.attempts[0].findingCodes.length,
+            latestFindingCountDelta: guidedSummary.attempts[0].findingCodes.length - baselineSummary.attempts[0].findingCodes.length,
+            attemptsToAcceptableOutcome: {
+              baseline: 1,
+              guided: 1,
+              delta: 0,
+            },
+            rubric: {},
+          },
+          checks: {
+            guidedFewerFirstAttemptBlockingFindings: false,
+            guidedReachedAcceptableNoLater: true,
+            guidedRubricAtLeastAsGood: true,
+            guidedRubricBetterDimensions: ["structure"],
+            meetsGoal: guidedSummary.latestOutcome === "pass",
+          },
+          paths: {
+            baselineSessionDir,
+            guidedSessionDir,
+          },
+        }),
+        "utf8",
+      );
+      return { stdout: JSON.stringify({ paths: { jsonPath: comparisonPath } }), stderr: "" };
+    }
+
+    if (command === "summarize-generation-benchmark") {
+      const comparisonPaths = (args[args.indexOf("--comparisons") + 1] ?? "")
+        .split(",")
+        .map((entry) => entry.trim())
+        .filter(Boolean);
+      const outDir = args[args.indexOf("--out-dir") + 1]!;
+      const comparisons = await Promise.all(
+        comparisonPaths.map(async (comparisonPath) => JSON.parse(await fs.readFile(comparisonPath, "utf8"))),
+      );
+      const reportJsonPath = path.join(outDir, "benchmark-report.json");
+      const reportMarkdownPath = path.join(outDir, "benchmark-report.md");
+      await fs.mkdir(outDir, { recursive: true });
+      await fs.writeFile(
+        reportJsonPath,
+        JSON.stringify({
+          generatedAt: "2026-03-15T01:00:00.000Z",
+          comparisons: comparisons.map((comparison, index) => ({
+            comparisonPath: comparisonPaths[index],
+            surfaceId: comparison.surfaceId,
+            tool: "local-llm",
+            meetsGoal: comparison.checks.meetsGoal,
+            baselineGuidanceStrategy: comparison.baseline.guidanceStrategy,
+            guidedGuidanceStrategy: comparison.guided.guidanceStrategy,
+            guidedFewerFirstAttemptBlockingFindings: comparison.checks.guidedFewerFirstAttemptBlockingFindings,
+            guidedReachedAcceptableNoLater: comparison.checks.guidedReachedAcceptableNoLater,
+            guidedRubricBetterDimensions: comparison.checks.guidedRubricBetterDimensions,
+          })),
+          suggestions: [],
+          overall: {
+            surfaceCount: new Set(comparisons.map((comparison) => comparison.surfaceId)).size,
+            surfacesMeetingGoal: comparisons.filter((comparison) => comparison.checks.meetsGoal).length,
+            guidedFewerFirstAttemptBlockingFindings: 0,
+            guidedReachedAcceptableNoLater: comparisons.length,
+            acceptedSuggestionCount: 0,
+            rejectedSuggestionCount: 0,
+            proposedSuggestionCount: 0,
+          },
+        }),
+        "utf8",
+      );
+      await fs.writeFile(reportMarkdownPath, "# Benchmark report\n", "utf8");
+      return {
+        stdout: JSON.stringify({
+          paths: {
+            jsonPath: reportJsonPath,
+            markdownPath: reportMarkdownPath,
+          },
+        }),
+        stderr: "",
+      };
+    }
+
+    return { stdout: "", stderr: "" };
+  });
 }
 
 describe("local workbench service", () => {
@@ -1051,5 +1413,293 @@ describe("local workbench service", () => {
         expect.objectContaining({ title: "Contract shaper" }),
       ]),
     );
+  });
+
+  it("uses fixture metadata to enrich non-reference repair guidance", () => {
+    const suggestions = suggestionSummaryFromRun(
+      {
+        repairMap: [
+          {
+            code: "section.missing",
+            action: {
+              type: "ensure-required-sections",
+              sectionIds: ["reports.metrics"],
+            },
+          },
+        ],
+      },
+      {
+        findings: [
+          {
+            code: "section.missing",
+            message: "Missing required sections: reports.metrics.",
+          },
+          {
+            code: "motion.none-detected",
+            message: "No motion declarations detected for surface \"benchmark-shared-shell-web\".",
+            location: {
+              file: "",
+              line: 0,
+            },
+          },
+        ],
+      },
+      {
+        fixture: BENCHMARK_SHARED_SHELL_FIXTURE,
+      },
+    );
+
+    expect(suggestions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          findingCode: "section.missing",
+          suggestedPath: "apps/benchmark-shared-shell-web/app/reports/page.tsx",
+          summary:
+            "Restore reports.metrics in apps/benchmark-shared-shell-web/app/reports/page.tsx using real data-contract-section markers while preserving the existing fixture structure.",
+        }),
+        expect.objectContaining({
+          findingCode: "motion.none-detected",
+          suggestedPath: "apps/benchmark-shared-shell-web/app/globals.css",
+          summary: expect.stringContaining(".shellLink, .surfaceCard, or .statusPill"),
+        }),
+      ]),
+    );
+  });
+
+  it("seeds and freezes accepted benchmark guidance per fixture before reusing it across strategies", async () => {
+    const fixtureIds = ["reference-target-web", "benchmark-shared-shell-web"];
+    await seedBenchmarkSandboxDependencies(workspaceRoot, fixtureIds);
+    await seedBenchmarkContracts(workspaceRoot, fixtureIds);
+    installBenchmarkCliMocks({
+      workspaceRoot,
+      baselineFindingsByFixtureId: {
+        "reference-target-web": [
+          {
+            code: "motion.none-detected",
+            message: "No motion declarations detected for surface \"reference-target-web\".",
+            location: { file: "", line: 0 },
+          },
+          {
+            code: "token.normalization-skipped",
+            message:
+              "Could not normalize typography token \"var(--font-inter)\" because missing custom property definition.",
+            location: { file: "apps/reference-target-web/app/globals.css", line: 0 },
+          },
+        ],
+        "benchmark-shared-shell-web": [
+          {
+            code: "section.missing",
+            message: "Missing required sections: reports.metrics.",
+          },
+          {
+            code: "motion.none-detected",
+            message: "No motion declarations detected for surface \"benchmark-shared-shell-web\".",
+            location: { file: "", line: 0 },
+          },
+        ],
+      },
+      repairMapByFixtureId: {
+        "benchmark-shared-shell-web": [
+          {
+            code: "section.missing",
+            action: {
+              type: "ensure-required-sections",
+              sectionIds: ["reports.metrics"],
+            },
+          },
+        ],
+      },
+    });
+    mockedLocalLlm.runLocalLlmAgent.mockImplementation(async (options: {
+      surfaceId?: string;
+      acceptedSuggestions?: LocalWorkbenchAcceptedSuggestion[];
+    }) => ({
+      transcript: [],
+      touchedFiles: [`apps/${options.surfaceId}/app/page.tsx`],
+      summary: "Applied benchmark guidance.",
+      noChanges: false,
+      agentInput: "System:\nBenchmark",
+      toolCallCount: 1,
+      writeCount: 1,
+      lastToolName: "finish",
+    }));
+
+    const result = await runBenchmarkCohort({
+      cohortId: "20260315010000",
+      fixtureIds,
+      strategies: ["prompt-summary", "json-primary"],
+    });
+
+    const manifest = JSON.parse(
+      await fs.readFile(path.join(result.benchmarkDir, "manifest.json"), "utf8"),
+    ) as {
+      schemaVersion: number;
+      fixtures: Array<{ fixtureId: string; paths: { acceptedSuggestionsPath: string } }>;
+    };
+    expect(manifest.schemaVersion).toBe(2);
+    expect(manifest.fixtures.map((fixture) => fixture.fixtureId)).toEqual(fixtureIds);
+
+    const referenceRuntimeGuidance = JSON.parse(
+      await fs.readFile(
+        path.join(result.benchmarkDir, "fixtures", "reference-target-web", "accepted-suggestions.runtime.json"),
+        "utf8",
+      ),
+    ) as { suggestions: LocalWorkbenchAcceptedSuggestion[] };
+    const sharedShellRuntimeGuidance = JSON.parse(
+      await fs.readFile(
+        path.join(result.benchmarkDir, "fixtures", "benchmark-shared-shell-web", "accepted-suggestions.runtime.json"),
+        "utf8",
+      ),
+    ) as { suggestions: LocalWorkbenchAcceptedSuggestion[] };
+
+    expect(referenceRuntimeGuidance.suggestions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          findingCode: "motion.none-detected",
+          suggestedPath: "apps/reference-target-web/app/globals.css",
+          sourceRunId: "20260315010000/baseline-seed",
+        }),
+        expect.objectContaining({
+          findingCode: "token.normalization-skipped",
+          suggestedPath: "apps/reference-target-web/app/globals.css",
+          sourceRunId: "20260315010000/baseline-seed",
+        }),
+      ]),
+    );
+    expect(sharedShellRuntimeGuidance.suggestions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          findingCode: "section.missing",
+          suggestedPath: "apps/benchmark-shared-shell-web/app/reports/page.tsx",
+          sourceRunId: "20260315010000/baseline-seed",
+        }),
+        expect.objectContaining({
+          findingCode: "motion.none-detected",
+          suggestedPath: "apps/benchmark-shared-shell-web/app/globals.css",
+          sourceRunId: "20260315010000/baseline-seed",
+        }),
+      ]),
+    );
+    expect(new Set(referenceRuntimeGuidance.suggestions.map((suggestion) => suggestion.acceptedAt)).size).toBe(1);
+    expect(new Set(sharedShellRuntimeGuidance.suggestions.map((suggestion) => suggestion.acceptedAt)).size).toBe(1);
+
+    const acceptedSuggestionsByFixture = new Map<string, LocalWorkbenchAcceptedSuggestion[][]>();
+    for (const [options] of mockedLocalLlm.runLocalLlmAgent.mock.calls as Array<[{
+      surfaceId?: string;
+      acceptedSuggestions?: LocalWorkbenchAcceptedSuggestion[];
+    }]>) {
+      const fixtureCallSet = acceptedSuggestionsByFixture.get(options.surfaceId ?? "") ?? [];
+      fixtureCallSet.push(options.acceptedSuggestions ?? []);
+      acceptedSuggestionsByFixture.set(options.surfaceId ?? "", fixtureCallSet);
+    }
+    expect(acceptedSuggestionsByFixture.get("reference-target-web")).toEqual([
+      referenceRuntimeGuidance.suggestions,
+      referenceRuntimeGuidance.suggestions,
+    ]);
+    expect(acceptedSuggestionsByFixture.get("benchmark-shared-shell-web")).toEqual([
+      sharedShellRuntimeGuidance.suggestions,
+      sharedShellRuntimeGuidance.suggestions,
+    ]);
+  });
+
+  it("lets explicit fixture profile guidance override baseline-derived suggestions by finding code", async () => {
+    const fixtureId = "benchmark-shared-shell-web";
+    await seedBenchmarkSandboxDependencies(workspaceRoot, [fixtureId]);
+    await seedBenchmarkContracts(workspaceRoot, [fixtureId]);
+    installBenchmarkCliMocks({
+      workspaceRoot,
+      baselineFindingsByFixtureId: {
+        "benchmark-shared-shell-web": [
+          {
+            code: "section.missing",
+            message: "Missing required sections: reports.metrics.",
+          },
+          {
+            code: "motion.none-detected",
+            message: "No motion declarations detected for surface \"benchmark-shared-shell-web\".",
+            location: { file: "", line: 0 },
+          },
+        ],
+      },
+      repairMapByFixtureId: {
+        "benchmark-shared-shell-web": [
+          {
+            code: "section.missing",
+            action: {
+              type: "ensure-required-sections",
+              sectionIds: ["reports.metrics"],
+            },
+          },
+        ],
+      },
+    });
+    mockedLocalLlm.runLocalLlmAgent.mockImplementation(async () => ({
+      transcript: [],
+      touchedFiles: ["apps/benchmark-shared-shell-web/app/reports/page.tsx"],
+      summary: "Applied override guidance.",
+      noChanges: false,
+      agentInput: "System:\nBenchmark override",
+      toolCallCount: 1,
+      writeCount: 1,
+      lastToolName: "finish",
+    }));
+
+    const result = await runBenchmarkCohort({
+      cohortId: "20260315011500",
+      fixtureIds: [fixtureId],
+      strategies: ["prompt-summary", "json-primary"],
+      profilesByFixtureId: {
+        "benchmark-shared-shell-web": {
+          ...getBenchmarkFixtureProfile(fixtureId),
+          acceptedSuggestions: [
+            buildAcceptedSuggestion({
+              findingCode: "section.missing",
+              findingMessage: "Missing required sections: reports.metrics.",
+              summary: "Use the explicit shared-shell override for the reports metrics section.",
+              suggestedPath: "apps/benchmark-shared-shell-web/app/reports/page.tsx",
+              sourceRunId: "profile-seed",
+              acceptedAt: "2026-03-15T01:15:00.000Z",
+            }),
+            buildAcceptedSuggestion({
+              findingCode: "custom.profile-guidance",
+              findingMessage: "Profile-only guidance.",
+              summary: "Apply the profile-only shared-shell guidance entry.",
+              suggestedPath: "apps/benchmark-shared-shell-web/app/_components/shared-shell.tsx",
+              sourceRunId: "profile-seed",
+              acceptedAt: "2026-03-15T01:15:00.000Z",
+            }),
+          ],
+        },
+      },
+    });
+
+    const runtimeGuidance = JSON.parse(
+      await fs.readFile(
+        path.join(result.benchmarkDir, "fixtures", fixtureId, "accepted-suggestions.runtime.json"),
+        "utf8",
+      ),
+    ) as { suggestions: LocalWorkbenchAcceptedSuggestion[] };
+
+    expect(runtimeGuidance.suggestions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          findingCode: "motion.none-detected",
+          sourceRunId: "20260315011500/baseline-seed",
+        }),
+        expect.objectContaining({
+          findingCode: "section.missing",
+          summary: "Use the explicit shared-shell override for the reports metrics section.",
+          suggestedPath: "apps/benchmark-shared-shell-web/app/reports/page.tsx",
+          sourceRunId: "profile-seed",
+        }),
+        expect.objectContaining({
+          findingCode: "custom.profile-guidance",
+          summary: "Apply the profile-only shared-shell guidance entry.",
+          suggestedPath: "apps/benchmark-shared-shell-web/app/_components/shared-shell.tsx",
+          sourceRunId: "profile-seed",
+        }),
+      ]),
+    );
+    expect(runtimeGuidance.suggestions.filter((suggestion) => suggestion.findingCode === "section.missing")).toHaveLength(1);
   });
 });
