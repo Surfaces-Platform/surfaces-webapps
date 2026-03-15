@@ -488,10 +488,11 @@ describe("runLocalLlmAgent", () => {
     );
   });
 
-  it("rejects forbidden edit paths", async () => {
+  it("returns forbidden edit paths to the model so it can recover", async () => {
     const repoRoot = await createRepo({
       "apps/reference-target-web/app/page.tsx": "export default function Page() { return null; }\n",
     });
+    const pagePath = path.join(repoRoot, "apps", "reference-target-web", "app", "page.tsx");
 
     mockFetchSequence([
       toolResponse(
@@ -508,20 +509,43 @@ describe("runLocalLlmAgent", () => {
         },
         "call-1",
       ),
+      toolResponse("read_file", { path: "apps/reference-target-web/app/page.tsx" }, "call-2"),
+      toolResponse(
+        "apply_text_edits",
+        {
+          path: "apps/reference-target-web/app/page.tsx",
+          edits: [
+            {
+              kind: "replace",
+              oldText: "return null;",
+              newText: "return <div>updated</div>;",
+            },
+          ],
+        },
+        "call-3",
+      ),
+      toolResponse("finish", { summary: "Updated the page after correcting the target path.", noChanges: false }, "call-4"),
     ]);
 
-    await expect(
-      runLocalLlmAgent({
-        config: {
-          baseUrl: "http://localhost:1234/v1",
-          model: "openai/gpt-oss-20b",
-        },
-        repoRoot,
-        allowedRoots: ["apps/reference-target-web"],
-        preparedPayload: { summary: { text: "Keep the fixture deterministic." } },
-        implementationBrief: "Make a small contract-guided change.",
-      }),
-    ).rejects.toThrow(/Forbidden file path/);
+    const result = await runLocalLlmAgent({
+      config: {
+        baseUrl: "http://localhost:1234/v1",
+        model: "openai/gpt-oss-20b",
+      },
+      repoRoot,
+      allowedRoots: ["apps/reference-target-web"],
+      preparedPayload: { summary: { text: "Keep the fixture deterministic." } },
+      implementationBrief: "Make a small contract-guided change.",
+    });
+
+    expect(result.noChanges).toBe(false);
+    expect(result.touchedFiles).toEqual(["apps/reference-target-web/app/page.tsx"]);
+    await expect(fs.readFile(pagePath, "utf8")).resolves.toContain("<div>updated</div>");
+
+    const retryRequest = vi.mocked(global.fetch).mock.calls[1]?.[1];
+    expect(retryRequest?.body ? JSON.parse(String(retryRequest.body)).input : "").toContain(
+      "Forbidden file path: docs/strategy.md",
+    );
   });
 
   it("returns unread edit errors to the model so it can recover", async () => {

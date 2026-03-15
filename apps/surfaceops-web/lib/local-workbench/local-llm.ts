@@ -1102,7 +1102,8 @@ function isRecoverableToolError(error: unknown): error is LocalLlmAgentError {
   return (
     error instanceof LocalLlmAgentError
     && (
-      error.message.includes("apply_text_edits failed for")
+      error.message.includes("Forbidden file path:")
+      || error.message.includes("apply_text_edits failed for")
       || error.message.includes("apply_text_edits validation failed for")
       || error.message.includes("File not found:")
       || error.message.includes("noChanges=true after writing files")
