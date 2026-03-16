@@ -295,6 +295,13 @@ function formatDuration(durationMs: number | null) {
   return `${(durationMs / 1000).toFixed(durationMs >= 10_000 ? 0 : 1)}s`;
 }
 
+function formatRate(rate: number | null) {
+  if (rate === null) {
+    return "n/a";
+  }
+  return `${Math.round(rate * 100)}%`;
+}
+
 export function LocalWorkbench({
   data,
   initialTab = "controls",
@@ -331,6 +338,21 @@ export function LocalWorkbench({
   const openSuggestions = suggestions.filter((suggestion) => hasSuggestionStatus(["proposed"], suggestion.status));
   const showGuidance = activeAcceptedSuggestions.length > 0 || openSuggestions.length > 0;
   const recentRuns = data.runs.slice(0, 3);
+  const promotionReadiness = data.promotionReadiness;
+  const promotionReadinessSurface =
+    promotionReadiness?.surfaces.find((surface) => surface.surfaceId === data.target.id)
+    ?? promotionReadiness?.surfaces[0]
+    ?? null;
+  const generationReadinessKpi =
+    promotionReadinessSurface?.sourceKpis.find((entry) => entry.source === "generation")
+    ?? promotionReadinessSurface?.sourceKpis[0]
+    ?? null;
+  const promotionBlockingChecks = promotionReadinessSurface?.checks.filter((entry) => !entry.ready) ?? [];
+  const promotionReadinessStyles = toneStyles(
+    promotionReadiness
+      ? (promotionReadiness.summary.readyForPromotion ? "neutral" : "warning")
+      : "info",
+  );
   const selectedRunSummary = data.runs.find((entry) => entry.runId === selectedRunId) ?? latestRun ?? null;
   const activeTraceRun = selectedDetail?.run ?? selectedRunSummary ?? null;
   const previewDebug = selectedDetail?.previewDebug ?? null;
@@ -729,10 +751,139 @@ export function LocalWorkbench({
                     <div style={{ fontSize: 12, color: colors.neutral[600] }}>
                       Generation payload: {data.latestPublish.generationPayloadPath}
                     </div>
+                    <div style={{ fontSize: 12, color: colors.neutral[600] }}>
+                      Readiness artifact: {data.latestPublish.promotionReadinessPath ?? "Unavailable"}
+                    </div>
+                    {data.latestPublish.promotionReadiness ? (
+                      <div style={{ fontSize: 12, color: colors.neutral[600] }}>
+                        Readiness summary: {data.latestPublish.promotionReadiness.summary.readySurfaces}/
+                        {data.latestPublish.promotionReadiness.summary.totalSurfaces} surfaces ready
+                      </div>
+                    ) : null}
                   </article>
                 ) : (
                   <div style={{ fontSize: 13, color: colors.neutral[600] }}>
-                    No published revisions yet. Publish is gated by the latest successful non-blocking rerun.
+                    No published revisions yet. Publish is gated by the current readiness artifact, not just the latest run status.
+                  </div>
+                )}
+              </section>
+
+              <section
+                style={{
+                  ...shellPanel(),
+                  padding: 18,
+                  display: "grid",
+                  gap: 12,
+                  border: promotionReadinessStyles.border,
+                  backgroundColor: promotionReadinessStyles.backgroundColor,
+                }}
+              >
+                <div>
+                  <strong style={{ display: "block", fontSize: 15, marginBottom: 6 }}>Publish readiness</strong>
+                  <div style={{ fontSize: 12, color: promotionReadinessStyles.text }}>
+                    Publish now uses a frozen readiness artifact backed by canonical generation evidence and contract provenance.
+                  </div>
+                </div>
+                {promotionReadiness && promotionReadinessSurface ? (
+                  <>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+                      <span
+                        style={{
+                          ...statusChip(promotionReadiness.summary.readyForPromotion ? "pass" : "block"),
+                          backgroundColor: promotionReadinessStyles.chipBackground,
+                          color: promotionReadinessStyles.accent,
+                        }}
+                      >
+                        {promotionReadiness.summary.readyForPromotion ? "Ready to publish" : "Publish blocked"}
+                      </span>
+                      <span style={{ fontSize: 12, color: promotionReadinessStyles.text }}>
+                        Updated {new Date(promotionReadiness.generatedAt).toLocaleString()}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 13, lineHeight: 1.7, color: promotionReadinessStyles.text }}>
+                      Required sources: {promotionReadiness.requiredSources.join(", ") || "none"}
+                    </div>
+                    {generationReadinessKpi ? (
+                      <div style={{ display: "grid", gap: 10 }}>
+                        <div style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: "0.08em", color: promotionReadinessStyles.text }}>
+                          {generationReadinessKpi.source} KPIs
+                        </div>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 10 }}>
+                          <div style={{ border: `1px solid ${colors.neutral[200]}`, borderRadius: 12, padding: 12, backgroundColor: colors.neutral[0] }}>
+                            <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", color: colors.neutral[600], marginBottom: 6 }}>
+                              Pass rate
+                            </div>
+                            <div style={{ fontSize: 20, fontWeight: 800, color: colors.neutral[900] }}>
+                              {formatRate(generationReadinessKpi.passRate)}
+                            </div>
+                            <div style={{ fontSize: 12, color: colors.neutral[600] }}>
+                              {generationReadinessKpi.passedRuns}/{generationReadinessKpi.totalRuns} passing runs
+                            </div>
+                          </div>
+                          <div style={{ border: `1px solid ${colors.neutral[200]}`, borderRadius: 12, padding: 12, backgroundColor: colors.neutral[0] }}>
+                            <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", color: colors.neutral[600], marginBottom: 6 }}>
+                              Blocking rate
+                            </div>
+                            <div style={{ fontSize: 20, fontWeight: 800, color: colors.neutral[900] }}>
+                              {formatRate(generationReadinessKpi.blockingRate)}
+                            </div>
+                            <div style={{ fontSize: 12, color: colors.neutral[600] }}>
+                              {generationReadinessKpi.blockingRuns}/{generationReadinessKpi.totalRuns} blocked runs
+                            </div>
+                          </div>
+                          <div style={{ border: `1px solid ${colors.neutral[200]}`, borderRadius: 12, padding: 12, backgroundColor: colors.neutral[0] }}>
+                            <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", color: colors.neutral[600], marginBottom: 6 }}>
+                              Time to green
+                            </div>
+                            <div style={{ fontSize: 20, fontWeight: 800, color: colors.neutral[900] }}>
+                              {formatDuration(generationReadinessKpi.timeToGreen.latestMs)}
+                            </div>
+                            <div style={{ fontSize: 12, color: colors.neutral[600] }}>
+                              Avg {formatDuration(generationReadinessKpi.timeToGreen.averageMs)} across {generationReadinessKpi.timeToGreen.samples} sample(s)
+                            </div>
+                          </div>
+                          <div style={{ border: `1px solid ${colors.neutral[200]}`, borderRadius: 12, padding: 12, backgroundColor: colors.neutral[0] }}>
+                            <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", color: colors.neutral[600], marginBottom: 6 }}>
+                              Recurring findings
+                            </div>
+                            <div style={{ fontSize: 13, lineHeight: 1.7, color: colors.neutral[900] }}>
+                              {generationReadinessKpi.recurringFindingCodes.length > 0
+                                ? generationReadinessKpi.recurringFindingCodes
+                                    .map((entry) => `${entry.code} (${entry.count})`)
+                                    .join(", ")
+                                : "None"}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : null}
+                    {promotionBlockingChecks.length > 0 ? (
+                      <div style={{ display: "grid", gap: 10 }}>
+                        <div style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: "0.08em", color: promotionReadinessStyles.text }}>
+                          Blocking checks
+                        </div>
+                        {promotionBlockingChecks.map((check) => (
+                          <article
+                            key={`${check.source}:${check.code}`}
+                            style={{ border: `1px solid ${colors.neutral[200]}`, borderRadius: 12, padding: 12, backgroundColor: colors.neutral[0] }}
+                          >
+                            <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center", marginBottom: 6 }}>
+                              <strong style={{ fontSize: 13 }}>{check.code}</strong>
+                              <span style={{ ...statusChip("block"), width: "fit-content" }}>{check.source}</span>
+                            </div>
+                            <div style={{ fontSize: 13, color: colors.neutral[800], lineHeight: 1.6 }}>{check.message}</div>
+                          </article>
+                        ))}
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 13, color: promotionReadinessStyles.text }}>
+                        Current generation evidence is fresh, contract-matched, and ready to freeze into a publish.
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div style={{ fontSize: 13, color: promotionReadinessStyles.text }}>
+                    Readiness evidence is not available yet. Run a regeneration to seed canonical publish evidence.
                   </div>
                 )}
               </section>
