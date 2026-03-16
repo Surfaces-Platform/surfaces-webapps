@@ -2,6 +2,7 @@ export type LocalWorkbenchPreviewMode = "baseline" | "current";
 export type LocalWorkbenchTab = "controls" | "trace" | "chat";
 export type LocalWorkbenchRunStatus = "idle" | "running" | "succeeded" | "failed";
 export type LocalSuggestionStatus = "proposed" | "accepted" | "rejected";
+export type LocalWorkbenchPublishStatus = "published";
 export type LocalWorkbenchRunPhase =
   | "compile"
   | "prepare"
@@ -142,7 +143,14 @@ export interface LocalWorkbenchContractChange {
     | "color.allowedValues"
     | "color.policy"
     | "surfaces.reference-target-web.layout.maxContentWidth"
-    | "surfaces.reference-target-web.allowedFonts";
+    | "surfaces.reference-target-web.allowedFonts"
+    | "surfaces.reference-target-web.owner"
+    | "surfaces.reference-target-web.governance.status"
+    | "surfaces.reference-target-web.governance.roles.designers"
+    | "surfaces.reference-target-web.governance.roles.engineers"
+    | "surfaces.reference-target-web.runtime.policy"
+    | "surfaces.reference-target-web.runtime.mutationEnvelope.mode"
+    | "surfaces.reference-target-web.runtime.mutationEnvelope.allowedSections";
   action: "set" | "add";
   value: string | number;
   summary: string;
@@ -160,6 +168,18 @@ export interface LocalWorkbenchDesignerNote {
 export interface LocalWorkbenchAgentInput {
   path: string | null;
   content: string | null;
+}
+
+export interface LocalWorkbenchPublish {
+  publishId: string;
+  status: LocalWorkbenchPublishStatus;
+  createdAt: string;
+  sourceRunId: string | null;
+  contractPath: string;
+  bundleRoot: string;
+  manifestPath: string;
+  generationPayloadPath: string;
+  runtimePayloadPath: string;
 }
 
 export interface LocalWorkbenchData {
@@ -180,9 +200,15 @@ export interface LocalWorkbenchData {
     allowedFonts: string[];
     maxContentWidth: number | null;
     colorPolicy: string;
+    owner: string | null;
+    governanceStatus: string | null;
+    runtimePolicy: string;
+    mutationMode: string | null;
   };
   latestRun: LocalWorkbenchRun | null;
   runs: LocalWorkbenchRun[];
+  latestPublish: LocalWorkbenchPublish | null;
+  publishes: LocalWorkbenchPublish[];
   activeAcceptedSuggestions: LocalWorkbenchAcceptedSuggestion[];
   latestRunOperatorNote: string | null;
   activeContractChanges: LocalWorkbenchContractChange[];

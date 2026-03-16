@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { POST as POSTChat } from "@/app/api/contracts/local/chat/route";
+import { POST as POSTPublish } from "@/app/api/contracts/local/publish/route";
 import { POST as POSTRerun } from "@/app/api/contracts/local/rerun/route";
 import { GET as GETRun } from "@/app/api/contracts/local/runs/[runId]/route";
 import { POST as POSTSuggestion } from "@/app/api/contracts/local/suggestions/[runId]/[suggestionId]/route";
 
 const mocked = vi.hoisted(() => ({
   appendLocalWorkbenchChatMessage: vi.fn(),
+  publishLocalWorkbenchContract: vi.fn(),
   startLocalWorkbenchRerun: vi.fn(),
   loadLocalWorkbenchRunDetail: vi.fn(),
   reviewLocalWorkbenchSuggestion: vi.fn(),
@@ -13,6 +15,7 @@ const mocked = vi.hoisted(() => ({
 
 vi.mock("@/lib/local-workbench/service", () => ({
   appendLocalWorkbenchChatMessage: mocked.appendLocalWorkbenchChatMessage,
+  publishLocalWorkbenchContract: mocked.publishLocalWorkbenchContract,
   startLocalWorkbenchRerun: mocked.startLocalWorkbenchRerun,
   loadLocalWorkbenchRunDetail: mocked.loadLocalWorkbenchRunDetail,
   reviewLocalWorkbenchSuggestion: mocked.reviewLocalWorkbenchSuggestion,
@@ -46,6 +49,29 @@ describe("local workbench routes", () => {
     await expect(response.json()).resolves.toEqual({ ok: true });
     expect(mocked.appendLocalWorkbenchChatMessage).toHaveBeenCalledWith({
       message: "add highlight color #8BAE3F",
+    });
+  });
+
+  it("publishes the local working contract", async () => {
+    mocked.publishLocalWorkbenchContract.mockResolvedValue({
+      publishId: "publish-1",
+      status: "published",
+      createdAt: "2026-03-16T18:00:00.000Z",
+      sourceRunId: "run-1",
+      contractPath: "/tmp/publish-1/published-contract.json",
+      bundleRoot: "/tmp/publish-1/bundle",
+      manifestPath: "/tmp/publish-1/bundle/manifest.json",
+      generationPayloadPath: "/tmp/publish-1/generation.json",
+      runtimePayloadPath: "/tmp/publish-1/runtime.json",
+    });
+    const response = await POSTPublish();
+    expect(response.status).toBe(201);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      publish: {
+        publishId: "publish-1",
+        status: "published",
+      },
     });
   });
 

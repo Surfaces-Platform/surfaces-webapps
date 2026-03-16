@@ -38,6 +38,7 @@ import type {
   LocalWorkbenchContractChange,
   LocalWorkbenchData,
   LocalWorkbenchDesignerNote,
+  LocalWorkbenchPublish,
   LocalWorkbenchRunDetail,
   LocalWorkbenchRunError,
   LocalWorkbenchRunPhase,
@@ -138,9 +139,24 @@ interface ContractDocument {
   };
   surfaces?: Array<{
     id?: string;
+    owner?: string;
     allowedFonts?: string[];
     layout?: { maxContentWidth?: number };
     requiredSections?: string[];
+    governance?: {
+      status?: string;
+      roles?: {
+        designers?: string[];
+        engineers?: string[];
+      };
+    };
+    runtime?: {
+      policy?: string;
+      mutationEnvelope?: {
+        mode?: string;
+        allowedSections?: string[];
+      };
+    };
   }>;
 }
 
@@ -165,6 +181,19 @@ interface RunExplainabilityFile {
   guidanceHandoffPath: string | null;
   activeContractChanges: LocalWorkbenchContractChange[];
   activeDesignerNotes: LocalWorkbenchDesignerNote[];
+}
+
+interface PublishRecordFile {
+  schemaVersion: 1;
+  publishId: string;
+  status: "published";
+  createdAt: string;
+  sourceRunId: string | null;
+  contractPath: string;
+  bundleRoot: string;
+  manifestPath: string;
+  generationPayloadPath: string;
+  runtimePayloadPath: string;
 }
 
 interface FrozenRuntimeGuidancePaths {
@@ -278,12 +307,24 @@ function resolveRunsDirectory(): string {
   return path.join(resolveSurfaceRoot(), "runs");
 }
 
+function resolvePublishesDirectory(): string {
+  return path.join(resolveSurfaceRoot(), "publishes");
+}
+
 function resolveRunDirectory(runId: string): string {
   return path.join(resolveRunsDirectory(), runId);
 }
 
 function resolveRunRecordPath(runId: string): string {
   return path.join(resolveRunDirectory(runId), "run.json");
+}
+
+function resolvePublishDirectory(publishId: string): string {
+  return path.join(resolvePublishesDirectory(), publishId);
+}
+
+function resolvePublishRecordPath(publishId: string): string {
+  return path.join(resolvePublishDirectory(publishId), "publish.json");
 }
 
 function resolveLocalLlmConfig(): LocalLlmConfig {
@@ -483,6 +524,12 @@ function summarizeContract(contract: ContractDocument) {
     maxContentWidth: typeof surface?.layout?.maxContentWidth === "number" ? surface.layout.maxContentWidth : null,
     colorPolicy: contract.color?.policy ?? "off",
     allowedColors: [...new Set(contract.color?.allowedValues ?? [])],
+    owner: typeof surface?.owner === "string" ? surface.owner : null,
+    governanceStatus: typeof surface?.governance?.status === "string" ? surface.governance.status : null,
+    runtimePolicy: surface?.runtime?.policy ?? "off",
+    mutationMode: typeof surface?.runtime?.mutationEnvelope?.mode === "string"
+      ? surface.runtime.mutationEnvelope.mode
+      : null,
   };
 }
 
@@ -496,6 +543,10 @@ function contractSummaryText(contract: ContractDocument): string {
     `Max content width: ${summary.maxContentWidth ?? "not specified"}`,
     `Color policy: ${summary.colorPolicy}`,
     `Allowed colors: ${summary.allowedColors.join(", ") || "none recorded"}`,
+    `Owner: ${summary.owner ?? "unassigned"}`,
+    `Governance status: ${summary.governanceStatus ?? "draft"}`,
+    `Runtime policy: ${summary.runtimePolicy}`,
+    `Mutation mode: ${summary.mutationMode ?? "unspecified"}`,
   ].join("\n");
 }
 
@@ -517,12 +568,26 @@ function ensureTargetSurface(contract: ContractDocument) {
   contract.surfaces ??= [];
   let surface = contract.surfaces.find((entry) => entry.id === TARGET.id);
   if (!surface) {
-    surface = { id: TARGET.id, allowedFonts: [], layout: {}, requiredSections: [] };
+    surface = {
+      id: TARGET.id,
+      allowedFonts: [],
+      layout: {},
+      requiredSections: [],
+      governance: { roles: { designers: [], engineers: [] } },
+      runtime: { mutationEnvelope: { allowedSections: [] } },
+    };
     contract.surfaces.push(surface);
   }
   surface.allowedFonts ??= [];
   surface.layout ??= {};
   surface.requiredSections ??= [];
+  surface.governance ??= {};
+  surface.governance.roles ??= {};
+  surface.governance.roles.designers ??= [];
+  surface.governance.roles.engineers ??= [];
+  surface.runtime ??= {};
+  surface.runtime.mutationEnvelope ??= {};
+  surface.runtime.mutationEnvelope.allowedSections ??= [];
   return surface;
 }
 
@@ -817,8 +882,15 @@ function mergeActiveContractChange(
   },
 ): LocalWorkbenchContractChange[] {
   const canonicalSummary = summarizeContract(canonicalContract);
+  const canonicalSurface = canonicalContract.surfaces?.find((entry) => entry.id === TARGET.id) ?? canonicalContract.surfaces?.[0];
   const next = current.filter((entry) => {
-    if (change.field === "color.allowedValues" || change.field === "surfaces.reference-target-web.allowedFonts") {
+    if (
+      change.field === "color.allowedValues"
+      || change.field === "surfaces.reference-target-web.allowedFonts"
+      || change.field === "surfaces.reference-target-web.governance.roles.designers"
+      || change.field === "surfaces.reference-target-web.governance.roles.engineers"
+      || change.field === "surfaces.reference-target-web.runtime.mutationEnvelope.allowedSections"
+    ) {
       return !(entry.field === change.field && String(entry.value) === String(change.value));
     }
     return entry.field !== change.field;
@@ -837,6 +909,34 @@ function mergeActiveContractChange(
     || (
       change.field === "surfaces.reference-target-web.allowedFonts"
       && canonicalSummary.allowedFonts.includes(String(change.value))
+    )
+    || (
+      change.field === "surfaces.reference-target-web.owner"
+      && String(change.value) === canonicalSummary.owner
+    )
+    || (
+      change.field === "surfaces.reference-target-web.governance.status"
+      && String(change.value) === canonicalSummary.governanceStatus
+    )
+    || (
+      change.field === "surfaces.reference-target-web.runtime.policy"
+      && String(change.value) === canonicalSummary.runtimePolicy
+    )
+    || (
+      change.field === "surfaces.reference-target-web.runtime.mutationEnvelope.mode"
+      && String(change.value) === canonicalSummary.mutationMode
+    )
+    || (
+      change.field === "surfaces.reference-target-web.governance.roles.designers"
+      && (canonicalSurface?.governance?.roles?.designers ?? []).includes(String(change.value))
+    )
+    || (
+      change.field === "surfaces.reference-target-web.governance.roles.engineers"
+      && (canonicalSurface?.governance?.roles?.engineers ?? []).includes(String(change.value))
+    )
+    || (
+      change.field === "surfaces.reference-target-web.runtime.mutationEnvelope.allowedSections"
+      && (canonicalSurface?.runtime?.mutationEnvelope?.allowedSections ?? []).includes(String(change.value))
     )
   ) {
     return next;
@@ -881,6 +981,44 @@ function applyContractChange(contract: ContractDocument, change: {
     case "surfaces.reference-target-web.allowedFonts":
       if (typeof change.value === "string" && !surface.allowedFonts?.includes(change.value)) {
         surface.allowedFonts?.push(change.value);
+      }
+      return;
+    case "surfaces.reference-target-web.owner":
+      if (typeof change.value === "string") {
+        surface.owner = change.value;
+      }
+      return;
+    case "surfaces.reference-target-web.governance.status":
+      if (typeof change.value === "string") {
+        surface.governance!.status = change.value;
+      }
+      return;
+    case "surfaces.reference-target-web.governance.roles.designers":
+      if (typeof change.value === "string" && !surface.governance?.roles?.designers?.includes(change.value)) {
+        surface.governance?.roles?.designers?.push(change.value);
+      }
+      return;
+    case "surfaces.reference-target-web.governance.roles.engineers":
+      if (typeof change.value === "string" && !surface.governance?.roles?.engineers?.includes(change.value)) {
+        surface.governance?.roles?.engineers?.push(change.value);
+      }
+      return;
+    case "surfaces.reference-target-web.runtime.policy":
+      if (typeof change.value === "string") {
+        surface.runtime!.policy = change.value;
+      }
+      return;
+    case "surfaces.reference-target-web.runtime.mutationEnvelope.mode":
+      if (typeof change.value === "string") {
+        surface.runtime!.mutationEnvelope!.mode = change.value;
+      }
+      return;
+    case "surfaces.reference-target-web.runtime.mutationEnvelope.allowedSections":
+      if (
+        typeof change.value === "string"
+        && !surface.runtime?.mutationEnvelope?.allowedSections?.includes(change.value)
+      ) {
+        surface.runtime?.mutationEnvelope?.allowedSections?.push(change.value);
       }
       return;
   }
@@ -1632,6 +1770,42 @@ async function listRunRecords(): Promise<RunRecordFile[]> {
     .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
 }
 
+async function loadPublishRecord(publishId: string): Promise<PublishRecordFile | null> {
+  const publishPath = resolvePublishRecordPath(publishId);
+  if (!(await fileExists(publishPath))) {
+    return null;
+  }
+  return readJsonFile<PublishRecordFile>(publishPath);
+}
+
+async function listPublishRecords(): Promise<PublishRecordFile[]> {
+  const publishesDir = resolvePublishesDirectory();
+  await fsp.mkdir(publishesDir, { recursive: true });
+  const entries = await fsp.readdir(publishesDir, { withFileTypes: true });
+  const records = await Promise.all(
+    entries
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => loadPublishRecord(entry.name)),
+  );
+  return records
+    .filter((entry): entry is PublishRecordFile => Boolean(entry))
+    .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+}
+
+function buildPublishView(record: PublishRecordFile): LocalWorkbenchPublish {
+  return {
+    publishId: record.publishId,
+    status: record.status,
+    createdAt: record.createdAt,
+    sourceRunId: record.sourceRunId,
+    contractPath: record.contractPath,
+    bundleRoot: record.bundleRoot,
+    manifestPath: record.manifestPath,
+    generationPayloadPath: record.generationPayloadPath,
+    runtimePayloadPath: record.runtimePayloadPath,
+  };
+}
+
 async function buildRunView(record: RunRecordFile): Promise<LocalWorkbenchRun> {
   const preparedPayload = record.preparedInputPath && await fileExists(record.preparedInputPath)
     ? await readJsonFile<Record<string, unknown>>(record.preparedInputPath)
@@ -1785,8 +1959,10 @@ export async function loadLocalWorkbenchData(): Promise<LocalWorkbenchData> {
   const session = await loadOrInitContractSession();
   const contract = summarizeContract(session.workingContract);
   const records = await listRunRecords();
+  const publishRecords = await listPublishRecords();
   const activeAcceptedSuggestions = await loadAcceptedSuggestions();
   const runs = await Promise.all(records.map((record) => buildRunView(record)));
+  const publishes = publishRecords.map((record) => buildPublishView(record));
   const latestRun = runs[0] ?? null;
   const latestRunOperatorNote = buildEditedUnresolvedAcceptedSuggestionMessage(latestRun, activeAcceptedSuggestions);
   const latestRunAgentInput: LocalWorkbenchAgentInput = {
@@ -1810,6 +1986,8 @@ export async function loadLocalWorkbenchData(): Promise<LocalWorkbenchData> {
     contract,
     latestRun,
     runs,
+    latestPublish: publishes[0] ?? null,
+    publishes,
     activeAcceptedSuggestions,
     latestRunOperatorNote,
     activeContractChanges: session.activeContractChanges,
@@ -1881,6 +2059,66 @@ export async function appendLocalWorkbenchChatMessage(input: { message: string }
   } satisfies ContractSessionFile;
 
   await writeContractSession(nextSession);
+}
+
+export async function publishLocalWorkbenchContract(): Promise<LocalWorkbenchPublish> {
+  const session = await loadOrInitContractSession();
+  const records = await listRunRecords();
+  const latestRun = records[0] ? await buildRunView(records[0]) : null;
+  const activeAcceptedSuggestions = await loadAcceptedSuggestions();
+  const latestRunOperatorNote = buildEditedUnresolvedAcceptedSuggestionMessage(latestRun, activeAcceptedSuggestions);
+
+  if (!latestRun) {
+    throw new Error("Publish is blocked until the first regeneration produces evidence.");
+  }
+  if (latestRun.status !== "succeeded") {
+    throw new Error("Publish is blocked while the latest regeneration is failing.");
+  }
+  if ((latestRun.comparison?.currentBlockingCount ?? 0) > 0) {
+    throw new Error("Publish is blocked because the latest validation still has blocking findings.");
+  }
+  if (latestRunOperatorNote) {
+    throw new Error("Publish is blocked because an accepted suggestion is still unresolved in the latest run.");
+  }
+
+  const publishId = buildRunId();
+  const publishDir = resolvePublishDirectory(publishId);
+  const contractPath = path.join(publishDir, "published-contract.json");
+  const bundleRoot = path.join(publishDir, "bundle");
+  const generationPayloadPath = path.join(publishDir, "generation.json");
+  const runtimePayloadPath = path.join(publishDir, "runtime.json");
+  const manifestPath = path.join(bundleRoot, "manifest.json");
+  const createdAt = new Date().toISOString();
+
+  await fsp.mkdir(publishDir, { recursive: true });
+  await writeJsonFile(contractPath, session.workingContract);
+  await runInterfacectlCli(
+    ["compile", "--contract", contractPath, "--out", bundleRoot],
+    { cwd: resolveWorkspaceRoot() },
+  );
+  await runInterfacectlCli(
+    ["prepare-generation", "--bundle-root", bundleRoot, "--surface", TARGET.id, "--out", generationPayloadPath],
+    { cwd: resolveWorkspaceRoot() },
+  );
+  await runInterfacectlCli(
+    ["prepare-runtime", "--bundle-root", bundleRoot, "--surface", TARGET.id, "--out", runtimePayloadPath],
+    { cwd: resolveWorkspaceRoot() },
+  );
+
+  const publishRecord = {
+    schemaVersion: 1,
+    publishId,
+    status: "published",
+    createdAt,
+    sourceRunId: latestRun.runId,
+    contractPath,
+    bundleRoot,
+    manifestPath,
+    generationPayloadPath,
+    runtimePayloadPath,
+  } satisfies PublishRecordFile;
+  await writeJsonFile(resolvePublishRecordPath(publishId), publishRecord);
+  return buildPublishView(publishRecord);
 }
 
 async function updateRunRecord(runId: string, update: Partial<RunRecordFile>): Promise<void> {

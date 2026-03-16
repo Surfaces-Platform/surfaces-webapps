@@ -1,28 +1,194 @@
 {
-  "contractId": "reference-target-web.generated",
-  "version": "0.1.0",
-  "surfaceId": "reference-target-web",
-  "layout": {
-    "maxContentWidth": 1120
+  "surface": {
+    "displayName": "Reference Target Web",
+    "surfaceId": "reference-target-web",
+    "type": "web"
   },
-  "color": {
-    "allowedValues": [
-      "#f9fbff",
-      "#fdfefe",
-      "rgba(255, 255, 255, 0.94)",
-      "var(--bg)",
-      "var(--muted)",
-      "var(--surface)",
-      "var(--text)"
-    ],
-    "policy": "warn"
+  "contract": {
+    "id": "reference-target-web.generated",
+    "version": "0.1.0"
   },
-  "motion": {
-    "allowedDurationsMs": [
-      120
+  "summary": {
+    "checklist": [
+      {
+        "detail": "Runtime must keep sections: landing.actions, landing.capabilities, landing.contracts, landing.hero, landing.observability, landing.tokens.",
+        "id": "required-sections",
+        "label": "Preserve required sections"
+      },
+      {
+        "detail": "Allowed runtime mutation mode: content-only.",
+        "id": "mutation-envelope",
+        "label": "Stay inside the mutation envelope"
+      },
+      {
+        "detail": "Strict categories: runtime, structure.",
+        "id": "strict-categories",
+        "label": "Honor strict enforcement categories"
+      }
     ],
-    "allowedTimingFunctions": [
-      "linear"
-    ]
-  }
+    "contextIds": [],
+    "mutationMode": "content-only",
+    "requiredSectionIds": [
+      "landing.actions",
+      "landing.capabilities",
+      "landing.contracts",
+      "landing.hero",
+      "landing.observability",
+      "landing.tokens"
+    ],
+    "strictCategories": [
+      "runtime",
+      "structure"
+    ],
+    "text": "preserve required sections landing.actions, landing.capabilities, landing.contracts, landing.hero, landing.observability, landing.tokens; stay within content-only mutation scope; treat runtime, structure as strict runtime categories."
+  },
+  "governance": {
+    "approvals": [],
+    "domain": null,
+    "owner": null,
+    "phase0": {
+      "authPosture": "public",
+      "requiresShell": true
+    },
+    "roles": {},
+    "status": "draft"
+  },
+  "runtime": {
+    "boundary": {
+      "allowSources": [],
+      "contentSlot": null,
+      "mustNotEmit": [],
+      "shellOwns": []
+    },
+    "contexts": [],
+    "layout": {
+      "chromePolicy": {
+        "allowInsetShadow": false,
+        "allowOuterShadow": false,
+        "maxBorderRadiusPx": 0,
+        "policy": "off",
+        "targets": [
+          "layout-container",
+          "page-container",
+          "top-level-section"
+        ]
+      },
+      "maxContentWidth": 1160,
+      "requiredContainers": [
+        "page-container"
+      ]
+    },
+    "mutationEnvelope": {
+      "allowedActions": [
+        "update-copy"
+      ],
+      "mode": "content-only",
+      "scopes": [
+        "content"
+      ]
+    },
+    "policy": "strict",
+    "policySeverities": {
+      "boundary": "off",
+      "interaction": "off",
+      "layout": "off",
+      "runtime": "strict",
+      "structure": "strict",
+      "visual": "warn"
+    },
+    "structure": {
+      "allowedComponents": [],
+      "allowedSections": [
+        "landing.hero",
+        "landing.capabilities",
+        "landing.contracts",
+        "landing.tokens",
+        "landing.observability",
+        "landing.actions"
+      ],
+      "requiredSections": [
+        "landing.actions",
+        "landing.capabilities",
+        "landing.contracts",
+        "landing.hero",
+        "landing.observability",
+        "landing.tokens"
+      ]
+    },
+    "visual": {
+      "allowedFonts": [
+        "Inter",
+        "sans-serif",
+        "var(--font-inter)"
+      ],
+      "color": {
+        "allowedValues": [
+          "#f9fbff",
+          "#fdfefe",
+          "rgba(255, 255, 255, 0.94)",
+          "var(--bg)",
+          "var(--muted)",
+          "var(--surface)",
+          "var(--text)"
+        ],
+        "policy": "warn"
+      },
+      "icons": {
+        "allowedSources": [],
+        "policy": "warn"
+      },
+      "motion": {
+        "allowedDurationsMs": [
+          120
+        ],
+        "allowedTimingFunctions": [
+          "linear"
+        ]
+      },
+      "tokens": {
+        "layout": {
+          "allowedTokens": [
+            "var(--contract-max-width)"
+          ],
+          "policy": "warn",
+          "tokenMetadata": [
+            {
+              "aliases": [],
+              "attributes": [
+                "max-width"
+              ],
+              "normalizedValue": "1160px",
+              "token": "var(--contract-max-width)"
+            }
+          ]
+        },
+        "motion": {
+          "allowedTokens": [],
+          "policy": "warn"
+        },
+        "typography": {
+          "allowedTokens": [
+            "var(--font-inter)"
+          ],
+          "policy": "warn",
+          "tokenMetadata": [
+            {
+              "aliases": [],
+              "attributes": [
+                "font-family"
+              ],
+              "normalizedValue": "var(--font-inter)",
+              "token": "var(--font-inter)"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "evidenceRefs": [
+    {
+      "kind": "contract-field",
+      "path": "/x_extracted"
+    }
+  ]
 }
