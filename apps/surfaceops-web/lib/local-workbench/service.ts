@@ -1,9 +1,10 @@
 import { createHash, randomUUID } from "node:crypto";
-import { spawn, type ChildProcess } from "node:child_process";
+import { execFile, spawn, type ChildProcess } from "node:child_process";
 import fs from "node:fs";
 import fsp from "node:fs/promises";
 import net from "node:net";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import type { BenchmarkCohortManifest } from "@/lib/generation-benchmarks";
 import { runInterfacectlCli, resolveWorkspaceRoot } from "@/lib/interfacectl";
 import {
@@ -45,6 +46,7 @@ import type {
   LocalWorkbenchRunPhaseEntry,
   LocalWorkbenchRun,
   LocalWorkbenchSuggestion,
+  PromotionReadinessReport,
   StartLocalRerunResult,
 } from "./types";
 import {
@@ -62,6 +64,31 @@ const DEFAULT_LOCAL_LLM_MODEL = "openai/gpt-oss-120b";
 const CONTRACT_SESSION_SCHEMA_VERSION = 2;
 const IMPLEMENTATION_GUIDANCE_STRATEGY = "json-primary";
 type ImplementationGuidanceStrategy = BenchmarkGuidanceStrategy;
+type ContractRunOutcome = "pass" | "warn" | "fail" | "unknown";
+
+interface CanonicalContractRunArtifact {
+  runId: string;
+  workspaceId: string;
+  idempotencyKey: string;
+  ingestedAt: string;
+  createdAt: string;
+  surfaceId: string;
+  source: "generation";
+  contract: {
+    id: string;
+    version: string;
+    sha256: string;
+  };
+  artifacts: {
+    reportPath: string;
+  };
+  status: ContractRunOutcome;
+  findingCodes: string[];
+  summary: {
+    errorCount: number;
+    warnCount: number;
+  };
+}
 
 interface RunRecordFile {
   schemaVersion: number;
@@ -194,6 +221,8 @@ interface PublishRecordFile {
   manifestPath: string;
   generationPayloadPath: string;
   runtimePayloadPath: string;
+  promotionReadinessPath?: string | null;
+  promotionReadiness?: PromotionReadinessReport | null;
 }
 
 interface FrozenRuntimeGuidancePaths {
@@ -327,6 +356,13 @@ function resolvePublishRecordPath(publishId: string): string {
   return path.join(resolvePublishDirectory(publishId), "publish.json");
 }
 
+function resolveCurrentPromotionReadinessPath(): string {
+  return path.join(resolveSurfaceRoot(), "promotion-readiness.json");
+}
+
+function resolveCurrentPromotionReadinessContractPath(): string {
+  return path.join(resolveSurfaceRoot(), "promotion-readiness.contract.json");
+}
 function resolveLocalLlmConfig(): LocalLlmConfig {
   const baseUrl = process.env.SURFACEOPS_LOCAL_LLM_BASE_URL?.trim() || DEFAULT_LOCAL_LLM_BASE_URL;
   const model = process.env.SURFACEOPS_LOCAL_LLM_MODEL?.trim() || DEFAULT_LOCAL_LLM_MODEL;
@@ -410,9 +446,329 @@ function resolveDependencySource(relativePath: string): string | null {
   const candidates = [
     path.join(workspaceRoot, relativePath),
     primaryRoot === workspaceRoot ? null : path.join(primaryRoot, relativePath),
+    path.join(process.cwd(), relativePath),
   ].filter((entry): entry is string => Boolean(entry));
 
   return candidates.find((candidate) => fs.existsSync(candidate)) ?? null;
+}
+
+function resolvePromotionReadinessScriptPath(): string | null {
+  const dependencyPath = resolveDependencySource("scripts/check-promotion-readiness.mjs");
+  if (dependencyPath) {
+    return dependencyPath;
+  }
+
+  const moduleRelativePath = fileURLToPath(new URL("../../../../scripts/check-promotion-readiness.mjs", import.meta.url));
+  return fs.existsSync(moduleRelativePath) ? moduleRelativePath : null;
+}
+
+async function execNodeScript(
+  scriptPath: string,
+  args: string[],
+  options: {
+    cwd: string;
+    acceptExitCodes?: number[];
+  },
+): Promise<{ exitCode: number; stdout: string; stderr: string }> {
+  return new Promise((resolve, reject) => {
+    execFile(
+      process.execPath,
+      [scriptPath, ...args],
+      {
+        cwd: options.cwd,
+        env: process.env,
+        maxBuffer: 10 * 1024 * 1024,
+      },
+      (error, stdout, stderr) => {
+        const exitCode =
+          typeof (error as NodeJS.ErrnoException | null)?.code === "number"
+            ? Number((error as NodeJS.ErrnoException).code)
+            : 0;
+        const acceptedExitCodes = new Set([0, ...(options.acceptExitCodes ?? [])]);
+        if (error && !acceptedExitCodes.has(exitCode)) {
+          reject(
+            new Error(
+              [
+                `${path.basename(scriptPath)} exited with code ${exitCode}.`,
+                stderr.trim(),
+                stdout.trim(),
+              ].filter(Boolean).join("\n"),
+            ),
+          );
+          return;
+        }
+
+        resolve({ exitCode, stdout, stderr });
+      },
+    );
+  });
+}
+
+function warningFindingCount(validatePayload: Record<string, unknown>): number {
+  const findings = Array.isArray(validatePayload.findings) ? validatePayload.findings : [];
+  return findings.filter((entry) => {
+    if (!entry || typeof entry !== "object") return false;
+    return String((entry as Record<string, unknown>).severity ?? "") === "warning";
+  }).length;
+}
+
+function mapValidateStatusToOutcome(validatePayload: Record<string, unknown>): ContractRunOutcome {
+  const status = String(validatePayload.status ?? "unknown");
+  if (status === "pass") return "pass";
+  if (status === "warn") return "warn";
+  if (status === "block" || status === "fail") return "fail";
+  return "unknown";
+}
+
+function resolveCanonicalContractRunsPath(): string {
+  return path.join(resolveWorkspaceRoot(), "contracts", "generated", "contract-runs.json");
+}
+
+function resolveCanonicalContractLineagePath(): string {
+  return path.join(resolveWorkspaceRoot(), "contracts", "generated", "contract-lineage.json");
+}
+
+function compareCanonicalRunsAscending(
+  left: CanonicalContractRunArtifact,
+  right: CanonicalContractRunArtifact,
+): number {
+  const timeDiff = Date.parse(left.createdAt) - Date.parse(right.createdAt);
+  if (timeDiff !== 0) {
+    return timeDiff;
+  }
+  return left.runId.localeCompare(right.runId);
+}
+
+function dedupeCanonicalRuns(
+  runs: CanonicalContractRunArtifact[],
+): CanonicalContractRunArtifact[] {
+  const byRunId = new Set<string>();
+  const byIdempotencyKey = new Set<string>();
+  const deduped: CanonicalContractRunArtifact[] = [];
+
+  for (const run of [...runs].sort(compareCanonicalRunsAscending)) {
+    const runKey = `${run.workspaceId}:${run.runId}`;
+    const idempotencyKey = `${run.workspaceId}:${run.idempotencyKey}`;
+    if (byRunId.has(runKey) || byIdempotencyKey.has(idempotencyKey)) {
+      continue;
+    }
+    byRunId.add(runKey);
+    byIdempotencyKey.add(idempotencyKey);
+    deduped.push(run);
+  }
+
+  return deduped;
+}
+
+async function loadCanonicalRuns(): Promise<CanonicalContractRunArtifact[]> {
+  const runsPath = resolveCanonicalContractRunsPath();
+  if (!(await fileExists(runsPath))) {
+    return [];
+  }
+
+  const existing = await readJsonFile<{ runs?: CanonicalContractRunArtifact[] }>(runsPath);
+  return Array.isArray(existing.runs) ? existing.runs : [];
+}
+
+function buildCanonicalLineage(
+  runs: CanonicalContractRunArtifact[],
+): Record<string, {
+  lastRunId: string;
+  lastRunAt: string;
+  lastSource: "generation";
+  lastStatus: ContractRunOutcome;
+  contract: CanonicalContractRunArtifact["contract"];
+  artifacts: CanonicalContractRunArtifact["artifacts"];
+  findingCodes: string[];
+}> {
+  const surfaces: Record<string, {
+    lastRunId: string;
+    lastRunAt: string;
+    lastSource: "generation";
+    lastStatus: ContractRunOutcome;
+    contract: CanonicalContractRunArtifact["contract"];
+    artifacts: CanonicalContractRunArtifact["artifacts"];
+    findingCodes: string[];
+  }> = {};
+
+  for (const run of [...runs].sort(compareCanonicalRunsAscending)) {
+    surfaces[run.surfaceId] = {
+      lastRunId: run.runId,
+      lastRunAt: run.createdAt,
+      lastSource: run.source,
+      lastStatus: run.status,
+      contract: run.contract,
+      artifacts: run.artifacts,
+      findingCodes: run.findingCodes,
+    };
+  }
+
+  return surfaces;
+}
+
+async function appendCanonicalRunArtifact(run: CanonicalContractRunArtifact): Promise<void> {
+  const existingRuns = await loadCanonicalRuns();
+  const nextRuns = dedupeCanonicalRuns([...existingRuns, run]).sort(compareCanonicalRunsAscending);
+  await writeJsonFile(resolveCanonicalContractRunsPath(), {
+    schemaVersion: 2,
+    runs: nextRuns,
+  });
+  await writeJsonFile(resolveCanonicalContractLineagePath(), {
+    schemaVersion: 1,
+    surfaces: buildCanonicalLineage(nextRuns),
+  });
+}
+
+async function appendLocalWorkbenchGenerationRunArtifact(input: {
+  runId: string;
+  createdAt: string;
+  effectiveContractPath: string;
+  validatePath: string;
+  validatePayload: Record<string, unknown>;
+}): Promise<void> {
+  const contract = await readJsonFile<ContractDocument>(input.effectiveContractPath);
+  const contractId =
+    typeof contract.contractId === "string" && contract.contractId.trim().length > 0
+      ? contract.contractId
+      : TARGET.id;
+  const version =
+    typeof contract.version === "string" && contract.version.trim().length > 0
+      ? contract.version
+      : "unknown";
+
+  await appendCanonicalRunArtifact({
+    runId: input.runId,
+    workspaceId: "ws-local-default",
+    ingestedAt: new Date().toISOString(),
+    createdAt: input.createdAt,
+    source: "generation",
+    surfaceId: TARGET.id,
+    idempotencyKey: `local-workbench:${input.runId}`,
+    contract: {
+      id: contractId,
+      version,
+      sha256: sha256String(stringifyJson(contract)),
+    },
+    artifacts: {
+      reportPath: input.validatePath,
+    },
+    status: mapValidateStatusToOutcome(input.validatePayload),
+    findingCodes: normalizeFindingCodes(input.validatePayload),
+    summary: {
+      errorCount: blockingFindingCount(input.validatePayload),
+      warnCount: warningFindingCount(input.validatePayload),
+    },
+  });
+}
+
+function promotionReadinessSurface(
+  report: PromotionReadinessReport,
+): PromotionReadinessReport["surfaces"][number] | null {
+  return report.surfaces.find((surface) => surface.surfaceId === TARGET.id) ?? report.surfaces[0] ?? null;
+}
+
+function recomputePromotionReadinessSummary(report: PromotionReadinessReport): PromotionReadinessReport {
+  const readySurfaces = report.surfaces.filter((surface) => surface.ready).length;
+  return {
+    ...report,
+    summary: {
+      totalSurfaces: report.surfaces.length,
+      readySurfaces,
+      notReadySurfaces: report.surfaces.length - readySurfaces,
+      readyForPromotion: readySurfaces === report.surfaces.length,
+    },
+  };
+}
+
+function applyLocalWorkbenchPromotionGates(
+  report: PromotionReadinessReport,
+  latestRunOperatorNote: string | null,
+): PromotionReadinessReport {
+  if (!latestRunOperatorNote) {
+    return report;
+  }
+
+  const surface = promotionReadinessSurface(report);
+  if (!surface) {
+    return report;
+  }
+
+  const latestGenerationRun =
+    surface.sourceKpis.find((entry) => entry.source === "generation")?.latestRun ??
+    surface.checks.find((entry) => entry.latestRun)?.latestRun ??
+    null;
+
+  const nextSurface = {
+    ...surface,
+    ready: false,
+    checks: [
+      ...surface.checks.filter((entry) => entry.code !== "promotion.accepted-guidance-unresolved"),
+      {
+        source: "accepted-guidance",
+        ready: false,
+        code: "promotion.accepted-guidance-unresolved",
+        message: latestRunOperatorNote,
+        latestRun: latestGenerationRun,
+      },
+    ],
+  };
+
+  const nextReport = {
+    ...report,
+    surfaces: report.surfaces.map((entry) => (entry.surfaceId === nextSurface.surfaceId ? nextSurface : entry)),
+  };
+  return recomputePromotionReadinessSummary(nextReport);
+}
+
+async function generatePromotionReadinessReport(input: {
+  contractPath: string;
+  outputPath: string;
+  mode: PromotionReadinessReport["mode"];
+  latestRunOperatorNote: string | null;
+}): Promise<PromotionReadinessReport> {
+  const scriptPath = resolvePromotionReadinessScriptPath();
+  if (!scriptPath) {
+    throw new Error("Could not locate scripts/check-promotion-readiness.mjs.");
+  }
+
+  const result = await execNodeScript(
+    scriptPath,
+    [
+      "--root",
+      resolveWorkspaceRoot(),
+      "--contract",
+      input.contractPath,
+      "--surfaces",
+      TARGET.id,
+      "--required-sources",
+      "generation",
+      "--mode",
+      input.mode,
+      "--output",
+      input.outputPath,
+    ],
+    {
+      cwd: resolveWorkspaceRoot(),
+      acceptExitCodes: input.mode === "block" ? [1] : [],
+    },
+  );
+
+  if (input.mode === "advisory" && result.exitCode !== 0) {
+    throw new Error(result.stderr.trim() || result.stdout.trim() || "Promotion readiness failed.");
+  }
+  if (!(await fileExists(input.outputPath))) {
+    throw new Error(result.stderr.trim() || result.stdout.trim() || "Promotion readiness did not write a report.");
+  }
+
+  const baseReport = await readJsonFile<PromotionReadinessReport>(input.outputPath);
+  const nextReport = applyLocalWorkbenchPromotionGates(baseReport, input.latestRunOperatorNote);
+  await writeJsonFile(input.outputPath, nextReport);
+  return nextReport;
+}
+
+function firstPromotionReadinessBlocker(report: PromotionReadinessReport | null): string | null {
+  const surface = report ? promotionReadinessSurface(report) : null;
+  return surface?.checks.find((entry) => !entry.ready)?.message ?? null;
 }
 
 function normalizePhaseHistory(value: unknown): LocalWorkbenchRunPhaseEntry[] {
@@ -1803,6 +2159,8 @@ function buildPublishView(record: PublishRecordFile): LocalWorkbenchPublish {
     manifestPath: record.manifestPath,
     generationPayloadPath: record.generationPayloadPath,
     runtimePayloadPath: record.runtimePayloadPath,
+    promotionReadinessPath: record.promotionReadinessPath ?? null,
+    promotionReadiness: record.promotionReadiness ?? null,
   };
 }
 
@@ -1973,6 +2331,19 @@ export async function loadLocalWorkbenchData(): Promise<LocalWorkbenchData> {
     path: latestRun?.guidanceHandoffPath ?? null,
     content: await readTextFile(latestRun?.guidanceHandoffPath ?? null),
   };
+  let promotionReadiness: PromotionReadinessReport | null = null;
+  try {
+    const contractSnapshotPath = resolveCurrentPromotionReadinessContractPath();
+    await writeJsonFile(contractSnapshotPath, session.workingContract);
+    promotionReadiness = await generatePromotionReadinessReport({
+      contractPath: contractSnapshotPath,
+      outputPath: resolveCurrentPromotionReadinessPath(),
+      mode: "advisory",
+      latestRunOperatorNote,
+    });
+  } catch {
+    promotionReadiness = null;
+  }
   return {
     enabled: true,
     runRoot: resolveSurfaceRoot(),
@@ -1988,6 +2359,7 @@ export async function loadLocalWorkbenchData(): Promise<LocalWorkbenchData> {
     runs,
     latestPublish: publishes[0] ?? null,
     publishes,
+    promotionReadiness,
     activeAcceptedSuggestions,
     latestRunOperatorNote,
     activeContractChanges: session.activeContractChanges,
@@ -2068,30 +2440,30 @@ export async function publishLocalWorkbenchContract(): Promise<LocalWorkbenchPub
   const activeAcceptedSuggestions = await loadAcceptedSuggestions();
   const latestRunOperatorNote = buildEditedUnresolvedAcceptedSuggestionMessage(latestRun, activeAcceptedSuggestions);
 
-  if (!latestRun) {
-    throw new Error("Publish is blocked until the first regeneration produces evidence.");
-  }
-  if (latestRun.status !== "succeeded") {
-    throw new Error("Publish is blocked while the latest regeneration is failing.");
-  }
-  if ((latestRun.comparison?.currentBlockingCount ?? 0) > 0) {
-    throw new Error("Publish is blocked because the latest validation still has blocking findings.");
-  }
-  if (latestRunOperatorNote) {
-    throw new Error("Publish is blocked because an accepted suggestion is still unresolved in the latest run.");
-  }
-
   const publishId = buildRunId();
   const publishDir = resolvePublishDirectory(publishId);
   const contractPath = path.join(publishDir, "published-contract.json");
   const bundleRoot = path.join(publishDir, "bundle");
   const generationPayloadPath = path.join(publishDir, "generation.json");
   const runtimePayloadPath = path.join(publishDir, "runtime.json");
+  const promotionReadinessPath = path.join(publishDir, "promotion-readiness.json");
   const manifestPath = path.join(bundleRoot, "manifest.json");
   const createdAt = new Date().toISOString();
 
   await fsp.mkdir(publishDir, { recursive: true });
   await writeJsonFile(contractPath, session.workingContract);
+  const promotionReadiness = await generatePromotionReadinessReport({
+    contractPath,
+    outputPath: promotionReadinessPath,
+    mode: "block",
+    latestRunOperatorNote,
+  });
+  if (!promotionReadiness.summary.readyForPromotion) {
+    throw new Error(
+      firstPromotionReadinessBlocker(promotionReadiness) ??
+      "Publish is blocked until promotion readiness checks pass.",
+    );
+  }
   await runInterfacectlCli(
     ["compile", "--contract", contractPath, "--out", bundleRoot],
     { cwd: resolveWorkspaceRoot() },
@@ -2110,12 +2482,17 @@ export async function publishLocalWorkbenchContract(): Promise<LocalWorkbenchPub
     publishId,
     status: "published",
     createdAt,
-    sourceRunId: latestRun.runId,
+    sourceRunId:
+      promotionReadinessSurface(promotionReadiness)?.sourceKpis.find((entry) => entry.source === "generation")?.latestRun?.runId ??
+      latestRun?.runId ??
+      null,
     contractPath,
     bundleRoot,
     manifestPath,
     generationPayloadPath,
     runtimePayloadPath,
+    promotionReadinessPath,
+    promotionReadiness,
   } satisfies PublishRecordFile;
   await writeJsonFile(resolvePublishRecordPath(publishId), publishRecord);
   return buildPublishView(publishRecord);
@@ -2587,6 +2964,7 @@ export async function startLocalWorkbenchRerun(): Promise<StartLocalRerunResult>
   const activeAcceptedSuggestions = await loadAcceptedSuggestions();
 
   const runId = buildRunId();
+  const runCreatedAt = new Date().toISOString();
   const runDir = resolveRunDirectory(runId);
   const bundleRoot = path.join(runDir, "bundle");
   const preparedPath = path.join(runDir, "prepared-input.json");
@@ -2602,7 +2980,7 @@ export async function startLocalWorkbenchRerun(): Promise<StartLocalRerunResult>
     schemaVersion: 2,
     runId,
     status: "running",
-    createdAt: new Date().toISOString(),
+    createdAt: runCreatedAt,
     completedAt: null,
     model: llm.model,
     currentPhase: null,
@@ -2891,14 +3269,19 @@ export async function startLocalWorkbenchRerun(): Promise<StartLocalRerunResult>
       }
     });
 
-    const baselineValidate = await readJsonFile<Record<string, unknown>>(
-      path.join(baselineSessionDir, "attempts", `${RERUN_ATTEMPT}.validate.json`),
-    );
-    const currentValidate = await readJsonFile<Record<string, unknown>>(
-      path.join(currentSessionDir, "attempts", `${RERUN_ATTEMPT}.validate.json`),
-    );
+    const baselineValidatePath = path.join(baselineSessionDir, "attempts", `${RERUN_ATTEMPT}.validate.json`);
+    const currentValidatePath = path.join(currentSessionDir, "attempts", `${RERUN_ATTEMPT}.validate.json`);
+    const baselineValidate = await readJsonFile<Record<string, unknown>>(baselineValidatePath);
+    const currentValidate = await readJsonFile<Record<string, unknown>>(currentValidatePath);
     const remainingAcceptedSuggestions = pruneAcceptedSuggestions(activeAcceptedSuggestions, currentValidate);
     await writeAcceptedSuggestions(remainingAcceptedSuggestions);
+    await appendLocalWorkbenchGenerationRunArtifact({
+      runId,
+      createdAt: runCreatedAt,
+      effectiveContractPath,
+      validatePath: currentValidatePath,
+      validatePayload: currentValidate,
+    });
 
     await runPhase("finalize", "Persist comparison metrics and structured suggestions.", async () => {
       const comparison = buildComparison(baselineValidate, currentValidate);

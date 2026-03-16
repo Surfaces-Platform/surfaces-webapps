@@ -1,4 +1,5 @@
 import * as childProcess from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -83,6 +84,68 @@ async function seedContract(workspaceRoot: string): Promise<void> {
         },
       ],
     }),
+    "utf8",
+  );
+}
+
+function stableJson(value: unknown): string {
+  return `${JSON.stringify(value, null, 2)}\n`;
+}
+
+async function readContractSummary(contractPath: string): Promise<{
+  id: string;
+  version: string;
+  sha256: string;
+}> {
+  const contract = JSON.parse(await fs.readFile(contractPath, "utf8")) as {
+    contractId: string;
+    version: string;
+  };
+  return {
+    id: contract.contractId,
+    version: contract.version,
+    sha256: createHash("sha256").update(stableJson(contract)).digest("hex"),
+  };
+}
+
+async function seedGenerationRunArtifact(
+  workspaceRoot: string,
+  options: {
+    runId: string;
+    createdAt?: string;
+    status?: "pass" | "warn" | "fail";
+    contractPath: string;
+    reportPath: string;
+    findingCodes?: string[];
+    summary?: { errorCount: number; warnCount: number };
+  },
+): Promise<void> {
+  const contract = await readContractSummary(options.contractPath);
+  await fs.mkdir(path.dirname(options.reportPath), { recursive: true });
+  await fs.writeFile(options.reportPath, JSON.stringify({ runId: options.runId }, null, 2), "utf8");
+  await fs.mkdir(path.join(workspaceRoot, "contracts", "generated"), { recursive: true });
+  await fs.writeFile(
+    path.join(workspaceRoot, "contracts", "generated", "contract-runs.json"),
+    JSON.stringify({
+      schemaVersion: 2,
+      runs: [
+        {
+          runId: options.runId,
+          workspaceId: "ws-local-default",
+          idempotencyKey: `local-workbench:${options.runId}`,
+          createdAt: options.createdAt ?? "2026-03-16T18:00:00.000Z",
+          surfaceId: "reference-target-web",
+          source: "generation",
+          contract,
+          artifacts: {
+            reportPath: options.reportPath,
+          },
+          status: options.status ?? "pass",
+          findingCodes: options.findingCodes ?? [],
+          summary: options.summary ?? { errorCount: 0, warnCount: 0 },
+        },
+      ],
+    }, null, 2),
     "utf8",
   );
 }
@@ -1003,14 +1066,36 @@ describe("local workbench service", () => {
     const effectiveContract = await fs.readFile(path.join(runsDir, latestRunId!, "effective-contract.json"), "utf8");
     const agentInput = await fs.readFile(path.join(runsDir, latestRunId!, "agent-input.txt"), "utf8");
     const explainability = await fs.readFile(path.join(runsDir, latestRunId!, "explainability.json"), "utf8");
+    const canonicalRuns = JSON.parse(
+      await fs.readFile(path.join(workspaceRoot, "contracts", "generated", "contract-runs.json"), "utf8"),
+    ) as {
+      runs: Array<{ runId: string; source: string; artifacts: { reportPath?: string } }>;
+    };
 
     expect(effectiveContract).toContain("#ffc0cb");
     expect(agentInput).toContain("#ffc0cb");
     expect(agentInput).toContain("Shell background should use #ffc0cb.");
     expect(explainability).toContain("#ffc0cb");
+    expect(canonicalRuns.runs).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          runId: latestRunId,
+          source: "generation",
+          artifacts: expect.objectContaining({
+            reportPath: expect.stringContaining("001.validate.json"),
+          }),
+        }),
+      ]),
+    );
   });
 
   it("publishes a frozen contract revision with generation and runtime payloads", async () => {
+    const contractPath = path.join(
+      workspaceRoot,
+      "contracts",
+      "generated",
+      "reference-target-web.contract.json",
+    );
     const runDir = path.join(
       workspaceRoot,
       ".scratch",
@@ -1020,6 +1105,11 @@ describe("local workbench service", () => {
       "run-1",
     );
     await fs.mkdir(runDir, { recursive: true });
+    await seedGenerationRunArtifact(workspaceRoot, {
+      runId: "run-1",
+      contractPath,
+      reportPath: path.join(runDir, "001.validate.json"),
+    });
     await fs.writeFile(
       path.join(runDir, "run.json"),
       JSON.stringify({
@@ -1049,6 +1139,7 @@ describe("local workbench service", () => {
       }),
       "utf8",
     );
+    await fs.writeFile(path.join(runDir, "effective-contract.json"), await fs.readFile(contractPath, "utf8"), "utf8");
 
     mockedInterfacectl.runInterfacectlCli.mockImplementation(async (args: string[]) => {
       const command = args[0];
@@ -1070,9 +1161,88 @@ describe("local workbench service", () => {
 
     expect(publish.status).toBe("published");
     expect(publish.sourceRunId).toBe("run-1");
+    expect(publish.promotionReadinessPath).toContain("promotion-readiness.json");
+    expect(publish.promotionReadiness?.summary.readyForPromotion).toBe(true);
     await expect(fs.readFile(publish.contractPath, "utf8")).resolves.toContain("\"contractId\"");
     await expect(fs.readFile(publish.generationPayloadPath, "utf8")).resolves.toContain("\"command\":\"prepare-generation\"");
     await expect(fs.readFile(publish.runtimePayloadPath, "utf8")).resolves.toContain("\"command\":\"prepare-runtime\"");
+    await expect(fs.readFile(publish.promotionReadinessPath!, "utf8")).resolves.toContain("\"readyForPromotion\": true");
+  });
+
+  it("blocks publish when canonical readiness evidence does not match the current contract", async () => {
+    const contractPath = path.join(
+      workspaceRoot,
+      "contracts",
+      "generated",
+      "reference-target-web.contract.json",
+    );
+    const runDir = path.join(
+      workspaceRoot,
+      ".scratch",
+      "surfaceops-local-runs",
+      "reference-target-web",
+      "runs",
+      "run-1",
+    );
+    await fs.mkdir(runDir, { recursive: true });
+    await seedGenerationRunArtifact(workspaceRoot, {
+      runId: "run-1",
+      contractPath,
+      reportPath: path.join(runDir, "001.validate.json"),
+    });
+    await fs.writeFile(
+      path.join(runDir, "run.json"),
+      JSON.stringify({
+        schemaVersion: 2,
+        runId: "run-1",
+        status: "succeeded",
+        createdAt: "2026-03-16T18:00:00.000Z",
+        completedAt: "2026-03-16T18:05:00.000Z",
+        contractPath: path.join(runDir, "effective-contract.json"),
+        preparedInputPath: null,
+        guidanceStrategy: "json-primary",
+        guidanceHandoffPath: null,
+        baselineSessionDir: null,
+        currentSessionDir: null,
+        baselinePreviewPath: null,
+        currentPreviewPath: null,
+        baselineSummaryPath: null,
+        currentSummaryPath: null,
+        comparisonPath: null,
+        suggestionsPath: null,
+        transcriptPath: null,
+        effectiveContractPath: path.join(runDir, "effective-contract.json"),
+        agentInputPath: null,
+        explainabilityPath: null,
+        touchedFiles: ["apps/reference-target-web/app/page.tsx"],
+        errorMessage: null,
+      }),
+      "utf8",
+    );
+    await fs.writeFile(path.join(runDir, "effective-contract.json"), await fs.readFile(contractPath, "utf8"), "utf8");
+
+    global.fetch = vi.fn(async () =>
+      new Response(JSON.stringify(responsesPayload({
+        assistantMessage: "Updated max width.",
+        contractChanges: [
+          {
+            field: "surfaces.reference-target-web.layout.maxContentWidth",
+            action: "set",
+            value: 1280,
+            summary: "Set max content width to 1280px.",
+          },
+        ],
+        designerNotes: [],
+      })), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    ) as typeof fetch;
+    await appendLocalWorkbenchChatMessage({ message: "set max width to 1280px" });
+
+    await expect(publishLocalWorkbenchContract()).rejects.toThrow(
+      "generation latest run does not match the current contract revision",
+    );
   });
 
   it("builds validator-specific follow-up guidance when edits land but motion still remains unresolved", () => {

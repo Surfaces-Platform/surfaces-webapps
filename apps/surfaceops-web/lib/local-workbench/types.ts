@@ -170,6 +170,75 @@ export interface LocalWorkbenchAgentInput {
   content: string | null;
 }
 
+export interface PromotionReadinessRunRef {
+  runId: string;
+  createdAt: string;
+  status: string;
+  contract: {
+    id: string | null;
+    version: string | null;
+    sha256: string | null;
+  };
+  artifacts: {
+    extractionPath: string | null;
+    reportPath: string | null;
+  };
+}
+
+export interface PromotionReadinessCheck {
+  source: string;
+  ready: boolean;
+  code: string;
+  message: string;
+  latestRun: PromotionReadinessRunRef | null;
+}
+
+export interface PromotionReadinessSourceKpi {
+  source: string;
+  totalRuns: number;
+  passedRuns: number;
+  nonFailingRuns: number;
+  blockingRuns: number;
+  passRate: number | null;
+  blockingRate: number | null;
+  recurringFindingCodes: { code: string; count: number }[];
+  timeToGreen: {
+    latestMs: number | null;
+    averageMs: number | null;
+    samples: number;
+    insufficientHistory: boolean;
+  };
+  latestRun: PromotionReadinessRunRef | null;
+}
+
+export interface PromotionReadinessSurface {
+  surfaceId: string;
+  ready: boolean;
+  checks: PromotionReadinessCheck[];
+  sourceKpis: PromotionReadinessSourceKpi[];
+}
+
+export interface PromotionReadinessReport {
+  schemaVersion: number;
+  generatedAt: string;
+  mode: "advisory" | "block";
+  freshnessDays: number;
+  requiredSources: string[];
+  contract: {
+    path: string;
+    id: string;
+    version: string;
+    sha256: string;
+  };
+  summary: {
+    totalSurfaces: number;
+    readySurfaces: number;
+    notReadySurfaces: number;
+    readyForPromotion: boolean;
+  };
+  surfaces: PromotionReadinessSurface[];
+}
+
 export interface LocalWorkbenchPublish {
   publishId: string;
   status: LocalWorkbenchPublishStatus;
@@ -180,6 +249,8 @@ export interface LocalWorkbenchPublish {
   manifestPath: string;
   generationPayloadPath: string;
   runtimePayloadPath: string;
+  promotionReadinessPath: string | null;
+  promotionReadiness: PromotionReadinessReport | null;
 }
 
 export interface LocalWorkbenchData {
@@ -209,6 +280,7 @@ export interface LocalWorkbenchData {
   runs: LocalWorkbenchRun[];
   latestPublish: LocalWorkbenchPublish | null;
   publishes: LocalWorkbenchPublish[];
+  promotionReadiness: PromotionReadinessReport | null;
   activeAcceptedSuggestions: LocalWorkbenchAcceptedSuggestion[];
   latestRunOperatorNote: string | null;
   activeContractChanges: LocalWorkbenchContractChange[];

@@ -63,6 +63,8 @@ describe("local workbench routes", () => {
       manifestPath: "/tmp/publish-1/bundle/manifest.json",
       generationPayloadPath: "/tmp/publish-1/generation.json",
       runtimePayloadPath: "/tmp/publish-1/runtime.json",
+      promotionReadinessPath: "/tmp/publish-1/promotion-readiness.json",
+      promotionReadiness: null,
     });
     const response = await POSTPublish();
     expect(response.status).toBe(201);

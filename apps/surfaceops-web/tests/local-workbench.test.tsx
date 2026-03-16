@@ -73,6 +73,7 @@ function buildData(overrides: Partial<LocalWorkbenchData> = {}): LocalWorkbenchD
     runs: [],
     latestPublish: null,
     publishes: [],
+    promotionReadiness: null,
     activeAcceptedSuggestions: [],
     latestRunOperatorNote: null,
     activeContractChanges: [],
@@ -218,6 +219,102 @@ describe("LocalWorkbench", () => {
     expect(html).toContain("Add contract-compliant motion declarations.");
     expect(html).toContain("accepted suggestions remain unresolved");
     expect(html).not.toContain("Accepted guidance active");
+  });
+
+  it("renders publish readiness KPIs and blocking reasons", () => {
+    const html = renderToStaticMarkup(React.createElement(LocalWorkbench, {
+      data: buildData({
+        promotionReadiness: {
+          schemaVersion: 2,
+          generatedAt: "2026-03-16T18:30:00.000Z",
+          mode: "advisory",
+          freshnessDays: 7,
+          requiredSources: ["generation"],
+          contract: {
+            path: "contracts/generated/reference-target-web.contract.json",
+            id: "reference-target-web.generated",
+            version: "0.1.0",
+            sha256: "abc123",
+          },
+          summary: {
+            totalSurfaces: 1,
+            readySurfaces: 0,
+            notReadySurfaces: 1,
+            readyForPromotion: false,
+          },
+          surfaces: [
+            {
+              surfaceId: "reference-target-web",
+              ready: false,
+              checks: [
+                {
+                  source: "generation",
+                  ready: false,
+                  code: "promotion.contract-mismatch",
+                  message: "generation latest run does not match the current contract revision",
+                  latestRun: {
+                    runId: "run-1",
+                    createdAt: "2026-03-16T18:20:00.000Z",
+                    status: "pass",
+                    contract: {
+                      id: "reference-target-web.generated",
+                      version: "0.1.0",
+                      sha256: "stale",
+                    },
+                    artifacts: {
+                      extractionPath: null,
+                      reportPath: "/tmp/run-1/001.validate.json",
+                    },
+                  },
+                },
+              ],
+              sourceKpis: [
+                {
+                  source: "generation",
+                  totalRuns: 3,
+                  passedRuns: 1,
+                  nonFailingRuns: 2,
+                  blockingRuns: 1,
+                  passRate: 0.3333,
+                  blockingRate: 0.3333,
+                  recurringFindingCodes: [
+                    { code: "motion.none-detected", count: 2 },
+                  ],
+                  timeToGreen: {
+                    latestMs: 900000,
+                    averageMs: 900000,
+                    samples: 1,
+                    insufficientHistory: false,
+                  },
+                  latestRun: {
+                    runId: "run-1",
+                    createdAt: "2026-03-16T18:20:00.000Z",
+                    status: "pass",
+                    contract: {
+                      id: "reference-target-web.generated",
+                      version: "0.1.0",
+                      sha256: "stale",
+                    },
+                    artifacts: {
+                      extractionPath: null,
+                      reportPath: "/tmp/run-1/001.validate.json",
+                    },
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      }),
+    }));
+
+    expect(html).toContain("Publish readiness");
+    expect(html).toContain("Publish blocked");
+    expect(html).toContain("Pass rate");
+    expect(html).toContain("Blocking rate");
+    expect(html).toContain("Recurring findings");
+    expect(html).toContain("motion.none-detected (2)");
+    expect(html).toContain("promotion.contract-mismatch");
   });
 
   it("renders trace inspection around the selected run without replacing the controls shell", () => {

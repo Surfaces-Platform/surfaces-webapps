@@ -826,6 +826,26 @@ function persistRunDocuments(runs: ContractRun[]): void {
   writeJsonAtomic(CONTRACT_LINEAGE_PATH, rebuildLineageFromRuns(orderedRuns));
 }
 
+export function appendContractRun(
+  run: Omit<ContractRun, "workspaceId" | "ingestedAt"> & { workspaceId?: string; ingestedAt?: string },
+): ContractRun {
+  const normalized = normalizeContractRun({
+    ...run,
+    workspaceId: normalizeWorkspaceId(run.workspaceId ?? getDefaultWorkspaceId()),
+    ingestedAt: run.ingestedAt ?? new Date().toISOString(),
+  });
+  if (!normalized) {
+    throw new Error("Could not append an invalid contract run artifact.");
+  }
+
+  withRunStoreLock(() => {
+    const runsDoc = loadContractRunsFromJson();
+    persistRunDocuments([...runsDoc.runs, normalized]);
+  });
+
+  return normalized;
+}
+
 function normalizeRunStatus(status: unknown): ValidationOutcome {
   return status === "pass" || status === "warn" || status === "fail" || status === "unknown"
     ? status
