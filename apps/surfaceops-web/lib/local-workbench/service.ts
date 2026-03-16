@@ -363,7 +363,6 @@ function resolveCurrentPromotionReadinessPath(): string {
 function resolveCurrentPromotionReadinessContractPath(): string {
   return path.join(resolveSurfaceRoot(), "promotion-readiness.contract.json");
 }
-
 function resolveLocalLlmConfig(): LocalLlmConfig {
   const baseUrl = process.env.SURFACEOPS_LOCAL_LLM_BASE_URL?.trim() || DEFAULT_LOCAL_LLM_BASE_URL;
   const model = process.env.SURFACEOPS_LOCAL_LLM_MODEL?.trim() || DEFAULT_LOCAL_LLM_MODEL;
@@ -2465,7 +2464,6 @@ export async function publishLocalWorkbenchContract(): Promise<LocalWorkbenchPub
       "Publish is blocked until promotion readiness checks pass.",
     );
   }
-
   await runInterfacectlCli(
     ["compile", "--contract", contractPath, "--out", bundleRoot],
     { cwd: resolveWorkspaceRoot() },
