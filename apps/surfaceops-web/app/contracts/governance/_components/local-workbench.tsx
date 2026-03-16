@@ -308,7 +308,7 @@ export function LocalWorkbench({
   const [previewMode, setPreviewMode] = useState<"baseline" | "current">("current");
   const [tab, setTab] = useState<LocalWorkbenchTab>(initialTab);
   const [chatDraft, setChatDraft] = useState("");
-  const [pendingAction, setPendingAction] = useState<"rerun" | "chat" | "suggestion" | null>(null);
+  const [pendingAction, setPendingAction] = useState<"rerun" | "chat" | "suggestion" | "publish" | null>(null);
   const [selectedRunId, setSelectedRunId] = useState<string | null>(data.latestRun?.runId ?? data.runs[0]?.runId ?? null);
   const [selectedDetail, setSelectedDetail] = useState<LocalWorkbenchRunDetail | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
@@ -416,6 +416,20 @@ export function LocalWorkbench({
     }
     setChatDraft("");
     setFeedback("Working contract updated. Review the latest result and regenerate when you want to test the change.");
+    router.refresh();
+  }
+
+  async function publishContract() {
+    const response = await fetch("/api/contracts/local/publish", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    const json = await response.json();
+    if (!response.ok || !json.ok) {
+      throw new Error(json.error ?? "Local contract publish failed.");
+    }
+    setFeedback(`Published revision ${json.publish.publishId}. Runtime and generation artifacts are frozen for this contract snapshot.`);
     router.refresh();
   }
 
@@ -671,7 +685,56 @@ export function LocalWorkbench({
                   <button type="button" onClick={() => setTab("chat")} style={secondaryButton()}>
                     Refine in chat
                   </button>
+                  <button
+                    type="button"
+                    disabled={isPending}
+                    onClick={() =>
+                      startTransition(async () => {
+                        setPendingAction("publish");
+                        try {
+                          await publishContract();
+                        } catch (error) {
+                          setFeedback(error instanceof Error ? error.message : String(error));
+                        } finally {
+                          setPendingAction(null);
+                        }
+                      })
+                    }
+                    style={secondaryButton(isPending)}
+                  >
+                    {isPending && pendingAction === "publish" ? "Publishing..." : "Publish current contract"}
+                  </button>
                 </div>
+              </section>
+
+              <section style={{ ...shellPanel(), padding: 18, display: "grid", gap: 12 }}>
+                <div>
+                  <strong style={{ display: "block", fontSize: 15, marginBottom: 6 }}>Published revisions</strong>
+                  <div style={{ fontSize: 12, color: colors.neutral[600] }}>
+                    Local publishes freeze the effective contract plus the compiled generation and runtime artifacts.
+                  </div>
+                </div>
+                {data.latestPublish ? (
+                  <article style={{ border: `1px solid ${colors.neutral[200]}`, borderRadius: 12, padding: 12, display: "grid", gap: 6 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "center" }}>
+                      <strong style={{ fontSize: 13 }}>{data.latestPublish.publishId}</strong>
+                      <span style={{ ...statusChip(data.latestPublish.status), width: "fit-content" }}>{data.latestPublish.status}</span>
+                    </div>
+                    <div style={{ fontSize: 12, color: colors.neutral[600] }}>
+                      {new Date(data.latestPublish.createdAt).toLocaleString()}
+                    </div>
+                    <div style={{ fontSize: 12, color: colors.neutral[600] }}>
+                      Runtime payload: {data.latestPublish.runtimePayloadPath}
+                    </div>
+                    <div style={{ fontSize: 12, color: colors.neutral[600] }}>
+                      Generation payload: {data.latestPublish.generationPayloadPath}
+                    </div>
+                  </article>
+                ) : (
+                  <div style={{ fontSize: 13, color: colors.neutral[600] }}>
+                    No published revisions yet. Publish is gated by the latest successful non-blocking rerun.
+                  </div>
+                )}
               </section>
 
               {showGuidance ? (
@@ -777,6 +840,10 @@ export function LocalWorkbench({
                       <div>Color policy: {data.contract.colorPolicy}</div>
                       <div>Sections: {data.contract.requiredSections.join(", ") || "none"}</div>
                       <div>Fonts: {data.contract.allowedFonts.join(", ") || "none"}</div>
+                      <div>Owner: {data.contract.owner ?? "unassigned"}</div>
+                      <div>Governance status: {data.contract.governanceStatus ?? "draft"}</div>
+                      <div>Runtime policy: {data.contract.runtimePolicy}</div>
+                      <div>Mutation mode: {data.contract.mutationMode ?? "unspecified"}</div>
                     </div>
                   </section>
 

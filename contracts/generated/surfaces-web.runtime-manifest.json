@@ -1,91 +1,205 @@
 {
-  "contractId": "surfaces.web",
-  "version": "0.1.0",
-  "surfaceId": "surfaces-web",
-  "layout": {
-    "chromePolicy": {
-      "allowInsetShadow": true,
-      "allowOuterShadow": false,
-      "maxBorderRadiusPx": 8,
-      "policy": "strict",
-      "targets": [
-        "page-container",
-        "top-level-section",
-        "layout-container"
+  "surface": {
+    "displayName": "Surfaces Web",
+    "surfaceId": "surfaces-web",
+    "type": "web"
+  },
+  "contract": {
+    "id": "surfaces.web",
+    "version": "0.1.0"
+  },
+  "summary": {
+    "checklist": [
+      {
+        "detail": "Runtime must keep sections: landing.actions, landing.demos, landing.guidance, landing.hero.",
+        "id": "required-sections",
+        "label": "Preserve required sections"
+      },
+      {
+        "detail": "Allowed runtime mutation mode: content-only.",
+        "id": "mutation-envelope",
+        "label": "Stay inside the mutation envelope"
+      },
+      {
+        "detail": "Strict categories: layout, runtime, structure, visual.",
+        "id": "strict-categories",
+        "label": "Honor strict enforcement categories"
+      }
+    ],
+    "contextIds": [],
+    "mutationMode": "content-only",
+    "requiredSectionIds": [
+      "landing.actions",
+      "landing.demos",
+      "landing.guidance",
+      "landing.hero"
+    ],
+    "strictCategories": [
+      "layout",
+      "runtime",
+      "structure",
+      "visual"
+    ],
+    "text": "preserve required sections landing.actions, landing.demos, landing.guidance, landing.hero; stay within content-only mutation scope; treat layout, runtime, structure, visual as strict runtime categories."
+  },
+  "governance": {
+    "approvals": [],
+    "domain": "www.surfaces.systems",
+    "owner": "",
+    "phase0": {
+      "authPosture": "auth-aware",
+      "expectsAuthRoutes": true,
+      "expectsDesignSystem": true,
+      "requiresShell": true
+    },
+    "roles": {},
+    "status": "draft"
+  },
+  "runtime": {
+    "boundary": {
+      "allowSources": [],
+      "contentSlot": null,
+      "mustNotEmit": [],
+      "shellOwns": []
+    },
+    "contexts": [],
+    "layout": {
+      "chromePolicy": {
+        "allowInsetShadow": true,
+        "allowOuterShadow": false,
+        "maxBorderRadiusPx": 8,
+        "policy": "strict",
+        "targets": [
+          "page-container",
+          "top-level-section",
+          "layout-container"
+        ]
+      },
+      "landingPattern": {
+        "pageBackgroundMode": "solid",
+        "policy": "strict",
+        "requireTopLevelSections": [
+          "landing.hero",
+          "landing.guidance",
+          "landing.actions"
+        ],
+        "sectionOrder": [
+          "landing.hero",
+          "landing.demos",
+          "landing.guidance",
+          "landing.actions"
+        ]
+      },
+      "maxContentWidth": 1120,
+      "requiredContainers": []
+    },
+    "mutationEnvelope": {
+      "allowedActions": [
+        "update-copy"
+      ],
+      "mode": "content-only",
+      "scopes": [
+        "content"
       ]
     },
-    "landingPattern": {
-      "pageBackgroundMode": "solid",
-      "policy": "strict",
-      "requireTopLevelSections": [
-        "landing.hero",
-        "landing.guidance",
-        "landing.actions"
-      ],
-      "sectionOrder": [
+    "policy": "strict",
+    "policySeverities": {
+      "boundary": "off",
+      "interaction": "off",
+      "layout": "strict",
+      "runtime": "strict",
+      "structure": "strict",
+      "visual": "strict"
+    },
+    "structure": {
+      "allowedComponents": [],
+      "allowedSections": [
         "landing.hero",
         "landing.demos",
         "landing.guidance",
         "landing.actions"
+      ],
+      "requiredSections": [
+        "landing.actions",
+        "landing.demos",
+        "landing.guidance",
+        "landing.hero"
       ]
     },
-    "maxContentWidth": 1120
+    "visual": {
+      "allowedFonts": [
+        "Arial",
+        "Helvetica",
+        "Inter",
+        "sans-serif",
+        "var(--font-geist-mono)",
+        "var(--font-geist-sans)",
+        "var(--font-inter)"
+      ],
+      "color": {
+        "allowedValues": [
+          "#052e16",
+          "#0b1220",
+          "#0f172a",
+          "#0f1e1a",
+          "#101827",
+          "#14532d",
+          "#16a34a",
+          "#172033",
+          "#172554",
+          "#1d4ed8",
+          "#1e293b",
+          "#1e3a8a",
+          "#1e40af",
+          "#334155",
+          "#422006",
+          "#450a0a",
+          "#451a03",
+          "#475569",
+          "#60a5fa",
+          "#64748b",
+          "#78350f",
+          "#7f1d1d",
+          "#93a0ba",
+          "#93c5fd",
+          "#94a3b8",
+          "#bbf7d0",
+          "#bfdbfe",
+          "#ca8a04",
+          "#cbd5e1",
+          "#dbe6ff",
+          "#dc2626",
+          "#e2e8f0",
+          "#eff6ff",
+          "#f1f5f9",
+          "#f8fafc",
+          "#fde68a",
+          "#fecaca",
+          "#ffffff",
+          "rgba(15, 23, 42, 0.3)",
+          "rgba(15, 23, 42, 0.45)",
+          "rgba(255, 255, 255, 0.8)",
+          "var(--background)",
+          "var(--foreground)",
+          "var(--surface)"
+        ],
+        "policy": "strict"
+      },
+      "icons": {
+        "allowedSources": [
+          "@heroicons/react/24/outline"
+        ],
+        "policy": "strict"
+      },
+      "motion": {
+        "allowedDurationsMs": [
+          120
+        ],
+        "allowedTimingFunctions": [
+          "linear"
+        ]
+      }
+    }
   },
-  "color": {
-    "allowedValues": [
-      "#052e16",
-      "#0b1220",
-      "#0f172a",
-      "#0f1e1a",
-      "#101827",
-      "#14532d",
-      "#16a34a",
-      "#172033",
-      "#172554",
-      "#1d4ed8",
-      "#1e293b",
-      "#1e3a8a",
-      "#1e40af",
-      "#334155",
-      "#422006",
-      "#450a0a",
-      "#451a03",
-      "#475569",
-      "#60a5fa",
-      "#64748b",
-      "#78350f",
-      "#7f1d1d",
-      "#93a0ba",
-      "#93c5fd",
-      "#94a3b8",
-      "#bbf7d0",
-      "#bfdbfe",
-      "#ca8a04",
-      "#cbd5e1",
-      "#dbe6ff",
-      "#dc2626",
-      "#e2e8f0",
-      "#eff6ff",
-      "#f1f5f9",
-      "#f8fafc",
-      "#fde68a",
-      "#fecaca",
-      "#ffffff",
-      "rgba(15, 23, 42, 0.3)",
-      "rgba(15, 23, 42, 0.45)",
-      "rgba(255, 255, 255, 0.8)",
-      "var(--background)",
-      "var(--foreground)",
-      "var(--surface)"
-    ],
-    "policy": "strict"
-  },
-  "motion": {
-    "allowedDurationsMs": [
-      120
-    ],
-    "allowedTimingFunctions": [
-      "linear"
-    ]
-  }
+  "evidenceRefs": []
 }

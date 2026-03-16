@@ -1,5 +1,7 @@
 #!/usr/bin/env node
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 
 function parseArgs(argv) {
@@ -19,27 +21,40 @@ function parseArgs(argv) {
   return args;
 }
 
-function ensureColorPolicy(color) {
-  if (!color || typeof color !== "object") {
-    throw new Error("Contract is missing required top-level color policy.");
+function resolveRepoRoot(start = process.cwd()) {
+  let current = path.resolve(start);
+  while (true) {
+    if (fs.existsSync(path.join(current, "pnpm-workspace.yaml"))) {
+      return current;
+    }
+    const parent = path.dirname(current);
+    if (parent === current) {
+      throw new Error("Could not resolve the Surfaces repo root.");
+    }
+    current = parent;
   }
-  if (
-    color.policy !== "off" &&
-    color.policy !== "warn" &&
-    color.policy !== "strict"
-  ) {
-    throw new Error(
-      "Contract color policy must include policy (off|warn|strict).",
-    );
+}
+
+function runInterfacectl(repoRoot, args) {
+  const resolver = path.join(repoRoot, "scripts", "interfacectl-tool.mjs");
+  const result = spawnSync(process.execPath, [resolver, "run", "cli", ...args], {
+    cwd: repoRoot,
+    encoding: "utf8",
+    env: process.env,
+  });
+  if (result.status !== 0) {
+    throw new Error([
+      `interfacectl ${args[0]} failed with exit code ${result.status ?? 1}.`,
+      result.stderr?.trim(),
+      result.stdout?.trim(),
+    ].filter(Boolean).join("\n"));
   }
-  if (!Array.isArray(color.allowedValues)) {
-    throw new Error("Contract color policy must include allowedValues array.");
-  }
+  return result.stdout ?? "";
 }
 
 function main() {
   const args = parseArgs(process.argv.slice(2));
-  const root = process.cwd();
+  const root = resolveRepoRoot();
   const contractPath = path.resolve(
     root,
     args.contract ?? "contracts/surfaces.web.contract.json",
@@ -48,28 +63,41 @@ function main() {
     root,
     args.out ?? `contracts/generated/${args.surface}.runtime-manifest.json`,
   );
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), `surfaces-runtime-${args.surface}-`));
+  const bundleRoot = path.join(tempRoot, "bundle");
 
-  const contract = JSON.parse(fs.readFileSync(contractPath, "utf8"));
-  const surface = contract.surfaces?.find((entry) => entry.id === args.surface);
-
-  if (!surface) {
-    throw new Error(`Surface "${args.surface}" not found in ${contractPath}`);
+  try {
+    runInterfacectl(root, [
+      "compile",
+      "--contract",
+      contractPath,
+      "--out",
+      bundleRoot,
+    ]);
+    const preparedRuntime = JSON.parse(runInterfacectl(root, [
+      "prepare-runtime",
+      "--bundle-root",
+      bundleRoot,
+      "--surface",
+      args.surface,
+    ]) || "{}");
+    const manifest = {
+      surface: preparedRuntime.surface ?? {},
+      contract: {
+        id: preparedRuntime.contract?.id ?? "",
+        version: preparedRuntime.contract?.version ?? "",
+      },
+      summary: preparedRuntime.summary ?? {},
+      governance: preparedRuntime.governance ?? {},
+      runtime: preparedRuntime.runtime ?? {},
+      evidenceRefs: Array.isArray(preparedRuntime.evidenceRefs) ? preparedRuntime.evidenceRefs : [],
+    };
+    fs.mkdirSync(path.dirname(outPath), { recursive: true });
+    fs.writeFileSync(outPath, `${JSON.stringify(manifest, null, 2)}\n`);
+    console.log(`Wrote runtime manifest: ${path.relative(root, outPath)}`);
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
   }
-
-  ensureColorPolicy(contract.color);
-
-  const manifest = {
-    contractId: contract.contractId,
-    version: contract.version,
-    surfaceId: surface.id,
-    layout: surface.layout,
-    color: contract.color,
-    motion: contract.constraints?.motion,
-  };
-
-  fs.mkdirSync(path.dirname(outPath), { recursive: true });
-  fs.writeFileSync(outPath, `${JSON.stringify(manifest, null, 2)}\n`);
-  console.log(`Wrote runtime manifest: ${path.relative(root, outPath)}`);
 }
 
 main();

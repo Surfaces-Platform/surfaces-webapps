@@ -338,6 +338,9 @@ function compactJsonPrimaryPromptContext(guidanceHandoff: Record<string, unknown
   const layout = asRecord(generation.layout);
   const boundary = asRecord(generation.boundary);
   const visual = asRecord(generation.visual);
+  const governance = asRecord(generation.governance);
+  const adaptation = asRecord(generation.adaptation);
+  const mutationEnvelope = asRecord(adaptation.mutationEnvelope);
   const constraints = asRecord(jsonPrimary.constraints);
   const color = asRecord(constraints.color);
   const motion = asRecord(constraints.motion);
@@ -395,6 +398,18 @@ function compactJsonPrimaryPromptContext(guidanceHandoff: Record<string, unknown
           layout: asStringArray(layoutTokens.allowedTokens).slice(0, 8),
           motion: asStringArray(motionTokens.allowedTokens).slice(0, 8),
         },
+      },
+      governance: {
+        ...(typeof governance.owner === "string" ? { owner: governance.owner } : {}),
+        ...(typeof governance.status === "string" ? { status: governance.status } : {}),
+        designers: asStringArray(asRecord(governance.roles).designers).slice(0, 4),
+        engineers: asStringArray(asRecord(governance.roles).engineers).slice(0, 4),
+      },
+      adaptation: {
+        ...(typeof adaptation.policy === "string" ? { policy: adaptation.policy } : {}),
+        ...(typeof mutationEnvelope.mode === "string" ? { mutationMode: mutationEnvelope.mode } : {}),
+        allowedActions: asStringArray(mutationEnvelope.allowedActions).slice(0, 8),
+        allowedSections: asStringArray(mutationEnvelope.allowedSections).slice(0, 8),
       },
       summary: {
         ...(typeof summary.text === "string" ? { text: summary.text } : {}),
@@ -741,6 +756,9 @@ function buildPreparedGuidanceSummary(preparedPayload: Record<string, unknown>):
   const structure = asRecord(generation.structure);
   const layout = asRecord(generation.layout);
   const visual = asRecord(generation.visual);
+  const governance = asRecord(generation.governance);
+  const adaptation = asRecord(generation.adaptation);
+  const mutationEnvelope = asRecord(adaptation.mutationEnvelope);
   const guidance = asRecord(generation.guidance);
   const constraints = asRecord(preparedPayload.constraints);
   const color = asRecord(constraints.color);
@@ -772,6 +790,10 @@ function buildPreparedGuidanceSummary(preparedPayload: Record<string, unknown>):
     `Max content width: ${typeof layout.maxContentWidth === "number" ? `${layout.maxContentWidth}px` : "unspecified"}`,
     `Required containers: ${compactList(requiredContainers)}`,
     `Color policy: ${typeof color.policy === "string" ? color.policy : "off"}`,
+    `Owner: ${typeof governance.owner === "string" ? governance.owner : "unassigned"}`,
+    `Governance status: ${typeof governance.status === "string" ? governance.status : "draft"}`,
+    `Runtime policy: ${typeof adaptation.policy === "string" ? adaptation.policy : "off"}`,
+    `Mutation mode: ${typeof mutationEnvelope.mode === "string" ? mutationEnvelope.mode : "unspecified"}`,
     `Motion durations: ${Array.isArray(motion.allowedDurationsMs) ? compactList(motion.allowedDurationsMs.map((value) => `${String(value)}ms`)) : "none"}`,
     `Top repair priorities: ${compactList(topRepairs, 5)}`,
   ].join("\n");
@@ -1339,6 +1361,47 @@ function fallbackShapeDesignerMessage(message: string): LocalContractShaperResul
     });
   }
 
+  const ownerMatch = trimmed.match(/\bowner\b(?:\s+is)?\s+([@a-zA-Z0-9._-]+(?:@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})?)/i);
+  if (ownerMatch?.[1]) {
+    contractChanges.push({
+      field: "surfaces.reference-target-web.owner",
+      action: "set",
+      value: ownerMatch[1],
+      summary: `Set surface owner to ${ownerMatch[1]}.`,
+    });
+  }
+
+  const governanceStatusMatch = trimmed.match(/\b(?:governance|publish)\s+status\b.*\b(draft|review|approved|published)\b/i)
+    ?? trimmed.match(/\bmark\b.*\b(draft|review|approved|published)\b/i);
+  if (governanceStatusMatch?.[1]) {
+    contractChanges.push({
+      field: "surfaces.reference-target-web.governance.status",
+      action: "set",
+      value: governanceStatusMatch[1].toLowerCase(),
+      summary: `Set governance status to ${governanceStatusMatch[1].toLowerCase()}.`,
+    });
+  }
+
+  const runtimePolicyMatch = trimmed.match(/\bruntime policy\b.*\b(off|warn|strict)\b/i);
+  if (runtimePolicyMatch?.[1]) {
+    contractChanges.push({
+      field: "surfaces.reference-target-web.runtime.policy",
+      action: "set",
+      value: runtimePolicyMatch[1].toLowerCase(),
+      summary: `Set runtime policy to ${runtimePolicyMatch[1].toLowerCase()}.`,
+    });
+  }
+
+  const mutationModeMatch = trimmed.match(/\b(?:mutation|adaptation)\s+mode\b.*\b(locked|content-only|slot-bound|layout-tuning|section-assembly|freeform)\b/i);
+  if (mutationModeMatch?.[1]) {
+    contractChanges.push({
+      field: "surfaces.reference-target-web.runtime.mutationEnvelope.mode",
+      action: "set",
+      value: mutationModeMatch[1].toLowerCase(),
+      summary: `Set mutation mode to ${mutationModeMatch[1].toLowerCase()}.`,
+    });
+  }
+
   designerNotes.push(...fallbackColorNotes);
 
   let noteCandidate = trimmed;
@@ -1436,6 +1499,75 @@ function sanitizeContractShaperResult(payload: unknown, message: string): LocalC
     ) {
       contractChanges.push({ field, action, value, summary });
     }
+
+    if (
+      field === "surfaces.reference-target-web.owner"
+      && action === "set"
+      && typeof value === "string"
+      && value.trim()
+    ) {
+      contractChanges.push({ field, action, value: value.trim(), summary });
+      continue;
+    }
+
+    if (
+      field === "surfaces.reference-target-web.governance.status"
+      && action === "set"
+      && typeof value === "string"
+      && ["draft", "review", "approved", "published"].includes(value.toLowerCase())
+    ) {
+      contractChanges.push({ field, action, value: value.toLowerCase(), summary });
+      continue;
+    }
+
+    if (
+      field === "surfaces.reference-target-web.governance.roles.designers"
+      && action === "add"
+      && typeof value === "string"
+      && value.trim()
+    ) {
+      contractChanges.push({ field, action, value: value.trim(), summary });
+      continue;
+    }
+
+    if (
+      field === "surfaces.reference-target-web.governance.roles.engineers"
+      && action === "add"
+      && typeof value === "string"
+      && value.trim()
+    ) {
+      contractChanges.push({ field, action, value: value.trim(), summary });
+      continue;
+    }
+
+    if (
+      field === "surfaces.reference-target-web.runtime.policy"
+      && action === "set"
+      && typeof value === "string"
+      && ["off", "warn", "strict"].includes(value.toLowerCase())
+    ) {
+      contractChanges.push({ field, action, value: value.toLowerCase(), summary });
+      continue;
+    }
+
+    if (
+      field === "surfaces.reference-target-web.runtime.mutationEnvelope.mode"
+      && action === "set"
+      && typeof value === "string"
+      && ["locked", "content-only", "slot-bound", "layout-tuning", "section-assembly", "freeform"].includes(value.toLowerCase())
+    ) {
+      contractChanges.push({ field, action, value: value.toLowerCase(), summary });
+      continue;
+    }
+
+    if (
+      field === "surfaces.reference-target-web.runtime.mutationEnvelope.allowedSections"
+      && action === "add"
+      && typeof value === "string"
+      && value.trim()
+    ) {
+      contractChanges.push({ field, action, value: value.trim(), summary });
+    }
   }
 
   const designerNotes = uniqueStrings([
@@ -1482,6 +1614,13 @@ export async function shapeLocalWorkbenchContract(input: {
     '- `color.policy` with action `set` and one of `off`, `warn`, `strict`.',
     '- `surfaces.reference-target-web.layout.maxContentWidth` with action `set` and a number.',
     '- `surfaces.reference-target-web.allowedFonts` with action `add` and a string font value.',
+    '- `surfaces.reference-target-web.owner` with action `set` and an owner handle or email.',
+    '- `surfaces.reference-target-web.governance.status` with action `set` and one of `draft`, `review`, `approved`, `published`.',
+    '- `surfaces.reference-target-web.governance.roles.designers` with action `add` and a designer handle or email.',
+    '- `surfaces.reference-target-web.governance.roles.engineers` with action `add` and an engineer handle or email.',
+    '- `surfaces.reference-target-web.runtime.policy` with action `set` and one of `off`, `warn`, `strict`.',
+    '- `surfaces.reference-target-web.runtime.mutationEnvelope.mode` with action `set` and one of `locked`, `content-only`, `slot-bound`, `layout-tuning`, `section-assembly`, `freeform`.',
+    '- `surfaces.reference-target-web.runtime.mutationEnvelope.allowedSections` with action `add` and a section id.',
     "Normalize named CSS colors to canonical lowercase 6-digit hex.",
     "Keep explicit hex, rgb()/rgba(), hsl()/hsla(), and var(...) values as given.",
     "Do not use transparent/currentColor/inherit/unset/initial/revert/revert-layer as contract changes; capture them in designerNotes instead.",

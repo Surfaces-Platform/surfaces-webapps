@@ -45,6 +45,7 @@ import {
   buildEditedUnresolvedAcceptedSuggestionMessage,
   fatalServerResponseMessage,
   loadLocalWorkbenchData,
+  publishLocalWorkbenchContract,
   pruneAcceptedSuggestions,
   reviewLocalWorkbenchSuggestion,
   runBenchmarkCohort,
@@ -650,6 +651,52 @@ describe("local workbench service", () => {
     );
   });
 
+  it("applies governance and runtime metadata via chat-backed contract changes", async () => {
+    global.fetch = vi.fn(async () =>
+      new Response(JSON.stringify(responsesPayload({
+        assistantMessage: "Updated owner, governance, and runtime policy.",
+        contractChanges: [
+          {
+            field: "surfaces.reference-target-web.owner",
+            action: "set",
+            value: "designers@example.com",
+            summary: "Set surface owner to designers@example.com.",
+          },
+          {
+            field: "surfaces.reference-target-web.governance.status",
+            action: "set",
+            value: "review",
+            summary: "Set governance status to review.",
+          },
+          {
+            field: "surfaces.reference-target-web.runtime.policy",
+            action: "set",
+            value: "strict",
+            summary: "Set runtime policy to strict.",
+          },
+          {
+            field: "surfaces.reference-target-web.runtime.mutationEnvelope.mode",
+            action: "set",
+            value: "slot-bound",
+            summary: "Set mutation mode to slot-bound.",
+          },
+        ],
+        designerNotes: [],
+      })), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    ) as typeof fetch;
+
+    await appendLocalWorkbenchChatMessage({ message: "Set owner to designers@example.com and use strict slot-bound runtime review." });
+
+    const data = await loadLocalWorkbenchData();
+    expect(data.contract.owner).toBe("designers@example.com");
+    expect(data.contract.governanceStatus).toBe("review");
+    expect(data.contract.runtimePolicy).toBe("strict");
+    expect(data.contract.mutationMode).toBe("slot-bound");
+  });
+
   it("upgrades a legacy session by replaying named-color chat turns into structured contract state", async () => {
     const sessionPath = path.join(
       workspaceRoot,
@@ -961,6 +1008,71 @@ describe("local workbench service", () => {
     expect(agentInput).toContain("#ffc0cb");
     expect(agentInput).toContain("Shell background should use #ffc0cb.");
     expect(explainability).toContain("#ffc0cb");
+  });
+
+  it("publishes a frozen contract revision with generation and runtime payloads", async () => {
+    const runDir = path.join(
+      workspaceRoot,
+      ".scratch",
+      "surfaceops-local-runs",
+      "reference-target-web",
+      "runs",
+      "run-1",
+    );
+    await fs.mkdir(runDir, { recursive: true });
+    await fs.writeFile(
+      path.join(runDir, "run.json"),
+      JSON.stringify({
+        schemaVersion: 2,
+        runId: "run-1",
+        status: "succeeded",
+        createdAt: "2026-03-16T18:00:00.000Z",
+        completedAt: "2026-03-16T18:05:00.000Z",
+        contractPath: path.join(runDir, "effective-contract.json"),
+        preparedInputPath: null,
+        guidanceStrategy: "json-primary",
+        guidanceHandoffPath: null,
+        baselineSessionDir: null,
+        currentSessionDir: null,
+        baselinePreviewPath: null,
+        currentPreviewPath: null,
+        baselineSummaryPath: null,
+        currentSummaryPath: null,
+        comparisonPath: null,
+        suggestionsPath: null,
+        transcriptPath: null,
+        effectiveContractPath: path.join(runDir, "effective-contract.json"),
+        agentInputPath: null,
+        explainabilityPath: null,
+        touchedFiles: ["apps/reference-target-web/app/page.tsx"],
+        errorMessage: null,
+      }),
+      "utf8",
+    );
+
+    mockedInterfacectl.runInterfacectlCli.mockImplementation(async (args: string[]) => {
+      const command = args[0];
+      const outIndex = args.indexOf("--out");
+      if (command === "compile" && outIndex >= 0) {
+        const bundleRoot = args[outIndex + 1]!;
+        await fs.mkdir(bundleRoot, { recursive: true });
+        await fs.writeFile(path.join(bundleRoot, "manifest.json"), JSON.stringify({ bundleVersion: "2.0" }), "utf8");
+        return { stdout: "", stderr: "" };
+      }
+      if ((command === "prepare-generation" || command === "prepare-runtime") && outIndex >= 0) {
+        await fs.writeFile(args[outIndex + 1]!, JSON.stringify({ ok: true, command }), "utf8");
+        return { stdout: "", stderr: "" };
+      }
+      return { stdout: "", stderr: "" };
+    });
+
+    const publish = await publishLocalWorkbenchContract();
+
+    expect(publish.status).toBe("published");
+    expect(publish.sourceRunId).toBe("run-1");
+    await expect(fs.readFile(publish.contractPath, "utf8")).resolves.toContain("\"contractId\"");
+    await expect(fs.readFile(publish.generationPayloadPath, "utf8")).resolves.toContain("\"command\":\"prepare-generation\"");
+    await expect(fs.readFile(publish.runtimePayloadPath, "utf8")).resolves.toContain("\"command\":\"prepare-runtime\"");
   });
 
   it("builds validator-specific follow-up guidance when edits land but motion still remains unresolved", () => {
