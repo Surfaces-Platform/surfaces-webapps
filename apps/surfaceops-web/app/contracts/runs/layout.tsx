@@ -1,12 +1,21 @@
 import { getSession } from "@surfaces/platform-auth";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import { colors } from "@surfaces/ui/tokens/colors";
 import { isSurfaceOpsAuthBypassEnabled, isSurfaceOpsLocalWorkbenchEnabled } from "@/lib/auth-bypass";
+import {
+  SURFACEOPS_DESKTOP_WORKBENCH_PATH,
+  shouldRedirectToSurfaceOpsDesktopWorkbench,
+} from "@/lib/product-surface";
 
 export default async function RunsLayout({
   children,
 }: { children: React.ReactNode }) {
+  if (shouldRedirectToSurfaceOpsDesktopWorkbench("/contracts/runs")) {
+    redirect(SURFACEOPS_DESKTOP_WORKBENCH_PATH);
+  }
+
   const bypassAuth = isSurfaceOpsAuthBypassEnabled() || isSurfaceOpsLocalWorkbenchEnabled();
   if (!bypassAuth) {
     const headersList = await headers();

@@ -6,7 +6,9 @@ import os from "node:os";
 import path from "node:path";
 
 import {
+  DEFAULT_LOCAL_WORKBENCH_PORT,
   DEFAULT_LOCAL_WORKBENCH_ENV,
+  resolveLocalWorkbenchPort,
   resolveLocalWorkbenchEnv,
 } from "../../apps/surfaceops-web/scripts/dev-local-workbench.mjs";
 
@@ -73,6 +75,20 @@ test("local workbench dev preserves explicit operator overrides", () => {
   assert.equal(env.SURFACES_INTERFACECTL_ROOT, "/custom/interfacectl");
 });
 
+test("local workbench dev resolves an explicit port override", () => {
+  const port = resolveLocalWorkbenchPort({
+    env: {
+      SURFACEOPS_LOCAL_WORKBENCH_PORT: "4311",
+    },
+  });
+
+  assert.equal(port, 4311);
+  assert.equal(
+    resolveLocalWorkbenchPort({ env: {} }),
+    DEFAULT_LOCAL_WORKBENCH_PORT,
+  );
+});
+
 test("generic dev scripts remain unchanged and local workbench scripts are explicit", async () => {
   const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..", "..");
   const rootPackageJson = JSON.parse(await fsp.readFile(path.join(repoRoot, "package.json"), "utf8"));
@@ -82,9 +98,41 @@ test("generic dev scripts remain unchanged and local workbench scripts are expli
 
   assert.equal(rootPackageJson.scripts["dev:surfaceops"], "pnpm --filter surfaceops-web dev");
   assert.equal(
+    rootPackageJson.scripts["dev:surfaceops:rehearsal-feed"],
+    "pnpm --filter surfaceops-web dev:rehearsal-feed",
+  );
+  assert.equal(
+    rootPackageJson.scripts["surfaceops:unsigned-rehearsal:stage"],
+    "node scripts/release/stage-surfaceops-desktop-unsigned-rehearsal.mjs",
+  );
+  assert.equal(
+    rootPackageJson.scripts["surfaceops:unsigned-rehearsal:serve"],
+    "node scripts/release/serve-surfaceops-desktop-unsigned-rehearsal.mjs",
+  );
+  assert.equal(
+    rootPackageJson.scripts["dev:surfaceops:unsigned-rehearsal-feed"],
+    "pnpm --filter surfaceops-web dev:unsigned-rehearsal-feed",
+  );
+  assert.equal(
     rootPackageJson.scripts["dev:surfaceops:local-workbench"],
     "pnpm --filter surfaceops-web dev:local-workbench",
   );
+  assert.equal(
+    rootPackageJson.scripts["dev:surfaceops:desktop:unsigned-rehearsal"],
+    "pnpm --filter surfaceops-desktop dev:unsigned-rehearsal",
+  );
   assert.equal(appPackageJson.scripts.dev, "next dev --port 3001 --webpack");
+  assert.equal(
+    appPackageJson.scripts["dev:rehearsal-feed"],
+    "SURFACEOPS_DESKTOP_RELEASE_MANIFEST_URL=https://github.com/Surfaces-Platform/surfaces-webapps/releases/download/surfaceops-desktop-feed-rehearsal/surfaceops-desktop-release-manifest.json next dev --port 3001 --webpack",
+  );
+  assert.equal(
+    appPackageJson.scripts["dev:unsigned-rehearsal-feed"],
+    "node scripts/dev-unsigned-rehearsal-feed.mjs",
+  );
   assert.equal(appPackageJson.scripts["dev:local-workbench"], "node scripts/dev-local-workbench.mjs");
+  const desktopPackageJson = JSON.parse(
+    await fsp.readFile(path.join(repoRoot, "apps", "surfaceops-desktop", "package.json"), "utf8"),
+  );
+  assert.equal(desktopPackageJson.scripts["dev:unsigned-rehearsal"], "node scripts/dev-unsigned-rehearsal.mjs");
 });

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   loadExtraction,
   computeValidationStatus,
@@ -7,6 +8,10 @@ import {
   getRecentRunOutcomes,
 } from "@/lib/contracts";
 import { colors } from "@surfaces/ui/tokens/colors";
+import {
+  SURFACEOPS_DESKTOP_WORKBENCH_PATH,
+  shouldRedirectToSurfaceOpsDesktopWorkbench,
+} from "@/lib/product-surface";
 import { OnboardingForm } from "./_components/onboarding-form";
 
 function OutcomeDots({
@@ -40,6 +45,10 @@ function OutcomeDots({
 }
 
 export default function ContractsPage() {
+  if (shouldRedirectToSurfaceOpsDesktopWorkbench("/contracts")) {
+    redirect(SURFACEOPS_DESKTOP_WORKBENCH_PATH);
+  }
+
   const contract = loadPolicyContract();
   const activatedSurfaces = loadActivatedSurfaces();
 

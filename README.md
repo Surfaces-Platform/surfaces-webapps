@@ -1,12 +1,13 @@
 # Surfaces Platform Web Monorepo
 
-This monorepo contains five Next.js web applications for the Surfaces Platform:
+This monorepo contains five Next.js web applications and one desktop alpha shell for the Surfaces Platform:
 
 - **surfaces-web** - Company website and dogfood surface (surfaces.systems) — auth-aware, public by default
-- **surfaceops-web** - Operational enforcement and monitoring (surfaceops.ai) — auth required for app workflows
+- **surfaceops-web** - SurfaceOps public marketing/download site plus the local workbench source (surfaceops.ai)
 - **interfacectl-web** - Executable interface control (interfacectl.com) — auth-aware, public by default
 - **surfaces-dev** - Developer documentation and reference (surfaces.dev) — auth-aware, public by default
 - **reference-target-web** - Neutral deterministic reference target for governance inspector demos
+- **surfaceops-desktop** - Electron-based desktop alpha shell for the local SurfaceOps workbench
 
 ## Local Development
 
@@ -26,6 +27,14 @@ cd apps/surfaces-web && pnpm dev
 pnpm dev:surfaceops
 # or
 cd apps/surfaceops-web && pnpm dev
+
+# Run the SurfaceOps desktop alpha shell
+pnpm dev:surfaceops:desktop
+# or
+cd apps/surfaceops-desktop && pnpm dev
+
+# Build a local macOS desktop artifact
+pnpm --filter surfaceops-desktop dist:mac
 
 # Run interfacectl-web on port 3002
 pnpm dev:interfacectl
@@ -74,13 +83,32 @@ pnpm dev:reference-target # http://localhost:3004
 
 - Surfaces: http://localhost:3000
 - SurfaceOps: http://localhost:3001
+- SurfaceOps desktop alpha: launches a local Electron shell over the workbench
 - InterfaceCTL: http://localhost:3002
 - Surfaces.dev: http://localhost:3003
 - Reference target: http://localhost:3004
 
 ## Auth posture
 
-All apps expose the same `/auth` routes (login, callback, session, logout) to support SSO across domains. surfaces.systems, surfaces.dev, and interfacectl.com are public by default in v1 but are auth-aware. surfaceops.ai is the first place where authenticated workflows will matter.
+All apps expose the same `/auth` routes (login, callback, session, logout) to support SSO across domains where needed. surfaces.systems, surfaces.dev, and interfacectl.com are public by default in v1 but are auth-aware. surfaceops.ai is now marketing/download-first in production, while the contract workbench remains local-only and is being wrapped by the desktop alpha shell.
+
+## SurfaceOps desktop releases
+
+The `surfaceops.ai` web app is now the canonical updater surface for the desktop client:
+
+- website download page: `/download`
+- website release notes: `/release-notes`
+- updater feed base: `/api/desktop/updates/<channel>/darwin-arm64`
+
+The Electron app itself is now a single-page shell rooted at `/contracts/governance`. In desktop runtime it hides the shared `surfaceops.ai` navigation and keeps updater controls in the native menu instead of a separate React settings route.
+
+The GitHub workflow `.github/workflows/surfaceops-desktop-release.yml` now publishes public alpha releases automatically from clean semver tags (`vX.Y.Z`). It builds the desktop app once, emits DMG/ZIP assets plus release manifest payloads, publishes versioned assets to GitHub Releases, and updates the canonical `surfaceops-desktop-feed` release whose manifest is what `surfaceops.ai` reads by default in production.
+
+Stable does not rebuild. The scheduled workflow `.github/workflows/surfaceops-desktop-stable-promotion.yml` promotes the exact same signed alpha payload to the stable feed after a 72 hour soak, and `.github/workflows/surfaceops-desktop-promotion-control.yml` lets operators block, unblock, or force-promote releases by updating the feed-side `surfaceops-desktop-promotion-state.json` asset.
+
+Before the first public alpha tag, the dress rehearsal path runs through `.github/workflows/surfaceops-desktop-release-rehearsal.yml`, `.github/workflows/surfaceops-desktop-stable-promotion-rehearsal.yml`, and `.github/workflows/surfaceops-desktop-promotion-control-rehearsal.yml`. Those workflows publish only to the isolated `surfaceops-desktop-feed-rehearsal` release and support local/preview validation through the stable rehearsal manifest URL documented in `docs/plans/surfaceops-desktop-alpha-launch-rehearsal.md`.
+
+That runbook now defines a clean Apple Silicon environment as two required tiers: a fresh Apple Silicon macOS VM for repeatable smoke coverage, with `Parallels` as the default path and `UTM` as an acceptable fallback, followed by final signoff on a separate physical Apple Silicon Mac before the first public `vX.Y.Z` tag is cut.
 
 ## Production Domains
 
@@ -235,7 +263,8 @@ git commit --no-verify
 surfaces-webapps/
 ├── apps/
 │   ├── surfaces-web/        # Surfaces landing page
-│   ├── surfaceops-web/      # SurfaceOps landing page
+│   ├── surfaceops-web/      # SurfaceOps marketing/download site + workbench source
+│   ├── surfaceops-desktop/  # SurfaceOps Electron desktop alpha
 │   ├── interfacectl-web/    # InterfaceCTL landing page
 │   ├── surfaces-dev/        # Developer documentation
 │   └── reference-target-web/ # Governance reference fixture

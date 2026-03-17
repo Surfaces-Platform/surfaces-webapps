@@ -1,0 +1,94 @@
+name: surfaceops-desktop-stable-promotion-rehearsal
+
+on:
+  workflow_dispatch:
+    inputs:
+      soak_hours:
+        description: Soak duration in hours before stable promotion
+        required: false
+        default: "72"
+        type: string
+      override_now:
+        description: Optional ISO timestamp override for soak simulation
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  promote-stable:
+    runs-on: ubuntu-latest
+    env:
+      SURFACEOPS_MANIFEST_RELEASE_TAG: surfaceops-desktop-feed-rehearsal
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Download rehearsal feed assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p artifacts/feed
+          if ! gh release view "$SURFACEOPS_MANIFEST_RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Rehearsal feed release does not exist yet."
+            exit 0
+          fi
+
+          gh release download "$SURFACEOPS_MANIFEST_RELEASE_TAG" \
+            --pattern "surfaceops-desktop-release-manifest.json" \
+            --dir artifacts/feed \
+            --clobber
+          gh release download "$SURFACEOPS_MANIFEST_RELEASE_TAG" \
+            --pattern "surfaceops-desktop-promotion-state.json" \
+            --dir artifacts/feed \
+            --clobber || true
+
+      - name: Promote soaked rehearsal alpha to stable
+        run: |
+          mkdir -p artifacts/promotion
+          NOW_ARGS=()
+          if [ -n "${{ inputs.override_now }}" ]; then
+            NOW_ARGS=(--now "${{ inputs.override_now }}")
+          fi
+
+          node scripts/release/promote-surfaceops-desktop-stable.mjs \
+            --manifest-file "artifacts/feed/surfaceops-desktop-release-manifest.json" \
+            --promotion-state-file "artifacts/feed/surfaceops-desktop-promotion-state.json" \
+            --soak-hours "${{ inputs.soak_hours }}" \
+            --out-manifest "artifacts/promotion/surfaceops-desktop-release-manifest.json" \
+            --out-state "artifacts/promotion/surfaceops-desktop-promotion-state.json" \
+            --notes-out "artifacts/promotion/surfaceops-desktop-release-notes.json" \
+            --result-out "artifacts/promotion/result.json" \
+            "${NOW_ARGS[@]}"
+
+      - name: Export promotion result
+        id: promotion
+        run: |
+          node <<'NODE' >> "$GITHUB_OUTPUT"
+          const fs = require("node:fs");
+          const result = JSON.parse(fs.readFileSync("artifacts/promotion/result.json", "utf8"));
+          console.log(`changed=${result.changed ? "true" : "false"}`);
+          console.log(`reason=${result.reason ?? ""}`);
+          console.log(`promoted_release_id=${result.promotedReleaseId ?? ""}`);
+          NODE
+
+      - name: Publish updated rehearsal feed assets
+        if: ${{ steps.promotion.outputs.changed == 'true' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "$SURFACEOPS_MANIFEST_RELEASE_TAG" \
+            artifacts/promotion/surfaceops-desktop-release-manifest.json \
+            artifacts/promotion/surfaceops-desktop-promotion-state.json \
+            artifacts/promotion/surfaceops-desktop-release-notes.json \
+            --clobber
+
+      - name: Summarize no-op promotion
+        if: ${{ steps.promotion.outputs.changed != 'true' }}
+        run: echo "No rehearsal stable promotion performed: ${{ steps.promotion.outputs.reason }}"

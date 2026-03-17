@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import {
   loadPolicyContract,
   loadExtraction,
@@ -21,6 +21,10 @@ import {
 } from "@/lib/contracts";
 import type { FailureCategory, Phase0Finding } from "@/lib/contracts";
 import { colors } from "@surfaces/ui/tokens/colors";
+import {
+  SURFACEOPS_DESKTOP_WORKBENCH_PATH,
+  shouldRedirectToSurfaceOpsDesktopWorkbench,
+} from "@/lib/product-surface";
 
 function FindingGroup({
   category,
@@ -160,6 +164,10 @@ export default async function ContractDetailPage({
   params,
 }: { params: Promise<{ surfaceId: string }> }) {
   const { surfaceId } = await params;
+  if (shouldRedirectToSurfaceOpsDesktopWorkbench(`/contracts/${surfaceId}`)) {
+    redirect(SURFACEOPS_DESKTOP_WORKBENCH_PATH);
+  }
+
   const contract = loadPolicyContract();
   const surface = contract.surfaces.find((s) => s.id === surfaceId);
   if (!surface) notFound();

@@ -1,4 +1,4 @@
-`surfaceops-web` is the SurfaceOps application. In this branch, `/contracts/governance` is simplified into a local-only `reference-target-web` workbench that:
+`surfaceops-web` is the SurfaceOps public web surface and the source for the local workbench that the desktop alpha wraps. In this branch, `/contracts/governance` is simplified into a local-only `reference-target-web` workbench that:
 
 - runs without Auth0 in local development
 - targets `reference-target-web` only
@@ -6,6 +6,10 @@
 - captures baseline/current previews from local sandbox apps
 - shows contract summary, comparison metrics, suggestions, and a read-only chat explainer
 - does not connect GitHub projects or publish PRs in this first cut
+
+In production, `surfaceops.ai` is now intended to stay marketing/download-only. Hosted `/contracts` routes redirect to `/download` unless local workbench mode is enabled.
+
+Inside the Electron shell, SurfaceOps is a single-page desktop runtime rooted at `/contracts/governance`. The desktop app suppresses the shared marketing navigation, keeps only the in-page workbench tabs (`controls`, `trace`, `chat`), and exposes updater/channel controls through the native Electron menu instead of a React `/desktop` settings page.
 
 ## Getting Started
 
@@ -76,6 +80,45 @@ pnpm dev:surfaceops:local-workbench
 ```
 
 Open [http://localhost:3001/contracts/governance](http://localhost:3001/contracts/governance).
+
+### Run the desktop alpha shell
+
+From the repo root:
+
+```bash
+pnpm surfaceops:unsigned-rehearsal:stage -- --version 0.1.0-rc.1
+pnpm surfaceops:unsigned-rehearsal:serve
+
+pnpm dev:surfaceops:desktop
+
+# Or validate the marketing/download surface against the rehearsal feed
+pnpm dev:surfaceops:rehearsal-feed
+
+# Or run the marketing/download surface against a local unsigned rehearsal feed
+pnpm dev:surfaceops:unsigned-rehearsal-feed
+```
+
+This launches the Electron shell in `apps/surfaceops-desktop`, which starts the local workbench on a managed localhost port and loads `/contracts/governance` in a sandboxed renderer.
+The desktop shell keeps runs/history inside the workbench trace area; `/desktop` and other marketing routes are compatibility redirects, not desktop destinations.
+
+### Desktop updater feed
+
+The canonical desktop update feed is served from `surfaceops.ai` using:
+
+- `/api/desktop/updates/alpha/darwin-arm64/latest-mac.yml`
+- `/api/desktop/updates/stable/darwin-arm64/latest-mac.yml`
+
+The public download and release-notes pages read the same release manifest model as those update routes. In local development the app falls back to the checked-in manifest. In production it defaults to the stable GitHub feed manifest release asset and can still be overridden with `SURFACEOPS_DESKTOP_RELEASE_MANIFEST_URL`.
+
+Public alpha releases publish automatically from clean semver tags, while stable promotion remains feed-only: the same signed alpha build moves to stable after a 72 hour soak unless an operator blocks it through the promotion-control workflow.
+
+SurfaceOps now distinguishes three release phases:
+
+- `unsigned engineering rehearsal`: local-only staged artifacts and manifest overrides, with no GitHub release publication and no launch-readiness claim. Use `pnpm surfaceops:unsigned-rehearsal:stage -- --version <version>`, optionally `pnpm surfaceops:unsigned-rehearsal:serve`, then `pnpm dev:surfaceops:unsigned-rehearsal-feed` and `docs/plans/surfaceops-desktop-unsigned-rehearsal.md`.
+- `signed launch rehearsal`: the GitHub rehearsal workflows plus the clean Apple Silicon environment gate. Use `pnpm dev:surfaceops:rehearsal-feed` and `docs/plans/surfaceops-desktop-alpha-launch-rehearsal.md`.
+- `public alpha release`: the actual `vX.Y.Z` path that updates the public download surface and production updater feed.
+
+The signed launch rehearsal still requires the two-tier clean Apple Silicon environment: repeatable install/update smoke coverage in a fresh Apple Silicon macOS VM, with `Parallels` as the default and `UTM` as an acceptable fallback, followed by final signoff on a separate physical Apple Silicon Mac before cutting the first public `vX.Y.Z` tag.
 
 ## Learn More
 

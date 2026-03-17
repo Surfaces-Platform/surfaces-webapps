@@ -9,6 +9,7 @@ export const DEFAULT_LOCAL_WORKBENCH_ENV = {
   SURFACEOPS_LOCAL_LLM_BASE_URL: "http://127.0.0.1:1234/v1",
   SURFACEOPS_LOCAL_LLM_MODEL: "openai/gpt-oss-20b",
 };
+export const DEFAULT_LOCAL_WORKBENCH_PORT = 3001;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,11 +36,27 @@ export function resolveLocalWorkbenchEnv(options = {}) {
   return env;
 }
 
+export function resolveLocalWorkbenchPort(options = {}) {
+  const env = options.env ?? process.env;
+  const candidate = options.port
+    ?? env.SURFACEOPS_LOCAL_WORKBENCH_PORT
+    ?? env.PORT;
+  const parsed = Number.parseInt(String(candidate ?? ""), 10);
+  if (Number.isFinite(parsed) && parsed > 0) {
+    return parsed;
+  }
+  return DEFAULT_LOCAL_WORKBENCH_PORT;
+}
+
 export function startLocalWorkbenchDev(options = {}) {
   const env = resolveLocalWorkbenchEnv(options);
-  return spawn("pnpm", ["exec", "next", "dev", "--port", "3001", "--webpack"], {
+  const port = resolveLocalWorkbenchPort({ ...options, env });
+  return spawn("pnpm", ["exec", "next", "dev", "--port", String(port), "--webpack"], {
     cwd: appRoot,
-    env,
+    env: {
+      ...env,
+      PORT: String(port),
+    },
     stdio: "inherit",
     shell: process.platform === "win32",
   });
