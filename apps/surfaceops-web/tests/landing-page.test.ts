@@ -7,7 +7,7 @@ describe("surfaceops landing page", () => {
   it("renders the desktop-product positioning and marketing-only CTAs", () => {
     const html = renderToStaticMarkup(React.createElement(Home));
     const heroIndex = html.indexOf('data-contract-section="landing.hero"');
-    const whyDesktopIndex = html.indexOf('data-contract-section="landing.why-desktop"');
+    const whyDesktopIndex = html.indexOf('data-contract-section="landing.whydesktop"');
     const workbenchIndex = html.indexOf('data-contract-section="landing.workbench"');
     const nextIndex = html.indexOf('data-contract-section="landing.next"');
     const downloadCtaIndex = html.indexOf("Download Public Alpha");
