@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { colors } from "@surfaces/ui/tokens/colors";
@@ -1014,12 +1013,9 @@ export function LocalWorkbench({
                   <div>
                     <strong style={{ display: "block", fontSize: 15, marginBottom: 6 }}>Recent runs</strong>
                     <div style={{ fontSize: 12, color: colors.neutral[600] }}>
-                      Only the latest few runs stay on the workbench. Use the runs page for deep history.
+                      Use the trace tab to inspect the full local run history without leaving the workbench.
                     </div>
                   </div>
-                  <Link href="/contracts/runs" style={{ fontSize: 13, fontWeight: 700, color: colors.structure.primary, textDecoration: "none" }}>
-                    Open all runs
-                  </Link>
                 </div>
 
                 {recentRuns.length === 0 ? (

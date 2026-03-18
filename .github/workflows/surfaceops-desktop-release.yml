@@ -1,0 +1,157 @@
+name: surfaceops-desktop-release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-macos-arm64:
+    runs-on: macos-14
+    env:
+      SURFACEOPS_UPDATE_BASE_URL: https://surfaceops.ai/api/desktop/updates
+      SURFACEOPS_UPDATE_CHANNEL: alpha
+      SURFACEOPS_MANIFEST_RELEASE_TAG: surfaceops-desktop-feed
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.2
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Derive release metadata
+        run: |
+          RELEASE_TAG="${GITHUB_REF_NAME}"
+          if [[ ! "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Expected a clean semver tag like v1.2.3, got ${RELEASE_TAG}"
+            exit 1
+          fi
+
+          RELEASE_VERSION="${RELEASE_TAG#v}"
+          RELEASE_NAME="SurfaceOps Desktop ${RELEASE_VERSION}"
+
+          echo "RELEASE_TAG=${RELEASE_TAG}" >> "$GITHUB_ENV"
+          echo "RELEASE_VERSION=${RELEASE_VERSION}" >> "$GITHUB_ENV"
+          echo "RELEASE_NAME=${RELEASE_NAME}" >> "$GITHUB_ENV"
+
+      - name: Validate release secrets
+        run: |
+          test -n "${CSC_LINK}" || (echo "::error::Missing CSC_LINK" && exit 1)
+          test -n "${CSC_KEY_PASSWORD}" || (echo "::error::Missing CSC_KEY_PASSWORD" && exit 1)
+          test -n "${APPLE_ID}" || (echo "::error::Missing APPLE_ID" && exit 1)
+          test -n "${APPLE_APP_SPECIFIC_PASSWORD}" || (echo "::error::Missing APPLE_APP_SPECIFIC_PASSWORD" && exit 1)
+          test -n "${APPLE_TEAM_ID}" || (echo "::error::Missing APPLE_TEAM_ID" && exit 1)
+        env:
+          CSC_LINK: ${{ secrets.SURFACEOPS_DESKTOP_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.SURFACEOPS_DESKTOP_CSC_KEY_PASSWORD }}
+          APPLE_ID: ${{ secrets.SURFACEOPS_DESKTOP_APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.SURFACEOPS_DESKTOP_APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.SURFACEOPS_DESKTOP_APPLE_TEAM_ID }}
+
+      - name: Build desktop artifacts
+        run: pnpm --filter surfaceops-desktop run dist:mac:ci
+        env:
+          CSC_LINK: ${{ secrets.SURFACEOPS_DESKTOP_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.SURFACEOPS_DESKTOP_CSC_KEY_PASSWORD }}
+          APPLE_ID: ${{ secrets.SURFACEOPS_DESKTOP_APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.SURFACEOPS_DESKTOP_APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.SURFACEOPS_DESKTOP_APPLE_TEAM_ID }}
+          SURFACEOPS_SKIP_NOTARIZE: 0
+          SURFACEOPS_DESKTOP_RELEASE_VERSION: ${{ env.RELEASE_VERSION }}
+
+      - name: Ensure versioned GitHub release exists
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p artifacts
+          gh release view "$RELEASE_TAG" >/dev/null 2>&1 || \
+            gh release create "$RELEASE_TAG" --title "$RELEASE_NAME" --generate-notes --verify-tag
+          gh release view "$RELEASE_TAG" --json name,body,publishedAt > artifacts/github-release.json
+
+      - name: Download existing canonical feed manifest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p artifacts/feed
+          if gh release view "$SURFACEOPS_MANIFEST_RELEASE_TAG" >/dev/null 2>&1; then
+            gh release download "$SURFACEOPS_MANIFEST_RELEASE_TAG" \
+              --pattern "surfaceops-desktop-release-manifest.json" \
+              --dir artifacts/feed \
+              --clobber || true
+            gh release download "$SURFACEOPS_MANIFEST_RELEASE_TAG" \
+              --pattern "surfaceops-desktop-promotion-state.json" \
+              --dir artifacts/feed \
+              --clobber || true
+          fi
+
+      - name: Generate release manifest payload
+        run: |
+          DIST_DIR="apps/surfaceops-desktop/dist"
+          DMG_FILE="$(find "$DIST_DIR" -maxdepth 1 -name '*.dmg' | head -n 1)"
+          ZIP_FILE="$(find "$DIST_DIR" -maxdepth 1 -name '*.zip' | head -n 1)"
+          RELEASE_BASE_URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${RELEASE_TAG}"
+          EXISTING_MANIFEST_ARGS=()
+          if [ -f "artifacts/feed/surfaceops-desktop-release-manifest.json" ]; then
+            EXISTING_MANIFEST_ARGS=(
+              --existing-manifest
+              "artifacts/feed/surfaceops-desktop-release-manifest.json"
+            )
+          fi
+          node scripts/release/generate-surfaceops-desktop-release-manifest.mjs \
+            --channel "alpha" \
+            --version "${RELEASE_VERSION}" \
+            --release-json-file "artifacts/github-release.json" \
+            --dmg-file "$DMG_FILE" \
+            --dmg-url "$RELEASE_BASE_URL/$(basename "$DMG_FILE")" \
+            --zip-file "$ZIP_FILE" \
+            --zip-url "$RELEASE_BASE_URL/$(basename "$ZIP_FILE")" \
+            --out "artifacts/surfaceops-desktop-release-manifest.json" \
+            --notes-out "artifacts/surfaceops-desktop-release-notes.json" \
+            "${EXISTING_MANIFEST_ARGS[@]}"
+
+      - name: Prepare promotion-state asset
+        run: |
+          if [ -f "artifacts/feed/surfaceops-desktop-promotion-state.json" ]; then
+            cp "artifacts/feed/surfaceops-desktop-promotion-state.json" "artifacts/surfaceops-desktop-promotion-state.json"
+          else
+            node -e "const fs=require('fs'); fs.mkdirSync('artifacts',{recursive:true}); fs.writeFileSync('artifacts/surfaceops-desktop-promotion-state.json', JSON.stringify({generatedAt:new Date().toISOString(), blockedReleaseIds:{}, forcePromoteReleaseId:null}, null, 2));"
+          fi
+
+      - name: Upload release build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: surfaceops-desktop-alpha-${{ env.RELEASE_VERSION }}
+          path: |
+            apps/surfaceops-desktop/dist/*
+            artifacts/surfaceops-desktop-release-manifest.json
+            artifacts/surfaceops-desktop-release-notes.json
+            artifacts/surfaceops-desktop-promotion-state.json
+
+      - name: Publish GitHub release assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${RELEASE_TAG}" apps/surfaceops-desktop/dist/* artifacts/surfaceops-desktop-release-manifest.json artifacts/surfaceops-desktop-release-notes.json --clobber
+
+      - name: Publish canonical feed manifest assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view "$SURFACEOPS_MANIFEST_RELEASE_TAG" >/dev/null 2>&1 || \
+            gh release create "$SURFACEOPS_MANIFEST_RELEASE_TAG" --title "SurfaceOps Desktop Feed" --notes "Canonical release feed assets backing the surfaceops.ai desktop update routes."
+          gh release upload "$SURFACEOPS_MANIFEST_RELEASE_TAG" artifacts/surfaceops-desktop-release-manifest.json artifacts/surfaceops-desktop-release-notes.json artifacts/surfaceops-desktop-promotion-state.json --clobber

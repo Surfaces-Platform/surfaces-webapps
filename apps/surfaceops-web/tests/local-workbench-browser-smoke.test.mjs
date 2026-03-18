@@ -253,7 +253,7 @@ test("browser smoke: local workbench controls stay decision-focused", { timeout:
       await page.getByText("Latest result", { exact: true }).waitFor({ timeout: 20_000 });
       await page.getByText("Next action", { exact: true }).waitFor({ timeout: 20_000 });
       await page.getByText("Evidence summary", { exact: true }).waitFor({ timeout: 20_000 });
-      await page.getByRole("link", { name: "Open all runs" }).waitFor({ timeout: 20_000 });
+      await page.getByText("Use the trace tab to inspect the full local run history without leaving the workbench.").waitFor({ timeout: 20_000 });
 
       assert.equal(await page.getByText("Guidance", { exact: true }).count(), 0, "Empty guidance should stay hidden.");
       assert.equal(await page.locator('[data-testid="local-workbench-recent-run"]').count(), 3, "Recent runs should be capped at three cards.");

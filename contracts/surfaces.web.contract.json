@@ -193,6 +193,21 @@
       "description": "Primary calls-to-action for the surface.",
       "id": "landing.actions",
       "intent": "primary-actions"
+    },
+    {
+      "description": "Desktop rationale and operating-model explanation for SurfaceOps.",
+      "id": "landing.whydesktop",
+      "intent": "desktop-rationale"
+    },
+    {
+      "description": "Overview of the local SurfaceOps workbench capabilities.",
+      "id": "landing.workbench",
+      "intent": "workbench-overview"
+    },
+    {
+      "description": "Next-step guidance for installing and following the desktop rollout.",
+      "id": "landing.next",
+      "intent": "next-steps"
     }
   ],
   "surfaces": [
@@ -299,13 +314,15 @@
           "policy": "strict",
           "requireTopLevelSections": [
             "landing.hero",
-            "landing.guidance",
-            "landing.actions"
+            "landing.whydesktop",
+            "landing.workbench",
+            "landing.next"
           ],
           "sectionOrder": [
             "landing.hero",
-            "landing.guidance",
-            "landing.actions"
+            "landing.whydesktop",
+            "landing.workbench",
+            "landing.next"
           ]
         },
         "maxContentWidth": 1120
@@ -326,8 +343,9 @@
       },
       "requiredSections": [
         "landing.hero",
-        "landing.guidance",
-        "landing.actions"
+        "landing.whydesktop",
+        "landing.workbench",
+        "landing.next"
       ],
       "shellOwnedPrimitiveAllowSources": [
         "apps/surfaceops-web/app/layout.tsx"

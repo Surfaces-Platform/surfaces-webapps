@@ -1,0 +1,68 @@
+name: surfaceops-desktop-promotion-control
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Promotion-state action
+        required: true
+        type: choice
+        options:
+          - block
+          - unblock
+          - force-promote
+          - clear-force
+      release_id:
+        description: Release ID for block/unblock/force-promote
+        required: false
+        type: string
+      reason:
+        description: Operator reason for block
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  update-promotion-state:
+    runs-on: ubuntu-latest
+    env:
+      SURFACEOPS_MANIFEST_RELEASE_TAG: surfaceops-desktop-feed
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Download current promotion-state asset
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p artifacts/feed
+          if gh release view "$SURFACEOPS_MANIFEST_RELEASE_TAG" >/dev/null 2>&1; then
+            gh release download "$SURFACEOPS_MANIFEST_RELEASE_TAG" \
+              --pattern "surfaceops-desktop-promotion-state.json" \
+              --dir artifacts/feed \
+              --clobber || true
+          fi
+
+      - name: Update promotion-state asset
+        run: |
+          node scripts/release/update-surfaceops-desktop-promotion-state.mjs \
+            --action "${{ inputs.action }}" \
+            --release-id "${{ inputs.release_id }}" \
+            --reason "${{ inputs.reason }}" \
+            --state-file "artifacts/feed/surfaceops-desktop-promotion-state.json" \
+            --out "artifacts/surfaceops-desktop-promotion-state.json"
+
+      - name: Publish promotion-state asset
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view "$SURFACEOPS_MANIFEST_RELEASE_TAG" >/dev/null 2>&1 || \
+            gh release create "$SURFACEOPS_MANIFEST_RELEASE_TAG" --title "SurfaceOps Desktop Feed" --notes "Stable manifest assets backing the surfaceops.ai desktop update routes."
+          gh release upload "$SURFACEOPS_MANIFEST_RELEASE_TAG" artifacts/surfaceops-desktop-promotion-state.json --clobber

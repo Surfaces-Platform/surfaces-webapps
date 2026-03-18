@@ -1,7 +1,19 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
 import { colors } from "@surfaces/ui/tokens/colors";
-import { InviteRequestPanel } from "./_components/invite-request-panel";
+import { isSurfaceOpsLocalWorkbenchEnabled } from "@/lib/auth-bypass";
+import {
+  SURFACEOPS_DESKTOP_WORKBENCH_PATH,
+  shouldRedirectToSurfaceOpsDesktopWorkbench,
+} from "@/lib/product-surface";
 
 export default function Home() {
+  if (shouldRedirectToSurfaceOpsDesktopWorkbench("/")) {
+    redirect(SURFACEOPS_DESKTOP_WORKBENCH_PATH);
+  }
+
+  const localWorkbenchEnabled = isSurfaceOpsLocalWorkbenchEnabled();
+
   return (
     <div
       className="min-h-screen w-full"
@@ -45,7 +57,7 @@ export default function Home() {
               color: colors.neutral[600],
             }}
           >
-            Invite-only preview
+            Public alpha
           </p>
           <h1
             data-contract-copy-role="heroTitle"
@@ -58,7 +70,7 @@ export default function Home() {
               maxWidth: "var(--marketing-layout-copy-max-width-wide)",
             }}
           >
-            SurfaceOps keeps contract operations visible before drift reaches production.
+            Shape interface contracts locally, then ship with less drift.
           </h1>
           <p
             data-contract-copy-role="heroBody"
@@ -71,17 +83,81 @@ export default function Home() {
               maxWidth: "var(--marketing-layout-copy-max-width)",
             }}
           >
-            SurfaceOps gives platform teams a live operating view of contract coverage,
-            extraction drift, ownership, and enforcement posture across production surfaces.
-            Access is rolling out in small cohorts while we tighten the workflow.
+            SurfaceOps is moving out of the hosted SaaS shape and into a local desktop
+            workbench for designers and platform teams. The goal is fast local feedback,
+            open-model flexibility, and lower operating cost without a hosted inference tax.
           </p>
-          <div style={{ marginTop: "32px" }}>
-            <InviteRequestPanel />
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "12px",
+              marginTop: "32px",
+            }}
+          >
+            <Link
+              href="/download"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: "46px",
+                padding: "0 20px",
+                borderRadius: "999px",
+                textDecoration: "none",
+                fontSize: "14px",
+                fontWeight: 700,
+                backgroundColor: colors.structure.primary,
+                color: colors.neutral[0],
+              }}
+            >
+              Download Public Alpha
+            </Link>
+            <Link
+              href="/release-notes"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: "46px",
+                padding: "0 20px",
+                borderRadius: "999px",
+                textDecoration: "none",
+                fontSize: "14px",
+                fontWeight: 700,
+                border: `1px solid ${colors.neutral[200]}`,
+                color: colors.neutral[900],
+                backgroundColor: colors.neutral[0],
+              }}
+            >
+              Read Release Notes
+            </Link>
+            {localWorkbenchEnabled ? (
+              <Link
+                href="/contracts/governance"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: "46px",
+                  padding: "0 20px",
+                  borderRadius: "999px",
+                  textDecoration: "none",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  border: `1px dashed ${colors.neutral[400]}`,
+                  color: colors.neutral[600],
+                  backgroundColor: colors.neutral[0],
+                }}
+              >
+                Open Local Workbench
+              </Link>
+            ) : null}
           </div>
         </section>
 
         <section
-          data-contract-section="landing.guidance"
+          data-contract-section="landing.whydesktop"
           style={{
             paddingTop: "var(--marketing-layout-section-padding-roomy)",
             paddingBottom: "var(--marketing-layout-section-padding-roomy)",
@@ -98,7 +174,7 @@ export default function Home() {
               margin: "0 0 24px",
             }}
           >
-            What invite access unlocks
+            Why move SurfaceOps to desktop
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div
@@ -110,12 +186,12 @@ export default function Home() {
               }}
             >
               <h3 style={{ fontSize: "16px", fontWeight: 600, margin: "0 0 12px" }}>
-                Inspect
+                Faster shaping loop
               </h3>
               <p style={{ fontSize: "14px", lineHeight: 1.6, margin: 0 }}>
                 <span data-contract-copy-role="body" style={{ fontFamily: "var(--marketing-sans-body-family)", fontSize: "var(--marketing-sans-body-size)", lineHeight: "var(--marketing-sans-body-line-height)" }}>
-                Review surfaces, ownership, and contract-state changes without exposing the
-                operational workspace broadly.
+                Keep the contract editor, previews, and local reruns on-device so designers can
+                iterate without waiting on a hosted queue.
                 </span>
               </p>
             </div>
@@ -128,12 +204,12 @@ export default function Home() {
               }}
             >
               <h3 style={{ fontSize: "16px", fontWeight: 600, margin: "0 0 12px" }}>
-                Track
+                Open-model flexibility
               </h3>
               <p style={{ fontSize: "14px", lineHeight: 1.6, margin: 0 }}>
                 <span data-contract-copy-role="body" style={{ fontFamily: "var(--marketing-sans-body-family)", fontSize: "var(--marketing-sans-body-size)", lineHeight: "var(--marketing-sans-body-line-height)" }}>
-                Follow onboarding runs, extraction drift, and enforcement posture as contracts
-                move through the workflow.
+                Choose from open-source local models instead of routing every shaping decision
+                through one hosted inference tier.
                 </span>
               </p>
             </div>
@@ -146,12 +222,12 @@ export default function Home() {
               }}
             >
               <h3 style={{ fontSize: "16px", fontWeight: 600, margin: "0 0 12px" }}>
-                Operate
+                Lower operating cost
               </h3>
               <p style={{ fontSize: "14px", lineHeight: 1.6, margin: 0 }}>
                 <span data-contract-copy-role="body" style={{ fontFamily: "var(--marketing-sans-body-family)", fontSize: "var(--marketing-sans-body-size)", lineHeight: "var(--marketing-sans-body-line-height)" }}>
-                Join the preview while we tighten the operator experience and expand access in
-                controlled cohorts.
+                SurfaceOps.ai stays thin: marketing, download, release notes, and later a light
+                control plane instead of always-on model hosting.
                 </span>
               </p>
             </div>
@@ -159,7 +235,63 @@ export default function Home() {
         </section>
 
         <section
-          data-contract-section="landing.actions"
+          data-contract-section="landing.workbench"
+          style={{
+            paddingTop: "var(--marketing-layout-section-padding-roomy)",
+            paddingBottom: "var(--marketing-layout-section-padding-roomy)",
+            borderTop: `1px solid ${colors.neutral[200]}`,
+          }}
+        >
+          <h2
+            data-contract-copy-role="sectionTitle"
+            style={{
+              fontFamily: "var(--marketing-sans-section-title-family)",
+              fontSize: "var(--marketing-sans-section-title-size)",
+              fontWeight: 600,
+              lineHeight: "var(--marketing-sans-section-title-line-height)",
+              margin: "0 0 24px",
+            }}
+          >
+            What the desktop workbench does
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div
+              style={{
+                padding: "var(--marketing-layout-card-padding)",
+                borderRadius: "12px",
+                backgroundColor: colors.neutral[0],
+                border: `1px solid ${colors.neutral[200]}`,
+              }}
+            >
+              <h3 style={{ fontSize: "16px", fontWeight: 600, margin: "0 0 12px" }}>
+                Local contract shaping
+              </h3>
+              <p style={{ fontSize: "14px", lineHeight: 1.7, margin: 0, color: colors.neutral[600] }}>
+                The first desktop alpha wraps the existing React workbench so teams can run the
+                contract loop locally, compare baseline versus current output, and keep artifacts on-device.
+              </p>
+            </div>
+            <div
+              style={{
+                padding: "var(--marketing-layout-card-padding)",
+                borderRadius: "12px",
+                backgroundColor: colors.neutral[0],
+                border: `1px solid ${colors.neutral[200]}`,
+              }}
+            >
+              <h3 style={{ fontSize: "16px", fontWeight: 600, margin: "0 0 12px" }}>
+                Later GitHub monitoring
+              </h3>
+              <p style={{ fontSize: "14px", lineHeight: 1.7, margin: 0, color: colors.neutral[600] }}>
+                After the local loop is solid, SurfaceOps grows into a desktop monitor for
+                GitHub Actions validation, drift, and build notifications.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section
+          data-contract-section="landing.next"
           style={{
             paddingTop: "var(--marketing-layout-section-padding-roomy)",
             paddingBottom: "var(--marketing-layout-section-padding-roomy)",
@@ -189,8 +321,9 @@ export default function Home() {
               maxWidth: "var(--marketing-layout-copy-max-width)",
             }}
           >
-            Invite requests go into the next rollout queue. We review new teams in small groups
-            and reach out directly when preview access is available.
+            Public alpha releases publish from clean semver tags, and the same signed build auto-promotes to stable
+            after a 72-hour soak unless an operator blocks it for an incident. Track the current feed state on the
+            download page and release notes.
           </p>
         </section>
       </div>

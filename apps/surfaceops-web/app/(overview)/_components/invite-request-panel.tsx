@@ -5,7 +5,21 @@ import { colors } from "@surfaces/ui/tokens/colors";
 
 type SubmitState = "idle" | "success" | "error";
 
-export function InviteRequestPanel() {
+interface InviteRequestPanelProps {
+  buttonLabel?: string;
+  formLabel?: string;
+  submitLabel?: string;
+  idleMessage?: string;
+  successMessage?: string;
+}
+
+export function InviteRequestPanel({
+  buttonLabel = "Get Desktop Updates",
+  formLabel = "Work email",
+  submitLabel = "Submit",
+  idleMessage = "Enter your work email and we’ll send SurfaceOps desktop release updates, including new alpha drops and stable promotions.",
+  successMessage = "Thanks. We’ll send SurfaceOps desktop release updates to this email.",
+}: InviteRequestPanelProps = {}) {
   const [formOpen, setFormOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
@@ -29,15 +43,15 @@ export function InviteRequestPanel() {
 
       const body = (await response.json()) as { ok?: boolean; error?: string };
       if (!response.ok || !body.ok) {
-        throw new Error(body.error ?? "Unable to save invite request.");
+        throw new Error(body.error ?? "Unable to save your update request.");
       }
 
       setSubmitState("success");
-      setMessage("Thanks. We’ll reach out when invite access opens.");
+      setMessage(successMessage);
       setEmail("");
     } catch (error) {
       setSubmitState("error");
-      setMessage(error instanceof Error ? error.message : "Unable to save invite request.");
+      setMessage(error instanceof Error ? error.message : "Unable to save your update request.");
     } finally {
       setIsSubmitting(false);
     }
@@ -70,7 +84,7 @@ export function InviteRequestPanel() {
           transition: "all var(--contract-motion-duration) var(--contract-motion-timing)",
         }}
       >
-        Request An Invite
+        {buttonLabel}
       </button>
 
       {formOpen ? (
@@ -95,7 +109,7 @@ export function InviteRequestPanel() {
               textTransform: "uppercase",
             }}
           >
-            Work email
+            {formLabel}
           </label>
           <div
             style={{
@@ -140,7 +154,7 @@ export function InviteRequestPanel() {
                 opacity: isSubmitting ? 0.75 : 1,
               }}
             >
-              {isSubmitting ? "Submitting..." : "Submit"}
+              {isSubmitting ? "Submitting..." : submitLabel}
             </button>
           </div>
           <p
@@ -157,7 +171,7 @@ export function InviteRequestPanel() {
                     : colors.neutral[600],
             }}
           >
-            {message || "We’re onboarding teams in small batches. Enter your email and we’ll contact you."}
+            {message || idleMessage}
           </p>
         </form>
       ) : null}

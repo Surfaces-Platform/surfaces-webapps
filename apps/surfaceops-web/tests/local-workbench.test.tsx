@@ -149,13 +149,14 @@ describe("LocalWorkbench", () => {
     expect(html).toContain("Evidence summary");
     expect(html).toContain("Technical context");
     expect(html).toContain("Recent runs");
-    expect(html).toContain("Open all runs");
+    expect(html).toContain("full local run history");
     expect(html).toContain("trace");
     expect(html).toContain("Inspect trace");
     expect(html).toContain("Preview unavailable");
     expect(html).not.toContain("Current state");
     expect(html).not.toContain("History");
     expect(html).not.toContain("Guidance");
+    expect(html).not.toContain("Open all runs");
     expect(html).toContain("Run 20260314");
     expect(html).toContain("Run 20260313");
     expect(html).toContain("Run 20260312");

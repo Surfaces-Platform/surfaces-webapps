@@ -11,3 +11,5 @@ scratch/secrets/
 .vercel
 .env*.local
 artifacts/
+apps/surfaceops-desktop/.desktop-runtime/
+apps/surfaceops-desktop/dist/

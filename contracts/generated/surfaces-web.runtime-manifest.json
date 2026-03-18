@@ -117,7 +117,10 @@
         "landing.hero",
         "landing.demos",
         "landing.guidance",
-        "landing.actions"
+        "landing.actions",
+        "landing.whydesktop",
+        "landing.workbench",
+        "landing.next"
       ],
       "requiredSections": [
         "landing.actions",
