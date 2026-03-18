@@ -9,11 +9,17 @@ export const metadata = {
 
 export const dynamic = "force-dynamic";
 
+function selectLandingReportId(reports: ReturnType<typeof listBenchmarkReports>): string | null {
+  const liveReport = reports.find((report) => report.source === "artifact");
+  return liveReport?.id ?? reports[0]?.id ?? null;
+}
+
 export default function BenchmarksPage() {
   const reports = listBenchmarkReports();
+  const landingReportId = selectLandingReportId(reports);
 
-  if (reports.length > 0) {
-    redirect(`/benchmarks/${reports[0].id}`);
+  if (landingReportId) {
+    redirect(`/benchmarks/${landingReportId}`);
   }
 
   return (
