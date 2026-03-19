@@ -22,7 +22,7 @@ import {
 import type { FailureCategory, Phase0Finding } from "@/lib/contracts";
 import { colors } from "@surfaces/ui/tokens/colors";
 import {
-  SURFACEOPS_DESKTOP_WORKBENCH_PATH,
+  resolveSurfaceOpsDesktopRuntimePath,
   shouldRedirectToSurfaceOpsDesktopWorkbench,
 } from "@/lib/product-surface";
 
@@ -165,7 +165,7 @@ export default async function ContractDetailPage({
 }: { params: Promise<{ surfaceId: string }> }) {
   const { surfaceId } = await params;
   if (shouldRedirectToSurfaceOpsDesktopWorkbench(`/contracts/${surfaceId}`)) {
-    redirect(SURFACEOPS_DESKTOP_WORKBENCH_PATH);
+    redirect(resolveSurfaceOpsDesktopRuntimePath());
   }
 
   const contract = loadPolicyContract();

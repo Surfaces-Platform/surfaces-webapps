@@ -135,4 +135,12 @@ test("generic dev scripts remain unchanged and local workbench scripts are expli
     await fsp.readFile(path.join(repoRoot, "apps", "surfaceops-desktop", "package.json"), "utf8"),
   );
   assert.equal(desktopPackageJson.scripts["dev:unsigned-rehearsal"], "node scripts/dev-unsigned-rehearsal.mjs");
+  assert.equal(
+    desktopPackageJson.scripts["smoke:packaged"],
+    "SURFACEOPS_RUN_PACKAGED_SMOKE=1 node --test tests/packaged-smoke.test.mjs",
+  );
+  assert.equal(
+    desktopPackageJson.scripts["smoke:packaged:build"],
+    "SURFACEOPS_SKIP_NOTARIZE=1 pnpm run dist:mac && pnpm run smoke:packaged",
+  );
 });

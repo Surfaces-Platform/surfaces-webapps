@@ -24,6 +24,10 @@ For the signed prerelease drill and the clean Apple Silicon final gate, use `doc
    SURFACEOPS_DESKTOP_RELEASE_VERSION=0.1.0-rc.1 pnpm --filter surfaceops-desktop dist:mac
    ```
 
+   `build:runtime` now downloads and verifies the pinned Apple Silicon `llama.cpp` bundle from
+   `apps/surfaceops-desktop/resources/model-runtime/llama-runtime.manifest.json` unless
+   `SURFACEOPS_LLAMA_SERVER_BIN` is set as a local development override.
+
 2. Stage it into the local unsigned rehearsal feed:
 
    ```bash
@@ -59,7 +63,13 @@ For the signed prerelease drill and the clean Apple Silicon final gate, use `doc
    pnpm surfaceops:unsigned-rehearsal:stage -- --version 0.1.0-rc.2
    ```
 
-7. Exercise promotion-state logic against the staged files:
+7. Run the packaged first-run smoke against the local unsigned build:
+
+   ```bash
+   pnpm --filter surfaceops-desktop smoke:packaged
+   ```
+
+8. Exercise promotion-state logic against the staged files:
 
    ```bash
    node scripts/release/update-surfaceops-desktop-promotion-state.mjs \

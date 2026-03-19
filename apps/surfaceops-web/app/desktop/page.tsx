@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
 import {
-  SURFACEOPS_DESKTOP_WORKBENCH_PATH,
+  resolveSurfaceOpsDesktopRuntimePath,
   shouldRedirectToSurfaceOpsDesktopWorkbench,
 } from "@/lib/product-surface";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Desktop | SurfaceOps",
@@ -10,7 +12,7 @@ export const metadata = {
 
 export default function DesktopPage() {
   if (shouldRedirectToSurfaceOpsDesktopWorkbench("/desktop")) {
-    redirect(SURFACEOPS_DESKTOP_WORKBENCH_PATH);
+    redirect(resolveSurfaceOpsDesktopRuntimePath());
   }
 
   redirect("/download");

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { colors } from "@surfaces/ui/tokens/colors";
 import { isSurfaceOpsAuthBypassEnabled, isSurfaceOpsLocalWorkbenchEnabled } from "@/lib/auth-bypass";
 import {
-  SURFACEOPS_DESKTOP_WORKBENCH_PATH,
+  resolveSurfaceOpsDesktopRuntimePath,
   shouldRedirectToSurfaceOpsDesktopWorkbench,
 } from "@/lib/product-surface";
 
@@ -13,7 +13,7 @@ export default async function RunsLayout({
   children,
 }: { children: React.ReactNode }) {
   if (shouldRedirectToSurfaceOpsDesktopWorkbench("/contracts/runs")) {
-    redirect(SURFACEOPS_DESKTOP_WORKBENCH_PATH);
+    redirect(resolveSurfaceOpsDesktopRuntimePath());
   }
 
   const bypassAuth = isSurfaceOpsAuthBypassEnabled() || isSurfaceOpsLocalWorkbenchEnabled();

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { colors } from "@surfaces/ui/tokens/colors";
 import { getAllDesktopReleases, loadDesktopReleaseManifest } from "@/lib/desktop-release-manifest";
 import {
-  SURFACEOPS_DESKTOP_WORKBENCH_PATH,
+  resolveSurfaceOpsDesktopRuntimePath,
   shouldRedirectToSurfaceOpsDesktopWorkbench,
 } from "@/lib/product-surface";
 
@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 
 export default async function ReleaseNotesPage() {
   if (shouldRedirectToSurfaceOpsDesktopWorkbench("/release-notes")) {
-    redirect(SURFACEOPS_DESKTOP_WORKBENCH_PATH);
+    redirect(resolveSurfaceOpsDesktopRuntimePath());
   }
 
   const manifest = await loadDesktopReleaseManifest();

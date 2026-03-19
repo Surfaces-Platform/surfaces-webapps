@@ -1,4 +1,12 @@
 import { isSurfaceOpsLocalWorkbenchEnabled } from "@/lib/auth-bypass";
+import {
+  SURFACEOPS_DESKTOP_SETUP_PATH,
+  SURFACEOPS_DESKTOP_WORKBENCH_PATH,
+} from "@surfaces/surfaceops-desktop-bridge";
+import {
+  isSurfaceOpsDesktopSetupRequired,
+  resolveSurfaceOpsDesktopEntryPath,
+} from "@/lib/desktop-models";
 
 export interface SurfaceOpsNavigationLink {
   label: string;
@@ -19,8 +27,6 @@ export const SURFACEOPS_DESKTOP_ALPHA_TARGET = {
   delivery: "Public alpha DMG first. Stable promotes automatically after a 72-hour soak.",
   modelPolicy: "Open-source local models only. No hosted inference requirement for the core workbench.",
 };
-
-export const SURFACEOPS_DESKTOP_WORKBENCH_PATH = "/contracts/governance";
 
 function normalizeSurfaceOpsPath(pathname: string): string {
   const trimmed = pathname.trim();
@@ -49,6 +55,14 @@ export function shouldRedirectToSurfaceOpsDesktopWorkbench(pathname: string): bo
   }
 
   const normalizedPath = normalizeSurfaceOpsPath(pathname);
+  if (normalizedPath === SURFACEOPS_DESKTOP_SETUP_PATH) {
+    return false;
+  }
+
+  if (isSurfaceOpsDesktopSetupRequired()) {
+    return normalizedPath !== SURFACEOPS_DESKTOP_SETUP_PATH;
+  }
+
   if (normalizedPath === SURFACEOPS_DESKTOP_WORKBENCH_PATH) {
     return false;
   }
@@ -58,6 +72,10 @@ export function shouldRedirectToSurfaceOpsDesktopWorkbench(pathname: string): bo
   }
 
   return normalizedPath.startsWith("/contracts/");
+}
+
+export function resolveSurfaceOpsDesktopRuntimePath(): string {
+  return resolveSurfaceOpsDesktopEntryPath();
 }
 
 export function shouldRedirectHostedContractsRoutes(): boolean {

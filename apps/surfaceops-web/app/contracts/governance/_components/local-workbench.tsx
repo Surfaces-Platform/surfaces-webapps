@@ -157,12 +157,14 @@ function deriveLatestResultState({
   latestRunOperatorNote,
   feedback,
   modelConfigured,
+  modelManagementPath,
 }: {
   latestRun: LocalWorkbenchRun | null;
   latestError: string | null;
   latestRunOperatorNote: string | null;
   feedback: string | null;
   modelConfigured: boolean;
+  modelManagementPath: string | null;
 }): LatestResultState {
   if (latestRun?.status === "failed" && latestError) {
     return {
@@ -200,7 +202,9 @@ function deriveLatestResultState({
       label: "Setup required",
       title: latestRun ? latestRunTitle(latestRun) : "Local model unavailable",
       summary: "The workbench is readable, but regeneration is blocked until the local model is configured.",
-      detail: "Set SURFACEOPS_LOCAL_LLM_BASE_URL and SURFACEOPS_LOCAL_LLM_MODEL to enable reruns.",
+      detail: modelManagementPath
+        ? "Install and warm a managed local model from SurfaceOps setup before attempting another rerun."
+        : "Set SURFACEOPS_LOCAL_LLM_BASE_URL and SURFACEOPS_LOCAL_LLM_MODEL to enable reruns.",
     };
   }
 
@@ -314,7 +318,7 @@ export function LocalWorkbench({
   const [previewMode, setPreviewMode] = useState<"baseline" | "current">("current");
   const [tab, setTab] = useState<LocalWorkbenchTab>(initialTab);
   const [chatDraft, setChatDraft] = useState("");
-  const [pendingAction, setPendingAction] = useState<"rerun" | "chat" | "suggestion" | "publish" | null>(null);
+  const [pendingAction, setPendingAction] = useState<"rerun" | "chat" | "suggestion" | "publish" | "benchmark" | "export" | null>(null);
   const [selectedRunId, setSelectedRunId] = useState<string | null>(data.latestRun?.runId ?? data.runs[0]?.runId ?? null);
   const [selectedDetail, setSelectedDetail] = useState<LocalWorkbenchRunDetail | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
@@ -332,6 +336,7 @@ export function LocalWorkbench({
     latestRunOperatorNote,
     feedback,
     modelConfigured: data.localModel.configured,
+    modelManagementPath: data.localModel.managementPath,
   });
   const latestResultStyles = toneStyles(latestResult.tone);
   const openSuggestions = suggestions.filter((suggestion) => hasSuggestionStatus(["proposed"], suggestion.status));
@@ -403,6 +408,51 @@ export function LocalWorkbench({
       cancelled = true;
     };
   }, [selectedRunId]);
+
+  function openModelSetup() {
+    if (!data.localModel.managementPath) {
+      return;
+    }
+    router.push(data.localModel.managementPath);
+    router.refresh();
+  }
+
+  function runDesktopBenchmark() {
+    const modelsBridge = window.surfaceopsDesktop?.models;
+    if (!modelsBridge) {
+      return;
+    }
+    startTransition(async () => {
+      setPendingAction("benchmark");
+      try {
+        await modelsBridge.runBenchmark();
+        setFeedback("Local benchmark completed.");
+        router.refresh();
+      } catch (error) {
+        setFeedback(error instanceof Error ? error.message : String(error));
+      } finally {
+        setPendingAction(null);
+      }
+    });
+  }
+
+  function exportDesktopBenchmark() {
+    const modelsBridge = window.surfaceopsDesktop?.models;
+    if (!modelsBridge) {
+      return;
+    }
+    startTransition(async () => {
+      setPendingAction("export");
+      try {
+        const exportedPath = await modelsBridge.exportBenchmark();
+        setFeedback(exportedPath ? `Exported benchmark to ${exportedPath}` : "Benchmark export cancelled.");
+      } catch (error) {
+        setFeedback(error instanceof Error ? error.message : String(error));
+      } finally {
+        setPendingAction(null);
+      }
+    });
+  }
 
   async function startRerun() {
     const response = await fetch("/api/contracts/local/rerun", {
@@ -725,6 +775,31 @@ export function LocalWorkbench({
                   >
                     {isPending && pendingAction === "publish" ? "Publishing..." : "Publish current contract"}
                   </button>
+                  {data.localModel.managementPath ? (
+                    <button type="button" onClick={openModelSetup} style={secondaryButton(isPending)}>
+                      Manage local model
+                    </button>
+                  ) : null}
+                  {data.localModel.managementPath ? (
+                    <button
+                      type="button"
+                      disabled={isPending || !data.localModel.configured}
+                      onClick={runDesktopBenchmark}
+                      style={secondaryButton(isPending || !data.localModel.configured)}
+                    >
+                      {isPending && pendingAction === "benchmark" ? "Running benchmark..." : "Run local benchmark"}
+                    </button>
+                  ) : null}
+                  {data.localModel.managementPath ? (
+                    <button
+                      type="button"
+                      disabled={isPending || !data.localModel.lastBenchmarkSummary}
+                      onClick={exportDesktopBenchmark}
+                      style={secondaryButton(isPending || !data.localModel.lastBenchmarkSummary)}
+                    >
+                      {isPending && pendingAction === "export" ? "Exporting..." : "Export latest benchmark"}
+                    </button>
+                  ) : null}
                 </div>
               </section>
 
@@ -1003,6 +1078,12 @@ export function LocalWorkbench({
                       <div>Configured: {data.localModel.configured ? "yes" : "no"}</div>
                       <div>Model: {data.localModel.model ?? "Unavailable"}</div>
                       <div>Base URL: {data.localModel.baseUrl ?? "Unavailable"}</div>
+                      <div>Runtime: {data.localModel.runtimeStatus?.phase ?? "Unavailable"}</div>
+                      {data.localModel.lastBenchmarkSummary ? (
+                        <div>
+                          Last benchmark: {new Date(data.localModel.lastBenchmarkSummary.createdAt).toLocaleString()}
+                        </div>
+                      ) : null}
                     </div>
                   </section>
                 </div>
@@ -1275,6 +1356,7 @@ export function LocalWorkbench({
                   <div>Configured: {data.localModel.configured ? "yes" : "no"}</div>
                   <div>Model: {data.localModel.model ?? "Unavailable"}</div>
                   <div>Base URL: {data.localModel.baseUrl ?? "Unavailable"}</div>
+                  <div>Runtime: {data.localModel.runtimeStatus?.phase ?? "Unavailable"}</div>
                   <div>Run root: {data.runRoot}</div>
                 </div>
               </details>

@@ -8,6 +8,8 @@
     "dist:mac": "SURFACEOPS_SKIP_NOTARIZE=1 pnpm run build:runtime && SURFACEOPS_SKIP_NOTARIZE=1 electron-builder --config electron-builder.config.cjs --mac dmg zip --arm64 --publish never",
     "dist:mac:ci": "pnpm run build:runtime && electron-builder --config electron-builder.config.cjs --mac dmg zip --arm64 --publish never",
     "dist:mac:publish": "pnpm run build:runtime && electron-builder --config electron-builder.config.cjs --mac dmg zip --arm64 --publish always",
+    "smoke:packaged": "SURFACEOPS_RUN_PACKAGED_SMOKE=1 node --test tests/packaged-smoke.test.mjs",
+    "smoke:packaged:build": "SURFACEOPS_SKIP_NOTARIZE=1 pnpm run dist:mac && pnpm run smoke:packaged",
     "setup:electron": "node scripts/ensure-electron.mjs",
     "dev": "node scripts/dev.mjs",
     "dev:unsigned-rehearsal": "node scripts/dev-unsigned-rehearsal.mjs",

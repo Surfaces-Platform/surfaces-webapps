@@ -7,6 +7,8 @@ const {
 } = require("@surfaces/surfaceops-desktop-bridge");
 
 const DEFAULT_SURFACEOPS_DESKTOP_PORT = 3311;
+const DEFAULT_SURFACEOPS_MODELD_PORT = 3312;
+const DEFAULT_SURFACEOPS_MODEL_BACKEND_PORT = 3313;
 const DEFAULT_WORKBENCH_PATH = "/contracts/governance";
 
 function resolvePositiveInteger(value, fallback) {
@@ -25,6 +27,14 @@ function resolveSurfaceOpsDesktopConfig(options = {}) {
   const managedPort = resolvePositiveInteger(
     env.SURFACEOPS_DESKTOP_PORT ?? env.SURFACEOPS_LOCAL_WORKBENCH_PORT,
     DEFAULT_SURFACEOPS_DESKTOP_PORT,
+  );
+  const modeldPort = resolvePositiveInteger(
+    env.SURFACEOPS_DESKTOP_MODELD_PORT,
+    managedPort + 1,
+  );
+  const backendPort = resolvePositiveInteger(
+    env.SURFACEOPS_DESKTOP_MODEL_BACKEND_PORT,
+    modeldPort + 1,
   );
   const updateChannel = UPDATE_CHANNELS.includes(env.SURFACEOPS_UPDATE_CHANNEL)
     ? env.SURFACEOPS_UPDATE_CHANNEL
@@ -48,6 +58,16 @@ function resolveSurfaceOpsDesktopConfig(options = {}) {
   if (!bundledServerPath) {
     bundledServerPath = path.join(bundledRuntimeRoot, "standalone", "apps", "surfaceops-web", "server.js");
   }
+  const bundledModelRuntimeRoot = path.resolve(
+    options.bundledModelRuntimeRoot
+      ?? env.SURFACEOPS_DESKTOP_MODEL_RUNTIME_ROOT
+      ?? path.join(appRoot, ".desktop-runtime", "model-runtime"),
+  );
+  const bundledLlamaServerPath = path.resolve(
+    options.bundledLlamaServerPath
+      ?? env.SURFACEOPS_LLAMA_SERVER_BIN
+      ?? path.join(bundledModelRuntimeRoot, "llama-server"),
+  );
   const launchUrl = new URL(workbenchPath, baseUrl).toString();
 
   return {
@@ -59,6 +79,10 @@ function resolveSurfaceOpsDesktopConfig(options = {}) {
     updateBaseUrl,
     updateChannel,
     managedPort,
+    modeldPort,
+    modeldBaseUrl: `http://127.0.0.1:${modeldPort}/v1`,
+    backendPort,
+    bundledLlamaServerPath,
     workbenchPath,
     bundledRuntimeRoot,
     bundledServerPath,
@@ -74,6 +98,7 @@ function buildManagedServerCommand(config, options = {}) {
     SURFACEOPS_LOCAL_WORKBENCH: "1",
     SURFACEOPS_DESKTOP_RUNTIME: "1",
     SURFACEOPS_LOCAL_WORKBENCH_PORT: String(config.managedPort),
+    SURFACEOPS_LOCAL_LLM_BASE_URL: config.modeldBaseUrl,
     SURFACEOPS_UPDATE_CHANNEL: config.updateChannel,
     SURFACEOPS_UPDATE_BASE_URL: config.updateBaseUrl,
   };
@@ -85,6 +110,7 @@ function buildManagedServerCommand(config, options = {}) {
       cwd: path.dirname(config.bundledServerPath),
       env: {
         ...env,
+        ELECTRON_RUN_AS_NODE: "1",
         PORT: String(config.managedPort),
         HOSTNAME: "127.0.0.1",
       },
@@ -101,6 +127,8 @@ function buildManagedServerCommand(config, options = {}) {
 
 module.exports = {
   DEFAULT_SURFACEOPS_DESKTOP_PORT,
+  DEFAULT_SURFACEOPS_MODELD_PORT,
+  DEFAULT_SURFACEOPS_MODEL_BACKEND_PORT,
   DEFAULT_WORKBENCH_PATH,
   resolveSurfaceOpsDesktopConfig,
   buildManagedServerCommand,

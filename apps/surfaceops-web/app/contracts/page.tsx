@@ -9,10 +9,12 @@ import {
 } from "@/lib/contracts";
 import { colors } from "@surfaces/ui/tokens/colors";
 import {
-  SURFACEOPS_DESKTOP_WORKBENCH_PATH,
+  resolveSurfaceOpsDesktopRuntimePath,
   shouldRedirectToSurfaceOpsDesktopWorkbench,
 } from "@/lib/product-surface";
 import { OnboardingForm } from "./_components/onboarding-form";
+
+export const dynamic = "force-dynamic";
 
 function OutcomeDots({
   outcomes,
@@ -46,7 +48,7 @@ function OutcomeDots({
 
 export default function ContractsPage() {
   if (shouldRedirectToSurfaceOpsDesktopWorkbench("/contracts")) {
-    redirect(SURFACEOPS_DESKTOP_WORKBENCH_PATH);
+    redirect(resolveSurfaceOpsDesktopRuntimePath());
   }
 
   const contract = loadPolicyContract();

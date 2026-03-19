@@ -106,6 +106,10 @@ function buildData(overrides: Partial<LocalWorkbenchData> = {}): LocalWorkbenchD
       configured: true,
       baseUrl: "http://127.0.0.1:1234/v1",
       model: "openai/gpt-oss-120b",
+      managementPath: null,
+      installState: null,
+      runtimeStatus: null,
+      lastBenchmarkSummary: null,
     },
     ...overrides,
   };
@@ -449,12 +453,16 @@ describe("LocalWorkbench", () => {
           configured: false,
           baseUrl: null,
           model: null,
+          managementPath: "/desktop/setup",
+          installState: null,
+          runtimeStatus: null,
+          lastBenchmarkSummary: null,
         },
       }),
     }));
 
     expect(html).toContain("Setup required");
-    expect(html).toContain("Set SURFACEOPS_LOCAL_LLM_BASE_URL and SURFACEOPS_LOCAL_LLM_MODEL to enable reruns.");
+    expect(html).toContain("Install and warm a managed local model from SurfaceOps setup before attempting another rerun.");
     expect(html).toContain("Next action");
     expect(html).toContain("Refine in chat");
   });
