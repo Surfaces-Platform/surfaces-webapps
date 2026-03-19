@@ -17,6 +17,17 @@ test("rehearsal release workflow is manual, prerelease-tagged, and isolated from
   assert.match(workflow, /rehearsal-v\$\{RELEASE_VERSION\}/);
   assert.match(workflow, /--prerelease/);
   assert.doesNotMatch(workflow, /surfaceops-desktop-feed"/);
+  assert.doesNotMatch(workflow, /version:\s*10\.26\.2/);
+});
+
+test("desktop release workflows rely on the repo packageManager pnpm version instead of pinning a second one", async () => {
+  const rehearsalWorkflow = await readWorkflow("surfaceops-desktop-release-rehearsal.yml");
+  const releaseWorkflow = await readWorkflow("surfaceops-desktop-release.yml");
+
+  assert.match(rehearsalWorkflow, /uses:\s*pnpm\/action-setup@v4/);
+  assert.match(releaseWorkflow, /uses:\s*pnpm\/action-setup@v4/);
+  assert.doesNotMatch(rehearsalWorkflow, /version:\s*10\.26\.2/);
+  assert.doesNotMatch(releaseWorkflow, /version:\s*10\.26\.2/);
 });
 
 test("rehearsal stable-promotion workflow supports soak simulation against the rehearsal feed", async () => {
