@@ -75,7 +75,7 @@
     "test:onboarding:smoke:headless": "node --test scripts/__tests__/onboarding-smoke.test.mjs",
     "test:onboarding:smoke:browser": "node --test apps/surfaceops-web/tests/onboarding-browser-smoke.test.mjs",
     "test:onboarding:smoke": "pnpm run test:onboarding:smoke:headless && pnpm run test:onboarding:smoke:browser",
-    "test:platform-e2e": "node --test scripts/__tests__/platform-enforcement-e2e.test.mjs",
+    "test:platform-e2e": "node --test scripts/__tests__/platform-enforcement-e2e.test.mjs scripts/__tests__/runtime-surfaceops-e2e.test.mjs",
     "test:surfaceops:desktop": "pnpm --filter surfaceops-desktop test",
     "test": "pnpm --filter surfaceops-web test && pnpm --filter surfaceops-desktop test && pnpm run test:scripts"
   },

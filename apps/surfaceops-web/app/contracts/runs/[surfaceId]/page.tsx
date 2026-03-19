@@ -432,6 +432,7 @@ export default async function SurfaceRunsDetailPage({
               return (
                 <div
                   key={source}
+                  data-testid={`runs-kpi-${source}`}
                   style={{
                     border: `1px solid ${colors.neutral[100]}`,
                     borderRadius: "6px",
