@@ -1,3 +1,4 @@
+const fs = require("node:fs");
 const path = require("node:path");
 const { spawn } = require("node:child_process");
 const { setTimeout: wait } = require("node:timers/promises");
@@ -19,12 +20,25 @@ const {
 const {
   SurfaceOpsUpdaterController,
 } = require("./lib/updater-controller.cjs");
+const {
+  createSurfaceOpsModeldController,
+} = require("./lib/modeld-controller.cjs");
+const {
+  createSurfaceOpsModelController,
+} = require("./lib/model-controller.cjs");
 
 let mainWindow = null;
 let managedServer = null;
 let desktopConfig = null;
 let updaterController = null;
 let preferencesStore = null;
+let modelController = null;
+let modeldController = null;
+
+const userDataOverride = process.env.SURFACEOPS_DESKTOP_USER_DATA_DIR?.trim();
+if (userDataOverride) {
+  app.setPath("userData", path.resolve(userDataOverride));
+}
 
 function stopManagedServer() {
   if (!managedServer || managedServer.killed) {
@@ -40,7 +54,12 @@ function startManagedServer(config) {
     return managedServer;
   }
 
-  const command = buildManagedServerCommand(config);
+  const command = buildManagedServerCommand(config, {
+    env: {
+      SURFACEOPS_DESKTOP_PREFERENCES_PATH: preferencesStore?.filePath,
+      SURFACEOPS_LOCAL_LLM_MODEL: modelController?.getState().activeModelId ?? "",
+    },
+  });
   managedServer = spawn(command.command, command.args, {
     cwd: command.cwd,
     env: command.env,
@@ -60,6 +79,13 @@ function sendUpdateStatus() {
     return;
   }
   mainWindow.webContents.send("surfaceops-desktop:update-status-changed", updaterController.getStatus());
+}
+
+function sendModelState() {
+  if (!mainWindow || mainWindow.isDestroyed() || !modelController) {
+    return;
+  }
+  mainWindow.webContents.send("surfaceops-desktop:model-state-changed", modelController.getState());
 }
 
 function getCurrentUpdateChannel() {
@@ -184,6 +210,42 @@ function installDesktopIpcHandlers() {
   ipcMain.handle("surfaceops-desktop:set-update-channel", async (_event, nextChannel) => {
     return setUpdateChannel(nextChannel);
   });
+  ipcMain.handle("surfaceops-desktop:get-model-state", () => {
+    return modelController ? modelController.getState() : null;
+  });
+  ipcMain.handle("surfaceops-desktop:get-model-catalog", () => {
+    return modelController ? modelController.getCatalog() : null;
+  });
+  ipcMain.handle("surfaceops-desktop:install-model", async (_event, modelId) => {
+    if (!modelController) {
+      throw new Error("SurfaceOps model controller is not available.");
+    }
+    return modelController.install(modelId);
+  });
+  ipcMain.handle("surfaceops-desktop:cancel-model-install", async () => {
+    if (!modelController) {
+      throw new Error("SurfaceOps model controller is not available.");
+    }
+    return modelController.cancelInstall();
+  });
+  ipcMain.handle("surfaceops-desktop:replace-model", async (_event, modelId) => {
+    if (!modelController) {
+      throw new Error("SurfaceOps model controller is not available.");
+    }
+    return modelController.replaceModel(modelId);
+  });
+  ipcMain.handle("surfaceops-desktop:run-model-benchmark", async () => {
+    if (!modelController) {
+      throw new Error("SurfaceOps model controller is not available.");
+    }
+    return modelController.runBenchmark();
+  });
+  ipcMain.handle("surfaceops-desktop:export-model-benchmark", async () => {
+    if (!modelController) {
+      throw new Error("SurfaceOps model controller is not available.");
+    }
+    return modelController.exportBenchmark();
+  });
 }
 
 async function waitForServer(url, timeoutMs = 120_000) {
@@ -203,6 +265,113 @@ async function waitForServer(url, timeoutMs = 120_000) {
   }
 
   throw new Error(`Timed out waiting for SurfaceOps workbench: ${url}`);
+}
+
+function readDesktopSmokeConfig() {
+  const configPath = process.env.SURFACEOPS_DESKTOP_SMOKE_CONFIG_PATH?.trim();
+  if (!configPath) {
+    return null;
+  }
+
+  const resolvedPath = path.resolve(configPath);
+  return JSON.parse(fs.readFileSync(resolvedPath, "utf8"));
+}
+
+async function writeDesktopSmokeResult(payload) {
+  const resultPath = process.env.SURFACEOPS_DESKTOP_SMOKE_RESULT_PATH?.trim();
+  if (!resultPath) {
+    return;
+  }
+
+  const resolvedPath = path.resolve(resultPath);
+  await fs.promises.mkdir(path.dirname(resolvedPath), { recursive: true });
+  await fs.promises.writeFile(resolvedPath, JSON.stringify(payload, null, 2), "utf8");
+}
+
+async function waitForMainWindowPath(expectedPath, timeoutMs = 120_000) {
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() < deadline) {
+    const currentUrl = mainWindow && !mainWindow.isDestroyed()
+      ? mainWindow.webContents.getURL()
+      : null;
+    if (currentUrl) {
+      try {
+        const parsed = new URL(currentUrl);
+        if (parsed.pathname === expectedPath) {
+          return currentUrl;
+        }
+      } catch {
+        // continue polling
+      }
+    }
+    await wait(250);
+  }
+
+  throw new Error(`Timed out waiting for SurfaceOps desktop window to reach ${expectedPath}.`);
+}
+
+async function maybeRunDesktopSmokeScenario() {
+  const config = readDesktopSmokeConfig();
+  if (!config) {
+    return;
+  }
+
+  const result = {
+    ok: false,
+    startedAt: new Date().toISOString(),
+    initialUrl: null,
+    finalUrl: null,
+    installModelId: config.installModelId ?? null,
+    replaceModelId: config.replaceModelId ?? null,
+    benchmark: null,
+    finalState: null,
+    errorMessage: null,
+  };
+
+  try {
+    result.initialUrl = await waitForMainWindowPath(
+      config.expectedInitialPath ?? desktopConfig.workbenchPath,
+      config.timeoutMs ?? 120_000,
+    );
+
+    if (config.installModelId) {
+      await modelController.install(config.installModelId);
+      openWorkbench();
+      result.finalUrl = await waitForMainWindowPath(
+        config.expectedWorkbenchPath ?? desktopConfig.workbenchPath,
+        config.timeoutMs ?? 120_000,
+      );
+    }
+
+    if (config.runBenchmark) {
+      result.benchmark = await modelController.runBenchmark();
+    }
+
+    if (config.replaceModelId) {
+      await modelController.replaceModel(config.replaceModelId);
+    }
+
+    if (config.expectedFinalPath) {
+      openWorkbench();
+      result.finalUrl = await waitForMainWindowPath(config.expectedFinalPath, config.timeoutMs ?? 120_000);
+    } else if (!result.finalUrl && mainWindow && !mainWindow.isDestroyed()) {
+      result.finalUrl = mainWindow.webContents.getURL();
+    }
+
+    result.finalState = modelController.getState();
+    result.ok = true;
+  } catch (error) {
+    result.errorMessage = error instanceof Error ? error.message : String(error);
+  } finally {
+    result.completedAt = new Date().toISOString();
+    await writeDesktopSmokeResult(result);
+    if (config.exitWhenDone !== false) {
+      stopManagedServer();
+      await modeldController?.stop().catch(() => {});
+      app.exit(result.ok ? 0 : 1);
+    }
+  }
 }
 
 function createErrorWindow(error) {
@@ -289,6 +458,7 @@ async function createMainWindow() {
 
   await mainWindow.loadURL(config.launchUrl);
   sendUpdateStatus();
+  sendModelState();
 
   mainWindow.on("focus", () => {
     if (!updaterController) {
@@ -298,20 +468,83 @@ async function createMainWindow() {
   });
 }
 
+function resolveBundledLlamaServerPath(config) {
+  const candidates = app.isPackaged
+    ? [
+        path.join(process.resourcesPath, "model-runtime", "llama-server"),
+        config.bundledLlamaServerPath,
+      ]
+    : [
+        process.env.SURFACEOPS_LLAMA_SERVER_BIN?.trim(),
+        config.bundledLlamaServerPath,
+      ].filter(Boolean);
+
+  return candidates.find((candidate) => fs.existsSync(candidate)) ?? null;
+}
+
+function buildSurfaceOpsBackendCommand(config, { modelPath }) {
+  const binaryPath = resolveBundledLlamaServerPath(config);
+  if (!binaryPath) {
+    return null;
+  }
+
+  return {
+    command: binaryPath,
+    args: [
+      "--host",
+      "127.0.0.1",
+      "--port",
+      String(config.backendPort),
+      "-m",
+      modelPath,
+      "-c",
+      "8192",
+    ],
+    cwd: path.dirname(binaryPath),
+    env: {
+      ...process.env,
+    },
+  };
+}
+
 app.whenReady().then(async () => {
   desktopConfig = resolveSurfaceOpsDesktopConfig({
     isPackaged: app.isPackaged,
     bundledRuntimeRoot: app.isPackaged
       ? path.join(process.resourcesPath, "surfaceops-web-runtime")
       : undefined,
+    bundledModelRuntimeRoot: app.isPackaged
+      ? path.join(process.resourcesPath, "model-runtime")
+      : undefined,
   });
+  const userDataRoot = app.getPath("userData");
   preferencesStore = createSurfaceOpsDesktopPreferencesStore({
-    filePath: path.join(app.getPath("userData"), "surfaceops-desktop-preferences.json"),
+    filePath: path.join(userDataRoot, "surfaceops-desktop-preferences.json"),
     defaultUpdateChannel: desktopConfig.updateChannel,
   });
+  modeldController = createSurfaceOpsModeldController({
+    port: desktopConfig.modeldPort,
+    backendPort: desktopConfig.backendPort,
+    getTargetBaseUrl: () => process.env.SURFACEOPS_MODEL_BACKEND_TARGET_URL?.trim() || "",
+    buildBackendCommand: ({ modelPath }) => buildSurfaceOpsBackendCommand(desktopConfig, { modelPath }),
+  });
+  modelController = createSurfaceOpsModelController({
+    preferencesStore,
+    modeldController,
+    modelStorageRoot: path.join(userDataRoot, "models"),
+    benchmarkRoot: path.join(userDataRoot, "benchmarks"),
+    exportRoot: path.join(userDataRoot, "exports"),
+    env: process.env,
+    showSaveDialog: (options) => dialog.showSaveDialog(mainWindow ?? undefined, options),
+  });
+  modelController.onStateChange(() => {
+    sendModelState();
+  });
+  await modelController.initialize();
   configureUpdater(desktopConfig);
   installDesktopIpcHandlers();
   await createMainWindow();
+  void maybeRunDesktopSmokeScenario();
 
   app.on("activate", async () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -325,6 +558,7 @@ app.on("before-quit", () => {
     updaterController.dispose();
   }
   stopManagedServer();
+  void modeldController?.stop();
 });
 
 app.on("window-all-closed", () => {

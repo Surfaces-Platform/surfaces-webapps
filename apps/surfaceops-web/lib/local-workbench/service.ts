@@ -5,8 +5,10 @@ import fsp from "node:fs/promises";
 import net from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { SURFACEOPS_DESKTOP_SETUP_PATH } from "@surfaces/surfaceops-desktop-bridge";
 import type { BenchmarkCohortManifest } from "@/lib/generation-benchmarks";
 import { runInterfacectlCli, resolveWorkspaceRoot } from "@/lib/interfacectl";
+import { loadSurfaceOpsDesktopModelState } from "@/lib/desktop-models";
 import {
   BENCHMARK_FIXTURE_IDS,
   getBenchmarkFixture,
@@ -372,6 +374,39 @@ function resolveLocalLlmConfig(): LocalLlmConfig {
     ...(process.env.SURFACEOPS_LOCAL_LLM_API_KEY?.trim()
       ? { apiKey: process.env.SURFACEOPS_LOCAL_LLM_API_KEY.trim() }
       : {}),
+  };
+}
+
+function resolveLocalModelState() {
+  if (process.env.SURFACEOPS_DESKTOP_RUNTIME === "1") {
+    const desktopState = loadSurfaceOpsDesktopModelState();
+    const configured = Boolean(
+      desktopState.hardwareProfile.supported
+      && desktopState.installedModel
+      && desktopState.activeModelId
+      && desktopState.runtimeStatus.phase === "ready"
+      && desktopState.runtimeStatus.healthy,
+    );
+    return {
+      configured,
+      baseUrl: resolveLocalLlmConfig().baseUrl,
+      model: desktopState.activeModelId ?? resolveLocalLlmConfig().model,
+      managementPath: SURFACEOPS_DESKTOP_SETUP_PATH,
+      installState: desktopState.installState,
+      runtimeStatus: desktopState.runtimeStatus,
+      lastBenchmarkSummary: desktopState.lastBenchmarkSummary,
+    };
+  }
+
+  const llm = resolveLocalLlmConfig();
+  return {
+    configured: true,
+    baseUrl: llm.baseUrl,
+    model: llm.model,
+    managementPath: null,
+    installState: null,
+    runtimeStatus: null,
+    lastBenchmarkSummary: null,
   };
 }
 
@@ -2367,11 +2402,7 @@ export async function loadLocalWorkbenchData(): Promise<LocalWorkbenchData> {
     latestRunAgentInput,
     latestRunGuidanceHandoff,
     chat: buildChatMessages(session),
-    localModel: {
-      configured: true,
-      baseUrl: resolveLocalLlmConfig().baseUrl,
-      model: resolveLocalLlmConfig().model,
-    },
+    localModel: resolveLocalModelState(),
   };
 }
 

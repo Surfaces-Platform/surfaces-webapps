@@ -28,6 +28,10 @@ module.exports = {
       from: ".desktop-runtime/surfaceops-web",
       to: "surfaceops-web-runtime",
     },
+    {
+      from: ".desktop-runtime/model-runtime",
+      to: "model-runtime",
+    },
   ],
   afterSign: "scripts/notarize.cjs",
   publish: [

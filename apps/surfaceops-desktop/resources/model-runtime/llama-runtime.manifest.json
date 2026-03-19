@@ -1,0 +1,10 @@
+{
+  "vendor": "ggml-org/llama.cpp",
+  "releaseTag": "b7472",
+  "assetName": "llama-b7472-bin-macos-arm64.tar.gz",
+  "downloadUrl": "https://github.com/ggml-org/llama.cpp/releases/download/b7472/llama-b7472-bin-macos-arm64.tar.gz",
+  "sha256": "6d542a708a5989ed73fbbdcb913b2f0e7971a6556d98d4e66acb1959c0422b4a",
+  "sizeBytes": 16648949,
+  "archiveRoot": "llama-b7472",
+  "entrypoint": "llama-server"
+}

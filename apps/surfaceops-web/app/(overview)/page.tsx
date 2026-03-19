@@ -3,13 +3,15 @@ import { redirect } from "next/navigation";
 import { colors } from "@surfaces/ui/tokens/colors";
 import { isSurfaceOpsLocalWorkbenchEnabled } from "@/lib/auth-bypass";
 import {
-  SURFACEOPS_DESKTOP_WORKBENCH_PATH,
+  resolveSurfaceOpsDesktopRuntimePath,
   shouldRedirectToSurfaceOpsDesktopWorkbench,
 } from "@/lib/product-surface";
 
+export const dynamic = "force-dynamic";
+
 export default function Home() {
   if (shouldRedirectToSurfaceOpsDesktopWorkbench("/")) {
-    redirect(SURFACEOPS_DESKTOP_WORKBENCH_PATH);
+    redirect(resolveSurfaceOpsDesktopRuntimePath());
   }
 
   const localWorkbenchEnabled = isSurfaceOpsLocalWorkbenchEnabled();

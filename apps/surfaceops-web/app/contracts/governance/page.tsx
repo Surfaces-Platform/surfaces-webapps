@@ -1,9 +1,20 @@
+import { redirect } from "next/navigation";
 import { colors } from "@surfaces/ui/tokens/colors";
 import { isSurfaceOpsLocalWorkbenchEnabled } from "@/lib/auth-bypass";
 import { loadLocalWorkbenchData } from "@/lib/local-workbench/service";
+import {
+  resolveSurfaceOpsDesktopRuntimePath,
+  shouldRedirectToSurfaceOpsDesktopWorkbench,
+} from "@/lib/product-surface";
 import { LocalWorkbench } from "./_components/local-workbench";
 
+export const dynamic = "force-dynamic";
+
 export default async function GovernanceIndexPage() {
+  if (shouldRedirectToSurfaceOpsDesktopWorkbench("/contracts/governance")) {
+    redirect(resolveSurfaceOpsDesktopRuntimePath());
+  }
+
   if (!isSurfaceOpsLocalWorkbenchEnabled()) {
     return (
       <div

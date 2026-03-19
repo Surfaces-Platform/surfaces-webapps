@@ -1,3 +1,9 @@
+import type {
+  SurfaceOpsBenchmarkSummary,
+  SurfaceOpsModelInstallState,
+  SurfaceOpsRuntimeStatus,
+} from "@surfaces/surfaceops-desktop-bridge";
+
 export type LocalWorkbenchPreviewMode = "baseline" | "current";
 export type LocalWorkbenchTab = "controls" | "trace" | "chat";
 export type LocalWorkbenchRunStatus = "idle" | "running" | "succeeded" | "failed";
@@ -292,6 +298,10 @@ export interface LocalWorkbenchData {
     configured: boolean;
     baseUrl: string | null;
     model: string | null;
+    managementPath: string | null;
+    installState: SurfaceOpsModelInstallState | null;
+    runtimeStatus: SurfaceOpsRuntimeStatus | null;
+    lastBenchmarkSummary: SurfaceOpsBenchmarkSummary | null;
   };
 }
 

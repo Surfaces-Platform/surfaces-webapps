@@ -6,6 +6,11 @@ import path from "node:path";
 import { EventEmitter } from "node:events";
 import { PassThrough } from "node:stream";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  createDefaultModelInstallState,
+  createDefaultModelState,
+  createDefaultRuntimeStatus,
+} from "@surfaces/surfaceops-desktop-bridge";
 
 const mockedInterfacectl = vi.hoisted(() => ({
   resolveWorkspaceRoot: vi.fn(),
@@ -592,6 +597,8 @@ describe("local workbench service", () => {
     delete process.env.SURFACEOPS_REPO_CLONE_ROOT;
     delete process.env.SURFACEOPS_LOCAL_LLM_BASE_URL;
     delete process.env.SURFACEOPS_LOCAL_LLM_MODEL;
+    delete process.env.SURFACEOPS_DESKTOP_RUNTIME;
+    delete process.env.SURFACEOPS_DESKTOP_PREFERENCES_PATH;
     await seedContract(workspaceRoot);
     global.fetch = vi.fn(async () =>
       new Response(JSON.stringify(responsesPayload({
@@ -608,6 +615,8 @@ describe("local workbench service", () => {
   afterEach(async () => {
     global.fetch = originalFetch;
     await fs.rm(workspaceRoot, { recursive: true, force: true });
+    delete process.env.SURFACEOPS_DESKTOP_RUNTIME;
+    delete process.env.SURFACEOPS_DESKTOP_PREFERENCES_PATH;
     vi.clearAllMocks();
   });
 
@@ -712,6 +721,52 @@ describe("local workbench service", () => {
         }),
       ]),
     );
+  });
+
+  it("loads managed desktop model state when desktop runtime is enabled", async () => {
+    const preferencesPath = path.join(workspaceRoot, "surfaceops-desktop-preferences.json");
+    process.env.SURFACEOPS_DESKTOP_RUNTIME = "1";
+    process.env.SURFACEOPS_DESKTOP_PREFERENCES_PATH = preferencesPath;
+    await fs.writeFile(
+      preferencesPath,
+      JSON.stringify(createDefaultModelState({
+        hardwareProfile: {
+          ...createDefaultModelState().hardwareProfile,
+          chip: "Apple M2 Pro",
+          unifiedMemoryGb: 24,
+          recommendedModelId: "balanced",
+          supported: true,
+          reason: null,
+        },
+        activeModelId: "balanced",
+        installedModel: {
+          modelId: "balanced",
+          path: "/tmp/balanced.gguf",
+          sha256: "abc123",
+          sizeBytes: 10,
+          installedAt: "2026-03-18T00:00:00.000Z",
+        },
+        installState: createDefaultModelInstallState({
+          phase: "ready",
+          modelId: "balanced",
+          progressPercent: 100,
+        }),
+        runtimeStatus: createDefaultRuntimeStatus({
+          phase: "ready",
+          modelId: "balanced",
+          healthy: true,
+          baseUrl: "http://127.0.0.1:3312/v1",
+        }),
+      }), null, 2),
+      "utf8",
+    );
+
+    const data = await loadLocalWorkbenchData();
+
+    expect(data.localModel.configured).toBe(true);
+    expect(data.localModel.managementPath).toBe("/desktop/setup");
+    expect(data.localModel.model).toBe("balanced");
+    expect(data.localModel.runtimeStatus?.phase).toBe("ready");
   });
 
   it("applies governance and runtime metadata via chat-backed contract changes", async () => {

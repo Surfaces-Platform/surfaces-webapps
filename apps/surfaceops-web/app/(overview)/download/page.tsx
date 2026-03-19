@@ -7,9 +7,10 @@ import {
   getPromotedDesktopRelease,
   loadDesktopReleaseManifest,
 } from "@/lib/desktop-release-manifest";
+import { loadSurfaceOpsDesktopModelCatalog } from "@/lib/desktop-models";
 import {
   SURFACEOPS_DESKTOP_ALPHA_TARGET,
-  SURFACEOPS_DESKTOP_WORKBENCH_PATH,
+  resolveSurfaceOpsDesktopRuntimePath,
   shouldRedirectToSurfaceOpsDesktopWorkbench,
 } from "@/lib/product-surface";
 
@@ -37,10 +38,11 @@ function infoCard(title: string, body: string) {
 
 export default async function DownloadPage() {
   if (shouldRedirectToSurfaceOpsDesktopWorkbench("/download")) {
-    redirect(SURFACEOPS_DESKTOP_WORKBENCH_PATH);
+    redirect(resolveSurfaceOpsDesktopRuntimePath());
   }
 
   const manifest = await loadDesktopReleaseManifest();
+  const modelCatalog = loadSurfaceOpsDesktopModelCatalog();
   const latestRelease = getPromotedDesktopRelease(manifest, "alpha");
   const stableRelease = getPromotedDesktopRelease(manifest, "stable");
   const alphaDmgPath = latestRelease?.platforms["darwin-arm64"].dmg.url
@@ -172,6 +174,61 @@ export default async function DownloadPage() {
                 <div style={{ fontSize: "13px", color: colors.neutral[600] }}>Stable download appears here after the alpha soak window completes.</div>
               )}
             </div>
+          </div>
+        </section>
+
+        <section
+          style={{
+            display: "grid",
+            gap: "18px",
+            padding: "36px 0 18px",
+            borderBottom: `1px solid ${colors.neutral[200]}`,
+          }}
+        >
+          <h2 style={{ fontSize: "28px", fontWeight: 700, margin: 0 }}>Managed local model tiers</h2>
+          <p style={{ margin: 0, fontSize: "15px", lineHeight: 1.8, color: colors.neutral[600], maxWidth: 780 }}>
+            The desktop app suggests one of these pinned models during first-run setup based on unified memory, then downloads it into the SurfaceOps app container.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {modelCatalog.map((entry) => (
+              <article
+                key={entry.id}
+                style={{
+                  padding: "20px",
+                  borderRadius: "14px",
+                  border: `1px solid ${colors.neutral[200]}`,
+                  backgroundColor: colors.neutral[0],
+                  display: "grid",
+                  gap: "10px",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center" }}>
+                  <strong style={{ fontSize: "18px" }}>{entry.label}</strong>
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      borderRadius: "999px",
+                      padding: "5px 10px",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      backgroundColor: colors.neutral[100],
+                      color: colors.neutral[800],
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {entry.performanceTier}
+                  </span>
+                </div>
+                <p style={{ margin: 0, fontSize: "14px", lineHeight: 1.7, color: colors.neutral[600] }}>{entry.summary}</p>
+                <div style={{ display: "grid", gap: "6px", fontSize: "12px", color: colors.neutral[600] }}>
+                  <div>Recommended memory: {entry.recommendedRangeGb.max === null ? `${entry.recommendedRangeGb.min}+ GB` : `${entry.recommendedRangeGb.min}-${entry.recommendedRangeGb.max} GB`}</div>
+                  <div>Download size: {(entry.sizeBytes / (1024 ** 3)).toFixed(1)} GB</div>
+                  <div>Quantization: {entry.quantization}</div>
+                  <div>License: {entry.licenseLabel}</div>
+                </div>
+              </article>
+            ))}
           </div>
         </section>
 

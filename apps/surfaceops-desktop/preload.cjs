@@ -17,4 +17,20 @@ contextBridge.exposeInMainWorld("surfaceopsDesktop", {
       };
     },
   },
+  models: {
+    getState: () => ipcRenderer.invoke("surfaceops-desktop:get-model-state"),
+    getCatalog: () => ipcRenderer.invoke("surfaceops-desktop:get-model-catalog"),
+    install: (modelId) => ipcRenderer.invoke("surfaceops-desktop:install-model", modelId),
+    cancelInstall: () => ipcRenderer.invoke("surfaceops-desktop:cancel-model-install"),
+    replaceModel: (modelId) => ipcRenderer.invoke("surfaceops-desktop:replace-model", modelId),
+    runBenchmark: () => ipcRenderer.invoke("surfaceops-desktop:run-model-benchmark"),
+    exportBenchmark: () => ipcRenderer.invoke("surfaceops-desktop:export-model-benchmark"),
+    onStateChange: (listener) => {
+      const wrapped = (_event, state) => listener(state);
+      ipcRenderer.on("surfaceops-desktop:model-state-changed", wrapped);
+      return () => {
+        ipcRenderer.removeListener("surfaceops-desktop:model-state-changed", wrapped);
+      };
+    },
+  },
 });

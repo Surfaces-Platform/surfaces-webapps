@@ -11,6 +11,10 @@ describe("surfaceops marketing routes", () => {
     expect(html).toContain("Download SurfaceOps");
     expect(html).toContain("SurfaceOps is shipping as a Mac desktop workbench first.");
     expect(html).toContain("Current public channels");
+    expect(html).toContain("Managed local model tiers");
+    expect(html).toContain("Qwen3 4B");
+    expect(html).toContain("Qwen3 8B");
+    expect(html).toContain("gpt-oss 20B");
     expect(html).toContain("Latest milestone");
     expect(html).toContain("release notes");
     expect(html).toContain("Get desktop release updates");

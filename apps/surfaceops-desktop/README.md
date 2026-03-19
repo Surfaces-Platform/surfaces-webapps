@@ -28,6 +28,12 @@ pnpm dist:mac
 
 # Build the CI-style macOS release payload without skipping signing/notarization hooks
 pnpm dist:mac:ci
+
+# Run the packaged first-run smoke against an existing local build
+pnpm smoke:packaged
+
+# Build and run the packaged first-run smoke in one step
+pnpm smoke:packaged:build
 ```
 
 ## Environment
@@ -41,6 +47,9 @@ pnpm dist:mac:ci
 - `SURFACEOPS_DESKTOP_RELEASE_MANIFEST_URL`: optional manifest override forwarded into the managed `surfaceops-web` process for rehearsal feeds.
 - `SURFACEOPS_UNSIGNED_REHEARSAL_PORT`: optional local static-server port for unsigned rehearsal assets. Default: `4173`.
 - `SURFACEOPS_UNSIGNED_REHEARSAL_DIR`: optional local staging directory for unsigned rehearsal assets. Default: `artifacts/surfaceops-desktop-unsigned-rehearsal`.
+- `SURFACEOPS_LLAMA_SERVER_BIN`: optional local packaging override for `build:runtime`. Use only when you need to inject a different local `llama-server` bundle during development.
+- `SURFACEOPS_DESKTOP_USER_DATA_DIR`: optional local override for the Electron `userData` directory. Intended for packaged smoke runs only.
+- `SURFACEOPS_DESKTOP_MODEL_DOWNLOAD_OVERRIDES_PATH`: optional local JSON file that overrides model download URLs/checksums for smoke validation only.
 
 ## Current alpha shape
 
@@ -50,10 +59,11 @@ pnpm dist:mac:ci
 - Update controls stay in the native menu (`Check for Updates`, channel switch, `Restart to Update`)
 - Sandboxed Electron renderer
 - Managed startup of the local SurfaceOps React workbench in dev and the bundled standalone server in packaged builds
+- Managed local-model setup, replacement, and benchmark actions inside desktop runtime
+- Bundled `llama.cpp` model runtime staged from the pinned manifest in `resources/model-runtime/llama-runtime.manifest.json`
 - External links open in the system browser
 - Background update checks on launch, focus, and interval with restart-to-install prompts
 - Persisted in-app update channel selection (`alpha` default, `stable` optional)
-- No managed model install yet
 
 ## Release rehearsal
 
