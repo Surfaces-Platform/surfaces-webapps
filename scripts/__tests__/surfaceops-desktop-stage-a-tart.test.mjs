@@ -7,31 +7,32 @@ import path from "node:path";
 import {
   buildSurfaceOpsStageASshOptionArgs,
   buildSurfaceOpsStageACloneName,
-  resolveSurfaceOpsStageAUtmConfig,
-  runSurfaceOpsDesktopStageAUtm,
+  resolveSurfaceOpsStageATartConfig,
+  runSurfaceOpsDesktopStageATart,
   stageSurfaceOpsDesktopStageAFeed,
-} from "../release/lib/surfaceops-desktop-stage-a-utm.mjs";
+} from "../release/lib/surfaceops-desktop-stage-a-tart.mjs";
 
-test("resolveSurfaceOpsStageAUtmConfig applies defaults and stable artifact paths", () => {
-  const config = resolveSurfaceOpsStageAUtmConfig({
+test("resolveSurfaceOpsStageATartConfig applies defaults and stable artifact paths", () => {
+  const config = resolveSurfaceOpsStageATartConfig({
     repoRoot: "/repo",
     argv: ["--from", "0.1.0-rc.1", "--to", "0.1.0-rc.2", "--run-id", "20260320T170000Z"],
   });
 
-  assert.equal(config.baseVm, "surfaceops-macos-stage-a-base");
+  assert.equal(config.baseVm, "surfaceops-stage-a-base");
   assert.equal(config.sshHost, "surfaceops-stage-a.local");
   assert.equal(config.sshUser, "surfaceops");
   assert.equal(config.sshKey, null);
+  assert.equal(config.tartPath, "tart");
   assert.equal(config.hostPort, 3001);
   assert.equal(config.feedPort, 4173);
   assert.equal(config.runtimePort, 4311);
   assert.equal(config.artifactsDir, "/repo/artifacts/surfaceops-desktop-stage-a/20260320T170000Z");
   assert.equal(config.guestTmpDir, "/tmp/surfaceops-desktop-stage-a-20260320T170000Z");
-  assert.equal(buildSurfaceOpsStageACloneName(config.runId), "surfaceops-macos-stage-a-20260320T170000Z");
+  assert.equal(buildSurfaceOpsStageACloneName(config.runId), "surfaceops-stage-a-20260320T170000Z");
 });
 
-test("resolveSurfaceOpsStageAUtmConfig prefers an explicit ssh key and expands home-relative paths", () => {
-  const config = resolveSurfaceOpsStageAUtmConfig({
+test("resolveSurfaceOpsStageATartConfig prefers an explicit ssh key and expands home-relative paths", () => {
+  const config = resolveSurfaceOpsStageATartConfig({
     repoRoot: "/repo",
     env: {
       HOME: "/Users/surfaceops",
@@ -97,9 +98,9 @@ test("stageSurfaceOpsDesktopStageAFeed publishes a local manifest that promotes 
   }
 });
 
-test("runSurfaceOpsDesktopStageAUtm deletes the clone and writes summary evidence on failure", async () => {
+test("runSurfaceOpsDesktopStageATart deletes the clone and writes summary evidence on failure", async () => {
   const repoRoot = await fsp.mkdtemp(path.join(os.tmpdir(), "surfaceops-stage-a-run-"));
-  const config = resolveSurfaceOpsStageAUtmConfig({
+  const config = resolveSurfaceOpsStageATartConfig({
     repoRoot,
     argv: ["--from", "0.1.0-rc.1", "--to", "0.1.0-rc.2", "--run-id", "20260320T171500Z"],
   });
@@ -108,7 +109,7 @@ test("runSurfaceOpsDesktopStageAUtm deletes the clone and writes summary evidenc
 
   try {
     await assert.rejects(
-      () => runSurfaceOpsDesktopStageAUtm(config, {
+      () => runSurfaceOpsDesktopStageATart(config, {
         async resolveHostIp() {
           return "192.168.64.2";
         },
@@ -152,7 +153,7 @@ test("runSurfaceOpsDesktopStageAUtm deletes the clone and writes summary evidenc
           calls.push("start");
         },
         async waitForSshTarget() {
-          return "surfaceops-stage-a.local";
+          return "192.168.64.7";
         },
         async runGuestScript() {
           calls.push("guest");
@@ -177,6 +178,89 @@ test("runSurfaceOpsDesktopStageAUtm deletes the clone and writes summary evidenc
     assert.deepEqual(
       calls,
       ["clone", "start", "guest", "stop", "delete", "dispose-runtime", "dispose-preview", "dispose-feed"],
+    );
+  } finally {
+    await fsp.rm(repoRoot, { recursive: true, force: true });
+  }
+});
+
+test("runSurfaceOpsDesktopStageATart composes tart lifecycle commands through default deps", async () => {
+  const repoRoot = await fsp.mkdtemp(path.join(os.tmpdir(), "surfaceops-stage-a-cmds-"));
+  const config = resolveSurfaceOpsStageATartConfig({
+    repoRoot,
+    argv: ["--from", "0.1.0-rc.1", "--to", "0.1.0-rc.2", "--run-id", "20260320T173000Z"],
+  });
+  const calls = [];
+
+  try {
+    await assert.rejects(
+      () => runSurfaceOpsDesktopStageATart(config, {
+        async runCommand(command, args, options = {}) {
+          calls.push({ type: "run", command, args, options });
+          if (command === "tart" && args[0] === "ip") {
+            return { code: 0, stdout: "192.168.64.8\n", stderr: "" };
+          }
+          if (command === "ssh") {
+            if (args.at(-1) === "true") {
+              return { code: 0, stdout: "", stderr: "" };
+            }
+            throw new Error("stop after tart lifecycle probe");
+          }
+          return { code: 0, stdout: "", stderr: "" };
+        },
+        startBackgroundProcess(command, args, options = {}) {
+          calls.push({ type: "background", command, args, options });
+          return {
+            child: { exitCode: null },
+            async dispose() {
+              calls.push({ type: "dispose-background" });
+            },
+          };
+        },
+        async resolveHostIp() {
+          return "192.168.64.2";
+        },
+        async startFeedMirror() {
+          return {
+            manifestUrl: "http://192.168.64.2:4173/surfaceops-desktop-release-manifest.json",
+            async restage() {},
+            async dispose() {},
+          };
+        },
+        async startPreviewServer() {
+          return { async dispose() {} };
+        },
+        async startMockRuntime() {
+          return {
+            baseUrl: "http://192.168.64.2:4311",
+            artifacts: {
+              starter: { filename: "starter.gguf", sha256: "a", sizeBytes: 1 },
+              balanced: { filename: "balanced.gguf", sha256: "b", sizeBytes: 1 },
+              quality: { filename: "quality.gguf", sha256: "c", sizeBytes: 1 },
+            },
+            async dispose() {},
+          };
+        },
+      }),
+      /stop after tart lifecycle probe/,
+    );
+
+    assert.deepEqual(
+      calls
+        .filter((entry) => entry.type === "run" && entry.command === "tart")
+        .map((entry) => entry.args),
+      [
+        ["clone", "surfaceops-stage-a-base", "surfaceops-stage-a-20260320T173000Z"],
+        ["ip", "surfaceops-stage-a-20260320T173000Z", "--wait", "5"],
+        ["stop", "surfaceops-stage-a-20260320T173000Z"],
+        ["delete", "surfaceops-stage-a-20260320T173000Z"],
+      ],
+    );
+    assert.deepEqual(
+      calls
+        .filter((entry) => entry.type === "background" && entry.command === "tart")
+        .map((entry) => entry.args),
+      [["run", "--no-graphics", "surfaceops-stage-a-20260320T173000Z"]],
     );
   } finally {
     await fsp.rm(repoRoot, { recursive: true, force: true });

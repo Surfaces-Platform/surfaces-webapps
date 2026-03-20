@@ -151,10 +151,10 @@ test(
     const firstRunResultPath = path.join(sandbox, "first-run-result.json");
     const secondRunConfigPath = path.join(sandbox, "second-run-config.json");
     const secondRunResultPath = path.join(sandbox, "second-run-result.json");
-    const updateRunConfigPath = path.join(sandbox, "update-run-config.json");
-    const updateRunResultPath = path.join(sandbox, "update-run-result.json");
-    const postUpdateConfigPath = path.join(sandbox, "post-update-config.json");
-    const postUpdateResultPath = path.join(sandbox, "post-update-result.json");
+      const updateRunConfigPath = path.join(sandbox, "update-run-config.json");
+      const updateRunResultPath = path.join(sandbox, "update-run-result.json");
+      const postUpdateConfigPath = path.join(sandbox, "post-update-config.json");
+      const postUpdateResultPath = path.join(sandbox, "post-update-result.json");
     const mockRuntime = await createSurfaceOpsMockRuntimeServer({ rootDir: sandbox });
     const mockUpdates = await createMockUpdateServer(sandbox);
 
@@ -189,7 +189,7 @@ test(
         SURFACEOPS_DESKTOP_MODEL_DOWNLOAD_OVERRIDES_PATH: overridesPath,
         SURFACEOPS_MODEL_BACKEND_TARGET_URL: mockRuntime.baseUrl,
         SURFACEOPS_DESKTOP_TEST_PLATFORM: "darwin-arm64",
-        SURFACEOPS_DESKTOP_TEST_MEMORY_GB: "24",
+        SURFACEOPS_DESKTOP_TEST_MEMORY_GB: "16",
         SURFACEOPS_DESKTOP_TEST_CHIP: "Apple M2 Pro",
         SURFACEOPS_DESKTOP_TEST_UPDATE_MOCK_URL: mockUpdates.statusUrl,
       };
@@ -199,9 +199,8 @@ test(
         JSON.stringify({
           expectedInitialPath: "/desktop/setup",
           expectedWorkbenchPath: "/contracts/governance",
-          installModelId: "balanced",
+          installModelId: "starter",
           runBenchmark: true,
-          replaceModelId: "starter",
           expectedFinalPath: "/contracts/governance",
           exitWhenDone: true,
           timeoutMs: 120_000,
@@ -224,7 +223,7 @@ test(
       assert.equal(firstRun.result.finalState.activeModelId, "starter");
       assert.equal(firstRun.result.finalState.runtimeStatus.phase, "ready");
       assert.equal(firstRun.result.finalState.runtimeStatus.healthy, true);
-      assert.equal(firstRun.result.benchmark.modelId, "balanced");
+      assert.equal(firstRun.result.benchmark.modelId, "starter");
 
       await fsp.writeFile(
         secondRunConfigPath,

@@ -108,7 +108,7 @@ Stable does not rebuild. The scheduled workflow `.github/workflows/surfaceops-de
 
 Before the first public alpha tag, the dress rehearsal path runs through `.github/workflows/surfaceops-desktop-release-rehearsal.yml`, `.github/workflows/surfaceops-desktop-stable-promotion-rehearsal.yml`, and `.github/workflows/surfaceops-desktop-promotion-control-rehearsal.yml`. Those workflows publish only to the isolated `surfaceops-desktop-feed-rehearsal` release and support local/preview validation through the stable rehearsal manifest URL documented in `docs/plans/surfaceops-desktop-alpha-launch-rehearsal.md`.
 
-That runbook now defines a clean Apple Silicon environment as two required tiers: a fresh Apple Silicon macOS VM for repeatable smoke coverage, with `Parallels` as the default path and `UTM` as an acceptable fallback, followed by final signoff on a separate physical Apple Silicon Mac before the first public `vX.Y.Z` tag is cut.
+That runbook now centers Stage A on a disposable Apple Silicon macOS VM driven by `Tart` on this Mac first. The VM gate is a signed install/update smoke pass, not a guest-local inference certification pass; optional physical-Mac or true local-inference signoff can remain a separate later gate.
 
 ## Production Domains
 

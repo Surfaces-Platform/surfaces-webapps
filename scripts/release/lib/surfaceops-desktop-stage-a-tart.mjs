@@ -28,22 +28,14 @@ import {
   writeSurfaceOpsModelDownloadOverrides,
 } from "../../../apps/surfaceops-desktop/test-support/mock-runtime-server.mjs";
 
-export const DEFAULT_SURFACEOPS_STAGE_A_UTM_BASE_VM = "surfaceops-macos-stage-a-base";
-export const DEFAULT_SURFACEOPS_STAGE_A_UTM_SSH_HOST = "surfaceops-stage-a.local";
-export const DEFAULT_SURFACEOPS_STAGE_A_UTM_SSH_USER = "surfaceops";
-export const DEFAULT_SURFACEOPS_STAGE_A_UTM_HOST_PORT = 3001;
-export const DEFAULT_SURFACEOPS_STAGE_A_UTM_FEED_PORT = 4173;
-export const DEFAULT_SURFACEOPS_STAGE_A_UTM_RUNTIME_PORT = 4311;
-export const DEFAULT_SURFACEOPS_STAGE_A_UTM_APP_SUBPATH = path.join("Applications", "SurfaceOps.app");
-export const DEFAULT_SURFACEOPS_STAGE_A_UTM_DOCUMENTS_ROOT = path.join(
-  os.homedir(),
-  "Library",
-  "Containers",
-  "com.utmapp.UTM",
-  "Data",
-  "Documents",
-);
-export const DEFAULT_SURFACEOPS_STAGE_A_UTMCTL_PATH = "/Applications/UTM.app/Contents/MacOS/utmctl";
+export const DEFAULT_SURFACEOPS_STAGE_A_TART_BASE_VM = "surfaceops-stage-a-base";
+export const DEFAULT_SURFACEOPS_STAGE_A_TART_SSH_HOST = "surfaceops-stage-a.local";
+export const DEFAULT_SURFACEOPS_STAGE_A_TART_SSH_USER = "surfaceops";
+export const DEFAULT_SURFACEOPS_STAGE_A_TART_HOST_PORT = 3001;
+export const DEFAULT_SURFACEOPS_STAGE_A_TART_FEED_PORT = 4173;
+export const DEFAULT_SURFACEOPS_STAGE_A_TART_RUNTIME_PORT = 4311;
+export const DEFAULT_SURFACEOPS_STAGE_A_TART_APP_SUBPATH = path.join("Applications", "SurfaceOps.app");
+export const DEFAULT_SURFACEOPS_STAGE_A_TART_PATH = "tart";
 
 function resolvePositiveInteger(value, fallback) {
   const parsed = Number.parseInt(String(value ?? ""), 10);
@@ -68,10 +60,6 @@ function shQuote(value) {
   return `'${String(value).replace(/'/g, `'\\''`)}'`;
 }
 
-function normalizeMacAddress(value) {
-  return String(value ?? "").trim().toLowerCase();
-}
-
 function resolveOptionalPath(value, homeDir = os.homedir()) {
   const trimmed = String(value ?? "").trim();
   if (!trimmed) {
@@ -86,6 +74,17 @@ function resolveOptionalPath(value, homeDir = os.homedir()) {
   return path.resolve(trimmed);
 }
 
+function resolveOptionalCommand(value, fallback) {
+  const trimmed = String(value ?? "").trim();
+  if (!trimmed) {
+    return fallback;
+  }
+  if (trimmed === "~" || trimmed.startsWith("~/") || trimmed.startsWith("/") || trimmed.includes(path.sep)) {
+    return resolveOptionalPath(trimmed);
+  }
+  return trimmed;
+}
+
 async function sha512File(filePath) {
   const buffer = await fsp.readFile(filePath);
   return {
@@ -95,14 +94,14 @@ async function sha512File(filePath) {
 }
 
 export function buildSurfaceOpsStageACloneName(runId) {
-  return `surfaceops-macos-stage-a-${runId}`;
+  return `surfaceops-stage-a-${runId}`;
 }
 
 export function buildSurfaceOpsStageAFeedBaseUrl({ hostIp, port }) {
   return `http://${hostIp}:${port}`;
 }
 
-export function resolveSurfaceOpsStageAUtmConfig({
+export function resolveSurfaceOpsStageATartConfig({
   repoRoot = process.cwd(),
   env = process.env,
   argv = process.argv.slice(2),
@@ -112,7 +111,7 @@ export function resolveSurfaceOpsStageAUtmConfig({
   const fromVersion = args.from ?? env.SURFACEOPS_STAGE_A_FROM_VERSION;
   const toVersion = args.to ?? env.SURFACEOPS_STAGE_A_TO_VERSION;
   if (!fromVersion || !toVersion) {
-    throw new Error("Stage A UTM smoke requires both --from and --to versions.");
+    throw new Error("Stage A Tart smoke requires both --from and --to versions.");
   }
 
   const runId = args["run-id"]?.trim() || toRunId(now);
@@ -123,26 +122,30 @@ export function resolveSurfaceOpsStageAUtmConfig({
     runId,
     fromVersion,
     toVersion,
-    baseVm: args["base-vm"]?.trim() || env.SURFACEOPS_STAGE_A_BASE_VM || DEFAULT_SURFACEOPS_STAGE_A_UTM_BASE_VM,
-    sshHost: args["ssh-host"]?.trim() || env.SURFACEOPS_STAGE_A_SSH_HOST || DEFAULT_SURFACEOPS_STAGE_A_UTM_SSH_HOST,
-    sshUser: args["ssh-user"]?.trim() || env.SURFACEOPS_STAGE_A_SSH_USER || DEFAULT_SURFACEOPS_STAGE_A_UTM_SSH_USER,
+    baseVm: args["base-vm"]?.trim() || env.SURFACEOPS_STAGE_A_BASE_VM || DEFAULT_SURFACEOPS_STAGE_A_TART_BASE_VM,
+    sshHost: args["ssh-host"]?.trim() || env.SURFACEOPS_STAGE_A_SSH_HOST || DEFAULT_SURFACEOPS_STAGE_A_TART_SSH_HOST,
+    sshUser: args["ssh-user"]?.trim() || env.SURFACEOPS_STAGE_A_SSH_USER || DEFAULT_SURFACEOPS_STAGE_A_TART_SSH_USER,
     sshKey: resolveOptionalPath(args["ssh-key"] ?? env.SURFACEOPS_STAGE_A_SSH_KEY, env.HOME || os.homedir()),
+    tartPath: resolveOptionalCommand(
+      args["tart-path"] ?? env.SURFACEOPS_STAGE_A_TART_PATH,
+      DEFAULT_SURFACEOPS_STAGE_A_TART_PATH,
+    ),
     hostIp: args["host-ip"]?.trim() || env.SURFACEOPS_STAGE_A_HOST_IP || null,
     hostPort: resolvePositiveInteger(
       args["host-port"] ?? env.SURFACEOPS_STAGE_A_HOST_PORT,
-      DEFAULT_SURFACEOPS_STAGE_A_UTM_HOST_PORT,
+      DEFAULT_SURFACEOPS_STAGE_A_TART_HOST_PORT,
     ),
     feedPort: resolvePositiveInteger(
       args["feed-port"] ?? env.SURFACEOPS_STAGE_A_FEED_PORT,
-      DEFAULT_SURFACEOPS_STAGE_A_UTM_FEED_PORT,
+      DEFAULT_SURFACEOPS_STAGE_A_TART_FEED_PORT,
     ),
     runtimePort: resolvePositiveInteger(
       args["runtime-port"] ?? env.SURFACEOPS_STAGE_A_RUNTIME_PORT,
-      DEFAULT_SURFACEOPS_STAGE_A_UTM_RUNTIME_PORT,
+      DEFAULT_SURFACEOPS_STAGE_A_TART_RUNTIME_PORT,
     ),
     hostManifestPort: resolvePositiveInteger(
       args["feed-port"] ?? env.SURFACEOPS_STAGE_A_FEED_PORT,
-      DEFAULT_SURFACEOPS_STAGE_A_UTM_FEED_PORT,
+      DEFAULT_SURFACEOPS_STAGE_A_TART_FEED_PORT,
     ),
     artifactsDir: repoArtifactsRoot,
     downloadsDir: path.join(repoArtifactsRoot, "downloads"),
@@ -151,21 +154,17 @@ export function resolveSurfaceOpsStageAUtmConfig({
     logsDir: path.join(repoArtifactsRoot, "logs"),
     knownHostsFile: path.join(repoArtifactsRoot, "known_hosts"),
     previewLogFile: path.join(repoArtifactsRoot, "logs", "surfaceops-stage-a-preview.log"),
+    tartLogFile: path.join(repoArtifactsRoot, "logs", "surfaceops-stage-a-tart.log"),
     summaryFile: path.join(repoArtifactsRoot, "stage-a-summary.json"),
     rehearsalManifestFile: path.join(
       repoArtifactsRoot,
       "feed",
       DEFAULT_SURFACEOPS_UNSIGNED_REHEARSAL_MANIFEST_FILE,
     ),
-    vmDocumentsRoot:
-      args["utm-documents-root"]?.trim()
-      || env.SURFACEOPS_STAGE_A_UTM_DOCUMENTS_ROOT
-      || DEFAULT_SURFACEOPS_STAGE_A_UTM_DOCUMENTS_ROOT,
-    utmctlPath: args["utmctl-path"]?.trim() || env.SURFACEOPS_STAGE_A_UTMCTL_PATH || DEFAULT_SURFACEOPS_STAGE_A_UTMCTL_PATH,
     dispatchNextRelease: asBoolean(args["dispatch-next"] ?? env.SURFACEOPS_STAGE_A_DISPATCH_NEXT ?? "0"),
     guestTmpDir: `/tmp/surfaceops-desktop-stage-a-${runId}`,
-    guestAppBundlePath: `$HOME/${DEFAULT_SURFACEOPS_STAGE_A_UTM_APP_SUBPATH}`,
-    guestAppBinaryPath: `$HOME/${DEFAULT_SURFACEOPS_STAGE_A_UTM_APP_SUBPATH}/Contents/MacOS/SurfaceOps`,
+    guestAppBundlePath: `$HOME/${DEFAULT_SURFACEOPS_STAGE_A_TART_APP_SUBPATH}`,
+    guestAppBinaryPath: `$HOME/${DEFAULT_SURFACEOPS_STAGE_A_TART_APP_SUBPATH}/Contents/MacOS/SurfaceOps`,
     guestUserDataDir: `/tmp/surfaceops-desktop-stage-a-${runId}/user-data`,
   };
 }
@@ -323,11 +322,12 @@ function stageAReleaseNotes(version) {
     version,
     releaseName: `${buildDefaultReleaseName(version)} (signed rehearsal mirror)`,
     title: `SurfaceOps Desktop ${version} (signed rehearsal mirror)`,
-    summary: "Local mirror of signed rehearsal assets for automated UTM Stage A smoke coverage.",
+    summary: "Local mirror of signed rehearsal assets for automated Tart Stage A install/update smoke coverage.",
     bullets: [
       "Uses signed rehearsal assets downloaded from GitHub Releases.",
       "Serves those assets from the local host so the VM does not require GitHub authentication.",
-      "Exercises the same onboarding and updater flow as the packaged app in the guest.",
+      "Exercises the packaged app onboarding and updater flow in a disposable Tart macOS guest.",
+      "Uses a host-backed deterministic runtime so Stage A stays focused on install and update validation.",
     ],
   });
 }
@@ -397,27 +397,6 @@ export async function stageSurfaceOpsDesktopStageAFeed({
   };
 }
 
-function extractIpv4FromArpOutput(output, macAddress) {
-  const target = normalizeMacAddress(macAddress);
-  const lines = String(output ?? "").split(/\r?\n/);
-  for (const line of lines) {
-    const normalizedLine = line.toLowerCase();
-    if (!normalizedLine.includes(target)) {
-      continue;
-    }
-    const match = line.match(/\((\d+\.\d+\.\d+\.\d+)\)/);
-    if (match?.[1]) {
-      return match[1];
-    }
-  }
-  return null;
-}
-
-function extractMacAddressFromUtmConfig(rawConfig) {
-  const match = String(rawConfig ?? "").match(/<key>MacAddress<\/key>\s*<string>([^<]+)<\/string>/i);
-  return match?.[1] ?? null;
-}
-
 export function buildSurfaceOpsStageASshOptionArgs(config) {
   const args = [
     "-o", "BatchMode=yes",
@@ -460,42 +439,29 @@ async function copyFileFromGuest(config, host, remotePath, localPath, deps) {
 async function waitForSshTarget(config, cloneName, deps) {
   const deadline = Date.now() + 180_000;
   while (Date.now() < deadline) {
+    const ipProbe = await deps.runCommand(config.tartPath, [
+      "ip",
+      cloneName,
+      "--wait",
+      "5",
+    ], { allowFailure: true });
+    const guestIp = ipProbe.stdout.trim();
+    if (!guestIp) {
+      await wait(2_000);
+      continue;
+    }
     const probe = await deps.runCommand("ssh", [
       ...buildSurfaceOpsStageASshOptionArgs(config),
-      `${config.sshUser}@${config.sshHost}`,
+      `${config.sshUser}@${guestIp}`,
       "true",
     ], { allowFailure: true });
     if (probe.code === 0) {
-      return config.sshHost;
+      return guestIp;
     }
     await wait(2_000);
   }
 
-  const configPath = path.join(config.vmDocumentsRoot, `${cloneName}.utm`, "config.plist");
-  const rawConfig = await fsp.readFile(configPath, "utf8");
-  const macAddress = extractMacAddressFromUtmConfig(rawConfig);
-  if (!macAddress) {
-    throw new Error(`Could not read the network MAC address from ${configPath}.`);
-  }
-
-  const arpDeadline = Date.now() + 180_000;
-  while (Date.now() < arpDeadline) {
-    const arp = await deps.runCommand("arp", ["-a"], { allowFailure: true });
-    const guestIp = extractIpv4FromArpOutput(arp.stdout, macAddress);
-    if (guestIp) {
-      const probe = await deps.runCommand("ssh", [
-        ...buildSurfaceOpsStageASshOptionArgs(config),
-        `${config.sshUser}@${guestIp}`,
-        "true",
-      ], { allowFailure: true });
-      if (probe.code === 0) {
-        return guestIp;
-      }
-    }
-    await wait(2_000);
-  }
-
-  throw new Error(`Timed out waiting for SSH on ${config.sshHost} or a guest IP for ${cloneName}.`);
+  throw new Error(`Timed out waiting for SSH on Tart guest ${cloneName}.`);
 }
 
 function buildGuestCleanupScript(config) {
@@ -542,7 +508,7 @@ function buildGuestLaunchScript(config, {
     SURFACEOPS_DESKTOP_RELEASE_MANIFEST_URL:
       `http://${hostIp}:${feedPort}/${DEFAULT_SURFACEOPS_UNSIGNED_REHEARSAL_MANIFEST_FILE}`,
     SURFACEOPS_DESKTOP_TEST_PLATFORM: "darwin-arm64",
-    SURFACEOPS_DESKTOP_TEST_MEMORY_GB: "24",
+    SURFACEOPS_DESKTOP_TEST_MEMORY_GB: "16",
     SURFACEOPS_DESKTOP_TEST_CHIP: "Apple Silicon Stage A",
   };
 
@@ -742,6 +708,7 @@ async function startMockRuntime(config, hostIp) {
 }
 
 function createDefaultDeps(config) {
+  let vmRunHandle = null;
   return {
     runCommand,
     startBackgroundProcess,
@@ -759,18 +726,20 @@ function createDefaultDeps(config) {
       return startMockRuntime(config, hostIp);
     },
     async createVmClone() {
-      await this.runCommand(config.utmctlPath, [
+      await this.runCommand(config.tartPath, [
         "clone",
         config.baseVm,
-        "--name",
         buildSurfaceOpsStageACloneName(config.runId),
       ]);
     },
     async startVm() {
-      await this.runCommand(config.utmctlPath, [
-        "start",
+      vmRunHandle = this.startBackgroundProcess(config.tartPath, [
+        "run",
+        "--no-graphics",
         buildSurfaceOpsStageACloneName(config.runId),
-      ]);
+      ], {
+        logFile: config.tartLogFile,
+      });
     },
     async waitForSshTarget() {
       return waitForSshTarget(config, buildSurfaceOpsStageACloneName(config.runId), this);
@@ -788,14 +757,15 @@ function createDefaultDeps(config) {
       return waitForInstalledVersion(config, host, version, this);
     },
     async stopVm() {
-      await this.runCommand(config.utmctlPath, [
+      await this.runCommand(config.tartPath, [
         "stop",
         buildSurfaceOpsStageACloneName(config.runId),
-        "--request",
       ], { allowFailure: true });
+      await vmRunHandle?.dispose?.().catch(() => {});
+      vmRunHandle = null;
     },
     async deleteVm() {
-      await this.runCommand(config.utmctlPath, [
+      await this.runCommand(config.tartPath, [
         "delete",
         buildSurfaceOpsStageACloneName(config.runId),
       ], { allowFailure: true });
@@ -803,7 +773,7 @@ function createDefaultDeps(config) {
   };
 }
 
-export async function runSurfaceOpsDesktopStageAUtm(config, deps = {}) {
+export async function runSurfaceOpsDesktopStageATart(config, deps = {}) {
   const resolvedDeps = { ...createDefaultDeps(config), ...deps };
   await fsp.mkdir(config.artifactsDir, { recursive: true });
   await fsp.mkdir(config.guestExchangeDir, { recursive: true });
@@ -816,6 +786,7 @@ export async function runSurfaceOpsDesktopStageAUtm(config, deps = {}) {
     toVersion: config.toVersion,
     baseVm: config.baseVm,
     cloneVm: buildSurfaceOpsStageACloneName(config.runId),
+    vmPlatform: "tart",
     hostIp: null,
     guestHost: null,
     previewUrl: null,
@@ -877,9 +848,8 @@ export async function runSurfaceOpsDesktopStageAUtm(config, deps = {}) {
       resultLabel: "first-run",
       expectedInitialPath: "/desktop/setup",
       expectedWorkbenchPath: "/contracts/governance",
-      installModelId: "balanced",
+      installModelId: "starter",
       runBenchmark: true,
-      replaceModelId: "starter",
       expectedFinalPath: "/contracts/governance",
       exitWhenDone: true,
       timeoutMs: 180_000,

@@ -35,8 +35,8 @@ pnpm smoke:packaged
 # Build and run the packaged first-run smoke in one step
 pnpm smoke:packaged:build
 
-# Run the automated signed Stage A UTM smoke from the repo root
-pnpm surfaceops:stage-a:utm -- --from 0.1.0-rc.1 --to 0.1.0-rc.2 --ssh-key ~/.ssh/surfaceops-stage-a
+# Run the automated signed Stage A Tart smoke from the repo root
+pnpm surfaceops:stage-a:tart -- --from 0.1.0-rc.1 --to 0.1.0-rc.2 --ssh-key ~/.ssh/surfaceops-stage-a
 ```
 
 ## Environment
@@ -75,7 +75,7 @@ pnpm surfaceops:stage-a:utm -- --from 0.1.0-rc.1 --to 0.1.0-rc.2 --ssh-key ~/.ss
 SurfaceOps now has three distinct release-validation surfaces:
 
 - `unsigned engineering rehearsal`: local unsigned DMG/ZIP artifacts, a local staged manifest, and dev-update validation only. Use `pnpm dev:surfaceops:desktop:unsigned-rehearsal` and the runbook at `docs/plans/surfaceops-desktop-unsigned-rehearsal.md`.
-- `signed launch rehearsal`: GitHub rehearsal workflows plus the automated UTM Stage A gate. Use `pnpm surfaceops:stage-a:utm -- --from <installed-version> --to <update-version> --ssh-key ~/.ssh/surfaceops-stage-a` or `SURFACEOPS_STAGE_A_SSH_KEY`, and `docs/plans/surfaceops-desktop-alpha-launch-rehearsal.md`.
+- `signed launch rehearsal`: GitHub rehearsal workflows plus the automated Tart Stage A gate. Use `pnpm surfaceops:stage-a:tart -- --from <installed-version> --to <update-version> --ssh-key ~/.ssh/surfaceops-stage-a` or `SURFACEOPS_STAGE_A_SSH_KEY`, and `docs/plans/surfaceops-desktop-alpha-launch-rehearsal.md`.
 - `public alpha release`: the real clean-semver publish path triggered by `vX.Y.Z`.
 
-The unsigned rehearsal improves engineering confidence, but it does not satisfy the signed launch rehearsal or public release gate.
+The unsigned rehearsal improves engineering confidence, but it does not satisfy the signed launch rehearsal or public release gate. Stage A itself is a signed install/update smoke gate; it uses a host-backed deterministic runtime and does not certify true guest-local inference performance.
