@@ -2,6 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fsp from "node:fs/promises";
 import path from "node:path";
+import os from "node:os";
+import { listSurfaceOpsDesktopReleaseAssets } from "../release/upload-surfaceops-desktop-release-assets.mjs";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..", "..");
 
@@ -30,19 +32,63 @@ test("desktop release workflows rely on the repo packageManager pnpm version ins
   assert.doesNotMatch(releaseWorkflow, /version:\s*10\.26\.2/);
 });
 
-test("desktop release workflows upload only top-level dist files to GitHub releases", async () => {
+test("desktop release workflows cache the prepared runtime and package without rebuilding it", async () => {
   const rehearsalWorkflow = await readWorkflow("surfaceops-desktop-release-rehearsal.yml");
   const releaseWorkflow = await readWorkflow("surfaceops-desktop-release.yml");
 
   for (const workflow of [rehearsalWorkflow, releaseWorkflow]) {
-    assert.match(workflow, /find apps\/surfaceops-desktop\/dist -maxdepth 1 -type f/);
-    assert.match(workflow, /-name '\*\.dmg'/);
-    assert.match(workflow, /-name '\*\.zip'/);
-    assert.match(workflow, /-name '\*\.blockmap'/);
-    assert.match(workflow, /-name '\*\.yml'/);
-    assert.match(workflow, /mapfile -t release_assets/);
-    assert.match(workflow, /No top-level desktop release assets found in apps\/surfaceops-desktop\/dist/);
+    assert.match(workflow, /uses:\s*actions\/cache\/restore@v4/);
+    assert.match(workflow, /uses:\s*actions\/cache\/save@v4/);
+    assert.match(workflow, /path:\s*apps\/surfaceops-desktop\/\.desktop-runtime/);
+    assert.match(workflow, /key:\s*\$\{\{\s*runner\.os\s*\}\}-surfaceops-desktop-runtime-\$\{\{\s*github\.sha\s*\}\}/);
+    assert.match(workflow, /if:\s*steps\.desktop-runtime-cache\.outputs\.cache-hit != 'true'/);
+    assert.match(workflow, /pnpm --filter surfaceops-desktop run build:runtime/);
+    assert.match(workflow, /pnpm --filter surfaceops-desktop run package:mac:ci/);
+    assert.doesNotMatch(workflow, /pnpm --filter surfaceops-desktop run dist:mac:ci/);
+  }
+});
+
+test("desktop release workflows use the shared upload helper and keep debug artifacts failure-gated", async () => {
+  const rehearsalWorkflow = await readWorkflow("surfaceops-desktop-release-rehearsal.yml");
+  const releaseWorkflow = await readWorkflow("surfaceops-desktop-release.yml");
+
+  for (const workflow of [rehearsalWorkflow, releaseWorkflow]) {
+    assert.match(workflow, /node scripts\/release\/upload-surfaceops-desktop-release-assets\.mjs/);
+    assert.match(workflow, /--dist-dir "apps\/surfaceops-desktop\/dist"/);
+    assert.match(workflow, /--extra "artifacts\/surfaceops-desktop-release-manifest\.json"/);
+    assert.match(workflow, /--extra "artifacts\/surfaceops-desktop-release-notes\.json"/);
+    assert.match(workflow, /if:\s*failure\(\)/);
+    assert.match(workflow, /if-no-files-found:\s*ignore/);
+    assert.doesNotMatch(workflow, /mapfile -t release_assets/);
     assert.doesNotMatch(workflow, /gh release upload "\$\{RELEASE_TAG\}"\s+apps\/surfaceops-desktop\/dist\/\*/);
+  }
+});
+
+test("desktop release asset helper returns only top-level release files", async () => {
+  const tempDir = await fsp.mkdtemp(path.join(os.tmpdir(), "surfaceops-release-assets-"));
+
+  try {
+    await fsp.writeFile(path.join(tempDir, "SurfaceOps-0.1.0-arm64.dmg"), "");
+    await fsp.writeFile(path.join(tempDir, "SurfaceOps-0.1.0-arm64.zip"), "");
+    await fsp.writeFile(path.join(tempDir, "SurfaceOps-0.1.0-arm64.zip.blockmap"), "");
+    await fsp.writeFile(path.join(tempDir, "latest-mac.yml"), "");
+    await fsp.writeFile(path.join(tempDir, "metadata.json"), "");
+    await fsp.mkdir(path.join(tempDir, "mac-arm64"), { recursive: true });
+    await fsp.writeFile(path.join(tempDir, "mac-arm64", "nested.dmg"), "");
+
+    const assets = await listSurfaceOpsDesktopReleaseAssets({ distDir: tempDir });
+
+    assert.deepEqual(
+      assets.map((entry) => path.basename(entry)),
+      [
+        "latest-mac.yml",
+        "SurfaceOps-0.1.0-arm64.dmg",
+        "SurfaceOps-0.1.0-arm64.zip",
+        "SurfaceOps-0.1.0-arm64.zip.blockmap",
+      ],
+    );
+  } finally {
+    await fsp.rm(tempDir, { recursive: true, force: true });
   }
 });
 

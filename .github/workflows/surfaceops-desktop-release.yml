@@ -32,6 +32,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Restore prepared desktop runtime
+        id: desktop-runtime-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: apps/surfaceops-desktop/.desktop-runtime
+          key: ${{ runner.os }}-surfaceops-desktop-runtime-${{ github.sha }}
+
       - name: Derive release metadata
         run: |
           RELEASE_TAG="${GITHUB_REF_NAME}"
@@ -61,8 +68,19 @@ jobs:
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.SURFACEOPS_DESKTOP_APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.SURFACEOPS_DESKTOP_APPLE_TEAM_ID }}
 
+      - name: Prepare desktop runtime
+        if: steps.desktop-runtime-cache.outputs.cache-hit != 'true'
+        run: pnpm --filter surfaceops-desktop run build:runtime
+
+      - name: Save prepared desktop runtime
+        if: steps.desktop-runtime-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: apps/surfaceops-desktop/.desktop-runtime
+          key: ${{ runner.os }}-surfaceops-desktop-runtime-${{ github.sha }}
+
       - name: Build desktop artifacts
-        run: pnpm --filter surfaceops-desktop run dist:mac:ci
+        run: pnpm --filter surfaceops-desktop run package:mac:ci
         env:
           CSC_LINK: ${{ secrets.SURFACEOPS_DESKTOP_CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.SURFACEOPS_DESKTOP_CSC_KEY_PASSWORD }}
@@ -130,30 +148,15 @@ jobs:
             node -e "const fs=require('fs'); fs.mkdirSync('artifacts',{recursive:true}); fs.writeFileSync('artifacts/surfaceops-desktop-promotion-state.json', JSON.stringify({generatedAt:new Date().toISOString(), blockedReleaseIds:{}, forcePromoteReleaseId:null}, null, 2));"
           fi
 
-      - name: Upload release build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: surfaceops-desktop-alpha-${{ env.RELEASE_VERSION }}
-          path: |
-            apps/surfaceops-desktop/dist/*
-            artifacts/surfaceops-desktop-release-manifest.json
-            artifacts/surfaceops-desktop-release-notes.json
-            artifacts/surfaceops-desktop-promotion-state.json
-
       - name: Publish GitHub release assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mapfile -t release_assets < <(
-            find apps/surfaceops-desktop/dist -maxdepth 1 -type f \
-              \( -name '*.dmg' -o -name '*.zip' -o -name '*.blockmap' -o -name '*.yml' \) \
-              | sort
-          )
-          if [ "${#release_assets[@]}" -eq 0 ]; then
-            echo "::error::No top-level desktop release assets found in apps/surfaceops-desktop/dist"
-            exit 1
-          fi
-          gh release upload "${RELEASE_TAG}" "${release_assets[@]}" artifacts/surfaceops-desktop-release-manifest.json artifacts/surfaceops-desktop-release-notes.json --clobber
+          node scripts/release/upload-surfaceops-desktop-release-assets.mjs \
+            --release-tag "${RELEASE_TAG}" \
+            --dist-dir "apps/surfaceops-desktop/dist" \
+            --extra "artifacts/surfaceops-desktop-release-manifest.json" \
+            --extra "artifacts/surfaceops-desktop-release-notes.json"
 
       - name: Publish canonical feed manifest assets
         env:
@@ -162,3 +165,13 @@ jobs:
           gh release view "$SURFACEOPS_MANIFEST_RELEASE_TAG" >/dev/null 2>&1 || \
             gh release create "$SURFACEOPS_MANIFEST_RELEASE_TAG" --title "SurfaceOps Desktop Feed" --notes "Canonical release feed assets backing the surfaceops.ai desktop update routes."
           gh release upload "$SURFACEOPS_MANIFEST_RELEASE_TAG" artifacts/surfaceops-desktop-release-manifest.json artifacts/surfaceops-desktop-release-notes.json artifacts/surfaceops-desktop-promotion-state.json --clobber
+
+      - name: Upload release debug artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surfaceops-desktop-debug-${{ env.RELEASE_VERSION }}
+          if-no-files-found: ignore
+          path: |
+            apps/surfaceops-desktop/dist/*
+            artifacts/**/*.json
