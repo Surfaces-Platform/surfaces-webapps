@@ -144,7 +144,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload "${RELEASE_TAG}" apps/surfaceops-desktop/dist/* artifacts/surfaceops-desktop-release-manifest.json artifacts/surfaceops-desktop-release-notes.json --clobber
+          mapfile -t release_assets < <(
+            find apps/surfaceops-desktop/dist -maxdepth 1 -type f \
+              \( -name '*.dmg' -o -name '*.zip' -o -name '*.blockmap' -o -name '*.yml' \) \
+              | sort
+          )
+          if [ "${#release_assets[@]}" -eq 0 ]; then
+            echo "::error::No top-level desktop release assets found in apps/surfaceops-desktop/dist"
+            exit 1
+          fi
+          gh release upload "${RELEASE_TAG}" "${release_assets[@]}" artifacts/surfaceops-desktop-release-manifest.json artifacts/surfaceops-desktop-release-notes.json --clobber
 
       - name: Publish canonical feed manifest assets
         env:

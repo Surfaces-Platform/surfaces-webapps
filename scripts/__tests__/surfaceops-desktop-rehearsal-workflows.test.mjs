@@ -30,6 +30,22 @@ test("desktop release workflows rely on the repo packageManager pnpm version ins
   assert.doesNotMatch(releaseWorkflow, /version:\s*10\.26\.2/);
 });
 
+test("desktop release workflows upload only top-level dist files to GitHub releases", async () => {
+  const rehearsalWorkflow = await readWorkflow("surfaceops-desktop-release-rehearsal.yml");
+  const releaseWorkflow = await readWorkflow("surfaceops-desktop-release.yml");
+
+  for (const workflow of [rehearsalWorkflow, releaseWorkflow]) {
+    assert.match(workflow, /find apps\/surfaceops-desktop\/dist -maxdepth 1 -type f/);
+    assert.match(workflow, /-name '\*\.dmg'/);
+    assert.match(workflow, /-name '\*\.zip'/);
+    assert.match(workflow, /-name '\*\.blockmap'/);
+    assert.match(workflow, /-name '\*\.yml'/);
+    assert.match(workflow, /mapfile -t release_assets/);
+    assert.match(workflow, /No top-level desktop release assets found in apps\/surfaceops-desktop\/dist/);
+    assert.doesNotMatch(workflow, /gh release upload "\$\{RELEASE_TAG\}"\s+apps\/surfaceops-desktop\/dist\/\*/);
+  }
+});
+
 test("rehearsal stable-promotion workflow supports soak simulation against the rehearsal feed", async () => {
   const workflow = await readWorkflow("surfaceops-desktop-stable-promotion-rehearsal.yml");
 
