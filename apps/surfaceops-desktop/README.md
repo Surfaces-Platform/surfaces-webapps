@@ -34,6 +34,9 @@ pnpm smoke:packaged
 
 # Build and run the packaged first-run smoke in one step
 pnpm smoke:packaged:build
+
+# Run the automated signed Stage A UTM smoke from the repo root
+pnpm surfaceops:stage-a:utm -- --from 0.1.0-rc.1 --to 0.1.0-rc.2 --ssh-key ~/.ssh/surfaceops-stage-a
 ```
 
 ## Environment
@@ -50,6 +53,8 @@ pnpm smoke:packaged:build
 - `SURFACEOPS_LLAMA_SERVER_BIN`: optional local packaging override for `build:runtime`. Use only when you need to inject a different local `llama-server` bundle during development.
 - `SURFACEOPS_DESKTOP_USER_DATA_DIR`: optional local override for the Electron `userData` directory. Intended for packaged smoke runs only.
 - `SURFACEOPS_DESKTOP_MODEL_DOWNLOAD_OVERRIDES_PATH`: optional local JSON file that overrides model download URLs/checksums for smoke validation only.
+- `SURFACEOPS_DESKTOP_TEST_UPDATE_MOCK_URL`: optional smoke-only JSON endpoint that simulates updater events without invoking the real auto-updater backend.
+- `SURFACEOPS_DESKTOP_TEST_APP_VERSION`: optional smoke-only version override used to validate post-update relaunch assertions.
 
 ## Current alpha shape
 
@@ -70,7 +75,7 @@ pnpm smoke:packaged:build
 SurfaceOps now has three distinct release-validation surfaces:
 
 - `unsigned engineering rehearsal`: local unsigned DMG/ZIP artifacts, a local staged manifest, and dev-update validation only. Use `pnpm dev:surfaceops:desktop:unsigned-rehearsal` and the runbook at `docs/plans/surfaceops-desktop-unsigned-rehearsal.md`.
-- `signed launch rehearsal`: GitHub rehearsal workflows, prerelease tags (`rehearsal-v0.1.0-rc.N`), and the clean Apple Silicon launch gate. Use `docs/plans/surfaceops-desktop-alpha-launch-rehearsal.md`.
+- `signed launch rehearsal`: GitHub rehearsal workflows plus the automated UTM Stage A gate. Use `pnpm surfaceops:stage-a:utm -- --from <installed-version> --to <update-version> --ssh-key ~/.ssh/surfaceops-stage-a` or `SURFACEOPS_STAGE_A_SSH_KEY`, and `docs/plans/surfaceops-desktop-alpha-launch-rehearsal.md`.
 - `public alpha release`: the real clean-semver publish path triggered by `vX.Y.Z`.
 
 The unsigned rehearsal improves engineering confidence, but it does not satisfy the signed launch rehearsal or public release gate.
