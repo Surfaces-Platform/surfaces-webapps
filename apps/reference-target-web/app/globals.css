@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  --font-inter: "Inter", sans-serif;
   --bg: #f4f6fb;
   --surface: #ffffff;
   --text: #0f172a;
@@ -39,6 +40,7 @@ body {
   background: rgba(255, 255, 255, 0.94);
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(6px);
+  transition: background-color 120ms linear, border-color 120ms linear;
 }
 
 .headerInner {
@@ -65,6 +67,20 @@ body {
   font-size: 0.95rem;
 }
 
+.navList > li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.navList > li > ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 0.75rem;
+}
+
 .main {
   max-width: var(--contract-max-width);
   margin: 0 auto;
@@ -78,6 +94,7 @@ body {
   border-radius: 14px;
   background: var(--surface);
   padding: 1.5rem;
+  transition: border-color 120ms linear, background-color 120ms linear;
 }
 
 .heroTitle {
@@ -103,6 +120,7 @@ body {
   border-radius: 10px;
   padding: 0.9rem;
   background: #f9fbff;
+  transition: border-color 120ms linear, background-color 120ms linear;
 }
 
 .card h3 {
@@ -139,4 +157,60 @@ body {
   padding: 1.2rem 1.25rem 2rem;
   color: var(--muted);
   font-size: 0.9rem;
+}
+
+.runtimeAction {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.runtimeActionButton {
+  cursor: pointer;
+  font: inherit;
+}
+
+.runtimeActionButton--destructive {
+  background: #f9fbff;
+}
+
+.runtimeActionRow {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.runtimeActionRow--tightGap {
+  gap: 4px;
+}
+
+.runtimeActionRow--destructiveCrowded {
+  gap: 12px;
+}
+
+.runtimeEdgePinnedTarget {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  z-index: 30;
+  transform: translateY(-50%);
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.runtimeCompactTarget {
+  min-width: 32px !important;
+  min-height: 32px !important;
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
 }

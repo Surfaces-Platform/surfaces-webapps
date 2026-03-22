@@ -26,6 +26,31 @@
   },
   "contractId": "benchmark-async-data-web.generated",
   "description": "Extracted from Next.js app (Phase 0).",
+  "components": [
+    {
+      "id": "dashboard-actions",
+      "intent": "actions",
+      "slots": [
+        {
+          "id": "primary",
+          "kind": "action",
+          "required": true
+        }
+      ],
+      "interactions": [
+        {
+          "id": "submit-refresh",
+          "trigger": "click refresh dashboard",
+          "effect": "submit"
+        },
+        {
+          "id": "retry-dashboard",
+          "trigger": "click retry dashboard",
+          "effect": "set-state"
+        }
+      ]
+    }
+  ],
   "sections": [
     {
       "id": "data.hero",
@@ -73,10 +98,57 @@
             "top-level-section"
           ]
         },
-        "maxContentWidth": 1120,
+        "maxContentWidth": 1180,
         "requiredContainers": [
           "page-container"
         ]
+      },
+      "runtime": {
+        "feedbackRecovery": {
+          "policy": "warn",
+          "requiredStateKinds": [
+            "loading",
+            "empty",
+            "error",
+            "success"
+          ]
+        },
+        "contexts": [
+          {
+            "id": "loading",
+            "when": "request == pending",
+            "kind": "loading",
+            "blockedActionsWhilePending": [
+              "submit-refresh"
+            ]
+          },
+          {
+            "id": "empty",
+            "when": "items.length == 0",
+            "kind": "empty"
+          },
+          {
+            "id": "error",
+            "when": "request == failed",
+            "kind": "error",
+            "requiredRecoveryActions": [
+              "retry"
+            ],
+            "preserveSections": [
+              "data.hero",
+              "data.stream",
+              "data.queue",
+              "data.health"
+            ],
+            "preserveLastGoodContent": true
+          },
+          {
+            "id": "success",
+            "when": "request == fulfilled",
+            "kind": "success"
+          }
+        ],
+        "policy": "warn"
       },
       "requiredSections": [
         "data.hero",

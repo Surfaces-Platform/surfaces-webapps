@@ -24,6 +24,11 @@
         "detail": "Strict categories: runtime, structure.",
         "id": "strict-categories",
         "label": "Honor strict enforcement categories"
+      },
+      {
+        "detail": "Runtime should preserve 44px targets, 8px gaps, 8px edge inset, 16px destructive separation.",
+        "id": "target-acquisition",
+        "label": "Keep controls easy to acquire"
       }
     ],
     "contextIds": [],
@@ -40,7 +45,7 @@
       "runtime",
       "structure"
     ],
-    "text": "preserve required sections landing.actions, landing.capabilities, landing.contracts, landing.hero, landing.observability, landing.tokens; stay within content-only mutation scope; treat runtime, structure as strict runtime categories."
+    "text": "preserve required sections landing.actions, landing.capabilities, landing.contracts, landing.hero, landing.observability, landing.tokens; stay within content-only mutation scope; treat runtime, structure as strict runtime categories; preserve 44px targets and 8px gaps."
   },
   "governance": {
     "approvals": [],
@@ -61,6 +66,16 @@
       "shellOwns": []
     },
     "contexts": [],
+    "interaction": {
+      "targetAcquisition": {
+        "destructiveGapPx": 16,
+        "minEdgeInsetPx": 8,
+        "minGapPx": 8,
+        "minHitAreaPx": 44,
+        "modality": "touch-mouse",
+        "policy": "warn"
+      }
+    },
     "layout": {
       "chromePolicy": {
         "allowInsetShadow": false,
@@ -90,7 +105,7 @@
     "policy": "strict",
     "policySeverities": {
       "boundary": "off",
-      "interaction": "off",
+      "interaction": "warn",
       "layout": "off",
       "runtime": "strict",
       "structure": "strict",

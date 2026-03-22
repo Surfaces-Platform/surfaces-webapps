@@ -50,7 +50,7 @@ const OVERLAYS = {
     },
   },
   "benchmark-async-data-web": {
-    maxContentWidth: 1120,
+    maxContentWidth: 1180,
     requiredContainers: ["page-container"],
     chromeTargets: ["layout-container", "page-container", "top-level-section"],
     requiredSections: [
@@ -62,6 +62,58 @@ const OVERLAYS = {
     motion: {
       allowedDurationsMs: [180, 220],
       allowedTimingFunctions: ["ease"],
+    },
+    components: [
+      {
+        id: "dashboard-actions",
+        intent: "actions",
+        slots: [{ id: "primary", kind: "action", required: true }],
+        interactions: [
+          {
+            id: "submit-refresh",
+            trigger: "click refresh dashboard",
+            effect: "submit",
+          },
+          {
+            id: "retry-dashboard",
+            trigger: "click retry dashboard",
+            effect: "set-state",
+          },
+        ],
+      },
+    ],
+    runtime: {
+      policy: "warn",
+      feedbackRecovery: {
+        policy: "warn",
+        requiredStateKinds: ["loading", "empty", "error", "success"],
+      },
+      contexts: [
+        {
+          id: "loading",
+          when: "request == pending",
+          kind: "loading",
+          blockedActionsWhilePending: ["submit-refresh"],
+        },
+        {
+          id: "empty",
+          when: "items.length == 0",
+          kind: "empty",
+        },
+        {
+          id: "error",
+          when: "request == failed",
+          kind: "error",
+          requiredRecoveryActions: ["retry"],
+          preserveSections: ["data.hero", "data.stream", "data.queue", "data.health"],
+          preserveLastGoodContent: true,
+        },
+        {
+          id: "success",
+          when: "request == fulfilled",
+          kind: "success",
+        },
+      ],
     },
   },
 };
@@ -89,6 +141,12 @@ async function main() {
     contract.sections = overlay.requiredSections;
     contract.constraints ??= {};
     contract.constraints.motion = overlay.motion;
+    if (overlay.components) {
+      contract.components = overlay.components;
+    }
+    if (overlay.runtime) {
+      surface.runtime = overlay.runtime;
+    }
 
     await fs.writeFile(contractPath, `${JSON.stringify(contract, null, 2)}\n`, "utf8");
   }

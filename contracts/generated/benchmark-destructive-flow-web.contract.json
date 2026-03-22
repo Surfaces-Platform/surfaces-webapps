@@ -75,7 +75,15 @@
         "maxContentWidth": 1040,
         "requiredContainers": [
           "page-container"
-        ]
+        ],
+        "targetAcquisition": {
+          "destructiveGapPx": 16,
+          "minEdgeInsetPx": 8,
+          "minGapPx": 8,
+          "minHitAreaPx": 44,
+          "modality": "touch-mouse",
+          "policy": "warn"
+        }
       },
       "requiredSections": [
         "flow.intro",

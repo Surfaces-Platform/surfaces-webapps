@@ -11,11 +11,92 @@ export default function Page() {
           </div>
           <nav aria-label="Primary navigation" role="navigation" data-contract="primary-nav">
             <ul className="flowNav">
-              <li><a href="#request">Request</a></li>
-              <li><a href="#review">Review</a></li>
-              <li><a href="#confirm">Confirm</a></li>
+              <li>
+                <a
+                  href="#request"
+                  data-contract-target="nav.request"
+                  data-contract-target-gap="12"
+                  data-contract-target-edge-inset="24"
+                  style={{
+                    minWidth: 44,
+                    minHeight: 44,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "0.25rem 0.55rem",
+                  }}
+                >
+                  Request
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#review"
+                  data-contract-target="nav.review"
+                  data-contract-target-gap="12"
+                  data-contract-target-edge-inset="24"
+                  style={{
+                    minWidth: 44,
+                    minHeight: 44,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "0.25rem 0.55rem",
+                  }}
+                >
+                  Review
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#confirm"
+                  data-contract-target="nav.confirm"
+                  data-contract-target-gap="12"
+                  data-contract-target-edge-inset="24"
+                  style={{
+                    minWidth: 44,
+                    minHeight: 44,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "0.25rem 0.55rem",
+                  }}
+                >
+                  Confirm
+                </a>
+              </li>
             </ul>
           </nav>
+          <div className="flowHeaderActions">
+            <button
+              type="button"
+              className="flowUtilityButton"
+              aria-label="Open fixture notes"
+              data-contract-target="header.notes"
+              data-contract-target-gap="4"
+              data-contract-target-edge-inset="24"
+              style={{
+                width: 36,
+                height: 36,
+              }}
+            >
+              i
+            </button>
+            <button
+              type="button"
+              className="flowUtilityButton"
+              aria-label="Queue quick action"
+              data-contract-target="header.quick-action"
+              data-contract-target-gap="4"
+              data-contract-target-edge-inset="24"
+              style={{
+                width: 36,
+                height: 36,
+              }}
+            >
+              Q
+            </button>
+          </div>
         </div>
       </header>
 
@@ -28,6 +109,21 @@ export default function Page() {
 
         <FlowWorkbench />
       </main>
+
+      <button
+        type="button"
+        className="edgeCta"
+        aria-label="Open pinned runbook"
+        data-contract-target="edge.runbook"
+        data-contract-target-gap="12"
+        data-contract-target-edge-inset="4"
+        style={{
+          width: 40,
+          height: 40,
+        }}
+      >
+        RB
+      </button>
     </div>
   );
 }

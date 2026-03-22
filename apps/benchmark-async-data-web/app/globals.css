@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  --font-inter: "Inter", sans-serif;
   --bg: #eff7f8;
   --surface: #ffffff;
   --surface-alt: #f7fbfb;
@@ -8,6 +9,7 @@
   --muted: #55717d;
   --line: #d2e2e6;
   --accent: #0f6b78;
+  --contract-max-width: 1180px;
   --page-width: 1180px;
 }
 
@@ -26,6 +28,10 @@ body {
   color: var(--text);
   font-family: var(--font-inter), Inter, sans-serif;
   line-height: 1.5;
+}
+
+[data-contract="page-container"] {
+  max-width: 1180px;
 }
 
 .asyncPage {
@@ -96,6 +102,13 @@ body {
   color: var(--muted);
 }
 
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
 .asyncGrid {
   display: grid;
   grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr);
@@ -136,6 +149,21 @@ body {
   color: white;
   padding: 0.7rem 1rem;
   font: inherit;
+}
+
+.heroActionButton {
+  width: fit-content;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-alt);
+  color: var(--text);
+  padding: 0.7rem 1rem;
+  font: inherit;
+}
+
+.heroActionButton:disabled {
+  color: var(--muted);
+  opacity: 0.84;
 }
 
 .statusRow {

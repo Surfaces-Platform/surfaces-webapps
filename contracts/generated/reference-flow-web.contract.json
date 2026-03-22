@@ -1,0 +1,158 @@
+{
+  "$schema": "https://contracts.surfaces.local/web.surface.contract.schema.json",
+  "color": {
+    "policy": "off",
+    "allowedValues": []
+  },
+  "constraints": {
+    "motion": {
+      "allowedDurationsMs": [
+        120
+      ],
+      "allowedTimingFunctions": [
+        "linear"
+      ]
+    }
+  },
+  "contractId": "reference-flow-web.generated",
+  "description": "Generated from the reference flow fixture and curated for deterministic flow validation.",
+  "sections": [
+    {
+      "description": "Introductory framing for the reference task-flow fixture.",
+      "id": "flow.hero",
+      "intent": "hero"
+    },
+    {
+      "description": "Request step that captures the destructive-action scope.",
+      "id": "flow.request",
+      "intent": "request"
+    },
+    {
+      "description": "Review step that verifies consequences and rollout posture.",
+      "id": "flow.review",
+      "intent": "review"
+    },
+    {
+      "description": "Terminal confirm step for the staged workflow.",
+      "id": "flow.confirm",
+      "intent": "confirm"
+    }
+  ],
+  "surfaces": [
+    {
+      "allowedFonts": [
+        "Inter",
+        "sans-serif",
+        "var(--font-inter)"
+      ],
+      "displayName": "Reference Flow Web",
+      "flows": {
+        "policy": "warn",
+        "requirements": [
+          {
+            "flowId": "workspace-delete",
+            "minSteps": 2,
+            "requiredSteps": [
+              "request",
+              "review",
+              "confirm"
+            ],
+            "requiredTransitions": [
+              {
+                "from": "request",
+                "to": "review"
+              },
+              {
+                "from": "review",
+                "to": "confirm"
+              }
+            ],
+            "terminalSteps": [
+              "confirm"
+            ]
+          }
+        ]
+      },
+      "icons": {
+        "allowedSources": [],
+        "policy": "warn"
+      },
+      "id": "reference-flow-web",
+      "layout": {
+        "chromePolicy": {
+          "allowInsetShadow": false,
+          "allowOuterShadow": false,
+          "maxBorderRadiusPx": 0,
+          "policy": "off",
+          "targets": [
+            "layout-container",
+            "page-container",
+            "top-level-section"
+          ]
+        },
+        "maxContentWidth": 1080,
+        "requiredContainers": [
+          "page-container"
+        ]
+      },
+      "phase0": {
+        "authPosture": "public",
+        "requiresShell": true
+      },
+      "requiredSections": [
+        "flow.hero",
+        "flow.request",
+        "flow.review",
+        "flow.confirm"
+      ],
+      "type": "web"
+    }
+  ],
+  "tokens": {
+    "layout": {
+      "allowedTokens": [
+        "var(--contract-max-width)"
+      ],
+      "policy": "warn",
+      "tokenMetadata": [
+        {
+          "aliases": [],
+          "attributes": [
+            "max-width"
+          ],
+          "normalizedValue": "1080px",
+          "token": "var(--contract-max-width)"
+        }
+      ]
+    },
+    "motion": {
+      "allowedTokens": [],
+      "policy": "warn"
+    },
+    "typography": {
+      "allowedTokens": [
+        "var(--font-inter)"
+      ],
+      "policy": "warn",
+      "tokenMetadata": [
+        {
+          "aliases": [],
+          "attributes": [
+            "font-family"
+          ],
+          "normalizedValue": "var(--font-inter)",
+          "token": "var(--font-inter)"
+        }
+      ]
+    }
+  },
+  "version": "0.1.0",
+  "x_extracted": {
+    "authAware": false,
+    "designSystemComponents": [],
+    "hasShell": true,
+    "routes": [
+      "/"
+    ]
+  }
+}

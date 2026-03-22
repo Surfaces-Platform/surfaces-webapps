@@ -17,14 +17,37 @@ export function ConfirmStep(input: {
         />
         I understand that this will delete {input.workspace || "the selected workspace"}.
       </label>
-      <button
-        className="dangerButton"
-        disabled={!input.confirmed}
-        type="button"
-        data-contract-action-risk="destructive"
-      >
-        Delete workspace
-      </button>
+      <div className="confirmActions">
+        <button
+          className="secondaryButton"
+          type="button"
+          data-contract-target="confirm.keep-workspace"
+          data-contract-target-gap="6"
+          data-contract-target-edge-inset="24"
+          style={{
+            minWidth: 44,
+            minHeight: 44,
+          }}
+        >
+          Keep workspace
+        </button>
+        <button
+          className="dangerButton"
+          disabled={!input.confirmed}
+          type="button"
+          data-contract-target="confirm.delete-workspace"
+          data-contract-target-gap="6"
+          data-contract-target-edge-inset="24"
+          data-contract-nearest-kind="default"
+          data-contract-action-risk="destructive"
+          style={{
+            minWidth: 44,
+            minHeight: 44,
+          }}
+        >
+          Delete workspace
+        </button>
+      </div>
     </section>
   );
 }

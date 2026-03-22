@@ -48,6 +48,12 @@ body {
   gap: 1.5rem;
 }
 
+.flowHeaderActions {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
 .eyebrow {
   color: var(--accent);
   letter-spacing: 0.08em;
@@ -66,6 +72,14 @@ body {
 .flowNav a {
   color: var(--text);
   text-decoration: none;
+}
+
+.flowUtilityButton {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: white;
+  color: var(--text);
+  font: inherit;
 }
 
 .flowMain {
@@ -142,6 +156,15 @@ body {
   font: inherit;
 }
 
+.secondaryButton {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: white;
+  color: var(--text);
+  padding: 0.7rem 1rem;
+  font: inherit;
+}
+
 .dangerButton:disabled {
   opacity: 0.45;
 }
@@ -165,4 +188,22 @@ body {
   gap: 0.65rem;
   margin-top: 1rem;
   color: var(--muted);
+}
+
+.confirmActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 1rem;
+}
+
+.edgeCta {
+  position: fixed;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, white);
+  border-radius: 999px;
+  background: white;
+  color: var(--accent);
+  font: inherit;
 }

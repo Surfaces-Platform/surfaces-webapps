@@ -1,0 +1,169 @@
+@import "tailwindcss";
+
+:root {
+  --font-inter: "Inter", sans-serif;
+  --bg: #f4f7fb;
+  --surface: #ffffff;
+  --surface-alt: #eef3fb;
+  --text: #102033;
+  --muted: #53657c;
+  --border: #d9e3f0;
+  --accent: #0f5bd8;
+  --contract-max-width: 1080px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-inter), Inter, sans-serif;
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+}
+
+.page {
+  min-height: 100vh;
+  padding: 2.5rem 1.25rem 4rem;
+}
+
+.pageShell {
+  max-width: var(--contract-max-width);
+  margin: 0 auto;
+  display: grid;
+  gap: 1rem;
+}
+
+.surfaceSection {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  padding: 1.5rem;
+  transition: border-color 120ms linear, background-color 120ms linear;
+}
+
+.eyebrow {
+  margin: 0 0 0.6rem;
+  color: var(--accent);
+  font-size: 0.83rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.heroTitle {
+  margin: 0;
+  font-size: clamp(2.2rem, 4vw, 3.25rem);
+  line-height: 1.06;
+}
+
+.heroText {
+  margin: 0.9rem 0 0;
+  max-width: 60ch;
+  color: var(--muted);
+}
+
+.flowRail {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.flowStep {
+  display: grid;
+  gap: 0.9rem;
+  align-content: start;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface-alt);
+  padding: 1.2rem;
+  min-height: 280px;
+  transition: border-color 120ms linear, background-color 120ms linear;
+}
+
+.stepIndex {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: 999px;
+  background: rgba(15, 91, 216, 0.1);
+  color: var(--accent);
+  padding: 0.25rem 0.65rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.stepTitle {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.stepText {
+  margin: 0;
+  color: var(--muted);
+}
+
+.stepList {
+  margin: 0;
+  padding-left: 1rem;
+  color: var(--muted);
+  display: grid;
+  gap: 0.45rem;
+}
+
+.stepLinkRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: auto;
+}
+
+.stepLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 44px;
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 120ms linear, border-color 120ms linear;
+}
+
+.stepLinkMuted {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.terminalNote {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.93rem;
+}
+
+@media (max-width: 900px) {
+  .flowRail {
+    grid-template-columns: 1fr;
+  }
+
+  .flowStep {
+    min-height: auto;
+  }
+}

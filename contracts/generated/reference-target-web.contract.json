@@ -84,7 +84,15 @@
         "maxContentWidth": 1160,
         "requiredContainers": [
           "page-container"
-        ]
+        ],
+        "targetAcquisition": {
+          "destructiveGapPx": 16,
+          "minEdgeInsetPx": 8,
+          "minGapPx": 8,
+          "minHitAreaPx": 44,
+          "modality": "touch-mouse",
+          "policy": "warn"
+        }
       },
       "phase0": {
         "authPosture": "public",
