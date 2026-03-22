@@ -11,6 +11,7 @@ import { fileURLToPath } from "node:url";
 const repoRoot = path.resolve(
   path.join(path.dirname(fileURLToPath(import.meta.url)), "..", ".."),
 );
+const nodeBinary = process.execPath;
 const referenceTargetAppDir = path.join(repoRoot, "apps", "reference-target-web");
 const referenceFlowAppDir = path.join(repoRoot, "apps", "reference-flow-web");
 const benchmarkAsyncAppDir = path.join(repoRoot, "apps", "benchmark-async-data-web");
@@ -77,7 +78,7 @@ async function ensureChromiumAvailable(t) {
   if (chromiumAvailability === undefined) {
     chromiumAvailability = await new Promise((resolve) => {
       const child = spawn(
-        "node",
+        nodeBinary,
         [
           "-e",
           "import('playwright').then(async ({ chromium }) => { const browser = await chromium.launch({ headless: true }); await browser.close(); }).then(() => process.exit(0)).catch(() => process.exit(1));",
@@ -232,7 +233,7 @@ function emitRunArtifact({
     args.push("--contract", contractPath);
   }
   runOrThrow(
-    "node",
+    nodeBinary,
     args,
     {
       cwd: repoRoot,
@@ -273,7 +274,7 @@ function validateRemotePage({
   reportPath,
 }) {
   const result = spawnSync(
-    "node",
+    nodeBinary,
     [
       "scripts/interfacectl-tool.mjs",
       "run",
