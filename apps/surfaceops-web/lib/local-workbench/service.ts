@@ -1060,6 +1060,7 @@ function resolveRepairGuidance(input: {
   const stylesPath = input.context?.guidanceHints?.stylesPath ?? `${input.context?.appPath ?? TARGET.appPath}/app/globals.css`;
   const pageFramePath = input.context?.guidanceHints?.pageFramePath ?? input.context?.guidanceHints?.primaryPagePath ?? `${input.context?.appPath ?? TARGET.appPath}/app/page.tsx`;
   const widthPath = input.context?.guidanceHints?.widthPath ?? stylesPath;
+  const interactionPath = input.locationFile ?? input.context?.guidanceHints?.primaryPagePath ?? pageFramePath;
 
   switch (actionType) {
     case "ensure-required-sections": {
@@ -1095,6 +1096,75 @@ function resolveRepairGuidance(input: {
         summary: `Reduce the page-frame width in ${widthPath}${maxContentWidth ? ` so the rendered surface does not exceed ${maxContentWidth}px` : ""}.`,
       };
     }
+    case "increase-hit-area": {
+      const minHitAreaPx = typeof action.minHitAreaPx === "number" ? action.minHitAreaPx : 44;
+      return {
+        suggestedPath: interactionPath,
+        summary: `Increase the affected control hit area in ${interactionPath} so observed targets render at least ${minHitAreaPx}x${minHitAreaPx} CSS px.`,
+      };
+    }
+    case "increase-target-gap": {
+      const minGapPx = typeof action.minGapPx === "number" ? action.minGapPx : 8;
+      return {
+        suggestedPath: interactionPath,
+        summary: `Increase spacing between adjacent controls in ${interactionPath} so observed targets keep at least ${minGapPx}px separation.`,
+      };
+    }
+    case "move-away-from-edge": {
+      const minEdgeInsetPx = typeof action.minEdgeInsetPx === "number" ? action.minEdgeInsetPx : 8;
+      return {
+        suggestedPath: interactionPath,
+        summary: `Move the edge-pinned control inward in ${interactionPath} so it keeps at least ${minEdgeInsetPx}px inset from the viewport edge.`,
+      };
+    }
+    case "separate-destructive-action": {
+      const destructiveGapPx = typeof action.destructiveGapPx === "number" ? action.destructiveGapPx : 16;
+      return {
+        suggestedPath: interactionPath,
+        summary: `Separate destructive controls from adjacent safe actions in ${interactionPath} so the destructive target keeps at least ${destructiveGapPx}px clearance.`,
+      };
+    }
+    case "restore-flow-observability":
+      return {
+        suggestedPath: interactionPath,
+        summary: `Restore explicit data-contract-flow-id, data-contract-flow-step, and data-contract-flow-transition-to markers in ${interactionPath} so the declared task flow is observable again.`,
+      };
+    case "restore-required-flows":
+      return {
+        suggestedPath: interactionPath,
+        summary: `Restore the required task flow in ${interactionPath} so the declared request, review, and confirm path is present again.`,
+      };
+    case "restore-required-flow-steps":
+      return {
+        suggestedPath: interactionPath,
+        summary: `Restore the missing required flow step marker in ${interactionPath} so the observed flow includes every declared step.`,
+      };
+    case "restore-required-transitions":
+      return {
+        suggestedPath: interactionPath,
+        summary: `Restore the missing transition marker in ${interactionPath} so the observed flow preserves the declared step-to-step path.`,
+      };
+    case "add-loading-state":
+    case "add-empty-state":
+      return {
+        suggestedPath: interactionPath,
+        summary: defaultSummaryForFinding(input.findingCode, input.findingMessage, input.context),
+      };
+    case "add-error-retry":
+      return {
+        suggestedPath: interactionPath,
+        summary: `Add the required recovery action in ${interactionPath} so the error state exposes an explicit retry or corrective affordance.`,
+      };
+    case "preserve-last-good-content":
+      return {
+        suggestedPath: interactionPath,
+        summary: `Preserve the last good content in ${interactionPath} so the failing async state keeps the required sections visible and marked as preserved.`,
+      };
+    case "disable-pending-submit":
+      return {
+        suggestedPath: interactionPath,
+        summary: `Disable pending submit actions in ${interactionPath} so the loading state blocks the declared interactions while work is in flight.`,
+      };
     default:
       break;
   }

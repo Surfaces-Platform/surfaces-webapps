@@ -62,7 +62,10 @@ import {
 } from "@/lib/local-workbench/service";
 import type { LocalWorkbenchAcceptedSuggestion, LocalWorkbenchRun } from "@/lib/local-workbench/types";
 import {
+  BENCHMARK_ASYNC_DATA_FIXTURE,
+  BENCHMARK_DESTRUCTIVE_FLOW_FIXTURE,
   BENCHMARK_SHARED_SHELL_FIXTURE,
+  REFERENCE_FLOW_FIXTURE,
   getBenchmarkFixture,
   getBenchmarkFixtureProfile,
 } from "@/lib/local-workbench/benchmark-fixtures";
@@ -1798,6 +1801,265 @@ describe("local workbench service", () => {
           findingCode: "motion.none-detected",
           suggestedPath: "apps/benchmark-shared-shell-web/app/globals.css",
           summary: expect.stringContaining(".shellLink, .surfaceCard, or .statusPill"),
+        }),
+      ]),
+    );
+  });
+
+  it("maps target-acquisition repair actions to actionable benchmark guidance", () => {
+    const suggestions = suggestionSummaryFromRun(
+      {
+        repairMap: [
+          {
+            code: "target.hit-area-too-small",
+            action: {
+              type: "increase-hit-area",
+              minHitAreaPx: 44,
+            },
+          },
+          {
+            code: "target.destructive-too-close",
+            action: {
+              type: "separate-destructive-action",
+              destructiveGapPx: 16,
+            },
+          },
+        ],
+      },
+      {
+        findings: [
+          {
+            code: "target.hit-area-too-small",
+            message: "Interactive target \"header.quick-action\" is smaller than the 44px floor.",
+            location: {
+              file: "apps/benchmark-destructive-flow-web/app/page.tsx",
+              line: 0,
+            },
+          },
+          {
+            code: "target.destructive-too-close",
+            message: "Destructive target \"confirm.delete-workspace\" must be separated by at least 16px.",
+            location: {
+              file: "apps/benchmark-destructive-flow-web/app/_components/confirm-step.tsx",
+              line: 0,
+            },
+          },
+        ],
+      },
+      {
+        fixture: BENCHMARK_DESTRUCTIVE_FLOW_FIXTURE,
+      },
+    );
+
+    expect(suggestions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          findingCode: "target.hit-area-too-small",
+          suggestedPath: "apps/benchmark-destructive-flow-web/app/page.tsx",
+          summary:
+            "Increase the affected control hit area in apps/benchmark-destructive-flow-web/app/page.tsx so observed targets render at least 44x44 CSS px.",
+        }),
+        expect.objectContaining({
+          findingCode: "target.destructive-too-close",
+          suggestedPath: "apps/benchmark-destructive-flow-web/app/_components/confirm-step.tsx",
+          summary:
+            "Separate destructive controls from adjacent safe actions in apps/benchmark-destructive-flow-web/app/_components/confirm-step.tsx so the destructive target keeps at least 16px clearance.",
+        }),
+      ]),
+    );
+  });
+
+  it("maps feedback-recovery repair actions to actionable benchmark guidance", () => {
+    const suggestions = suggestionSummaryFromRun(
+      {
+        repairMap: [
+          {
+            code: "feedback.recovery-action-missing",
+            action: {
+              type: "add-error-retry",
+            },
+          },
+          {
+            code: "feedback.pending-action-not-blocked",
+            action: {
+              type: "disable-pending-submit",
+            },
+          },
+          {
+            code: "feedback.last-good-content-missing",
+            action: {
+              type: "preserve-last-good-content",
+            },
+          },
+        ],
+      },
+      {
+        findings: [
+          {
+            code: "feedback.recovery-action-missing",
+            message: "Async state \"error\" is missing required recovery actions.",
+            location: {
+              file: "apps/benchmark-async-data-web/app/page.tsx",
+              line: 0,
+            },
+          },
+          {
+            code: "feedback.pending-action-not-blocked",
+            message: "Async state \"loading\" leaves required pending actions enabled.",
+            location: {
+              file: "apps/benchmark-async-data-web/app/page.tsx",
+              line: 0,
+            },
+          },
+          {
+            code: "feedback.last-good-content-missing",
+            message: "Async state \"error\" does not preserve the required last-good content.",
+            location: {
+              file: "apps/benchmark-async-data-web/app/page.tsx",
+              line: 0,
+            },
+          },
+        ],
+      },
+      {
+        fixture: BENCHMARK_ASYNC_DATA_FIXTURE,
+      },
+    );
+
+    expect(suggestions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          findingCode: "feedback.recovery-action-missing",
+          suggestedPath: "apps/benchmark-async-data-web/app/page.tsx",
+          summary:
+            "Add the required recovery action in apps/benchmark-async-data-web/app/page.tsx so the error state exposes an explicit retry or corrective affordance.",
+        }),
+        expect.objectContaining({
+          findingCode: "feedback.pending-action-not-blocked",
+          suggestedPath: "apps/benchmark-async-data-web/app/page.tsx",
+          summary:
+            "Disable pending submit actions in apps/benchmark-async-data-web/app/page.tsx so the loading state blocks the declared interactions while work is in flight.",
+        }),
+        expect.objectContaining({
+          findingCode: "feedback.last-good-content-missing",
+          suggestedPath: "apps/benchmark-async-data-web/app/page.tsx",
+          summary:
+            "Preserve the last good content in apps/benchmark-async-data-web/app/page.tsx so the failing async state keeps the required sections visible and marked as preserved.",
+        }),
+      ]),
+    );
+  });
+
+  it("maps flow repair actions and finding guidance to actionable flow guidance", () => {
+    const suggestions = suggestionSummaryFromRun(
+      {
+        repairMap: [
+          {
+            code: "flow.required.missing",
+            action: {
+              type: "restore-required-flows",
+            },
+          },
+          {
+            code: "flow.steps.required",
+            action: {
+              type: "restore-required-flow-steps",
+            },
+          },
+          {
+            code: "flow.transition.required",
+            action: {
+              type: "restore-required-transitions",
+            },
+          },
+          {
+            code: "flow.unobservable",
+            action: {
+              type: "restore-flow-observability",
+            },
+          },
+        ],
+      },
+      {
+        findings: [
+          {
+            code: "flow.required.missing",
+            message: "Required flow \"workspace-delete\" is missing from the observed descriptor.",
+            location: {
+              file: "apps/reference-flow-web/app/page.tsx",
+              line: 0,
+            },
+          },
+          {
+            code: "flow.steps.required",
+            message: "Flow \"workspace-delete\" is missing required step \"review\".",
+            location: {
+              file: "apps/reference-flow-web/app/page.tsx",
+              line: 0,
+            },
+          },
+          {
+            code: "flow.transition.required",
+            message: "Flow \"workspace-delete\" is missing required transition \"review -> confirm\".",
+            location: {
+              file: "apps/reference-flow-web/app/page.tsx",
+              line: 0,
+            },
+          },
+          {
+            code: "flow.terminal.invalid",
+            message: "Flow \"workspace-delete\" terminal step \"confirm\" has outgoing transitions.",
+            location: {
+              file: "apps/reference-flow-web/app/page.tsx",
+              line: 0,
+            },
+          },
+          {
+            code: "flow.unobservable",
+            message: "Flow policy is enabled, but runtime validation could not observe contract-scoped flow markers.",
+            location: {
+              file: "apps/reference-flow-web/app/page.tsx",
+              line: 0,
+            },
+          },
+        ],
+      },
+      {
+        fixture: REFERENCE_FLOW_FIXTURE,
+      },
+    );
+
+    expect(suggestions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          findingCode: "flow.required.missing",
+          suggestedPath: "apps/reference-flow-web/app/page.tsx",
+          summary:
+            "Restore the required task flow in apps/reference-flow-web/app/page.tsx so the declared request, review, and confirm path is present again.",
+        }),
+        expect.objectContaining({
+          findingCode: "flow.steps.required",
+          suggestedPath: "apps/reference-flow-web/app/page.tsx",
+          summary:
+            "Restore the missing required flow step marker in apps/reference-flow-web/app/page.tsx so the observed flow includes every declared step.",
+        }),
+        expect.objectContaining({
+          findingCode: "flow.transition.required",
+          suggestedPath: "apps/reference-flow-web/app/page.tsx",
+          summary:
+            "Restore the missing transition marker in apps/reference-flow-web/app/page.tsx so the observed flow preserves the declared step-to-step path.",
+        }),
+        expect.objectContaining({
+          findingCode: "flow.terminal.invalid",
+          suggestedPath: "apps/reference-flow-web/app/page.tsx",
+          summary:
+            "Remove the outgoing transition from the terminal step in apps/reference-flow-web/app/page.tsx so the declared final step stays terminal.",
+        }),
+        expect.objectContaining({
+          findingCode: "flow.unobservable",
+          suggestedPath: "apps/reference-flow-web/app/page.tsx",
+          summary:
+            "Restore explicit data-contract-flow-id, data-contract-flow-step, and data-contract-flow-transition-to markers in apps/reference-flow-web/app/page.tsx so the declared task flow is observable again.",
         }),
       ]),
     );

@@ -78,6 +78,33 @@ export const REFERENCE_TARGET_FIXTURE = {
   },
 } as const satisfies BenchmarkFixture;
 
+export const REFERENCE_FLOW_FIXTURE = {
+  id: "reference-flow-web",
+  label: "Reference Flow Web",
+  appPath: "apps/reference-flow-web",
+  contractPath: "contracts/generated/reference-flow-web.contract.json",
+  implementationBrief:
+    "Refine the reference flow UI so the staged request, review, and confirm path stays observable and contract-compliant across runtime flow checks.",
+  devPort: 3009,
+  defaultStrategies: ["prompt-summary", "json-primary"],
+  primaryEditableFiles: ["apps/reference-flow-web/app/page.tsx"],
+  stylesheetFiles: ["apps/reference-flow-web/app/globals.css"],
+  tokenFiles: ["apps/reference-flow-web/app/globals.css"],
+  guidanceHints: {
+    stylesPath: "apps/reference-flow-web/app/globals.css",
+    motionSelectors: [".surfaceSection", ".flowStep", ".stepLink"],
+    primaryPagePath: "apps/reference-flow-web/app/page.tsx",
+    pageFramePath: "apps/reference-flow-web/app/page.tsx",
+    widthPath: "apps/reference-flow-web/app/globals.css",
+    sectionPaths: {
+      "flow.hero": "apps/reference-flow-web/app/page.tsx",
+      "flow.request": "apps/reference-flow-web/app/page.tsx",
+      "flow.review": "apps/reference-flow-web/app/page.tsx",
+      "flow.confirm": "apps/reference-flow-web/app/page.tsx",
+    },
+  },
+} as const satisfies BenchmarkFixture;
+
 export const BENCHMARK_SHARED_SHELL_FIXTURE = {
   id: "benchmark-shared-shell-web",
   label: "Benchmark Shared Shell Web",

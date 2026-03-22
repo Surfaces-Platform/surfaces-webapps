@@ -282,7 +282,7 @@ export default async function SurfaceRunsDetailPage({
     const evolution = getSurfaceEvolution(surfaceId);
     const outcomesFileExists = validationOutcomesFileExists();
     const perSourcePassRates = getPerSourcePassRates(surfaceId);
-    const perSourceRecurringFindings = getPerSourceRecurringFindings(surfaceId);
+    const perSourceRecurringFindings = getPerSourceRecurringFindings(surfaceId, 5);
     const perSourceTimeToGreen = getPerSourceTimeToGreen(surfaceId);
     return {
       runSeries,
