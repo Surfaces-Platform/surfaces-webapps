@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import fsp from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -7,6 +8,8 @@ import net from "node:net";
 import { spawn, spawnSync } from "node:child_process";
 import { setTimeout as wait } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
+
+import { findSiblingInterfacectlRepoRoot } from "../lib/interfacectl-tooling.mjs";
 
 const repoRoot = path.resolve(
   path.join(path.dirname(fileURLToPath(import.meta.url)), "..", ".."),
@@ -74,7 +77,31 @@ function runOrThrow(command, args, options = {}) {
   return result;
 }
 
+function resolveInterfacectlRoot() {
+  if (process.env.SURFACES_INTERFACECTL_ROOT) {
+    return path.resolve(process.env.SURFACES_INTERFACECTL_ROOT);
+  }
+
+  return findSiblingInterfacectlRepoRoot({ cwd: repoRoot });
+}
+
+function resolveInterfacectlCliPackageRoot() {
+  const interfacectlRoot = resolveInterfacectlRoot();
+  if (!interfacectlRoot) {
+    return undefined;
+  }
+
+  const cliPackageRoot = path.join(interfacectlRoot, "packages", "interfacectl-cli");
+  return fs.existsSync(cliPackageRoot) ? cliPackageRoot : undefined;
+}
+
 async function ensureChromiumAvailable(t) {
+  const cliPackageRoot = resolveInterfacectlCliPackageRoot();
+  if (!cliPackageRoot) {
+    t.skip("interfacectl CLI package root could not be resolved for Playwright Chromium checks.");
+    return;
+  }
+
   if (chromiumAvailability === undefined) {
     chromiumAvailability = await new Promise((resolve) => {
       const child = spawn(
@@ -84,21 +111,20 @@ async function ensureChromiumAvailable(t) {
           "import('playwright').then(async ({ chromium }) => { const browser = await chromium.launch({ headless: true }); await browser.close(); }).then(() => process.exit(0)).catch(() => process.exit(1));",
         ],
         {
-          cwd: path.resolve(
-            repoRoot,
-            "..",
-            "..",
-            "..",
-            "interfacectl",
-            ".worktrees",
-            "fitts-law-target-acquisition",
-            "packages",
-            "interfacectl-cli",
-          ),
+          cwd: cliPackageRoot,
           env: process.env,
         },
       );
-      child.on("exit", (code) => resolve(code === 0));
+      let settled = false;
+      const finish = (available) => {
+        if (!settled) {
+          settled = true;
+          resolve(available);
+        }
+      };
+
+      child.on("error", () => finish(false));
+      child.on("exit", (code) => finish(code === 0));
     });
   }
 
@@ -179,19 +205,12 @@ async function createTempWorkspaceRoot() {
 }
 
 function resolveCliEnv() {
-  return {
-    SURFACES_INTERFACECTL_ROOT:
-      process.env.SURFACES_INTERFACECTL_ROOT
-      ?? path.resolve(
-        repoRoot,
-        "..",
-        "..",
-        "..",
-        "interfacectl",
-        ".worktrees",
-        "fitts-law-target-acquisition",
-      ),
-  };
+  const interfacectlRoot = resolveInterfacectlRoot();
+  return interfacectlRoot
+    ? {
+        SURFACES_INTERFACECTL_ROOT: interfacectlRoot,
+      }
+    : {};
 }
 
 function emitRunArtifact({
