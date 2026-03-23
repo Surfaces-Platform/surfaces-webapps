@@ -7,6 +7,8 @@
 - shows contract summary, comparison metrics, suggestions, and a read-only chat explainer
 - does not connect GitHub projects or publish PRs in this first cut
 
+Separate runtime evidence demos can drive both `reference-target-web` and `reference-flow-web` through canonical `interfacectl validate --remote-url` checks and SurfaceOps run artifacts. That demo path does not broaden the local editing loop: `/contracts/governance` still edits `reference-target-web` only in this phase.
+
 In production, `surfaceops.ai` is now intended to stay marketing/download-only. Hosted `/contracts` routes redirect to `/download` unless local workbench mode is enabled.
 
 Inside the Electron shell, SurfaceOps is a single-page desktop runtime rooted at `/contracts/governance`. The desktop app suppresses the shared marketing navigation, keeps only the in-page workbench tabs (`controls`, `trace`, `chat`), and exposes updater/channel controls through the native Electron menu instead of a React `/desktop` settings page.
@@ -80,6 +82,28 @@ pnpm dev:surfaceops:local-workbench
 ```
 
 Open [http://localhost:3001/contracts/governance](http://localhost:3001/contracts/governance).
+
+### Runtime evidence demos
+
+Use the runtime demo when you want a reusable operator-facing evidence loop rather than the local LLM editing flow.
+
+Target-acquisition evidence:
+
+```bash
+pnpm dev:reference-target
+pnpm dev:surfaceops
+./scripts/demos/demo-runtime-surfaceops.sh
+```
+
+Flow evidence:
+
+```bash
+pnpm --filter reference-flow-web dev
+pnpm dev:surfaceops
+RUNTIME_DEMO_PROFILE=reference-flow ./scripts/demos/demo-runtime-surfaceops.sh
+```
+
+The runtime demo emits canonical runtime run artifacts into `contracts/generated`, validates them with `scripts/validate-run-artifacts.mjs`, and prints the matching SurfaceOps runs URL for the selected surface.
 
 ### Run the desktop alpha shell
 

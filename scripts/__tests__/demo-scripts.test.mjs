@@ -31,6 +31,10 @@ function makeSandbox() {
     path.join(repoRoot, "scripts", "interfacectl-tool.mjs"),
     path.join(dir, "scripts", "interfacectl-tool.mjs"),
   );
+  fs.copyFileSync(
+    path.join(repoRoot, "scripts", "validate-run-artifacts.mjs"),
+    path.join(dir, "scripts", "validate-run-artifacts.mjs"),
+  );
   for (const scriptName of [
     "demo-bootstrap-contract.sh",
     "demo-generation.sh",
@@ -58,6 +62,10 @@ function makeSandbox() {
     JSON.stringify({ surfaces: [{ id: "reference-target-web" }] }, null, 2)
   );
   fs.writeFileSync(
+    path.join(dir, "contracts", "generated", "reference-flow-web.contract.json"),
+    JSON.stringify({ surfaces: [{ id: "reference-flow-web" }] }, null, 2)
+  );
+  fs.writeFileSync(
     path.join(dir, "contracts", "generated", "surfaces-web.extraction.json"),
     JSON.stringify({ extracted: { authAware: true } }, null, 2)
   );
@@ -74,6 +82,7 @@ function makeSandbox() {
     recursive: true,
   });
   fs.mkdirSync(path.join(dir, "apps", "reference-target-web"), { recursive: true });
+  fs.mkdirSync(path.join(dir, "apps", "reference-flow-web"), { recursive: true });
 
   fs.writeFileSync(
     path.join(interfacectlRoot, "packages", "interfacectl-cli", "package.json"),
@@ -117,8 +126,24 @@ function value(flag) { const i = args.indexOf(flag); return i >= 0 ? args[i + 1]
 if (cmd === "validate") {
   const out = value("--out");
   const contract = value("--contract") || "";
+  const surface = value("--surface") || "";
+  const remoteUrl = value("--remote-url") || "";
   let payload = { ok: true, findings: [] };
   let status = 0;
+
+  const targetWarnings = [
+    ["simulateUnobservableTargets=1", "target.unobservable"],
+    ["simulateUndersizedActionTarget=1", "target.hit-area-too-small"],
+    ["simulateTightActionGap=1", "target.gap-too-tight"],
+    ["simulateEdgePinnedActionTarget=1", "target.edge-inset-too-small"],
+    ["simulateCrowdedDestructiveAction=1", "target.destructive-too-close"],
+  ];
+  const flowWarnings = [
+    ["simulateMissingReviewStep=1", "flow.steps.required"],
+    ["simulateMissingConfirmTransition=1", "flow.transition.required"],
+    ["simulateTerminalBackEdge=1", "flow.terminal.invalid"],
+    ["simulateUnobservableFlow=1", "flow.unobservable"],
+  ];
 
   if (contract.includes("icon.warn.contract.json")) {
     payload = {
@@ -152,6 +177,44 @@ if (cmd === "validate") {
       ],
     };
     status = 20;
+  } else if (surface === "reference-target-web" && remoteUrl.length > 0) {
+    const match = targetWarnings.find(([needle]) => remoteUrl.includes(needle));
+    if (match) {
+      payload = {
+        contractPath: contract,
+        contractVersion: "0.1.0",
+        summary: { errors: 0, warnings: 1 },
+        findings: [{ code: match[1], severity: "warning", category: "E2" }],
+      };
+      status = 30;
+    } else {
+      payload = {
+        contractPath: contract,
+        contractVersion: "0.1.0",
+        summary: { errors: 0, warnings: 0 },
+        findings: [],
+      };
+      status = 0;
+    }
+  } else if (surface === "reference-flow-web" && remoteUrl.length > 0) {
+    const match = flowWarnings.find(([needle]) => remoteUrl.includes(needle));
+    if (match) {
+      payload = {
+        contractPath: contract,
+        contractVersion: "0.1.0",
+        summary: { errors: 0, warnings: 1 },
+        findings: [{ code: match[1], severity: "warning", category: "E2" }],
+      };
+      status = 30;
+    } else {
+      payload = {
+        contractPath: contract,
+        contractVersion: "0.1.0",
+        summary: { errors: 0, warnings: 0 },
+        findings: [],
+      };
+      status = 0;
+    }
   }
 
   if (out) fs.writeFileSync(out, JSON.stringify(payload, null, 2));
@@ -500,24 +563,71 @@ test("demo-ci-surfaceops supports ICON_PILOT_FIXTURE_SURFACE_ID override", () =>
   assert.match(result.stdout, /fixture surface: custom-icon-web/);
 });
 
-test("demo-runtime-surfaceops script asserts runtime 422 and 200 paths", () => {
+test("demo-runtime-surfaceops script supports the default reference-target profile", () => {
   const sandbox = makeSandbox();
   const script = path.join(sandbox.dir, "scripts", "demos", "demo-runtime-surfaceops.sh");
-  const result = runScript(script, sandbox, {
-    CURL_BIN: "curl",
-  });
+  const result = runScript(script, sandbox);
 
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.match(result.stdout, /Ensure apps are running: pnpm dev:reference-target and pnpm dev:surfaceops/);
-  assert.match(result.stdout, /sections.required/);
-  assert.match(result.stdout, /color.disallowed/);
-  assert.match(result.stdout, /Runtime icon-source enforcement is not active in this increment/);
-  assert.match(result.stdout, /Demo complete: runtime gating with SurfaceOps correlation proved/);
+  assert.match(result.stdout, /Runtime demo profile: reference-target/);
+  assert.match(result.stdout, /target\.unobservable/);
+  assert.match(result.stdout, /target\.destructive-too-close/);
+  assert.match(result.stdout, /\[validate-run-artifacts\] OK/);
+  assert.match(result.stdout, /Open SurfaceOps runs detail: http:\/\/localhost:3001\/contracts\/runs\/reference-target-web/);
+  assert.match(result.stdout, /Demo complete: runtime evidence with SurfaceOps correlation proved/);
   const runs = JSON.parse(
     fs.readFileSync(path.join(sandbox.dir, "contracts", "generated", "contract-runs.json"), "utf8")
   );
   const runtimeRuns = runs.runs.filter((run) => run.source === "runtime");
-  assert.equal(runtimeRuns.length, 4);
-  assert.ok(runtimeRuns.filter((run) => run.status === "fail").length >= 1);
-  assert.ok(runtimeRuns.filter((run) => run.status === "pass").length >= 2);
+  assert.equal(runtimeRuns.length, 6);
+  assert.equal(runtimeRuns.filter((run) => run.surfaceId === "reference-target-web").length, 6);
+  assert.equal(runtimeRuns.filter((run) => run.status === "warn").length, 5);
+  assert.equal(runtimeRuns.filter((run) => run.status === "pass").length, 1);
+});
+
+test("demo-runtime-surfaceops supports the reference-flow profile", () => {
+  const sandbox = makeSandbox();
+  const script = path.join(sandbox.dir, "scripts", "demos", "demo-runtime-surfaceops.sh");
+  const result = runScript(script, sandbox, {
+    RUNTIME_DEMO_PROFILE: "reference-flow",
+  });
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.match(result.stdout, /Runtime demo profile: reference-flow/);
+  assert.match(result.stdout, /Ensure apps are running: pnpm --filter reference-flow-web dev and pnpm dev:surfaceops/);
+  assert.match(result.stdout, /flow\.steps\.required/);
+  assert.match(result.stdout, /flow\.transition\.required/);
+  assert.match(result.stdout, /flow\.terminal\.invalid/);
+  assert.match(result.stdout, /flow\.unobservable/);
+  assert.match(result.stdout, /\[validate-run-artifacts\] OK/);
+  assert.match(result.stdout, /Open SurfaceOps runs detail: http:\/\/localhost:3001\/contracts\/runs\/reference-flow-web/);
+  const runs = JSON.parse(
+    fs.readFileSync(path.join(sandbox.dir, "contracts", "generated", "contract-runs.json"), "utf8")
+  );
+  const runtimeRuns = runs.runs.filter((run) => run.source === "runtime");
+  assert.equal(runtimeRuns.length, 5);
+  assert.equal(runtimeRuns.filter((run) => run.surfaceId === "reference-flow-web").length, 5);
+  assert.equal(runtimeRuns.filter((run) => run.status === "warn").length, 4);
+  assert.equal(runtimeRuns.filter((run) => run.status === "pass").length, 1);
+  assert.deepEqual(
+    runtimeRuns.flatMap((run) => run.findingCodes).filter(Boolean).sort(),
+    [
+      "flow.steps.required",
+      "flow.terminal.invalid",
+      "flow.transition.required",
+      "flow.unobservable",
+    ]
+  );
+});
+
+test("demo-runtime-surfaceops fails fast for unsupported profiles", () => {
+  const sandbox = makeSandbox();
+  const script = path.join(sandbox.dir, "scripts", "demos", "demo-runtime-surfaceops.sh");
+  const result = runScript(script, sandbox, {
+    RUNTIME_DEMO_PROFILE: "not-a-profile",
+  });
+
+  assert.equal(result.status, 1, result.stderr || result.stdout);
+  assert.match(result.stderr || result.stdout, /RUNTIME_DEMO_PROFILE must be one of: reference-target, reference-flow/);
 });
