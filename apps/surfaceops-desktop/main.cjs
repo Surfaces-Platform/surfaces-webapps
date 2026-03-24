@@ -6,6 +6,7 @@ const { app, BrowserWindow, Menu, dialog, ipcMain, shell } = require("electron")
 const {
   createDisabledUpdaterAdapter,
   createElectronUpdaterAdapter,
+  createHttpSmokeUpdaterAdapter,
 } = require("./lib/updater-adapter.cjs");
 const {
   createSurfaceOpsDesktopPreferencesStore,
@@ -34,6 +35,14 @@ let updaterController = null;
 let preferencesStore = null;
 let modelController = null;
 let modeldController = null;
+
+function resolveCurrentAppVersion() {
+  return process.env.SURFACEOPS_DESKTOP_TEST_APP_VERSION?.trim() || app.getVersion();
+}
+
+function isDesktopSmokeRun() {
+  return Boolean(process.env.SURFACEOPS_DESKTOP_SMOKE_CONFIG_PATH?.trim());
+}
 
 const userDataOverride = process.env.SURFACEOPS_DESKTOP_USER_DATA_DIR?.trim();
 if (userDataOverride) {
@@ -127,6 +136,10 @@ function rebuildMenu() {
 }
 
 async function promptForRestart(status) {
+  if (isDesktopSmokeRun()) {
+    return;
+  }
+
   if (!mainWindow || mainWindow.isDestroyed()) {
     return;
   }
@@ -155,21 +168,24 @@ function configureUpdater(config) {
 
   const resolvedChannel = getCurrentUpdateChannel();
   const updatesEnabled = app.isPackaged || process.env.SURFACEOPS_ENABLE_DEV_UPDATES === "1";
-  const adapter = updatesEnabled
-    ? createElectronUpdaterAdapter({
-        baseUrl: config.updateBaseUrl,
-        channel: resolvedChannel,
-        platform: "darwin-arm64",
-        forceDevUpdateConfig: !app.isPackaged && process.env.SURFACEOPS_ENABLE_DEV_UPDATES === "1",
-      })
-    : createDisabledUpdaterAdapter("Updates are only active in packaged builds unless SURFACEOPS_ENABLE_DEV_UPDATES=1.");
+  const smokeUpdaterStatusUrl = process.env.SURFACEOPS_DESKTOP_TEST_UPDATE_MOCK_URL?.trim();
+  const adapter = smokeUpdaterStatusUrl
+    ? createHttpSmokeUpdaterAdapter({ statusUrl: smokeUpdaterStatusUrl })
+    : updatesEnabled
+      ? createElectronUpdaterAdapter({
+          baseUrl: config.updateBaseUrl,
+          channel: resolvedChannel,
+          platform: "darwin-arm64",
+          forceDevUpdateConfig: !app.isPackaged && process.env.SURFACEOPS_ENABLE_DEV_UPDATES === "1",
+        })
+      : createDisabledUpdaterAdapter("Updates are only active in packaged builds unless SURFACEOPS_ENABLE_DEV_UPDATES=1.");
 
   updaterController = new SurfaceOpsUpdaterController({
     adapter,
     channel: resolvedChannel,
-    currentVersion: app.getVersion(),
-    onPromptRestart: promptForRestart,
-    disabledReason: updatesEnabled ? null : adapter.disabledReason,
+    currentVersion: resolveCurrentAppVersion(),
+    onPromptRestart: smokeUpdaterStatusUrl ? null : promptForRestart,
+    disabledReason: smokeUpdaterStatusUrl || updatesEnabled ? null : adapter.disabledReason,
   });
 
   updaterController.on("status", () => {
@@ -288,6 +304,24 @@ async function writeDesktopSmokeResult(payload) {
   await fs.promises.writeFile(resolvedPath, JSON.stringify(payload, null, 2), "utf8");
 }
 
+async function waitForUpdaterStatus({
+  predicate,
+  timeoutMs = 120_000,
+  description = "updater status",
+} = {}) {
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() < deadline) {
+    const status = updaterController?.getStatus();
+    if (status && predicate(status)) {
+      return status;
+    }
+    await wait(250);
+  }
+
+  throw new Error(`Timed out waiting for ${description}.`);
+}
+
 async function waitForMainWindowPath(expectedPath, timeoutMs = 120_000) {
   const deadline = Date.now() + timeoutMs;
 
@@ -320,16 +354,27 @@ async function maybeRunDesktopSmokeScenario() {
   const result = {
     ok: false,
     startedAt: new Date().toISOString(),
+    resultLabel: config.resultLabel ?? null,
+    currentVersion: resolveCurrentAppVersion(),
     initialUrl: null,
     finalUrl: null,
     installModelId: config.installModelId ?? null,
     replaceModelId: config.replaceModelId ?? null,
     benchmark: null,
+    updateStatus: null,
+    updateRestartRequested: false,
     finalState: null,
     errorMessage: null,
   };
 
   try {
+    const expectedCurrentVersion = config.expectedCurrentVersion ?? config.expectedVersionAfterRestart ?? null;
+    if (expectedCurrentVersion && resolveCurrentAppVersion() !== expectedCurrentVersion) {
+      throw new Error(
+        `Expected SurfaceOps version ${expectedCurrentVersion}, found ${resolveCurrentAppVersion()}.`,
+      );
+    }
+
     result.initialUrl = await waitForMainWindowPath(
       config.expectedInitialPath ?? desktopConfig.workbenchPath,
       config.timeoutMs ?? 120_000,
@@ -352,6 +397,24 @@ async function maybeRunDesktopSmokeScenario() {
       await modelController.replaceModel(config.replaceModelId);
     }
 
+    if (config.checkForUpdates) {
+      if (!updaterController) {
+        throw new Error("SurfaceOps updater controller is not available.");
+      }
+
+      await updaterController.checkForUpdates({ reason: "manual" });
+      if (config.waitForDownloadedVersion) {
+        result.updateStatus = await waitForUpdaterStatus({
+          predicate: (status) =>
+            status.updateDownloaded && status.downloadedVersion === config.waitForDownloadedVersion,
+          timeoutMs: config.timeoutMs ?? 120_000,
+          description: `downloaded update ${config.waitForDownloadedVersion}`,
+        });
+      } else {
+        result.updateStatus = updaterController.getStatus();
+      }
+    }
+
     if (config.expectedFinalPath) {
       openWorkbench();
       result.finalUrl = await waitForMainWindowPath(config.expectedFinalPath, config.timeoutMs ?? 120_000);
@@ -359,7 +422,23 @@ async function maybeRunDesktopSmokeScenario() {
       result.finalUrl = mainWindow.webContents.getURL();
     }
 
+    if (config.restartToUpdate) {
+      result.updateStatus = updaterController ? updaterController.getStatus() : result.updateStatus;
+      result.updateRestartRequested = true;
+      await writeDesktopSmokeResult({
+        ...result,
+        checkpoint: "before-restart",
+        completedAt: new Date().toISOString(),
+      });
+      if (!updaterController) {
+        throw new Error("SurfaceOps updater controller is not available.");
+      }
+      await updaterController.restartToUpdate();
+    }
+
     result.finalState = modelController.getState();
+    result.updateStatus = updaterController ? updaterController.getStatus() : result.updateStatus;
+    result.currentVersion = resolveCurrentAppVersion();
     result.ok = true;
   } catch (error) {
     result.errorMessage = error instanceof Error ? error.message : String(error);

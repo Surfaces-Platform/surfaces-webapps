@@ -7,11 +7,10 @@ import path from "node:path";
 import http from "node:http";
 import { once } from "node:events";
 import { spawn } from "node:child_process";
-import { createHash } from "node:crypto";
-
-function sha256(contents) {
-  return createHash("sha256").update(contents).digest("hex");
-}
+import {
+  buildSurfaceOpsModelDownloadOverrides,
+  createSurfaceOpsMockRuntimeServer,
+} from "../test-support/mock-runtime-server.mjs";
 
 async function reservePort() {
   const server = http.createServer();
@@ -48,79 +47,18 @@ function resolvePackagedExecutable(appRoot) {
   return executablePath;
 }
 
-async function createMockRuntimeServer(rootDir) {
-  const modelDir = path.join(rootDir, "models");
-  await fsp.mkdir(modelDir, { recursive: true });
-
-  const artifacts = {};
-  for (const modelId of ["starter", "balanced", "quality"]) {
-    const filename = `${modelId}.gguf`;
-    const contents = Buffer.from(`mock-${modelId}-artifact`, "utf8");
-    await fsp.writeFile(path.join(modelDir, filename), contents);
-    artifacts[modelId] = {
-      filename,
-      sha256: sha256(contents),
-      sizeBytes: contents.length,
-    };
-  }
-
+async function createMockUpdateServer(rootDir) {
   const port = await reservePort();
-  const server = http.createServer(async (request, response) => {
+  let updatePayload = { available: false };
+
+  const server = http.createServer((request, response) => {
     const requestUrl = new URL(request.url ?? "/", `http://127.0.0.1:${port}`);
-
-    if (request.method === "GET" && requestUrl.pathname === "/health") {
+    if (request.method === "GET" && requestUrl.pathname === "/mock-update.json") {
       response.writeHead(200, {
         "content-type": "application/json",
         connection: "close",
       });
-      response.end(JSON.stringify({ ok: true }));
-      return;
-    }
-
-    if (request.method === "GET" && requestUrl.pathname === "/v1/models") {
-      response.writeHead(200, {
-        "content-type": "application/json",
-        connection: "close",
-      });
-      response.end(JSON.stringify({
-        object: "list",
-        data: [
-          { id: "starter", object: "model" },
-          { id: "balanced", object: "model" },
-          { id: "quality", object: "model" },
-        ],
-      }));
-      return;
-    }
-
-    if (request.method === "POST" && requestUrl.pathname === "/responses") {
-      response.writeHead(200, {
-        "content-type": "application/json",
-        connection: "close",
-      });
-      response.end(JSON.stringify({
-        id: "resp_smoke",
-        object: "response",
-        output_text: "BENCHMARK_READY",
-        output: [],
-      }));
-      return;
-    }
-
-    if (request.method === "GET" && requestUrl.pathname.startsWith("/models/")) {
-      const filename = requestUrl.pathname.replace("/models/", "");
-      const filePath = path.join(modelDir, filename);
-      if (!fs.existsSync(filePath)) {
-        response.writeHead(404);
-        response.end();
-        return;
-      }
-      response.writeHead(200, {
-        "content-type": "application/octet-stream",
-        "content-length": String((await fsp.stat(filePath)).size),
-        connection: "close",
-      });
-      fs.createReadStream(filePath).pipe(response);
+      response.end(JSON.stringify(updatePayload));
       return;
     }
 
@@ -131,10 +69,14 @@ async function createMockRuntimeServer(rootDir) {
   server.listen(port, "127.0.0.1");
   await once(server, "listening");
 
+  const quitAndInstallSignalPath = path.join(rootDir, "update-restart-request.json");
   return {
-    baseUrl: `http://127.0.0.1:${port}`,
-    artifacts,
+    quitAndInstallSignalPath,
     server,
+    setUpdatePayload(payload) {
+      updatePayload = { ...payload };
+    },
+    statusUrl: `http://127.0.0.1:${port}/mock-update.json`,
   };
 }
 
@@ -209,7 +151,12 @@ test(
     const firstRunResultPath = path.join(sandbox, "first-run-result.json");
     const secondRunConfigPath = path.join(sandbox, "second-run-config.json");
     const secondRunResultPath = path.join(sandbox, "second-run-result.json");
-    const mockRuntime = await createMockRuntimeServer(sandbox);
+      const updateRunConfigPath = path.join(sandbox, "update-run-config.json");
+      const updateRunResultPath = path.join(sandbox, "update-run-result.json");
+      const postUpdateConfigPath = path.join(sandbox, "post-update-config.json");
+      const postUpdateResultPath = path.join(sandbox, "post-update-result.json");
+    const mockRuntime = await createSurfaceOpsMockRuntimeServer({ rootDir: sandbox });
+    const mockUpdates = await createMockUpdateServer(sandbox);
 
     try {
       assert.equal(fs.existsSync(bundledRuntimeBinary), true, "Expected bundled llama-server in packaged app resources.");
@@ -218,26 +165,10 @@ test(
       await fsp.writeFile(
         overridesPath,
         JSON.stringify(
-          {
-            starter: {
-              downloadUrl: `${mockRuntime.baseUrl}/models/${mockRuntime.artifacts.starter.filename}`,
-              sha256: mockRuntime.artifacts.starter.sha256,
-              sizeBytes: mockRuntime.artifacts.starter.sizeBytes,
-              filename: mockRuntime.artifacts.starter.filename,
-            },
-            balanced: {
-              downloadUrl: `${mockRuntime.baseUrl}/models/${mockRuntime.artifacts.balanced.filename}`,
-              sha256: mockRuntime.artifacts.balanced.sha256,
-              sizeBytes: mockRuntime.artifacts.balanced.sizeBytes,
-              filename: mockRuntime.artifacts.balanced.filename,
-            },
-            quality: {
-              downloadUrl: `${mockRuntime.baseUrl}/models/${mockRuntime.artifacts.quality.filename}`,
-              sha256: mockRuntime.artifacts.quality.sha256,
-              sizeBytes: mockRuntime.artifacts.quality.sizeBytes,
-              filename: mockRuntime.artifacts.quality.filename,
-            },
-          },
+          buildSurfaceOpsModelDownloadOverrides({
+            baseUrl: mockRuntime.baseUrl,
+            artifacts: mockRuntime.artifacts,
+          }),
           null,
           2,
         ),
@@ -258,8 +189,9 @@ test(
         SURFACEOPS_DESKTOP_MODEL_DOWNLOAD_OVERRIDES_PATH: overridesPath,
         SURFACEOPS_MODEL_BACKEND_TARGET_URL: mockRuntime.baseUrl,
         SURFACEOPS_DESKTOP_TEST_PLATFORM: "darwin-arm64",
-        SURFACEOPS_DESKTOP_TEST_MEMORY_GB: "24",
+        SURFACEOPS_DESKTOP_TEST_MEMORY_GB: "16",
         SURFACEOPS_DESKTOP_TEST_CHIP: "Apple M2 Pro",
+        SURFACEOPS_DESKTOP_TEST_UPDATE_MOCK_URL: mockUpdates.statusUrl,
       };
 
       await fsp.writeFile(
@@ -267,9 +199,8 @@ test(
         JSON.stringify({
           expectedInitialPath: "/desktop/setup",
           expectedWorkbenchPath: "/contracts/governance",
-          installModelId: "balanced",
+          installModelId: "starter",
           runBenchmark: true,
-          replaceModelId: "starter",
           expectedFinalPath: "/contracts/governance",
           exitWhenDone: true,
           timeoutMs: 120_000,
@@ -292,7 +223,7 @@ test(
       assert.equal(firstRun.result.finalState.activeModelId, "starter");
       assert.equal(firstRun.result.finalState.runtimeStatus.phase, "ready");
       assert.equal(firstRun.result.finalState.runtimeStatus.healthy, true);
-      assert.equal(firstRun.result.benchmark.modelId, "balanced");
+      assert.equal(firstRun.result.benchmark.modelId, "starter");
 
       await fsp.writeFile(
         secondRunConfigPath,
@@ -316,11 +247,88 @@ test(
       assert.equal(secondRun.result.ok, true, secondRun.result.errorMessage ?? "Expected relaunch smoke run to succeed.");
       assert.match(secondRun.result.initialUrl, /\/contracts\/governance$/);
       assert.equal(secondRun.result.finalState.activeModelId, "starter");
+
+      mockUpdates.setUpdatePayload({
+        available: true,
+        version: "0.1.1",
+        releaseDate: "2026-03-20T00:00:00.000Z",
+        releaseNotes: "SurfaceOps updater smoke release",
+        progressPercents: [18, 67, 100],
+        quitAndInstallSignalPath: mockUpdates.quitAndInstallSignalPath,
+      });
+
+      await fsp.writeFile(
+        updateRunConfigPath,
+        JSON.stringify({
+          expectedInitialPath: "/contracts/governance",
+          checkForUpdates: true,
+          waitForDownloadedVersion: "0.1.1",
+          restartToUpdate: true,
+          resultLabel: "update-run",
+          exitWhenDone: true,
+          timeoutMs: 120_000,
+        }, null, 2),
+        "utf8",
+      );
+
+      const updateRun = await runPackagedSmokeScenario({
+        executablePath,
+        env: baseEnv,
+        configPath: updateRunConfigPath,
+        resultPath: updateRunResultPath,
+        timeoutMs: 150_000,
+      });
+
+      assert.equal(updateRun.exitCode, 0, `Expected update smoke run to exit cleanly.\nSTDOUT:\n${updateRun.stdout}\nSTDERR:\n${updateRun.stderr}`);
+      assert.equal(updateRun.result.ok, true, updateRun.result.errorMessage ?? "Expected update smoke run to succeed.");
+      assert.equal(updateRun.result.resultLabel, "update-run");
+      assert.equal(updateRun.result.updateRestartRequested, true);
+      assert.equal(updateRun.result.updateStatus?.downloadedVersion, "0.1.1");
+      assert.equal(fs.existsSync(mockUpdates.quitAndInstallSignalPath), true, "Expected restart-to-update to trigger the smoke updater install marker.");
+
+      mockUpdates.setUpdatePayload({ available: false });
+
+      await fsp.writeFile(
+        postUpdateConfigPath,
+        JSON.stringify({
+          expectedInitialPath: "/contracts/governance",
+          expectedVersionAfterRestart: "0.1.1",
+          resultLabel: "post-update",
+          exitWhenDone: true,
+          timeoutMs: 120_000,
+        }, null, 2),
+        "utf8",
+      );
+
+      const postUpdateRun = await runPackagedSmokeScenario({
+        executablePath,
+        env: {
+          ...baseEnv,
+          SURFACEOPS_DESKTOP_TEST_APP_VERSION: "0.1.1",
+        },
+        configPath: postUpdateConfigPath,
+        resultPath: postUpdateResultPath,
+        timeoutMs: 150_000,
+      });
+
+      assert.equal(postUpdateRun.exitCode, 0, `Expected post-update verification run to exit cleanly.\nSTDOUT:\n${postUpdateRun.stdout}\nSTDERR:\n${postUpdateRun.stderr}`);
+      assert.equal(postUpdateRun.result.ok, true, postUpdateRun.result.errorMessage ?? "Expected post-update verification to succeed.");
+      assert.equal(postUpdateRun.result.resultLabel, "post-update");
+      assert.equal(postUpdateRun.result.currentVersion, "0.1.1");
     } finally {
       mockRuntime.server.closeIdleConnections?.();
       mockRuntime.server.closeAllConnections?.();
       await new Promise((resolve, reject) => {
         mockRuntime.server.close((error) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+          resolve();
+        });
+      });
+      await new Promise((resolve, reject) => {
+        mockUpdates.server.close((error) => {
           if (error) {
             reject(error);
             return;

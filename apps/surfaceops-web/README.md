@@ -142,7 +142,7 @@ SurfaceOps now distinguishes three release phases:
 - `signed launch rehearsal`: the GitHub rehearsal workflows plus the clean Apple Silicon environment gate. Use `pnpm dev:surfaceops:rehearsal-feed` and `docs/plans/surfaceops-desktop-alpha-launch-rehearsal.md`.
 - `public alpha release`: the actual `vX.Y.Z` path that updates the public download surface and production updater feed.
 
-The signed launch rehearsal still requires the two-tier clean Apple Silicon environment: repeatable install/update smoke coverage in a fresh Apple Silicon macOS VM, with `Parallels` as the default and `UTM` as an acceptable fallback, followed by final signoff on a separate physical Apple Silicon Mac before cutting the first public `vX.Y.Z` tag.
+The signed launch rehearsal centers on a repeatable signed install/update smoke pass in a fresh Apple Silicon macOS VM using `Tart` on this Mac first. Optional physical-Mac or true guest-local inference signoff can remain a separate later gate before cutting the first public `vX.Y.Z` tag.
 
 ## Learn More
 

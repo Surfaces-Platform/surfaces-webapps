@@ -17,14 +17,13 @@ The release candidate being rehearsed is the single-page SurfaceOps desktop shel
 
 These rehearsal surfaces must never mutate the production feed release `surfaceops-desktop-feed`.
 
-## Clean Apple Silicon Environment
+## Stage A Scope
 
-For this runbook, a clean Apple Silicon environment means two required tiers:
+For this runbook, `Stage A` is a signed install/update smoke gate in a disposable Apple Silicon macOS VM. It validates DMG install, first launch, onboarding reachability, governance entry, updater `rc.1 -> rc.2`, and evidence capture.
 
-- `Stage A: VM smoke` runs in a fresh Apple Silicon macOS VM with no prior SurfaceOps install or updater cache. `Parallels` is the default path. `UTM` is an acceptable fallback when needed, but it is not the primary recommendation.
-- `Stage B: physical final signoff` runs on a separate physical Apple Silicon Mac with no prior SurfaceOps install. A separate clean user profile is acceptable only if a separate machine is unavailable.
+`Stage A` does not certify true guest-local inference performance. The smoke path uses a host-backed deterministic runtime plus model-download fixtures so the gate stays focused on install and update behavior.
 
-The first public `vX.Y.Z` tag stays blocked until both tiers are green.
+If you still want physical-Mac or true local-inference signoff, treat that as a separate later gate outside this runbook.
 
 ## Checklist
 
@@ -36,25 +35,36 @@ The first public `vX.Y.Z` tag stays blocked until both tiers are green.
 5. Validate the hosted web surface locally against the rehearsal feed:
    `pnpm dev:surfaceops:rehearsal-feed`
    Then confirm `/download` and `/release-notes` reflect the rehearsal release instead of the checked-in fallback manifest.
-6. Start `Stage A: VM smoke` by provisioning a fresh Apple Silicon macOS VM from a clean image. Use `Parallels` by default, or `UTM` only when needed. Ensure there is no prior SurfaceOps install or updater cache, then save a baseline snapshot before testing.
-7. Install the rehearsal `0.1.0-rc.1` DMG in the VM and confirm first launch succeeds.
-8. Publish a second rehearsal release such as `0.1.0-rc.2`, then verify the installed `0.1.0-rc.1` VM client downloads and applies the newer rehearsal build through the in-app updater.
-9. Exercise rehearsal promotion controls in the VM flow:
+6. Prepare or verify the sealed Tart base VM once:
+   - install Tart locally
+   - create `surfaceops-stage-a-base` from `/Users/mike/Downloads/UniversalMac_26.3.1_25D2128_Restore.ipsw`
+   - set the image defaults to `4 vCPU`, `8 GB RAM`, and `1920x1200`
+   - boot the VM once and complete the normal macOS install
+   - create a local user `surfaceops`
+   - enable Remote Login, set the hostname to `surfaceops-stage-a.local`, and pre-authorize `~/.ssh/surfaceops-stage-a.pub`
+   - ensure `~/Applications/SurfaceOps.app`, SurfaceOps preferences, and updater caches are absent before sealing the image
+7. Run the automated Stage A smoke from the repo root:
+
+   ```bash
+   pnpm surfaceops:stage-a:tart -- --from 0.1.0-rc.1 --to 0.1.0-rc.2 --ssh-key ~/.ssh/surfaceops-stage-a
+   ```
+
+   The command clones the Tart base VM, mirrors the signed rehearsal assets locally for the guest, installs `rc.1`, runs the bounded first-run smoke against the host-backed deterministic runtime, stages `rc.2` into the local mirror, exercises the updater, relaunches the updated app, collects evidence under `artifacts/surfaceops-desktop-stage-a/<run-id>/`, and deletes the clone.
+8. Exercise rehearsal promotion controls after the updater pass:
    - block the current alpha release
    - verify stable promotion returns a no-op
    - unblock or force-promote as needed
-10. Run `surfaceops-desktop-stable-promotion-rehearsal.yml` with either a reduced `soak_hours` or `override_now` to simulate soak completion and verify stable promotion writes only to the rehearsal feed.
-11. Start `Stage B: physical final signoff` on a separate physical Apple Silicon Mac with no prior SurfaceOps install. If a separate machine is unavailable, use a separate clean user profile and record that exception in the evidence for the run.
-12. Install the latest rehearsal DMG on the physical Mac and confirm first launch succeeds, the updater resolves the expected channel and feed, and the restart-to-apply path succeeds if a newer rehearsal build exists.
-13. Confirm production remains unchanged:
+9. Run `surfaceops-desktop-stable-promotion-rehearsal.yml` with either a reduced `soak_hours` or `override_now` to simulate soak completion and verify stable promotion writes only to the rehearsal feed.
+10. Confirm production remains unchanged:
     - `surfaceops-desktop-feed` was not modified
     - `surfaceops.ai` production still resolves the production manifest URL
-14. Record the run evidence:
-    - the VM platform used
+11. Record the run evidence:
+    - the VM platform used (`Tart`)
     - the rehearsal versions tested
-    - whether physical signoff used a separate machine or a separate clean user profile
+    - the Stage A evidence directory under `artifacts/surfaceops-desktop-stage-a/<run-id>/`
+    - confirmation that the bounded runtime path used host-backed deterministic services rather than true guest-local inference
     - confirmation that production feed assets remained untouched
-15. Do not cut the first real public `vX.Y.Z` tag until every step above is green and the run evidence is recorded.
+12. Do not cut the first real public `vX.Y.Z` tag until every step above is green and any separately-chosen final signoff gates are recorded.
 
 ## Rollback
 
