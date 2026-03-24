@@ -1,30 +1,40 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import { colors } from "@surfaces/ui/tokens/colors";
+import { useId, useState, type FormEvent } from "react";
+import { colors } from "../tokens/colors";
 
 type SubmitState = "idle" | "success" | "error";
+type ReleaseUpdatesPanelVariant = "default" | "hero";
 
-interface InviteRequestPanelProps {
+export interface ReleaseUpdatesPanelProps {
   buttonLabel?: string;
   formLabel?: string;
   submitLabel?: string;
   idleMessage?: string;
   successMessage?: string;
+  submitUrl?: string;
+  variant?: ReleaseUpdatesPanelVariant;
 }
 
-export function InviteRequestPanel({
+export function ReleaseUpdatesPanel({
   buttonLabel = "Get Desktop Updates",
   formLabel = "Work email",
   submitLabel = "Submit",
-  idleMessage = "Enter your work email and we’ll send SurfaceOps desktop release updates, including new alpha drops and stable promotions.",
-  successMessage = "Thanks. We’ll send SurfaceOps desktop release updates to this email.",
-}: InviteRequestPanelProps = {}) {
+  idleMessage = "Enter your work email and we'll send SurfaceOps desktop release updates, including new alpha drops and stable promotions.",
+  successMessage = "Thanks. We'll send SurfaceOps desktop release updates to this email.",
+  submitUrl = "/api/invite-request",
+  variant = "default",
+}: ReleaseUpdatesPanelProps = {}) {
   const [formOpen, setFormOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const panelId = useId();
+  const formId = `${panelId}-form`;
+  const inputId = `${panelId}-email`;
+  const statusId = `${panelId}-status`;
+  const heroVariant = variant === "hero";
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -33,7 +43,7 @@ export function InviteRequestPanel({
     setMessage("");
 
     try {
-      const response = await fetch("/api/invite-request", {
+      const response = await fetch(submitUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -59,28 +69,37 @@ export function InviteRequestPanel({
 
   return (
     <div
+      data-testid="release-updates-panel"
       style={{
         display: "grid",
-        gap: "16px",
+        gap: heroVariant ? "12px" : "16px",
         alignItems: "start",
-        maxWidth: "520px",
+        width: "100%",
+        maxWidth: heroVariant ? "640px" : "100%",
       }}
     >
       <button
         type="button"
+        data-testid="release-updates-trigger"
+        aria-expanded={formOpen}
+        aria-controls={formId}
         onClick={() => setFormOpen(true)}
         disabled={formOpen}
         style={{
           width: "fit-content",
           fontSize: "14px",
-          fontWeight: 600,
-          padding: "12px 24px",
+          fontWeight: heroVariant ? 700 : 600,
+          minHeight: heroVariant ? "46px" : undefined,
+          padding: heroVariant ? "0 20px" : "12px 24px",
           backgroundColor: colors.structure.primary,
           color: colors.neutral[0],
           border: "none",
-          borderRadius: "6px",
+          borderRadius: heroVariant ? "999px" : "6px",
           cursor: formOpen ? "default" : "pointer",
           opacity: formOpen ? 0.8 : 1,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
           transition: "all var(--contract-motion-duration) var(--contract-motion-timing)",
         }}
       >
@@ -89,18 +108,20 @@ export function InviteRequestPanel({
 
       {formOpen ? (
         <form
+          id={formId}
+          data-testid="release-updates-form"
           onSubmit={handleSubmit}
           style={{
             display: "grid",
             gap: "12px",
-            padding: "24px",
+            padding: heroVariant ? "20px" : "24px",
             borderRadius: "6px",
             border: `1px solid ${colors.neutral[200]}`,
             backgroundColor: colors.neutral[0],
           }}
         >
           <label
-            htmlFor="invite-email"
+            htmlFor={inputId}
             style={{
               fontSize: "13px",
               fontWeight: 600,
@@ -119,7 +140,7 @@ export function InviteRequestPanel({
             }}
           >
             <input
-              id="invite-email"
+              id={inputId}
               type="email"
               name="email"
               autoComplete="email"
@@ -127,10 +148,10 @@ export function InviteRequestPanel({
               onChange={(event) => setEmail(event.target.value)}
               placeholder="you@company.com"
               required
-              aria-describedby="invite-request-status"
+              aria-describedby={statusId}
               style={{
                 flex: "1 1 260px",
-                minHeight: "44px",
+                minHeight: heroVariant ? "46px" : "44px",
                 borderRadius: "6px",
                 border: `1px solid ${colors.neutral[400]}`,
                 padding: "0 16px",
@@ -143,7 +164,7 @@ export function InviteRequestPanel({
               type="submit"
               disabled={isSubmitting}
               style={{
-                minHeight: "44px",
+                minHeight: heroVariant ? "46px" : "44px",
                 padding: "0 18px",
                 borderRadius: "6px",
                 border: "none",
@@ -158,7 +179,8 @@ export function InviteRequestPanel({
             </button>
           </div>
           <p
-            id="invite-request-status"
+            id={statusId}
+            data-testid="release-updates-status"
             role={submitState === "error" ? "alert" : "status"}
             style={{
               margin: 0,

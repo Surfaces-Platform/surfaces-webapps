@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { colors } from "@surfaces/ui/tokens/colors";
-import { InviteRequestPanel } from "../_components/invite-request-panel";
 import {
   buildDesktopUpdateAssetPath,
   getPromotedDesktopRelease,
@@ -232,61 +231,6 @@ export default async function DownloadPage() {
           </div>
         </section>
 
-        <section
-          id="release-updates"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(0, 1.2fr) minmax(320px, 420px)",
-            gap: "32px",
-            padding: "48px 0",
-            alignItems: "start",
-          }}
-        >
-          <div style={{ display: "grid", gap: "18px" }}>
-            <h2 style={{ fontSize: "28px", fontWeight: 700, margin: 0 }}>Get desktop release updates</h2>
-            <p style={{ fontSize: "15px", lineHeight: 1.8, color: colors.neutral[600], margin: 0 }}>
-              The public alpha is focused on the local contract workbench. Use this list if you want release announcements,
-              stable-promotion notices, and future rollout updates without polling the site.
-            </p>
-            <div
-              style={{
-                padding: "18px 20px",
-                borderRadius: "14px",
-                border: `1px solid ${colors.neutral[200]}`,
-                backgroundColor: colors.neutral[0],
-              }}
-            >
-              <div style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.08em", color: colors.neutral[600], marginBottom: "10px" }}>
-                Latest milestone
-              </div>
-              <div style={{ fontSize: "18px", fontWeight: 700, marginBottom: "8px" }}>{latestRelease?.name ?? "Public alpha feed pending first release"}</div>
-              <p style={{ margin: 0, fontSize: "14px", lineHeight: 1.7, color: colors.neutral[600] }}>{latestRelease?.notes.summary ?? "The updater feed, public downloads, and release notes all promote from the same release manifest."}</p>
-            </div>
-            <div style={{ fontSize: "14px", lineHeight: 1.8, color: colors.neutral[600] }}>
-              Need the implementation details first? Read the{" "}
-              <Link href="/release-notes" style={{ color: colors.structure.primary, fontWeight: 700, textDecoration: "none" }}>
-                release notes
-              </Link>
-              {" "}before requesting access.
-            </div>
-          </div>
-
-          <div
-            style={{
-              padding: "24px",
-              borderRadius: "18px",
-              border: `1px solid ${colors.neutral[200]}`,
-              backgroundColor: colors.neutral[0],
-              boxShadow: "0 24px 56px rgba(15, 23, 42, 0.08)",
-            }}
-          >
-            <InviteRequestPanel
-              buttonLabel="Get release updates"
-              idleMessage="Enter your work email and we’ll send SurfaceOps desktop alpha announcements, stable promotions, and major rollout updates."
-              successMessage="Thanks. We’ll send SurfaceOps desktop release updates to this email."
-            />
-          </div>
-        </section>
       </div>
     </div>
   );

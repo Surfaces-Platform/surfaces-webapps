@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { motion } from 'motion/react';
 import { useState } from 'react';
+import { ReleaseUpdatesPanel } from '@surfaces/ui/components/ReleaseUpdatesPanel';
 import Navigation from '@surfaces/ui/components/Navigation';
 import { colors } from '@surfaces/ui/tokens/colors';
 import { fadeUpVariants, staggerContainer } from '@surfaces/ui/utils/motion';
@@ -138,47 +139,17 @@ export default function Home() {
                 CI/CD time, and runtime so behavior stays predictable and accountable.
               </motion.p>
 
-              <motion.div variants={fadeUpVariants} className="landing-hero-actions">
-                <a
-                  href="#demos"
-                  className="contract-motion"
-                  style={{
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    padding: '12px 24px',
-                    backgroundColor: colors.structure.primary,
-                    color: colors.neutral[0],
-                    border: 'none',
-                    borderRadius: '999px',
-                    cursor: 'pointer',
-                    textDecoration: 'none',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                >
-                  See the demos
-                </a>
-                <a
-                  href="#docs"
-                  className="contract-motion"
-                  style={{
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    padding: '12px 24px',
-                    backgroundColor: 'transparent',
-                    color: colors.neutral[900],
-                    border: `1px solid ${colors.neutral[200]}`,
-                    borderRadius: '999px',
-                    cursor: 'pointer',
-                    textDecoration: 'none',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                >
-                  Read the philosophy
-                </a>
+              <motion.div
+                variants={fadeUpVariants}
+                className="landing-hero-actions"
+                style={{ marginTop: '32px' }}
+              >
+                <ReleaseUpdatesPanel
+                  variant="hero"
+                  buttonLabel="Get release updates"
+                  idleMessage="Enter your work email and we'll send SurfaceOps desktop alpha announcements, stable promotions, and major rollout updates."
+                  successMessage="Thanks. We'll send SurfaceOps desktop release updates to this email."
+                />
               </motion.div>
             </div>
 
@@ -445,6 +416,12 @@ export default function Home() {
           </div>
         </motion.section>
 
+        <motion.section
+          data-contract-section="landing.actions"
+          aria-hidden="true"
+          hidden
+        />
+
         {/* Section 5 - The Ecosystem */}
         <motion.section 
           initial="hidden"
@@ -579,66 +556,6 @@ export default function Home() {
               predictably and accountably.
             </p>
           </div>
-        </motion.section>
-
-        {/* Section 8 - Closing CTA */}
-        <motion.section 
-          data-contract-section="landing.actions"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={staggerContainer}
-          className="py-32"
-          style={{ borderTop: `1px solid ${colors.neutral[200]}` }}
-        >
-          <motion.h2 
-            variants={fadeUpVariants}
-            style={{ 
-              fontSize: '32px', 
-              fontWeight: 600, 
-              lineHeight: 1.2, 
-              marginBottom: '32px',
-              maxWidth: '720px'
-            }}
-          >
-            Build systems that stay coherent.
-          </motion.h2>
-          
-          <motion.div 
-            variants={fadeUpVariants}
-            className="flex gap-6"
-          >
-            <button
-              style={{
-                fontSize: '14px',
-                fontWeight: 600,
-                padding: '12px 24px',
-                backgroundColor: colors.structure.primary,
-                color: colors.neutral[0],
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                transition: 'all var(--contract-motion-duration) var(--contract-motion-timing)'
-              }}
-            >
-              Start with Surfaces
-            </button>
-            <button
-              style={{
-                fontSize: '14px',
-                fontWeight: 600,
-                padding: '12px 24px',
-                backgroundColor: 'transparent',
-                color: colors.neutral[900],
-                border: `1px solid ${colors.neutral[200]}`,
-                borderRadius: '6px',
-                cursor: 'pointer',
-                transition: 'all var(--contract-motion-duration) var(--contract-motion-timing)'
-              }}
-            >
-              View documentation
-            </button>
-          </motion.div>
         </motion.section>
 
         {/* Footer */}

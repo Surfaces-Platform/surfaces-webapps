@@ -13,6 +13,7 @@
     "./components": "./src/components/index.ts",
     "./components/Icon": "./src/components/Icon.tsx",
     "./components/Navigation": "./src/components/Navigation.tsx",
+    "./components/ReleaseUpdatesPanel": "./src/components/ReleaseUpdatesPanel.tsx",
     "./icons": "./src/icons/index.ts",
     "./tokens": "./src/tokens/index.ts",
     "./tokens/colors": "./src/tokens/colors.ts",
