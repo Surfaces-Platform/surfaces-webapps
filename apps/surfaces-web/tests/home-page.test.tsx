@@ -55,6 +55,7 @@ describe("surfaces.systems home page", () => {
     expect(html).not.toContain("Read the philosophy");
     expect(html).not.toContain("Start with Surfaces");
     expect(html).not.toContain("View documentation");
-    expect(html).not.toContain('data-contract-section="landing.actions"');
+    expect(html).toContain('data-contract-section="landing.actions"');
+    expect(html).toContain('aria-hidden="true"');
   });
 });
