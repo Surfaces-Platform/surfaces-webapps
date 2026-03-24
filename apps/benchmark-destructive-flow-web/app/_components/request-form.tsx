@@ -1,11 +1,17 @@
 export function RequestForm(input: {
+  includeFlowMarkers: boolean;
   workspace: string;
   windowLabel: string;
   onWorkspaceChange: (value: string) => void;
   onWindowChange: (value: string) => void;
 }) {
   return (
-    <section className="flowPanel" data-contract-section="flow.request" id="request">
+    <section
+      className="flowPanel"
+      data-contract-section="flow.request"
+      id="request"
+      {...(input.includeFlowMarkers ? { "data-contract-flow-step": "request" } : {})}
+    >
       <h2>Request details</h2>
       <p>Operators stage the destructive action with a typed scope and execution window.</p>
       <div className="fieldGroup">
@@ -29,6 +35,15 @@ export function RequestForm(input: {
           placeholder="Next maintenance window"
           value={input.windowLabel}
         />
+      </div>
+      <div className="stepLinkRow">
+        <a
+          href="#review"
+          className="stepLink"
+          {...(input.includeFlowMarkers ? { "data-contract-flow-transition-to": "review" } : {})}
+        >
+          Continue to review
+        </a>
       </div>
     </section>
   );

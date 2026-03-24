@@ -1869,6 +1869,121 @@ describe("local workbench service", () => {
     );
   });
 
+  it("maps flow repair actions to actionable destructive-flow benchmark guidance", () => {
+    const suggestions = suggestionSummaryFromRun(
+      {
+        repairMap: [
+          {
+            code: "flow.required.missing",
+            action: {
+              type: "restore-required-flows",
+            },
+          },
+          {
+            code: "flow.steps.required",
+            action: {
+              type: "restore-required-flow-steps",
+            },
+          },
+          {
+            code: "flow.transition.required",
+            action: {
+              type: "restore-required-transitions",
+            },
+          },
+          {
+            code: "flow.unobservable",
+            action: {
+              type: "restore-flow-observability",
+            },
+          },
+        ],
+      },
+      {
+        findings: [
+          {
+            code: "flow.required.missing",
+            message: "Required flow \"workspace-delete\" is missing from the observed descriptor.",
+            location: {
+              file: "apps/benchmark-destructive-flow-web/app/_components/flow-workbench.tsx",
+              line: 0,
+            },
+          },
+          {
+            code: "flow.steps.required",
+            message: "Flow \"workspace-delete\" is missing required step \"review\".",
+            location: {
+              file: "apps/benchmark-destructive-flow-web/app/_components/review-step.tsx",
+              line: 0,
+            },
+          },
+          {
+            code: "flow.transition.required",
+            message: "Flow \"workspace-delete\" is missing required transition \"review -> confirm\".",
+            location: {
+              file: "apps/benchmark-destructive-flow-web/app/_components/review-step.tsx",
+              line: 0,
+            },
+          },
+          {
+            code: "flow.terminal.invalid",
+            message: "Flow \"workspace-delete\" terminal step \"confirm\" has outgoing transitions.",
+            location: {
+              file: "apps/benchmark-destructive-flow-web/app/_components/confirm-step.tsx",
+              line: 0,
+            },
+          },
+          {
+            code: "flow.unobservable",
+            message: "Flow policy is enabled, but runtime validation could not observe contract-scoped flow markers.",
+            location: {
+              file: "apps/benchmark-destructive-flow-web/app/_components/flow-workbench.tsx",
+              line: 0,
+            },
+          },
+        ],
+      },
+      {
+        fixture: BENCHMARK_DESTRUCTIVE_FLOW_FIXTURE,
+      },
+    );
+
+    expect(suggestions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          findingCode: "flow.required.missing",
+          suggestedPath: "apps/benchmark-destructive-flow-web/app/_components/flow-workbench.tsx",
+          summary:
+            "Restore the required task flow in apps/benchmark-destructive-flow-web/app/_components/flow-workbench.tsx so the declared request, review, and confirm path is present again.",
+        }),
+        expect.objectContaining({
+          findingCode: "flow.steps.required",
+          suggestedPath: "apps/benchmark-destructive-flow-web/app/_components/review-step.tsx",
+          summary:
+            "Restore the missing required flow step marker in apps/benchmark-destructive-flow-web/app/_components/review-step.tsx so the observed flow includes every declared step.",
+        }),
+        expect.objectContaining({
+          findingCode: "flow.transition.required",
+          suggestedPath: "apps/benchmark-destructive-flow-web/app/_components/review-step.tsx",
+          summary:
+            "Restore the missing transition marker in apps/benchmark-destructive-flow-web/app/_components/review-step.tsx so the observed flow preserves the declared step-to-step path.",
+        }),
+        expect.objectContaining({
+          findingCode: "flow.terminal.invalid",
+          suggestedPath: "apps/benchmark-destructive-flow-web/app/_components/confirm-step.tsx",
+          summary:
+            "Remove the outgoing transition from the terminal step in apps/benchmark-destructive-flow-web/app/_components/confirm-step.tsx so the declared final step stays terminal.",
+        }),
+        expect.objectContaining({
+          findingCode: "flow.unobservable",
+          suggestedPath: "apps/benchmark-destructive-flow-web/app/_components/flow-workbench.tsx",
+          summary:
+            "Restore explicit data-contract-flow-id, data-contract-flow-step, and data-contract-flow-transition-to markers in apps/benchmark-destructive-flow-web/app/_components/flow-workbench.tsx so the declared task flow is observable again.",
+        }),
+      ]),
+    );
+  });
+
   it("maps feedback-recovery repair actions to actionable benchmark guidance", () => {
     const suggestions = suggestionSummaryFromRun(
       {

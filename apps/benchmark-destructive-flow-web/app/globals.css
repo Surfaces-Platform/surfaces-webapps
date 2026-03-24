@@ -8,6 +8,8 @@
   --muted: #685d68;
   --border: #ebd8d5;
   --accent: #b8422f;
+  --contract-max-width: 1040px;
+  --font-inter: "Inter", sans-serif;
   --page-width: 1040px;
 }
 
@@ -39,7 +41,8 @@ body {
 }
 
 .flowHeaderInner {
-  max-width: var(--page-width);
+  width: min(calc(100% - 2.5rem), 1040px);
+  max-width: 1040px;
   margin: 0 auto;
   padding: 1rem 1.25rem;
   display: flex;
@@ -72,6 +75,9 @@ body {
 .flowNav a {
   color: var(--text);
   text-decoration: none;
+  transition:
+    color 120ms linear,
+    transform 120ms linear;
 }
 
 .flowUtilityButton {
@@ -80,14 +86,26 @@ body {
   background: white;
   color: var(--text);
   font: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background-color 120ms linear,
+    border-color 120ms linear,
+    transform 120ms linear;
 }
 
 .flowMain {
-  max-width: var(--page-width);
+  width: min(calc(100% - 2.5rem), 1040px);
+  max-width: 1040px;
   margin: 0 auto;
   padding: 2rem 1.25rem 4rem;
   display: grid;
   gap: 1rem;
+}
+
+[data-contract="page-container"] {
+  max-width: 1040px;
 }
 
 .flowIntro,
@@ -118,6 +136,10 @@ body {
 
 .flowPanel {
   background: var(--surface-alt);
+  transition:
+    background-color 120ms linear,
+    border-color 120ms linear,
+    transform 120ms linear;
 }
 
 .flowPanel h2 {
@@ -154,6 +176,9 @@ body {
   color: white;
   padding: 0.7rem 1rem;
   font: inherit;
+  transition:
+    background-color 120ms linear,
+    transform 120ms linear;
 }
 
 .secondaryButton {
@@ -163,6 +188,10 @@ body {
   color: var(--text);
   padding: 0.7rem 1rem;
   font: inherit;
+  transition:
+    background-color 120ms linear,
+    border-color 120ms linear,
+    transform 120ms linear;
 }
 
 .dangerButton:disabled {
@@ -183,6 +212,12 @@ body {
   padding-left: 1rem;
 }
 
+.reviewList li {
+  transition:
+    color 120ms linear,
+    transform 120ms linear;
+}
+
 .confirmToggle {
   display: flex;
   gap: 0.65rem;
@@ -197,6 +232,26 @@ body {
   margin-top: 1rem;
 }
 
+.stepLinkRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.stepLink {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    color 120ms linear,
+    transform 120ms linear;
+}
+
+.stepLinkMuted {
+  color: var(--muted);
+}
+
 .edgeCta {
   position: fixed;
   right: 4px;
@@ -206,4 +261,8 @@ body {
   background: white;
   color: var(--accent);
   font: inherit;
+  transition:
+    background-color 120ms linear,
+    border-color 120ms linear,
+    transform 120ms linear;
 }
