@@ -17,6 +17,7 @@ const repoRoot = path.resolve(
 const nodeBinary = process.execPath;
 const referenceTargetAppDir = path.join(repoRoot, "apps", "reference-target-web");
 const referenceFlowAppDir = path.join(repoRoot, "apps", "reference-flow-web");
+const benchmarkDestructiveFlowAppDir = path.join(repoRoot, "apps", "benchmark-destructive-flow-web");
 const benchmarkAsyncAppDir = path.join(repoRoot, "apps", "benchmark-async-data-web");
 const surfaceopsAppDir = path.join(repoRoot, "apps", "surfaceops-web");
 const contractsDir = path.join(repoRoot, "contracts");
@@ -32,6 +33,12 @@ const referenceFlowContractPath = path.join(
   "contracts",
   "generated",
   "reference-flow-web.contract.json",
+);
+const benchmarkDestructiveFlowContractPath = path.join(
+  repoRoot,
+  "contracts",
+  "generated",
+  "benchmark-destructive-flow-web.contract.json",
 );
 const benchmarkAsyncContractPath = path.join(
   repoRoot,
@@ -730,6 +737,162 @@ test("runtime e2e: browser-observed flow warnings flow into SurfaceOps runtime r
     );
   } finally {
     await stopServer(referenceFlow);
+    await stopServer(surfaceops);
+    await fsp.rm(path.join(surfaceopsAppDir, surfaceopsDistDir), { recursive: true, force: true });
+    await fsp.rm(workspaceRoot, { recursive: true, force: true });
+  }
+});
+
+test("runtime e2e: destructive-flow benchmark runtime bridge emits isolated flow warnings", { timeout: 180_000 }, async (t) => {
+  await ensureChromiumAvailable(t);
+
+  const benchmarkPort = await getFreePort();
+  const surfaceopsPort = await getFreePort();
+  const surfaceopsDistDir = ".next-runtime-e2e";
+  const workspaceRoot = await createTempWorkspaceRoot();
+  const defaultReportPath = path.join(workspaceRoot, "benchmark-destructive-flow.default.report.json");
+  const passReportPath = path.join(workspaceRoot, "benchmark-destructive-flow.pass.report.json");
+  const warningCases = [
+    {
+      slug: "missing-review-step",
+      query: "?runtimeReady=1&simulateMissingReviewStep=1",
+      expectedCode: "flow.steps.required",
+      createdAt: "2026-03-23T02:10:00.000Z",
+      runId: "runtime-benchmark-flow-missing-step-warn",
+    },
+    {
+      slug: "missing-confirm-transition",
+      query: "?runtimeReady=1&simulateMissingConfirmTransition=1",
+      expectedCode: "flow.transition.required",
+      createdAt: "2026-03-23T02:12:00.000Z",
+      runId: "runtime-benchmark-flow-missing-transition-warn",
+    },
+    {
+      slug: "terminal-back-edge",
+      query: "?runtimeReady=1&simulateTerminalBackEdge=1",
+      expectedCode: "flow.terminal.invalid",
+      createdAt: "2026-03-23T02:14:00.000Z",
+      runId: "runtime-benchmark-flow-terminal-invalid-warn",
+    },
+    {
+      slug: "unobservable",
+      query: "?runtimeReady=1&simulateUnobservableFlow=1",
+      expectedCode: "flow.unobservable",
+      createdAt: "2026-03-23T02:16:00.000Z",
+      runId: "runtime-benchmark-flow-unobservable-warn",
+    },
+  ];
+
+  runOrThrow("pnpm", ["--filter", "@surfaces/platform-auth", "build"], { cwd: repoRoot });
+
+  const benchmarkDestructiveFlow = startDevServer(benchmarkDestructiveFlowAppDir, benchmarkPort);
+  const surfaceops = startDevServer(surfaceopsAppDir, surfaceopsPort, {
+    SURFACEOPS_CONTRACTS_DIR: path.join(workspaceRoot, "contracts"),
+    SURFACEOPS_TEST_BYPASS_AUTH: "1",
+    SURFACEOPS_TEST_WORKSPACE_ID: workspaceId,
+    SURFACEOPS_NEXT_DIST_DIR: surfaceopsDistDir,
+  });
+
+  try {
+    try {
+      await waitForServer(
+        `http://127.0.0.1:${benchmarkPort}/${warningCases[0].query}`,
+        benchmarkDestructiveFlow.isRunning,
+      );
+    } catch (error) {
+      throw new Error(
+        `${error instanceof Error ? error.message : String(error)}\nBenchmark destructive flow logs:\n${benchmarkDestructiveFlow.getLogs()}`,
+      );
+    }
+
+    try {
+      await waitForServer(
+        `http://127.0.0.1:${surfaceopsPort}/contracts/runs`,
+        surfaceops.isRunning,
+      );
+    } catch (error) {
+      throw new Error(
+        `${error instanceof Error ? error.message : String(error)}\nSurfaceOps logs:\n${surfaceops.getLogs()}`,
+      );
+    }
+
+    const defaultValidate = await validateRemotePage({
+      workspaceRoot,
+      surfaceId: "benchmark-destructive-flow-web",
+      contractPath: benchmarkDestructiveFlowContractPath,
+      remoteUrl: `http://127.0.0.1:${benchmarkPort}/`,
+      reportPath: defaultReportPath,
+    });
+    const defaultFindingCodes = normalizeUniqueFindingCodes(defaultValidate);
+    assert.equal(defaultFindingCodes.includes("motion.none-detected"), false, JSON.stringify(defaultValidate, null, 2));
+    assert.equal(defaultFindingCodes.includes("token.normalization-skipped"), false, JSON.stringify(defaultValidate, null, 2));
+    assert.equal(defaultFindingCodes.includes("layout.width-undetermined"), false, JSON.stringify(defaultValidate, null, 2));
+
+    for (const warningCase of warningCases) {
+      const reportPath = path.join(workspaceRoot, `benchmark-destructive-flow.${warningCase.slug}.report.json`);
+      const warningValidate = await validateRemotePage({
+        workspaceRoot,
+        surfaceId: "benchmark-destructive-flow-web",
+        contractPath: benchmarkDestructiveFlowContractPath,
+        remoteUrl: `http://127.0.0.1:${benchmarkPort}/${warningCase.query}`,
+        reportPath,
+      });
+      assert.equal(summarizeRuntimeStatus(warningValidate), "warn", JSON.stringify(warningValidate, null, 2));
+      assert.deepEqual(
+        normalizeUniqueFindingCodes(warningValidate),
+        [warningCase.expectedCode],
+        JSON.stringify(warningValidate, null, 2),
+      );
+
+      emitRunArtifact({
+        workspaceRoot,
+        surfaceId: "benchmark-destructive-flow-web",
+        status: "warn",
+        findingCodes: warningCase.expectedCode,
+        createdAt: warningCase.createdAt,
+        runId: warningCase.runId,
+        reportPath,
+        contractPath: benchmarkDestructiveFlowContractPath,
+      });
+    }
+
+    const passingValidate = await validateRemotePage({
+      workspaceRoot,
+      surfaceId: "benchmark-destructive-flow-web",
+      contractPath: benchmarkDestructiveFlowContractPath,
+      remoteUrl: `http://127.0.0.1:${benchmarkPort}/?runtimeReady=1`,
+      reportPath: passReportPath,
+    });
+    assert.equal(summarizeRuntimeStatus(passingValidate), "pass", JSON.stringify(passingValidate, null, 2));
+    assert.equal(normalizeFindingCodes(passingValidate).length, 0, JSON.stringify(passingValidate, null, 2));
+
+    emitRunArtifact({
+      workspaceRoot,
+      surfaceId: "benchmark-destructive-flow-web",
+      status: "pass",
+      findingCodes: "",
+      createdAt: "2026-03-23T02:20:00.000Z",
+      runId: "runtime-benchmark-flow-pass",
+      reportPath: passReportPath,
+      contractPath: benchmarkDestructiveFlowContractPath,
+    });
+
+    const passRunsPage = await fetchText(
+      `http://127.0.0.1:${surfaceopsPort}/contracts/runs/benchmark-destructive-flow-web`,
+    );
+    assert.equal(passRunsPage.status, 200, passRunsPage.body);
+    const passRunsBody = normalizePageBody(passRunsPage.body);
+    assert.equal(countMatches(passRunsBody, /runtime\s*·\s*warn/g), warningCases.length, passRunsBody);
+    assert.equal(countMatches(passRunsBody, /runtime\s*·\s*pass/g), 1, passRunsBody);
+    for (const warningCase of warningCases) {
+      assert.match(passRunsBody, new RegExp(warningCase.expectedCode.replaceAll(".", "\\.")));
+    }
+    assert.match(
+      passRunsBody,
+      /data-testid="runs-kpi-runtime"[\s\S]*pass rate:\s*1\/5[\s\S]*recurring:\s*flow\.steps\.required\(1\), flow\.terminal\.invalid\(1\), flow\.transition\.required\(1\), flow\.unobservable\(1\)/,
+    );
+  } finally {
+    await stopServer(benchmarkDestructiveFlow);
     await stopServer(surfaceops);
     await fsp.rm(path.join(surfaceopsAppDir, surfaceopsDistDir), { recursive: true, force: true });
     await fsp.rm(workspaceRoot, { recursive: true, force: true });

@@ -149,6 +149,7 @@ export const BENCHMARK_DESTRUCTIVE_FLOW_FIXTURE = {
   defaultStrategies: ["prompt-summary", "json-primary"],
   primaryEditableFiles: [
     "apps/benchmark-destructive-flow-web/app/page.tsx",
+    "apps/benchmark-destructive-flow-web/app/_components/flow-workbench.tsx",
     "apps/benchmark-destructive-flow-web/app/_components/request-form.tsx",
     "apps/benchmark-destructive-flow-web/app/_components/review-step.tsx",
     "apps/benchmark-destructive-flow-web/app/_components/confirm-step.tsx",

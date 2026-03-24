@@ -1148,7 +1148,7 @@ function resolveRepairGuidance(input: {
     case "add-empty-state":
       return {
         suggestedPath: interactionPath,
-        summary: defaultSummaryForFinding(input.findingCode, input.findingMessage, input.context),
+        summary: defaultSummaryForFinding(input.findingCode, input.findingMessage, input.context, interactionPath),
       };
     case "add-error-retry":
       return {
@@ -1231,10 +1231,11 @@ function defaultSummaryForFinding(
   findingCode: string,
   findingMessage: string,
   context: SuggestionGuidanceContext | null | undefined = null,
+  suggestedPath: string | null = null,
 ): string {
   const knownSummary = defaultSummaryForKnownFinding(
     findingCode,
-    buildFindingGuidanceContext(context),
+    buildFindingGuidanceContext(context, suggestedPath),
   );
   if (knownSummary) {
     return knownSummary;
@@ -1260,7 +1261,12 @@ function enrichSuggestionGuidance<T extends {
     : suggestion.suggestedPath;
   const nextSummary = (isGenericSuggestionSummary(suggestion.summary, suggestion.findingCode)
     || suggestionSummaryNeedsRefresh(suggestion.summary, suggestion.findingCode))
-    ? defaultSummaryForFinding(suggestion.findingCode, suggestion.findingMessage, context)
+    ? defaultSummaryForFinding(
+        suggestion.findingCode,
+        suggestion.findingMessage,
+        context,
+        locationFile ?? nextSuggestedPath,
+      )
     : suggestion.summary;
   return {
     ...suggestion,

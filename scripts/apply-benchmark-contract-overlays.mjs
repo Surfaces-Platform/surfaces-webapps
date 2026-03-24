@@ -24,12 +24,35 @@ const OVERLAYS = {
   "benchmark-destructive-flow-web": {
     maxContentWidth: 1040,
     requiredContainers: ["page-container"],
+    targetAcquisition: {
+      policy: "warn",
+      modality: "touch-mouse",
+      minHitAreaPx: 44,
+      minGapPx: 8,
+      minEdgeInsetPx: 8,
+      destructiveGapPx: 16,
+    },
     requiredSections: [
       { id: "flow.intro", description: "Introductory framing for the destructive workflow.", intent: "intro" },
       { id: "flow.request", description: "Request capture step for the destructive workflow.", intent: "form" },
       { id: "flow.review", description: "Review checklist step for the destructive workflow.", intent: "review" },
       { id: "flow.confirm", description: "Explicit confirm step for the destructive workflow.", intent: "confirm" },
     ],
+    flows: {
+      policy: "warn",
+      requirements: [
+        {
+          flowId: "workspace-delete",
+          minSteps: 2,
+          requiredSteps: ["request", "review", "confirm"],
+          requiredTransitions: [
+            { from: "request", to: "review" },
+            { from: "review", to: "confirm" },
+          ],
+          terminalSteps: ["confirm"],
+        },
+      ],
+    },
     motion: {
       allowedDurationsMs: [120],
       allowedTimingFunctions: ["linear"],
@@ -134,8 +157,14 @@ async function main() {
     surface.layout ??= {};
     surface.layout.maxContentWidth = overlay.maxContentWidth;
     surface.layout.requiredContainers = overlay.requiredContainers;
+    if (overlay.targetAcquisition) {
+      surface.layout.targetAcquisition = overlay.targetAcquisition;
+    }
     if (overlay.chromeTargets && surface.layout.chromePolicy) {
       surface.layout.chromePolicy.targets = overlay.chromeTargets;
+    }
+    if (overlay.flows) {
+      surface.flows = overlay.flows;
     }
     surface.requiredSections = overlay.requiredSections.map((section) => section.id);
     contract.sections = overlay.requiredSections;
