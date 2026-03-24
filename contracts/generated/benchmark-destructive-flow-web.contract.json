@@ -77,12 +77,12 @@
           "page-container"
         ],
         "targetAcquisition": {
-          "destructiveGapPx": 16,
-          "minEdgeInsetPx": 8,
-          "minGapPx": 8,
-          "minHitAreaPx": 44,
+          "policy": "warn",
           "modality": "touch-mouse",
-          "policy": "warn"
+          "minHitAreaPx": 44,
+          "minGapPx": 8,
+          "minEdgeInsetPx": 8,
+          "destructiveGapPx": 16
         }
       },
       "requiredSections": [
@@ -95,25 +95,40 @@
       "phase0": {
         "authPosture": "public",
         "requiresShell": true
+      },
+      "flows": {
+        "policy": "warn",
+        "requirements": [
+          {
+            "flowId": "workspace-delete",
+            "minSteps": 2,
+            "requiredSteps": [
+              "request",
+              "review",
+              "confirm"
+            ],
+            "requiredTransitions": [
+              {
+                "from": "request",
+                "to": "review"
+              },
+              {
+                "from": "review",
+                "to": "confirm"
+              }
+            ],
+            "terminalSteps": [
+              "confirm"
+            ]
+          }
+        ]
       }
     }
   ],
   "tokens": {
     "layout": {
-      "allowedTokens": [
-        "var(--page-width)"
-      ],
-      "policy": "warn",
-      "tokenMetadata": [
-        {
-          "aliases": [],
-          "attributes": [
-            "max-width"
-          ],
-          "normalizedValue": "1040px",
-          "token": "var(--page-width)"
-        }
-      ]
+      "allowedTokens": [],
+      "policy": "warn"
     },
     "motion": {
       "allowedTokens": [],
@@ -130,7 +145,7 @@
           "attributes": [
             "font-family"
           ],
-          "normalizedValue": "var(--font-inter)",
+          "normalizedValue": "inter, sans-serif",
           "token": "var(--font-inter)"
         }
       ]
