@@ -15,9 +15,10 @@ describe("surfaceops marketing routes", () => {
     expect(html).toContain("Qwen3 4B");
     expect(html).toContain("Qwen3 8B");
     expect(html).toContain("gpt-oss 20B");
-    expect(html).toContain("Latest milestone");
     expect(html).toContain("release notes");
-    expect(html).toContain("Get desktop release updates");
+    expect(html).not.toContain("Latest milestone");
+    expect(html).not.toContain("Get desktop release updates");
+    expect(html).not.toContain("Get release updates");
   });
 
   it("renders release notes for the desktop rollout", async () => {

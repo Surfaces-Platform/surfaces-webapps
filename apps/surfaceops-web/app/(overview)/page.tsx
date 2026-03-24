@@ -1,7 +1,6 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ReleaseUpdatesPanel } from "@surfaces/ui/components/ReleaseUpdatesPanel";
 import { colors } from "@surfaces/ui/tokens/colors";
-import { isSurfaceOpsLocalWorkbenchEnabled } from "@/lib/auth-bypass";
 import {
   resolveSurfaceOpsDesktopRuntimePath,
   shouldRedirectToSurfaceOpsDesktopWorkbench,
@@ -13,8 +12,6 @@ export default function Home() {
   if (shouldRedirectToSurfaceOpsDesktopWorkbench("/")) {
     redirect(resolveSurfaceOpsDesktopRuntimePath());
   }
-
-  const localWorkbenchEnabled = isSurfaceOpsLocalWorkbenchEnabled();
 
   return (
     <div
@@ -91,70 +88,15 @@ export default function Home() {
           </p>
           <div
             style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "12px",
               marginTop: "32px",
             }}
           >
-            <Link
-              href="/download"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                minHeight: "46px",
-                padding: "0 20px",
-                borderRadius: "999px",
-                textDecoration: "none",
-                fontSize: "14px",
-                fontWeight: 700,
-                backgroundColor: colors.structure.primary,
-                color: colors.neutral[0],
-              }}
-            >
-              Download Public Alpha
-            </Link>
-            <Link
-              href="/release-notes"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                minHeight: "46px",
-                padding: "0 20px",
-                borderRadius: "999px",
-                textDecoration: "none",
-                fontSize: "14px",
-                fontWeight: 700,
-                border: `1px solid ${colors.neutral[200]}`,
-                color: colors.neutral[900],
-                backgroundColor: colors.neutral[0],
-              }}
-            >
-              Read Release Notes
-            </Link>
-            {localWorkbenchEnabled ? (
-              <Link
-                href="/contracts/governance"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  minHeight: "46px",
-                  padding: "0 20px",
-                  borderRadius: "999px",
-                  textDecoration: "none",
-                  fontSize: "14px",
-                  fontWeight: 700,
-                  border: `1px dashed ${colors.neutral[400]}`,
-                  color: colors.neutral[600],
-                  backgroundColor: colors.neutral[0],
-                }}
-              >
-                Open Local Workbench
-              </Link>
-            ) : null}
+            <ReleaseUpdatesPanel
+              variant="hero"
+              buttonLabel="Get release updates"
+              idleMessage="Enter your work email and we'll send SurfaceOps desktop alpha announcements, stable promotions, and major rollout updates."
+              successMessage="Thanks. We'll send SurfaceOps desktop release updates to this email."
+            />
           </div>
         </section>
 

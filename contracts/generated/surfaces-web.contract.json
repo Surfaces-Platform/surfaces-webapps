@@ -70,9 +70,7 @@
   "tokens": {
     "layout": {
       "allowedTokens": [
-        "var(--contract-max-width)",
-        "var(--contract-motion-duration)",
-        "var(--contract-motion-timing)"
+        "var(--contract-max-width)"
       ],
       "policy": "warn",
       "tokenMetadata": [
@@ -83,22 +81,6 @@
           ],
           "normalizedValue": "1120px",
           "token": "var(--contract-max-width)"
-        },
-        {
-          "aliases": [],
-          "attributes": [
-            "width"
-          ],
-          "normalizedValue": "120ms",
-          "token": "var(--contract-motion-duration)"
-        },
-        {
-          "aliases": [],
-          "attributes": [
-            "width"
-          ],
-          "normalizedValue": "linear",
-          "token": "var(--contract-motion-timing)"
         }
       ]
     },
@@ -112,8 +94,7 @@
         {
           "aliases": [],
           "attributes": [
-            "transition",
-            "transition={{\n                        duration"
+            "transition"
           ],
           "normalizedValue": "120ms",
           "token": "var(--contract-motion-duration)"
@@ -121,8 +102,7 @@
         {
           "aliases": [],
           "attributes": [
-            "transition",
-            "transition={{\n                        duration"
+            "transition"
           ],
           "normalizedValue": "linear",
           "token": "var(--contract-motion-timing)"
@@ -150,12 +130,14 @@
   "x_extracted": {
     "authAware": true,
     "designSystemComponents": [
-      "Navigation"
+      "Navigation",
+      "ReleaseUpdatesPanel"
     ],
     "hasShell": true,
     "routes": [
       "/",
       "/adaptive/[...slug]",
+      "/api/invite-request",
       "/auth/callback",
       "/auth/login",
       "/auth/logout",
