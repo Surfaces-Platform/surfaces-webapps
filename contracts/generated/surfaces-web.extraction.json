@@ -3,12 +3,14 @@
   "extracted": {
     "authAware": true,
     "designSystemComponents": [
-      "Navigation"
+      "Navigation",
+      "ReleaseUpdatesPanel"
     ],
     "hasShell": true,
     "routes": [
       "/",
       "/adaptive/[...slug]",
+      "/api/invite-request",
       "/auth/callback",
       "/auth/login",
       "/auth/logout",
