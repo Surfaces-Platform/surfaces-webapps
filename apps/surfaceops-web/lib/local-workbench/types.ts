@@ -84,7 +84,7 @@ export interface LocalWorkbenchRun {
   transcriptPath: string | null;
   touchedFiles: string[];
   errorMessage: string | null;
-  effectiveContractPath: string | null;
+  effectiveAstPath: string | null;
   guidanceStrategy: string | null;
   guidanceHandoffPath: string | null;
   agentInputPath: string | null;
@@ -143,20 +143,22 @@ export interface LocalWorkbenchChatMessage {
   createdAt: string;
 }
 
-export interface LocalWorkbenchContractChange {
+export type LocalWorkbenchAstChangeField =
+  | "color.allowedValues"
+  | "color.policy"
+  | "surfaces[reference-target-web].owner"
+  | "surfaces[reference-target-web].governance.status"
+  | "surfaces[reference-target-web].governance.roles.designers"
+  | "surfaces[reference-target-web].governance.roles.engineers"
+  | "surfaces[reference-target-web].runtime.policy"
+  | "surfaces[reference-target-web].runtime.mutationEnvelope.mode"
+  | "surfaces[reference-target-web].runtime.mutationEnvelope.allowedSections"
+  | "surfaces[reference-target-web].platforms[web].allowedFonts"
+  | "surfaces[reference-target-web].platforms[web].layout.maxContentWidth";
+
+export interface LocalWorkbenchAstChange {
   id: string;
-  field:
-    | "color.allowedValues"
-    | "color.policy"
-    | "surfaces.reference-target-web.layout.maxContentWidth"
-    | "surfaces.reference-target-web.allowedFonts"
-    | "surfaces.reference-target-web.owner"
-    | "surfaces.reference-target-web.governance.status"
-    | "surfaces.reference-target-web.governance.roles.designers"
-    | "surfaces.reference-target-web.governance.roles.engineers"
-    | "surfaces.reference-target-web.runtime.policy"
-    | "surfaces.reference-target-web.runtime.mutationEnvelope.mode"
-    | "surfaces.reference-target-web.runtime.mutationEnvelope.allowedSections";
+  path: LocalWorkbenchAstChangeField;
   action: "set" | "add";
   value: string | number;
   summary: string;
@@ -245,18 +247,70 @@ export interface PromotionReadinessReport {
   surfaces: PromotionReadinessSurface[];
 }
 
+export interface LocalWorkbenchLifecycleSummary {
+  stage: string;
+  validationStatus: string;
+  approvalStatus: string;
+  publicationStatus: string;
+  observationStatus: string;
+  requiredRoles: string[];
+}
+
+export interface LocalWorkbenchReviewSummary {
+  status: string;
+  requiresHumanReview: boolean;
+  changeCount: number;
+  nodeChangeCount: number;
+  governanceChangeCount: number;
+  platformChangeCount: number;
+}
+
+export interface LocalWorkbenchIntegrationEvidenceSummary {
+  consumer: string;
+  platform: string;
+  integratedAt: string;
+  passCount: number;
+  warnCount: number;
+  blockCount: number;
+  exceptionCount: number;
+}
+
 export interface LocalWorkbenchPublish {
   publishId: string;
   status: LocalWorkbenchPublishStatus;
   createdAt: string;
   sourceRunId: string | null;
-  contractPath: string;
+  astPath: string;
   bundleRoot: string;
   manifestPath: string;
   generationPayloadPath: string;
   runtimePayloadPath: string;
+  lifecycleStage: string;
+  integrationEvidencePath: string | null;
+  promotionRecordPath: string | null;
+  integrationEvidence: LocalWorkbenchIntegrationEvidenceSummary | null;
   promotionReadinessPath: string | null;
   promotionReadiness: PromotionReadinessReport | null;
+}
+
+export interface LocalWorkbenchAstSummary {
+  astId: string;
+  version: string;
+  description: string;
+  surfaceCount: number;
+  platformCount: number;
+  nodeCount: number;
+  migrationEscalationCount: number;
+  platformIds: string[];
+  requiredSections: string[];
+  allowedFonts: string[];
+  maxContentWidth: number | null;
+  colorPolicy: string;
+  allowedColors: string[];
+  owner: string | null;
+  governanceStatus: string | null;
+  runtimePolicy: string;
+  mutationMode: string | null;
 }
 
 export interface LocalWorkbenchData {
@@ -266,22 +320,12 @@ export interface LocalWorkbenchData {
     id: string;
     label: string;
     appRoot: string;
-    contractPath: string;
+    astPath: string;
     implementationBrief: string;
   };
-  contract: {
-    contractId: string;
-    version: string;
-    description: string;
-    requiredSections: string[];
-    allowedFonts: string[];
-    maxContentWidth: number | null;
-    colorPolicy: string;
-    owner: string | null;
-    governanceStatus: string | null;
-    runtimePolicy: string;
-    mutationMode: string | null;
-  };
+  ast: LocalWorkbenchAstSummary;
+  lifecycle: LocalWorkbenchLifecycleSummary;
+  review: LocalWorkbenchReviewSummary;
   latestRun: LocalWorkbenchRun | null;
   runs: LocalWorkbenchRun[];
   latestPublish: LocalWorkbenchPublish | null;
@@ -289,7 +333,7 @@ export interface LocalWorkbenchData {
   promotionReadiness: PromotionReadinessReport | null;
   activeAcceptedSuggestions: LocalWorkbenchAcceptedSuggestion[];
   latestRunOperatorNote: string | null;
-  activeContractChanges: LocalWorkbenchContractChange[];
+  activeAstChanges: LocalWorkbenchAstChange[];
   activeDesignerNotes: LocalWorkbenchDesignerNote[];
   latestRunAgentInput: LocalWorkbenchAgentInput;
   latestRunGuidanceHandoff: LocalWorkbenchAgentInput;

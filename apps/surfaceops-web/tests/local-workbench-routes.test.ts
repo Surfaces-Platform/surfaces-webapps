@@ -52,17 +52,29 @@ describe("local workbench routes", () => {
     });
   });
 
-  it("publishes the local working contract", async () => {
+  it("publishes the local working UI AST", async () => {
     mocked.publishLocalWorkbenchContract.mockResolvedValue({
       publishId: "publish-1",
       status: "published",
       createdAt: "2026-03-16T18:00:00.000Z",
       sourceRunId: "run-1",
-      contractPath: "/tmp/publish-1/published-contract.json",
+      astPath: "/tmp/publish-1/published-ui-ast.json",
       bundleRoot: "/tmp/publish-1/bundle",
       manifestPath: "/tmp/publish-1/bundle/manifest.json",
       generationPayloadPath: "/tmp/publish-1/generation.json",
       runtimePayloadPath: "/tmp/publish-1/runtime.json",
+      lifecycleStage: "published",
+      integrationEvidencePath: "/tmp/publish-1/integration-evidence.json",
+      promotionRecordPath: "/tmp/publish-1/promotion-record.json",
+      integrationEvidence: {
+        consumer: "surfaceops-workbench",
+        platform: "web",
+        integratedAt: "2026-03-16T18:00:00.000Z",
+        passCount: 2,
+        warnCount: 0,
+        blockCount: 0,
+        exceptionCount: 0,
+      },
       promotionReadinessPath: "/tmp/publish-1/promotion-readiness.json",
       promotionReadiness: null,
     });

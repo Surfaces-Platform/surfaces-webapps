@@ -324,7 +324,7 @@ describe("generation benchmarks reader", () => {
         },
         paths: {
           benchmarkDir,
-          effectiveContractPath: path.join(benchmarkDir, "effective-contract.json"),
+          effectiveAstPath: path.join(benchmarkDir, "effective-ui-ast.json"),
           preparedInputPath,
           reportJsonPath: path.join(reportDir, "benchmark-report.json"),
           reportMarkdownPath: path.join(reportDir, "benchmark-report.md"),
@@ -686,7 +686,7 @@ describe("generation benchmarks reader", () => {
             },
             paths: {
               fixtureDir,
-              effectiveContractPath: path.join(fixtureDir, "effective-contract.json"),
+              effectiveAstPath: path.join(fixtureDir, "effective-ui-ast.json"),
               preparedInputPath,
               acceptedSuggestionsPath: path.join(fixtureDir, "accepted-suggestions.runtime.json"),
               designerNotesPath: path.join(fixtureDir, "designer-notes.runtime.json"),

@@ -16,6 +16,7 @@ export interface BenchmarkFixture {
   label: string;
   appPath: string;
   contractPath: string;
+  astPath?: string;
   implementationBrief: string;
   devPort: number;
   defaultStrategies: BenchmarkGuidanceStrategy[];
@@ -54,8 +55,9 @@ export const REFERENCE_TARGET_FIXTURE = {
   label: "Reference Target Web",
   appPath: "apps/reference-target-web",
   contractPath: "contracts/generated/reference-target-web.contract.json",
+  astPath: "contracts/generated/reference-target-web.ui.surface.ast.json",
   implementationBrief:
-    "Refine the reference target UI to better match the contract-guided surface while preserving deterministic fixture behavior.",
+    "Refine the reference target UI to better match the UI AST-guided surface while preserving deterministic fixture behavior.",
   devPort: 3004,
   defaultStrategies: ["prompt-summary", "json-primary"],
   primaryEditableFiles: ["apps/reference-target-web/app/page.tsx"],
@@ -208,8 +210,9 @@ export const BENCHMARK_ASYNC_DATA_FIXTURE = {
   label: "Benchmark Async Data Web",
   appPath: "apps/benchmark-async-data-web",
   contractPath: "contracts/generated/benchmark-async-data-web.contract.json",
+  astPath: "contracts/generated/benchmark-async-data-web.ui.surface.ast.json",
   implementationBrief:
-    "Repair the async data benchmark fixture so the server-driven dashboard and supporting panels satisfy the contract while preserving the async data split.",
+    "Repair the async data benchmark fixture so the server-driven dashboard and supporting panels satisfy the UI AST while preserving the async data split.",
   devPort: 3008,
   defaultStrategies: ["prompt-summary", "json-primary"],
   primaryEditableFiles: [

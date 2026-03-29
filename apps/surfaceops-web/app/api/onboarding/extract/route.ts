@@ -24,8 +24,9 @@ export async function POST(request: Request) {
     );
   }
 
-  const result = runOnboardingExtraction({
+  const result = await runOnboardingExtraction({
     url: payload.url,
+    appRoot: payload.appRoot,
     surfaceName: payload.surfaceName,
     surfaceId: payload.surfaceId,
     authMode: payload.authMode === "browser-session" ? "browser-session" : "none",

@@ -29,7 +29,7 @@ function buildRun(overrides: Partial<LocalWorkbenchRun> = {}): LocalWorkbenchRun
     transcriptPath: null,
     touchedFiles: ["apps/reference-target-web/app/globals.css"],
     errorMessage: null,
-    effectiveContractPath: "/tmp/surfaceops-local-runs/reference-target-web/runs/20260314091904/effective-contract.json",
+    effectiveAstPath: "/tmp/surfaceops-local-runs/reference-target-web/runs/20260314091904/effective-ui-ast.json",
     guidanceStrategy: null,
     guidanceHandoffPath: null,
     agentInputPath: "/tmp/surfaceops-local-runs/reference-target-web/runs/20260314091904/agent-input.txt",
@@ -53,21 +53,43 @@ function buildData(overrides: Partial<LocalWorkbenchData> = {}): LocalWorkbenchD
       id: "reference-target-web",
       label: "Reference Target Web",
       appRoot: "/repo/apps/reference-target-web",
-      contractPath: "/repo/contracts/generated/reference-target-web.contract.json",
-      implementationBrief: "Refine the reference target UI to better match the contract-guided surface.",
+      astPath: "/repo/contracts/generated/reference-target-web.ui.surface.ast.json",
+      implementationBrief: "Refine the reference target UI to better match the UI AST-guided surface.",
     },
-    contract: {
-      contractId: "reference-target-web.generated",
+    ast: {
+      astId: "reference-target-web.generated",
       version: "0.1.0",
       description: "Generated fixture contract.",
+      surfaceCount: 1,
+      platformCount: 1,
+      nodeCount: 7,
+      migrationEscalationCount: 0,
+      platformIds: ["web"],
       requiredSections: ["landing.hero", "landing.capabilities"],
       allowedFonts: ["Inter", "sans-serif"],
       maxContentWidth: 1160,
       colorPolicy: "warn",
+      allowedColors: ["#f9fbff"],
       owner: null,
       governanceStatus: null,
       runtimePolicy: "off",
       mutationMode: null,
+    },
+    lifecycle: {
+      stage: "validated",
+      validationStatus: "passed",
+      approvalStatus: "draft",
+      publicationStatus: "unpublished",
+      observationStatus: "pending",
+      requiredRoles: ["designer", "engineering"],
+    },
+    review: {
+      status: "unchanged",
+      requiresHumanReview: false,
+      changeCount: 0,
+      nodeChangeCount: 0,
+      governanceChangeCount: 0,
+      platformChangeCount: 0,
     },
     latestRun: null,
     runs: [],
@@ -76,7 +98,7 @@ function buildData(overrides: Partial<LocalWorkbenchData> = {}): LocalWorkbenchD
     promotionReadiness: null,
     activeAcceptedSuggestions: [],
     latestRunOperatorNote: null,
-    activeContractChanges: [],
+    activeAstChanges: [],
     activeDesignerNotes: [],
     latestRunAgentInput: {
       path: null,
@@ -90,15 +112,15 @@ function buildData(overrides: Partial<LocalWorkbenchData> = {}): LocalWorkbenchD
       {
         id: "contract-summary",
         role: "system",
-        title: "Working contract",
+        title: "Working UI AST",
         content: "reference-target-web.generated v0.1.0",
         createdAt: "1970-01-01T00:00:00.000Z",
       },
       {
         id: "empty-chat",
         role: "assistant",
-        title: "Contract shaper",
-        content: "Send a designer instruction to shape the working contract before the next rerun.",
+        title: "UI AST shaper",
+        content: "Send a designer instruction to shape the working UI AST before the next rerun.",
         createdAt: "2026-03-13T21:00:00.000Z",
       },
     ],
@@ -229,6 +251,31 @@ describe("LocalWorkbench", () => {
   it("renders publish readiness KPIs and blocking reasons", () => {
     const html = renderToStaticMarkup(React.createElement(LocalWorkbench, {
       data: buildData({
+        latestPublish: {
+          publishId: "publish-1",
+          status: "published",
+          createdAt: "2026-03-16T18:40:00.000Z",
+          sourceRunId: "run-1",
+          astPath: "/tmp/publish-1/published-ui-ast.json",
+          bundleRoot: "/tmp/publish-1/bundle",
+          manifestPath: "/tmp/publish-1/bundle/manifest.json",
+          generationPayloadPath: "/tmp/publish-1/generation.json",
+          runtimePayloadPath: "/tmp/publish-1/runtime.json",
+          lifecycleStage: "published",
+          integrationEvidencePath: "/tmp/publish-1/integration-evidence.json",
+          promotionRecordPath: "/tmp/publish-1/promotion-record.json",
+          integrationEvidence: {
+            consumer: "surfaceops-workbench",
+            platform: "web",
+            integratedAt: "2026-03-16T18:40:00.000Z",
+            passCount: 2,
+            warnCount: 0,
+            blockCount: 0,
+            exceptionCount: 0,
+          },
+          promotionReadinessPath: "/tmp/publish-1/promotion-readiness.json",
+          promotionReadiness: null,
+        },
         promotionReadiness: {
           schemaVersion: 2,
           generatedAt: "2026-03-16T18:30:00.000Z",
@@ -320,6 +367,9 @@ describe("LocalWorkbench", () => {
     expect(html).toContain("Recurring findings");
     expect(html).toContain("motion.none-detected (2)");
     expect(html).toContain("promotion.contract-mismatch");
+    expect(html).toContain("Lifecycle and review");
+    expect(html).toContain("Integration summary: 2 pass, 0 warn, 0 block, 0 exceptions");
+    expect(html).toContain("Promotion record: /tmp/publish-1/promotion-record.json");
   });
 
   it("renders trace inspection around the selected run without replacing the controls shell", () => {
@@ -371,13 +421,13 @@ describe("LocalWorkbench", () => {
   it("keeps chat primary and hides implementation debug behind a collapsed section", () => {
     const html = renderToStaticMarkup(React.createElement(LocalWorkbench, {
       data: buildData({
-        activeContractChanges: [
+        activeAstChanges: [
           {
             id: "change-1",
-            field: "color.allowedValues",
+            path: "color.allowedValues",
             action: "add",
             value: "#8BAE3F",
-            summary: "Allow color #8BAE3F in the working contract.",
+            summary: "Allow color #8BAE3F in the working UI AST.",
             createdAt: "2026-03-13T21:00:00.000Z",
             sourceMessageId: "user-1",
           },
@@ -392,13 +442,13 @@ describe("LocalWorkbench", () => {
         ],
         latestRunAgentInput: {
           path: "/tmp/surfaceops-local-runs/reference-target-web/runs/20260313210000/agent-input.txt",
-          content: "System:\nEffective working contract:\nMax content width: 2000",
+          content: "System:\nEffective working UI AST:\nMax content width: 2000",
         },
         chat: [
           {
             id: "contract-summary",
             role: "system",
-            title: "Working contract",
+            title: "Working UI AST",
             content: "reference-target-web.generated v0.1.0",
             createdAt: "1970-01-01T00:00:00.000Z",
           },
@@ -412,7 +462,7 @@ describe("LocalWorkbench", () => {
           {
             id: "assistant-1",
             role: "assistant",
-            title: "Contract shaper",
+            title: "UI AST shaper",
             content: "Applied: Set max content width to 2000px. Designer notes: Edge-to-edge layout intent should be preserved.",
             createdAt: "2026-03-13T21:00:01.000Z",
           },
@@ -422,8 +472,8 @@ describe("LocalWorkbench", () => {
     }));
 
     expect(html).toContain("Designer chat");
-    expect(html).toContain("Send to contract shaper");
-    expect(html).toContain("Active contract changes");
+    expect(html).toContain("Send to UI AST shaper");
+    expect(html).toContain("Active UI AST changes");
     expect(html).toContain("Captured designer notes");
     expect(html).toContain("Edge-to-edge layout intent should be preserved.");
     expect(html).toContain("Implementation debug");

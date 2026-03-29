@@ -1,0 +1,226 @@
+{
+  "$schema": "https://contracts.surfaces.local/ui.surface.ast.schema.json",
+  "astId": "benchmark-async-data-web.generated",
+  "color": {
+    "allowedValues": [
+      "rgba(255, 255, 255, 0.92)",
+      "var(--accent)",
+      "var(--bg)",
+      "var(--muted)",
+      "var(--surface-alt)",
+      "var(--surface)",
+      "var(--text)",
+      "white"
+    ],
+    "policy": "warn"
+  },
+  "constraints": {
+    "motion": {
+      "allowedDurationsMs": [
+        180,
+        220
+      ],
+      "allowedTimingFunctions": [
+        "ease"
+      ]
+    }
+  },
+  "description": "Extracted from Next.js app (Phase 0).",
+  "migration": {
+    "escalations": [],
+    "sourceFormat": "web.surface.contract@1"
+  },
+  "surfaces": [
+    {
+      "displayName": "Benchmark Async Data Web",
+      "icons": {
+        "allowedSources": [],
+        "policy": "warn"
+      },
+      "id": "benchmark-async-data-web",
+      "kind": "application",
+      "nodes": [
+        {
+          "children": [
+            "data.hero",
+            "data.stream",
+            "data.queue",
+            "data.health"
+          ],
+          "description": "Root group for Benchmark Async Data Web.",
+          "id": "benchmark-async-data-web.root",
+          "kind": "group",
+          "label": "Benchmark Async Data Web"
+        },
+        {
+          "description": "Server-rendered hero summary for the async dashboard.",
+          "id": "data.hero",
+          "intent": "hero",
+          "kind": "section",
+          "label": "hero",
+          "sectionId": "data.hero"
+        },
+        {
+          "description": "Primary async stream lane for dashboard events.",
+          "id": "data.stream",
+          "intent": "stream",
+          "kind": "section",
+          "label": "stream",
+          "sectionId": "data.stream"
+        },
+        {
+          "description": "Queued review lane for async dashboard data.",
+          "id": "data.queue",
+          "intent": "queue",
+          "kind": "section",
+          "label": "queue",
+          "sectionId": "data.queue"
+        },
+        {
+          "description": "Health counters panel for the async dashboard.",
+          "id": "data.health",
+          "intent": "health",
+          "kind": "section",
+          "label": "health",
+          "sectionId": "data.health"
+        }
+      ],
+      "phase0": {
+        "authPosture": "public",
+        "requiresShell": true
+      },
+      "platforms": [
+        {
+          "allowedFonts": [
+            "Inter",
+            "sans-serif",
+            "var(--font-inter)"
+          ],
+          "layout": {
+            "chromePolicy": {
+              "allowInsetShadow": false,
+              "allowOuterShadow": false,
+              "maxBorderRadiusPx": 0,
+              "policy": "off",
+              "targets": [
+                "layout-container",
+                "page-container",
+                "top-level-section"
+              ]
+            },
+            "maxContentWidth": 1180,
+            "requiredContainers": [
+              "page-container"
+            ]
+          },
+          "platform": "web"
+        }
+      ],
+      "rootNodeId": "benchmark-async-data-web.root",
+      "runtime": {
+        "contexts": [
+          {
+            "blockedActionsWhilePending": [
+              "submit-refresh"
+            ],
+            "id": "loading",
+            "kind": "loading",
+            "when": "request == pending"
+          },
+          {
+            "id": "empty",
+            "kind": "empty",
+            "when": "items.length == 0"
+          },
+          {
+            "id": "error",
+            "kind": "error",
+            "preserveLastGoodContent": true,
+            "preserveSections": [
+              "data.hero",
+              "data.stream",
+              "data.queue",
+              "data.health"
+            ],
+            "requiredRecoveryActions": [
+              "retry"
+            ],
+            "when": "request == failed"
+          },
+          {
+            "id": "success",
+            "kind": "success",
+            "when": "request == fulfilled"
+          }
+        ],
+        "feedbackRecovery": {
+          "policy": "warn",
+          "requiredStateKinds": [
+            "loading",
+            "empty",
+            "error",
+            "success"
+          ]
+        },
+        "policy": "warn"
+      },
+      "states": [
+        {
+          "id": "loading",
+          "kind": "loading"
+        },
+        {
+          "id": "empty",
+          "kind": "empty"
+        },
+        {
+          "id": "error",
+          "kind": "error"
+        },
+        {
+          "id": "success",
+          "kind": "success"
+        }
+      ]
+    }
+  ],
+  "tokens": {
+    "layout": {
+      "allowedTokens": [
+        "var(--page-width)"
+      ],
+      "policy": "warn",
+      "tokenMetadata": [
+        {
+          "aliases": [],
+          "attributes": [
+            "max-width"
+          ],
+          "normalizedValue": "1180px",
+          "token": "var(--page-width)"
+        }
+      ]
+    },
+    "motion": {
+      "allowedTokens": [],
+      "policy": "warn"
+    },
+    "typography": {
+      "allowedTokens": [
+        "var(--font-inter)"
+      ],
+      "policy": "warn",
+      "tokenMetadata": [
+        {
+          "aliases": [],
+          "attributes": [
+            "font-family"
+          ],
+          "normalizedValue": "var(--font-inter)",
+          "token": "var(--font-inter)"
+        }
+      ]
+    }
+  },
+  "version": "0.1.0"
+}

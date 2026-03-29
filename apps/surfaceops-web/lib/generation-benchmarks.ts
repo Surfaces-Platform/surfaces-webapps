@@ -19,7 +19,7 @@ export interface BenchmarkCohortManifestFixture {
   };
   paths: {
     fixtureDir: string;
-    effectiveContractPath: string;
+    effectiveAstPath: string;
     preparedInputPath: string;
     acceptedSuggestionsPath: string;
     designerNotesPath: string;
@@ -70,7 +70,7 @@ export interface BenchmarkCohortManifest {
   };
   paths: {
     benchmarkDir: string;
-    effectiveContractPath?: string;
+    effectiveAstPath?: string;
     preparedInputPath?: string;
     reportJsonPath: string;
     reportMarkdownPath: string;

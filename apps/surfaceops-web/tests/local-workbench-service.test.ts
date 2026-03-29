@@ -15,6 +15,7 @@ import {
 const mockedInterfacectl = vi.hoisted(() => ({
   resolveWorkspaceRoot: vi.fn(),
   runInterfacectlCli: vi.fn(),
+  loadInterfacectlUiAstTools: vi.fn(),
 }));
 const mockedLocalLlm = vi.hoisted(() => ({
   runLocalLlmAgent: vi.fn(),
@@ -27,6 +28,7 @@ const mockedChildProcess = vi.hoisted(() => ({
 vi.mock("@/lib/interfacectl", () => ({
   resolveWorkspaceRoot: mockedInterfacectl.resolveWorkspaceRoot,
   runInterfacectlCli: mockedInterfacectl.runInterfacectlCli,
+  loadInterfacectlUiAstTools: mockedInterfacectl.loadInterfacectlUiAstTools,
 }));
 vi.mock("@/lib/local-workbench/local-llm", async () => {
   const actual = await vi.importActual<typeof import("@/lib/local-workbench/local-llm")>("@/lib/local-workbench/local-llm");
@@ -70,30 +72,361 @@ import {
   getBenchmarkFixtureProfile,
 } from "@/lib/local-workbench/benchmark-fixtures";
 
-async function seedContract(workspaceRoot: string): Promise<void> {
-  const contractPath = path.join(workspaceRoot, "contracts", "generated", "reference-target-web.contract.json");
-  await fs.mkdir(path.dirname(contractPath), { recursive: true });
-  await fs.writeFile(
-    contractPath,
-    JSON.stringify({
-      contractId: "reference-target-web.generated",
-      version: "0.1.0",
-      description: "Generated fixture contract.",
+function stableClone<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
+function buildMockUiAstTools() {
+  function findSurface(ast: Record<string, any>, surfaceId = "reference-target-web") {
+    return ast.surfaces?.find((entry: { id?: string }) => entry.id === surfaceId) ?? ast.surfaces?.[0] ?? {};
+  }
+
+  function findWebPlatform(surface: Record<string, any>) {
+    return surface.platforms?.find((entry: { platform?: string }) => entry.platform === "web")
+      ?? surface.platforms?.[0]
+      ?? {};
+  }
+
+  function migrateLegacyContractToUiAst(contract: Record<string, any>) {
+    const surface = contract.surfaces?.[0] ?? {};
+    const requiredSections = [...new Set<string>(
+      Array.isArray(surface.requiredSections)
+        ? surface.requiredSections
+        : Array.isArray(contract.sections)
+          ? contract.sections.map((entry: { id?: string }) => entry?.id).filter((entry): entry is string => Boolean(entry))
+          : [],
+    )];
+    return {
+      astId: contract.contractId ?? "reference-target-web.generated",
+      version: contract.version ?? "0.1.0",
+      description: contract.description ?? "",
       color: {
-        policy: "warn",
-        allowedValues: ["#f9fbff"],
+        policy: contract.color?.policy ?? "off",
+        allowedValues: [...new Set(contract.color?.allowedValues ?? [])],
       },
       surfaces: [
         {
-          id: "reference-target-web",
-          allowedFonts: ["Inter"],
-          layout: { maxContentWidth: 1160 },
-          requiredSections: ["landing.hero"],
+          id: surface.id ?? "reference-target-web",
+          displayName: surface.displayName ?? "Reference Target Web",
+          rootNodeId: `${surface.id ?? "reference-target-web"}.root`,
+          nodes: [
+            {
+              id: `${surface.id ?? "reference-target-web"}.root`,
+              kind: "group",
+              children: requiredSections,
+            },
+            ...requiredSections.map((sectionId: string) => ({
+              id: sectionId,
+              kind: "section",
+              sectionId,
+              label: sectionId,
+            })),
+          ],
+          platforms: [
+            {
+              platform: "web",
+              allowedFonts: [...new Set(surface.allowedFonts ?? [])],
+              layout: {
+                maxContentWidth: surface.layout?.maxContentWidth ?? null,
+              },
+            },
+          ],
+          owner: surface.owner ?? null,
+          governance: surface.governance ?? {},
+          runtime: surface.runtime ?? {},
         },
       ],
-    }),
-    "utf8",
-  );
+      migration: {
+        escalations: [],
+      },
+    };
+  }
+
+  function deriveLegacyContractFromUiAst(ast: Record<string, any>) {
+    const surface = ast.surfaces?.[0] ?? {};
+    const web = surface.platforms?.find((entry: { platform?: string }) => entry.platform === "web")
+      ?? surface.platforms?.[0]
+      ?? {};
+    const sections = (surface.nodes ?? [])
+      .filter((entry: { kind?: string }) => entry.kind === "section")
+      .map((entry: { sectionId?: string; id?: string }) => ({
+        id: entry.sectionId ?? entry.id,
+        intent: "section",
+        description: `Migrated section ${entry.sectionId ?? entry.id}.`,
+      }));
+    return {
+      contractId: ast.astId ?? "reference-target-web.generated",
+      version: ast.version ?? "0.1.0",
+      description: ast.description ?? "",
+      color: {
+        policy: ast.color?.policy ?? "off",
+        allowedValues: [...new Set(ast.color?.allowedValues ?? [])],
+      },
+      sections,
+      surfaces: [
+        {
+          id: surface.id ?? "reference-target-web",
+          displayName: surface.displayName ?? "Reference Target Web",
+          type: "web",
+          requiredSections: sections.map((entry: { id: string }) => entry.id),
+          allowedFonts: [...new Set(web.allowedFonts ?? [])],
+          layout: {
+            maxContentWidth: web.layout?.maxContentWidth ?? null,
+          },
+          owner: surface.owner ?? null,
+          governance: surface.governance ?? {},
+          runtime: surface.runtime ?? {},
+        },
+      ],
+    };
+  }
+
+  function normalizeUiAst(ast: Record<string, any>) {
+    const normalized = stableClone(ast);
+    normalized.color ??= {};
+    normalized.color.allowedValues = [...new Set(normalized.color.allowedValues ?? [])].sort();
+    for (const surface of normalized.surfaces ?? []) {
+      surface.nodes = [...(surface.nodes ?? [])].sort((left, right) => String(left.id).localeCompare(String(right.id)));
+      surface.platforms = [...(surface.platforms ?? [])]
+        .map((platform) => ({
+          ...platform,
+          allowedFonts: [...new Set(platform.allowedFonts ?? [])].sort(),
+        }))
+        .sort((left, right) => String(left.platform).localeCompare(String(right.platform)));
+    }
+    return normalized;
+  }
+
+  function applyUiAstChange(ast: Record<string, any>, change: { path: string; action: string; value: string | number }) {
+    const next = normalizeUiAst(ast);
+    const surface = next.surfaces?.find((entry: { id?: string }) => entry.id === "reference-target-web") ?? next.surfaces?.[0];
+    const web = surface?.platforms?.find((entry: { platform?: string }) => entry.platform === "web") ?? surface?.platforms?.[0];
+    next.color ??= { allowedValues: [] };
+    switch (change.path) {
+      case "color.allowedValues":
+        next.color.allowedValues = [...new Set([...(next.color.allowedValues ?? []), String(change.value)])].sort();
+        return next;
+      case "color.policy":
+        next.color.policy = String(change.value);
+        return next;
+      case "surfaces[reference-target-web].platforms[web].layout.maxContentWidth":
+        web.layout ??= {};
+        web.layout.maxContentWidth = Number(change.value);
+        return next;
+      case "surfaces[reference-target-web].platforms[web].allowedFonts":
+        web.allowedFonts = [...new Set([...(web.allowedFonts ?? []), String(change.value)])].sort();
+        return next;
+      case "surfaces[reference-target-web].owner":
+        surface.owner = String(change.value);
+        return next;
+      case "surfaces[reference-target-web].governance.status":
+        surface.governance ??= {};
+        surface.governance.status = String(change.value);
+        return next;
+      case "surfaces[reference-target-web].governance.roles.designers":
+        surface.governance ??= {};
+        surface.governance.roles ??= {};
+        surface.governance.roles.designers = [...new Set([...(surface.governance.roles.designers ?? []), String(change.value)])].sort();
+        return next;
+      case "surfaces[reference-target-web].governance.roles.engineers":
+        surface.governance ??= {};
+        surface.governance.roles ??= {};
+        surface.governance.roles.engineers = [...new Set([...(surface.governance.roles.engineers ?? []), String(change.value)])].sort();
+        return next;
+      case "surfaces[reference-target-web].runtime.policy":
+        surface.runtime ??= {};
+        surface.runtime.policy = String(change.value);
+        return next;
+      case "surfaces[reference-target-web].runtime.mutationEnvelope.mode":
+        surface.runtime ??= {};
+        surface.runtime.mutationEnvelope ??= {};
+        surface.runtime.mutationEnvelope.mode = String(change.value);
+        return next;
+      case "surfaces[reference-target-web].runtime.mutationEnvelope.allowedSections":
+        surface.runtime ??= {};
+        surface.runtime.mutationEnvelope ??= {};
+        surface.runtime.mutationEnvelope.allowedSections = [
+          ...new Set([...(surface.runtime.mutationEnvelope.allowedSections ?? []), String(change.value)]),
+        ].sort();
+        return next;
+      default:
+        throw new Error(`Unsupported mock UI AST change path: ${change.path}`);
+    }
+  }
+
+  function summarizeUiAst(ast: Record<string, any>) {
+    const normalized = normalizeUiAst(ast);
+    const surface = normalized.surfaces?.[0] ?? {};
+    const web = findWebPlatform(surface);
+    return {
+      astId: normalized.astId ?? "reference-target-web.generated",
+      version: normalized.version ?? "0.1.0",
+      surfaceCount: (normalized.surfaces ?? []).length,
+      platformCount: (surface.platforms ?? []).length,
+      nodeCount: (surface.nodes ?? []).length,
+      migrationEscalationCount: normalized.migration?.escalations?.length ?? 0,
+      surfaces: [
+        {
+          surfaceId: surface.id ?? "reference-target-web",
+          platforms: (surface.platforms ?? []).map((entry: { platform?: string }) => entry.platform ?? "web"),
+          sectionIds: (surface.nodes ?? [])
+            .filter((entry: { kind?: string }) => entry.kind === "section")
+            .map((entry: { sectionId?: string; id?: string }) => entry.sectionId ?? entry.id),
+          owner: surface.owner ?? null,
+          governanceStatus: surface.governance?.status ?? null,
+          runtimePolicy: surface.runtime?.policy ?? null,
+          maxContentWidthByPlatform: {
+            web: web.layout?.maxContentWidth ?? null,
+          },
+        },
+      ],
+    };
+  }
+
+  function buildUiAstLifecycleRecord(ast: Record<string, any>, options: Record<string, any> = {}) {
+    const normalized = normalizeUiAst(ast);
+    const surface = findSurface(normalized, options.surfaceId);
+    const governanceStatus = surface.governance?.status ?? "draft";
+    const requiredRoles = [
+      ...(surface.governance?.roles?.designers?.length ? ["designer"] : []),
+      ...(surface.governance?.roles?.engineers?.length ? ["engineering"] : []),
+    ];
+    const validationStatus = options.validationStatus ?? "passed";
+    const approvalStatus =
+      governanceStatus === "approved" || governanceStatus === "published"
+        ? "approved"
+        : governanceStatus === "review"
+          ? "pending"
+          : "draft";
+    const publicationStatus = options.publishedAt ? "published" : "unpublished";
+    const observationStatus = options.observedAt ? "observed" : "pending";
+    const stage =
+      observationStatus === "observed"
+        ? "observed"
+        : publicationStatus === "published"
+          ? "published"
+          : approvalStatus === "approved"
+            ? "approved"
+            : validationStatus === "passed"
+              ? "validated"
+              : "draft";
+
+    return {
+      stage,
+      validation: { status: validationStatus },
+      approval: {
+        status: approvalStatus,
+        requiredRoles: requiredRoles.length > 0 ? requiredRoles : ["designer", "engineering"],
+      },
+      publication: { status: publicationStatus },
+      observation: {
+        status: observationStatus,
+        ...(options.lastRuntimeVerdict ? { lastVerdict: String(options.lastRuntimeVerdict) } : {}),
+      },
+    };
+  }
+
+  function buildUiAstReviewArtifact(before: Record<string, any>, after: Record<string, any>, surfaceId = "reference-target-web") {
+    const normalizedBefore = normalizeUiAst(before);
+    const normalizedAfter = normalizeUiAst(after);
+    const beforeSurface = findSurface(normalizedBefore, surfaceId);
+    const afterSurface = findSurface(normalizedAfter, surfaceId);
+    const beforeWeb = findWebPlatform(beforeSurface);
+    const afterWeb = findWebPlatform(afterSurface);
+    const nodeChanged = JSON.stringify(beforeSurface.nodes ?? []) !== JSON.stringify(afterSurface.nodes ?? []);
+    const governanceChanged =
+      beforeSurface.owner !== afterSurface.owner ||
+      JSON.stringify(beforeSurface.governance ?? {}) !== JSON.stringify(afterSurface.governance ?? {}) ||
+      JSON.stringify(beforeSurface.runtime ?? {}) !== JSON.stringify(afterSurface.runtime ?? {});
+    const platformChanged =
+      JSON.stringify(beforeWeb.allowedFonts ?? []) !== JSON.stringify(afterWeb.allowedFonts ?? []) ||
+      JSON.stringify(beforeWeb.layout ?? {}) !== JSON.stringify(afterWeb.layout ?? {});
+    const colorChanged = JSON.stringify(normalizedBefore.color ?? {}) !== JSON.stringify(normalizedAfter.color ?? {});
+    const changeCount = [nodeChanged, governanceChanged, platformChanged, colorChanged].filter(Boolean).length;
+    const requiresHumanReview = governanceChanged || platformChanged || nodeChanged;
+
+    return {
+      review: {
+        status: changeCount === 0 ? "unchanged" : requiresHumanReview ? "needs-review" : "ready",
+        requiresHumanReview,
+      },
+      summary: {
+        changeCount,
+        nodeChangeCount: nodeChanged ? 1 : 0,
+        governanceChangeCount: governanceChanged ? 1 : 0,
+        platformChangeCount: platformChanged ? 1 : 0,
+      },
+    };
+  }
+
+  function buildUiAstIntegrationEvidence(options: Record<string, any>) {
+    const requiredChecks = Array.isArray(options.contract?.evidence?.requiredChecks)
+      ? options.contract.evidence.requiredChecks
+      : ["integration.binding.valid", "projection.available"];
+    return {
+      consumer: options.consumer ?? "surfaceops-workbench",
+      platform: options.platform ?? "web",
+      integratedAt: options.integratedAt ?? "2026-03-28T00:00:00.000Z",
+      compatibilityChecks: requiredChecks.map((code: string) => ({
+        code,
+        status: "pass",
+        message: `${code} passed.`,
+      })),
+      exceptions: options.exceptions ?? [],
+    };
+  }
+
+  function buildUiAstPromotionRecord(options: Record<string, any>) {
+    return {
+      promotionId: options.promotionId ?? "publish-1",
+      promotedAt: options.promotedAt ?? "2026-03-28T00:00:00.000Z",
+      lifecycleStage: options.lifecycle?.stage === "observed" ? "observed" : "published",
+      artifacts: {
+        astPath: options.astPath,
+        bundleRoot: options.bundleRoot,
+        generationPayloadPath: options.generationPayloadPath,
+        runtimePayloadPath: options.runtimePayloadPath,
+        ...(options.integrationEvidencePath ? { integrationEvidencePath: options.integrationEvidencePath } : {}),
+      },
+    };
+  }
+
+  return {
+    migrateLegacyContractToUiAst,
+    deriveLegacyContractFromUiAst,
+    normalizeUiAst,
+    applyUiAstChange,
+    buildUiAstIntegrationEvidence,
+    buildUiAstLifecycleRecord,
+    buildUiAstPromotionRecord,
+    buildUiAstReviewArtifact,
+    summarizeUiAst,
+  };
+}
+
+async function seedContract(workspaceRoot: string): Promise<void> {
+  const contractPath = path.join(workspaceRoot, "contracts", "generated", "reference-target-web.contract.json");
+  const astPath = path.join(workspaceRoot, "contracts", "generated", "reference-target-web.ui.surface.ast.json");
+  await fs.mkdir(path.dirname(contractPath), { recursive: true });
+  const contract = {
+    contractId: "reference-target-web.generated",
+    version: "0.1.0",
+    description: "Generated fixture contract.",
+    color: {
+      policy: "warn",
+      allowedValues: ["#f9fbff"],
+    },
+    surfaces: [
+      {
+        id: "reference-target-web",
+        allowedFonts: ["Inter"],
+        layout: { maxContentWidth: 1160 },
+        requiredSections: ["landing.hero"],
+      },
+    ],
+  };
+  await fs.writeFile(contractPath, JSON.stringify(contract), "utf8");
+  await fs.writeFile(astPath, JSON.stringify(buildMockUiAstTools().migrateLegacyContractToUiAst(contract)), "utf8");
 }
 
 function stableJson(value: unknown): string {
@@ -585,6 +918,7 @@ describe("local workbench service", () => {
     workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "surfaceops-local-workbench-"));
     mockedInterfacectl.resolveWorkspaceRoot.mockReturnValue(workspaceRoot);
     mockedInterfacectl.runInterfacectlCli.mockReset();
+    mockedInterfacectl.loadInterfacectlUiAstTools.mockResolvedValue(buildMockUiAstTools());
     mockedLocalLlm.runLocalLlmAgent.mockReset();
     mockedChildProcess.spawn.mockReset();
     mockedChildProcess.spawn.mockImplementation((command: string, args?: readonly string[]) => {
@@ -606,7 +940,7 @@ describe("local workbench service", () => {
     global.fetch = vi.fn(async () =>
       new Response(JSON.stringify(responsesPayload({
         assistantMessage: "No changes.",
-        contractChanges: [],
+        astChanges: [],
         designerNotes: [],
       })), {
         status: 200,
@@ -637,16 +971,16 @@ describe("local workbench service", () => {
     });
   });
 
-  it("adds a highlight color to the working contract via chat", async () => {
+  it("adds a highlight color to the working UI AST via chat", async () => {
     global.fetch = vi.fn(async () =>
       new Response(JSON.stringify(responsesPayload({
         assistantMessage: "Added highlight color #8BAE3F.",
-        contractChanges: [
+        astChanges: [
           {
-            field: "color.allowedValues",
+            path: "color.allowedValues",
             action: "add",
             value: "#8BAE3F",
-            summary: "Allow color #8BAE3F in the working contract.",
+            summary: "Allow color #8BAE3F in the working UI AST.",
           },
         ],
         designerNotes: [],
@@ -659,24 +993,33 @@ describe("local workbench service", () => {
     await appendLocalWorkbenchChatMessage({ message: "add highlight color #8BAE3F" });
 
     const data = await loadLocalWorkbenchData();
-    expect(data.activeContractChanges).toEqual(
+    expect(data.activeAstChanges).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          field: "color.allowedValues",
+          path: "color.allowedValues",
           value: "#8BAE3F",
         }),
       ]),
     );
     expect(data.chat).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ title: "Working contract" }),
+        expect.objectContaining({ title: "Working UI AST" }),
         expect.objectContaining({ role: "user", content: "add highlight color #8BAE3F" }),
         expect.objectContaining({
           role: "assistant",
-          content: "Applied: Allow color #8BAE3F in the working contract.",
+          content: "Applied: Allow color #8BAE3F in the working UI AST.",
         }),
       ]),
     );
+    expect(data.lifecycle).toMatchObject({
+      stage: "validated",
+      validationStatus: "passed",
+    });
+    expect(data.review).toMatchObject({
+      status: "ready",
+      requiresHumanReview: false,
+      changeCount: 1,
+    });
 
     const sessionPath = path.join(
       workspaceRoot,
@@ -698,9 +1041,9 @@ describe("local workbench service", () => {
     global.fetch = vi.fn(async () =>
       new Response(JSON.stringify(responsesPayload({
         assistantMessage: "Updated width and preserved edge-to-edge as a designer note.",
-        contractChanges: [
+        astChanges: [
           {
-            field: "surfaces.reference-target-web.layout.maxContentWidth",
+            path: "surfaces[reference-target-web].platforms[web].layout.maxContentWidth",
             action: "set",
             value: 2000,
             summary: "Set max content width to 2000px.",
@@ -716,7 +1059,7 @@ describe("local workbench service", () => {
     await appendLocalWorkbenchChatMessage({ message: "go edge-to-edge, max 2000px" });
 
     const data = await loadLocalWorkbenchData();
-    expect(data.contract.maxContentWidth).toBe(2000);
+    expect(data.ast.maxContentWidth).toBe(2000);
     expect(data.activeDesignerNotes).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -772,31 +1115,31 @@ describe("local workbench service", () => {
     expect(data.localModel.runtimeStatus?.phase).toBe("ready");
   });
 
-  it("applies governance and runtime metadata via chat-backed contract changes", async () => {
+  it("applies governance and runtime metadata via chat-backed UI AST changes", async () => {
     global.fetch = vi.fn(async () =>
       new Response(JSON.stringify(responsesPayload({
         assistantMessage: "Updated owner, governance, and runtime policy.",
-        contractChanges: [
+        astChanges: [
           {
-            field: "surfaces.reference-target-web.owner",
+            path: "surfaces[reference-target-web].owner",
             action: "set",
             value: "designers@example.com",
             summary: "Set surface owner to designers@example.com.",
           },
           {
-            field: "surfaces.reference-target-web.governance.status",
+            path: "surfaces[reference-target-web].governance.status",
             action: "set",
             value: "review",
             summary: "Set governance status to review.",
           },
           {
-            field: "surfaces.reference-target-web.runtime.policy",
+            path: "surfaces[reference-target-web].runtime.policy",
             action: "set",
             value: "strict",
             summary: "Set runtime policy to strict.",
           },
           {
-            field: "surfaces.reference-target-web.runtime.mutationEnvelope.mode",
+            path: "surfaces[reference-target-web].runtime.mutationEnvelope.mode",
             action: "set",
             value: "slot-bound",
             summary: "Set mutation mode to slot-bound.",
@@ -812,10 +1155,14 @@ describe("local workbench service", () => {
     await appendLocalWorkbenchChatMessage({ message: "Set owner to designers@example.com and use strict slot-bound runtime review." });
 
     const data = await loadLocalWorkbenchData();
-    expect(data.contract.owner).toBe("designers@example.com");
-    expect(data.contract.governanceStatus).toBe("review");
-    expect(data.contract.runtimePolicy).toBe("strict");
-    expect(data.contract.mutationMode).toBe("slot-bound");
+    expect(data.ast.owner).toBe("designers@example.com");
+    expect(data.ast.governanceStatus).toBe("review");
+    expect(data.ast.runtimePolicy).toBe("strict");
+    expect(data.ast.mutationMode).toBe("slot-bound");
+    expect(data.review).toMatchObject({
+      status: "needs-review",
+      requiresHumanReview: true,
+    });
   });
 
   it("upgrades a legacy session by replaying named-color chat turns into structured contract state", async () => {
@@ -847,7 +1194,7 @@ describe("local workbench service", () => {
           {
             id: "assistant-1",
             role: "assistant",
-            title: "Contract shaper",
+            title: "UI AST shaper",
             content: "The shell’s background color has been added as an allowed value.",
             createdAt: "2026-03-14T05:22:46.297Z",
           },
@@ -866,10 +1213,10 @@ describe("local workbench service", () => {
     ) as typeof fetch;
 
     const data = await loadLocalWorkbenchData();
-    expect(data.activeContractChanges).toEqual(
+    expect(data.activeAstChanges).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          field: "color.allowedValues",
+          path: "color.allowedValues",
           value: "#ffc0cb",
         }),
       ]),
@@ -885,24 +1232,24 @@ describe("local workbench service", () => {
       expect.arrayContaining([
         expect.objectContaining({
           role: "assistant",
-          content: "Applied: Allow color #ffc0cb in the working contract. Designer notes: Shell background should use #ffc0cb.",
+          content: "Applied: Allow color #ffc0cb in the working UI AST. Designer notes: Shell background should use #ffc0cb.",
         }),
       ]),
     );
 
     const storedSession = JSON.parse(await fs.readFile(sessionPath, "utf8")) as {
       schemaVersion: number;
-      workingContract: { color?: { allowedValues?: string[] } };
+      workingAst: { color?: { allowedValues?: string[] } };
       chat: Array<{ content: string }>;
     };
-    expect(storedSession.schemaVersion).toBe(2);
-    expect(storedSession.workingContract.color?.allowedValues).toContain("#ffc0cb");
+    expect(storedSession.schemaVersion).toBe(3);
+    expect(storedSession.workingAst.color?.allowedValues).toContain("#ffc0cb");
     expect(storedSession.chat[1]?.content).toBe(
-      "Applied: Allow color #ffc0cb in the working contract. Designer notes: Shell background should use #ffc0cb.",
+      "Applied: Allow color #ffc0cb in the working UI AST. Designer notes: Shell background should use #ffc0cb.",
     );
   });
 
-  it("keeps latest run agent input stable after later chat turns update the working contract", async () => {
+  it("keeps latest run agent input stable after later chat turns update the working UI AST", async () => {
     await appendLocalWorkbenchChatMessage({ message: "add highlight color #8BAE3F" });
 
     const runRoot = path.join(
@@ -915,7 +1262,7 @@ describe("local workbench service", () => {
     );
     await fs.mkdir(runRoot, { recursive: true });
     const agentInputPath = path.join(runRoot, "agent-input.txt");
-    await fs.writeFile(agentInputPath, "System:\nEffective working contract:\nMax content width: 1160", "utf8");
+    await fs.writeFile(agentInputPath, "System:\nEffective working UI AST:\nMax content width: 1160", "utf8");
     await fs.writeFile(
       path.join(runRoot, "run.json"),
       JSON.stringify({
@@ -924,7 +1271,7 @@ describe("local workbench service", () => {
         status: "succeeded",
         createdAt: "2026-03-13T21:00:00.000Z",
         completedAt: "2026-03-13T21:02:00.000Z",
-        contractPath: path.join(runRoot, "effective-contract.json"),
+        astPath: path.join(runRoot, "effective-ui-ast.json"),
         preparedInputPath: null,
         baselineSessionDir: null,
         currentSessionDir: null,
@@ -935,7 +1282,7 @@ describe("local workbench service", () => {
         comparisonPath: null,
         suggestionsPath: null,
         transcriptPath: null,
-        effectiveContractPath: path.join(runRoot, "effective-contract.json"),
+        effectiveAstPath: path.join(runRoot, "effective-ui-ast.json"),
         agentInputPath,
         explainabilityPath: path.join(runRoot, "explainability.json"),
         touchedFiles: [],
@@ -947,9 +1294,9 @@ describe("local workbench service", () => {
     global.fetch = vi.fn(async () =>
       new Response(JSON.stringify(responsesPayload({
         assistantMessage: "Set max content width to 2000px.",
-        contractChanges: [
+        astChanges: [
           {
-            field: "surfaces.reference-target-web.layout.maxContentWidth",
+            path: "surfaces[reference-target-web].platforms[web].layout.maxContentWidth",
             action: "set",
             value: 2000,
             summary: "Set max content width to 2000px.",
@@ -967,7 +1314,7 @@ describe("local workbench service", () => {
     const data = await loadLocalWorkbenchData();
     expect(data.latestRunAgentInput.path).toBe(agentInputPath);
     expect(data.latestRunAgentInput.content).toContain("Max content width: 1160");
-    expect(data.contract.maxContentWidth).toBe(2000);
+    expect(data.ast.maxContentWidth).toBe(2000);
   });
 
   it("writes repaired named colors into rerun effective contracts and agent input", async () => {
@@ -999,7 +1346,7 @@ describe("local workbench service", () => {
           {
             id: "assistant-1",
             role: "assistant",
-            title: "Contract shaper",
+            title: "UI AST shaper",
             content: "The shell’s background color has been added as an allowed value.",
             createdAt: "2026-03-14T05:22:46.297Z",
           },
@@ -1034,7 +1381,7 @@ describe("local workbench service", () => {
       if (command === "prepare-generation") {
         const outIndex = args.indexOf("--out");
         const contract = JSON.parse(await fs.readFile(sessionPath, "utf8")) as {
-          workingContract: { color?: { allowedValues?: string[] } };
+          workingAst: { color?: { allowedValues?: string[] } };
         };
         await fs.writeFile(
           args[outIndex + 1]!,
@@ -1050,7 +1397,7 @@ describe("local workbench service", () => {
             constraints: {
               color: {
                 policy: "warn",
-                allowedValues: contract.workingContract.color?.allowedValues ?? [],
+                allowedValues: contract.workingAst.color?.allowedValues ?? [],
               },
             },
             sections: [],
@@ -1091,7 +1438,7 @@ describe("local workbench service", () => {
     });
 
     mockedLocalLlm.runLocalLlmAgent.mockImplementation(async (options: {
-      effectiveContractSummary?: string;
+      effectiveAstSummary?: string;
       activeDesignerNotes?: Array<{ content: string }>;
     }) => ({
       transcript: [],
@@ -1100,8 +1447,8 @@ describe("local workbench service", () => {
       noChanges: false,
       agentInput: [
         "System:",
-        "Effective working contract:",
-        options.effectiveContractSummary ?? "",
+        "Effective working UI AST:",
+        options.effectiveAstSummary ?? "",
         "",
         "Active designer notes:",
         ...(options.activeDesignerNotes?.map((note) => `- ${note.content}`) ?? []),
@@ -1121,7 +1468,7 @@ describe("local workbench service", () => {
     const [latestRunId] = (await fs.readdir(runsDir)).sort().reverse();
     expect(latestRunId).toBeTruthy();
 
-    const effectiveContract = await fs.readFile(path.join(runsDir, latestRunId!, "effective-contract.json"), "utf8");
+    const effectiveAst = await fs.readFile(path.join(runsDir, latestRunId!, "effective-ui-ast.json"), "utf8");
     const agentInput = await fs.readFile(path.join(runsDir, latestRunId!, "agent-input.txt"), "utf8");
     const explainability = await fs.readFile(path.join(runsDir, latestRunId!, "explainability.json"), "utf8");
     const canonicalRuns = JSON.parse(
@@ -1130,7 +1477,7 @@ describe("local workbench service", () => {
       runs: Array<{ runId: string; source: string; artifacts: { reportPath?: string } }>;
     };
 
-    expect(effectiveContract).toContain("#ffc0cb");
+    expect(effectiveAst).toContain("#ffc0cb");
     expect(agentInput).toContain("#ffc0cb");
     expect(agentInput).toContain("Shell background should use #ffc0cb.");
     expect(explainability).toContain("#ffc0cb");
@@ -1147,7 +1494,7 @@ describe("local workbench service", () => {
     );
   });
 
-  it("publishes a frozen contract revision with generation and runtime payloads", async () => {
+  it("publishes a frozen UI AST revision with generation and runtime payloads", async () => {
     const contractPath = path.join(
       workspaceRoot,
       "contracts",
@@ -1163,9 +1510,19 @@ describe("local workbench service", () => {
       "run-1",
     );
     await fs.mkdir(runDir, { recursive: true });
+    const currentAst = buildMockUiAstTools().migrateLegacyContractToUiAst(
+      JSON.parse(await fs.readFile(contractPath, "utf8")),
+    );
+    const compatibilityContractPath = path.join(runDir, "compatibility.contract.json");
+    await fs.writeFile(
+      compatibilityContractPath,
+      JSON.stringify(buildMockUiAstTools().deriveLegacyContractFromUiAst(currentAst)),
+      "utf8",
+    );
     await seedGenerationRunArtifact(workspaceRoot, {
       runId: "run-1",
-      contractPath,
+      createdAt: "2026-03-27T18:00:00.000Z",
+      contractPath: compatibilityContractPath,
       reportPath: path.join(runDir, "001.validate.json"),
     });
     await fs.writeFile(
@@ -1174,9 +1531,9 @@ describe("local workbench service", () => {
         schemaVersion: 2,
         runId: "run-1",
         status: "succeeded",
-        createdAt: "2026-03-16T18:00:00.000Z",
-        completedAt: "2026-03-16T18:05:00.000Z",
-        contractPath: path.join(runDir, "effective-contract.json"),
+        createdAt: "2026-03-27T18:00:00.000Z",
+        completedAt: "2026-03-27T18:05:00.000Z",
+        astPath: path.join(runDir, "effective-ui-ast.json"),
         preparedInputPath: null,
         guidanceStrategy: "json-primary",
         guidanceHandoffPath: null,
@@ -1189,7 +1546,7 @@ describe("local workbench service", () => {
         comparisonPath: null,
         suggestionsPath: null,
         transcriptPath: null,
-        effectiveContractPath: path.join(runDir, "effective-contract.json"),
+        effectiveAstPath: path.join(runDir, "effective-ui-ast.json"),
         agentInputPath: null,
         explainabilityPath: null,
         touchedFiles: ["apps/reference-target-web/app/page.tsx"],
@@ -1197,15 +1554,27 @@ describe("local workbench service", () => {
       }),
       "utf8",
     );
-    await fs.writeFile(path.join(runDir, "effective-contract.json"), await fs.readFile(contractPath, "utf8"), "utf8");
+    await fs.writeFile(path.join(runDir, "effective-ui-ast.json"), JSON.stringify(currentAst), "utf8");
 
     mockedInterfacectl.runInterfacectlCli.mockImplementation(async (args: string[]) => {
       const command = args[0];
       const outIndex = args.indexOf("--out");
       if (command === "compile" && outIndex >= 0) {
         const bundleRoot = args[outIndex + 1]!;
-        await fs.mkdir(bundleRoot, { recursive: true });
-        await fs.writeFile(path.join(bundleRoot, "manifest.json"), JSON.stringify({ bundleVersion: "2.0" }), "utf8");
+        const surfaceDir = path.join(bundleRoot, "surfaces", "reference-target-web");
+        await fs.mkdir(surfaceDir, { recursive: true });
+        await fs.writeFile(path.join(bundleRoot, "manifest.json"), JSON.stringify({ bundleVersion: "3.0" }), "utf8");
+        await fs.writeFile(
+          path.join(surfaceDir, "integration.json"),
+          JSON.stringify({
+            integration: {
+              evidence: {
+                requiredChecks: ["integration.binding.valid", "projection.available"],
+              },
+            },
+          }),
+          "utf8",
+        );
         return { stdout: "", stderr: "" };
       }
       if ((command === "prepare-generation" || command === "prepare-runtime") && outIndex >= 0) {
@@ -1219,15 +1588,28 @@ describe("local workbench service", () => {
 
     expect(publish.status).toBe("published");
     expect(publish.sourceRunId).toBe("run-1");
+    expect(publish.lifecycleStage).toBe("published");
+    expect(publish.integrationEvidencePath).toContain("integration-evidence.json");
+    expect(publish.promotionRecordPath).toContain("promotion-record.json");
+    expect(publish.integrationEvidence).toMatchObject({
+      consumer: "surfaceops-workbench",
+      platform: "web",
+      passCount: 2,
+      warnCount: 0,
+      blockCount: 0,
+      exceptionCount: 0,
+    });
     expect(publish.promotionReadinessPath).toContain("promotion-readiness.json");
     expect(publish.promotionReadiness?.summary.readyForPromotion).toBe(true);
-    await expect(fs.readFile(publish.contractPath, "utf8")).resolves.toContain("\"contractId\"");
+    await expect(fs.readFile(publish.astPath, "utf8")).resolves.toContain("\"astId\"");
     await expect(fs.readFile(publish.generationPayloadPath, "utf8")).resolves.toContain("\"command\":\"prepare-generation\"");
     await expect(fs.readFile(publish.runtimePayloadPath, "utf8")).resolves.toContain("\"command\":\"prepare-runtime\"");
+    await expect(fs.readFile(publish.integrationEvidencePath!, "utf8")).resolves.toContain("\"surfaceops-workbench\"");
+    await expect(fs.readFile(publish.promotionRecordPath!, "utf8")).resolves.toContain("\"lifecycleStage\": \"published\"");
     await expect(fs.readFile(publish.promotionReadinessPath!, "utf8")).resolves.toContain("\"readyForPromotion\": true");
   });
 
-  it("blocks publish when canonical readiness evidence does not match the current contract", async () => {
+  it("blocks publish when canonical readiness evidence does not match the current UI AST", async () => {
     const contractPath = path.join(
       workspaceRoot,
       "contracts",
@@ -1245,6 +1627,7 @@ describe("local workbench service", () => {
     await fs.mkdir(runDir, { recursive: true });
     await seedGenerationRunArtifact(workspaceRoot, {
       runId: "run-1",
+      createdAt: "2026-03-27T18:00:00.000Z",
       contractPath,
       reportPath: path.join(runDir, "001.validate.json"),
     });
@@ -1254,9 +1637,9 @@ describe("local workbench service", () => {
         schemaVersion: 2,
         runId: "run-1",
         status: "succeeded",
-        createdAt: "2026-03-16T18:00:00.000Z",
-        completedAt: "2026-03-16T18:05:00.000Z",
-        contractPath: path.join(runDir, "effective-contract.json"),
+        createdAt: "2026-03-27T18:00:00.000Z",
+        completedAt: "2026-03-27T18:05:00.000Z",
+        astPath: path.join(runDir, "effective-ui-ast.json"),
         preparedInputPath: null,
         guidanceStrategy: "json-primary",
         guidanceHandoffPath: null,
@@ -1269,7 +1652,7 @@ describe("local workbench service", () => {
         comparisonPath: null,
         suggestionsPath: null,
         transcriptPath: null,
-        effectiveContractPath: path.join(runDir, "effective-contract.json"),
+        effectiveAstPath: path.join(runDir, "effective-ui-ast.json"),
         agentInputPath: null,
         explainabilityPath: null,
         touchedFiles: ["apps/reference-target-web/app/page.tsx"],
@@ -1277,14 +1660,18 @@ describe("local workbench service", () => {
       }),
       "utf8",
     );
-    await fs.writeFile(path.join(runDir, "effective-contract.json"), await fs.readFile(contractPath, "utf8"), "utf8");
+    await fs.writeFile(
+      path.join(runDir, "effective-ui-ast.json"),
+      JSON.stringify(buildMockUiAstTools().migrateLegacyContractToUiAst(JSON.parse(await fs.readFile(contractPath, "utf8")))),
+      "utf8",
+    );
 
     global.fetch = vi.fn(async () =>
       new Response(JSON.stringify(responsesPayload({
         assistantMessage: "Updated max width.",
-        contractChanges: [
+        astChanges: [
           {
-            field: "surfaces.reference-target-web.layout.maxContentWidth",
+            path: "surfaces[reference-target-web].platforms[web].layout.maxContentWidth",
             action: "set",
             value: 1280,
             summary: "Set max content width to 1280px.",
@@ -1322,7 +1709,7 @@ describe("local workbench service", () => {
       transcriptPath: "/tmp/surfaceops-local-runs/reference-target-web/runs/20260313225854/agent-trace.json",
       touchedFiles: ["apps/reference-target-web/app/globals.css"],
       errorMessage: null,
-      effectiveContractPath: null,
+      effectiveAstPath: null,
       guidanceStrategy: null,
       guidanceHandoffPath: null,
       agentInputPath: null,
@@ -1387,7 +1774,7 @@ describe("local workbench service", () => {
       transcriptPath: "/tmp/surfaceops-local-runs/reference-target-web/runs/20260313233524/agent-trace.json",
       touchedFiles: ["apps/reference-target-web/app/globals.css"],
       errorMessage: null,
-      effectiveContractPath: null,
+      effectiveAstPath: null,
       guidanceStrategy: null,
       guidanceHandoffPath: null,
       agentInputPath: null,
@@ -1610,7 +1997,7 @@ describe("local workbench service", () => {
         comparisonPath: null,
         suggestionsPath: path.join(runDir, "suggestions.json"),
         transcriptPath: null,
-        effectiveContractPath: null,
+        effectiveAstPath: null,
         agentInputPath: null,
         explainabilityPath: null,
         touchedFiles: [],
@@ -1671,12 +2058,12 @@ describe("local workbench service", () => {
     global.fetch = vi.fn(async () =>
       new Response(JSON.stringify(responsesPayload({
         assistantMessage: "Added highlight color #8BAE3F.",
-        contractChanges: [
+        astChanges: [
           {
-            field: "color.allowedValues",
+            path: "color.allowedValues",
             action: "add",
             value: "#8BAE3F",
-            summary: "Allow color #8BAE3F in the working contract.",
+            summary: "Allow color #8BAE3F in the working UI AST.",
           },
         ],
         designerNotes: [],
@@ -1689,10 +2076,10 @@ describe("local workbench service", () => {
     await appendLocalWorkbenchChatMessage({ message: "add highlight color #8BAE3F" });
 
     const updatedData = await loadLocalWorkbenchData();
-    expect(updatedData.activeContractChanges).toEqual(
+    expect(updatedData.activeAstChanges).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          field: "color.allowedValues",
+          path: "color.allowedValues",
           value: "#8BAE3F",
         }),
       ]),
@@ -1749,8 +2136,8 @@ describe("local workbench service", () => {
     expect(data.latestRunOperatorNote).toBeNull();
     expect(data.chat).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ title: "Working contract" }),
-        expect.objectContaining({ title: "Contract shaper" }),
+        expect.objectContaining({ title: "Working UI AST" }),
+        expect.objectContaining({ title: "UI AST shaper" }),
       ]),
     );
   });

@@ -158,7 +158,7 @@ export default async function RunsPage() {
           >
             <div style={{ fontSize: "16px", fontWeight: 600, marginBottom: "6px" }}>No runs yet</div>
             <div style={{ fontSize: "14px", color: colors.neutral[600] }}>
-              Generate your first contract to create an onboarding run.
+              Create your first governed surface to record a bootstrap run.
             </div>
           </div>
         )}

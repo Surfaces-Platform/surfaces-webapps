@@ -83,15 +83,14 @@ async function seedLocalWorkbenchFixture(runRoot) {
   await fsp.mkdir(runsRoot, { recursive: true });
 
   await writeJson(path.join(surfaceRoot, "contract-session.json"), {
-    schemaVersion: 2,
+    schemaVersion: 3,
     surfaceId: "reference-target-web",
-    canonicalContractPath: path.join(workspaceRoot, "contracts", "generated", "reference-target-web.contract.json"),
+    canonicalAstPath: path.join(workspaceRoot, "contracts", "generated", "reference-target-web.ui.surface.ast.json"),
     updatedAt: "2026-03-14T16:19:27.000Z",
-    workingContract: {
-      contractId: "reference-target-web.generated",
+    workingAst: {
+      astId: "reference-target-web.generated",
       version: "0.1.0",
       description: "Generated fixture contract.",
-      sections: [{ id: "landing.hero" }, { id: "landing.capabilities" }],
       color: {
         policy: "warn",
         allowedValues: ["#f9fbff"],
@@ -99,14 +98,24 @@ async function seedLocalWorkbenchFixture(runRoot) {
       surfaces: [
         {
           id: "reference-target-web",
-          allowedFonts: ["Inter", "sans-serif"],
-          layout: { maxContentWidth: 1160 },
-          requiredSections: ["landing.hero", "landing.capabilities"],
+          rootNodeId: "reference-target-web.root",
+          nodes: [
+            { id: "reference-target-web.root", kind: "group", children: ["landing.hero", "landing.capabilities"] },
+            { id: "landing.hero", kind: "section", sectionId: "landing.hero", label: "landing.hero" },
+            { id: "landing.capabilities", kind: "section", sectionId: "landing.capabilities", label: "landing.capabilities" },
+          ],
+          platforms: [
+            {
+              platform: "web",
+              allowedFonts: ["Inter", "sans-serif"],
+              layout: { maxContentWidth: 1160 },
+            },
+          ],
         },
       ],
     },
     chat: [],
-    activeContractChanges: [],
+    activeAstChanges: [],
     activeDesignerNotes: [],
   });
 
@@ -170,7 +179,7 @@ async function seedLocalWorkbenchFixture(runRoot) {
       status: run.status,
       createdAt: run.createdAt,
       completedAt: run.completedAt,
-      contractPath: path.join(workspaceRoot, "contracts", "generated", "reference-target-web.contract.json"),
+      astPath: path.join(workspaceRoot, "contracts", "generated", "reference-target-web.ui.surface.ast.json"),
       preparedInputPath: null,
       baselineSessionDir: run.baselineSessionDir,
       currentSessionDir: run.currentSessionDir,
@@ -181,7 +190,7 @@ async function seedLocalWorkbenchFixture(runRoot) {
       comparisonPath: null,
       suggestionsPath: null,
       transcriptPath: null,
-      effectiveContractPath: null,
+      effectiveAstPath: null,
       agentInputPath: null,
       explainabilityPath: null,
       touchedFiles: run.touchedFiles,
