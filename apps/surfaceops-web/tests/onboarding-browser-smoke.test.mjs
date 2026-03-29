@@ -84,7 +84,7 @@ function runOrThrow(cmd, args, options = {}) {
   assert.equal(result.status, 0, result.stderr || result.stdout);
 }
 
-test("browser smoke: onboarding empty-state flow redirects to runs detail", { timeout: 120_000 }, async (t) => {
+test("browser smoke: onboarding empty-state flow redirects to governance handoff", { timeout: 120_000 }, async (t) => {
   let chromium;
   try {
     ({ chromium } = await import("@playwright/test"));
@@ -138,13 +138,12 @@ test("browser smoke: onboarding empty-state flow redirects to runs detail", { ti
     try {
       const page = await browser.newPage();
       await page.goto(`http://127.0.0.1:${port}/contracts`, { waitUntil: "networkidle" });
-      await page.getByRole("button", { name: "Generate First Contract" }).waitFor({ timeout: 20_000 });
+      await page.getByRole("button", { name: "Create Governed Surface" }).waitFor({ timeout: 20_000 });
       await page.getByPlaceholder("https://customer.example.com").fill("https://example.com/products");
-      await page.getByRole("button", { name: "Generate First Contract" }).click();
-      await page.waitForURL(/\/contracts\/runs\//, { timeout: 20_000 });
+      await page.getByRole("button", { name: "Create Governed Surface" }).click();
+      await page.waitForURL(/\/contracts\/governance\?bootstrapSurfaceId=/, { timeout: 20_000 });
       const url = page.url();
-      assert.match(url, /\/contracts\/runs\/example-com-products$/);
-      await page.getByText("Activated (not yet in canonical policy)").waitFor({ timeout: 10_000 });
+      assert.match(url, /\/contracts\/governance\?bootstrapSurfaceId=example-com-products/);
     } finally {
       await browser.close();
     }

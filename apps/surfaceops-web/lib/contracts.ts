@@ -1,5 +1,4 @@
 import { execSync } from "child_process";
-import { createHash, randomUUID } from "crypto";
 import {
   readFileSync,
   existsSync,
@@ -11,6 +10,7 @@ import {
 } from "fs";
 import { dirname, join, resolve } from "path";
 import { getPool } from "./db";
+import { runInterfacectlCli } from "./interfacectl";
 import { getDefaultWorkspaceId, normalizeWorkspaceId } from "./workspace";
 
 const CONTRACTS_DIR = process.env.SURFACEOPS_CONTRACTS_DIR
@@ -476,7 +476,8 @@ export interface ContractLineageDocument {
 }
 
 export interface OnboardingExtractRequest {
-  url: string;
+  url?: string;
+  appRoot?: string;
   surfaceName?: string;
   surfaceId?: string;
   authMode?: "none" | "browser-session";
@@ -489,13 +490,13 @@ export interface OnboardingExtractResponse {
   runId?: string;
   status?: ValidationOutcome;
   inPolicyContract?: boolean;
-  extraction?: {
-    adapter: string;
-    framework: string;
-    profile: string;
+  artifacts?: {
+    astPath: string;
+    compatibilityContractPath: string;
     reportPath: string;
-    contractPath: string;
+    bundleRoot: string;
   };
+  recommendedRoute?: string;
   error?: string;
 }
 
@@ -504,14 +505,37 @@ export interface OnboardingValidationResult {
   errors: string[];
 }
 
-export interface OnboardingArtifactsDraft {
+export interface BootstrapGovernanceHandoff {
   surfaceId: string;
-  contractPath: string;
-  reportPath: string;
-  contract: Record<string, unknown>;
-  extraction: ExtractedSurface;
-  runDraft: Omit<ContractRun, "runId">;
-  lineageDraft: Omit<ContractLineageRecord, "lastRunId">;
+  displayName: string;
+  astId: string | null;
+  astVersion: string | null;
+  status: ValidationOutcome | null;
+  nodeCount: number;
+  platforms: string[];
+  migrationEscalationCount: number;
+  paths: {
+    astPath: string;
+    compatibilityContractPath: string | null;
+    reportPath: string | null;
+    bundleRoot: string | null;
+  };
+  runId: string | null;
+}
+
+interface InterfacectlInitJsonSummary {
+  state: "completed";
+  surfaceId: string;
+  surfaceName: string;
+  status: ValidationOutcome;
+  runId: string;
+  recommendedNextStep: "review-ui-ast";
+  artifacts: {
+    astPath: string;
+    compatibilityContractPath: string;
+    extractionReportPath: string;
+    bundleRoot: string;
+  };
 }
 
 /** Phase 0 finding from validate-extracted logic. Same structure as interfacectl. */
@@ -901,15 +925,22 @@ function toRelativeRootPath(pathname: string): string {
 
 export function validateOnboardingRequest(request: OnboardingExtractRequest): OnboardingValidationResult {
   const errors: string[] = [];
-  if (!request.url || request.url.trim().length === 0) {
-    errors.push("URL is required.");
-  } else {
-    try {
-      // Validate URL format only. Sanitization handled separately.
-      void new URL(request.url);
-    } catch {
-      errors.push("URL must be valid.");
+  const extractMode = request.extractMode === "local-root" ? "local-root" : "remote-url";
+  if (extractMode === "remote-url") {
+    if (!request.url || request.url.trim().length === 0) {
+      errors.push("URL is required for remote-url onboarding.");
+    } else {
+      try {
+        void new URL(request.url);
+      } catch {
+        errors.push("URL must be valid.");
+      }
     }
+  } else if (!request.appRoot || request.appRoot.trim().length === 0) {
+    errors.push("App root is required for local-root onboarding.");
+  }
+  if (extractMode === "local-root" && request.authMode === "browser-session") {
+    errors.push("browser-session auth is only valid for remote-url onboarding.");
   }
   if (request.surfaceId !== undefined && normalizeSurfaceId(request.surfaceId).length === 0) {
     errors.push("Surface id override resolves to an empty value.");
@@ -917,168 +948,100 @@ export function validateOnboardingRequest(request: OnboardingExtractRequest): On
   return { ok: errors.length === 0, errors };
 }
 
-export function buildOnboardingArtifacts(request: OnboardingExtractRequest): OnboardingArtifactsDraft {
-  const parsed = new URL(request.url);
-  const sanitizedSourceUrl = sanitizeSourceUrl(parsed.toString());
-  const surfaceId = normalizeSurfaceId(request.surfaceId ?? suggestSurfaceIdFromUrl(parsed.toString()));
-  const surfaceName = request.surfaceName?.trim() || suggestSurfaceName(surfaceId);
-  const authMode = request.authMode === "browser-session" ? "browser-session" : "none";
+function buildOnboardingCommandArgs(request: OnboardingExtractRequest): string[] {
   const extractMode = request.extractMode === "local-root" ? "local-root" : "remote-url";
-  const startedAt = new Date().toISOString();
-  const completedAt = new Date().toISOString();
-  const contractPath = join(GENERATED_DIR, `${surfaceId}.contract.json`);
-  const reportPath = join(GENERATED_DIR, `${surfaceId}.extraction.json`);
-
-  const contract = {
-    $schema:
-      "https://contracts.surfaces.local/web.surface.contract.schema.json",
-    contractId: `${surfaceId}.generated`,
-    version: "0.1.0",
-    description: "Generated by SurfaceOps onboarding bootstrap.",
-    surfaces: [
-      {
-        id: surfaceId,
-        displayName: surfaceName,
-        type: "web",
-        domain: parsed.origin,
-        requiredSections: ["extracted.placeholder"],
-        allowedFonts: ["sans-serif"],
-        layout: { maxContentWidth: 1120 },
-      },
-    ],
-    sections: [
-      {
-        id: "extracted.placeholder",
-        intent: "extracted",
-        description: "Placeholder; sections are not inferred during URL onboarding bootstrap.",
-      },
-    ],
-    constraints: {
-      motion: {
-        allowedDurationsMs: [120],
-        allowedTimingFunctions: ["linear"],
-      },
-    },
-    x_extracted: {
-      routes: [parsed.pathname || "/"],
-      hasShell: false,
-      designSystemComponents: [],
-      authAware: authMode === "browser-session",
-    },
-    x_onboarding: {
-      sourceUrl: sanitizedSourceUrl,
-      mode: "bootstrap",
-    },
-  };
-  const warnings = [
-    {
-      code: "remote-url.bootstrap-only",
-      message:
-        "Onboarding URL mode creates bootstrap extraction metadata only. Run full extraction from repository source when available.",
-    },
+  const args = [
+    "init",
+    "--non-interactive",
+    "--json",
+    "--extract-mode",
+    extractMode,
+    "--surface-kind",
+    "application",
+    "--out-dir",
+    "contracts/generated",
   ];
-  const extraction: ExtractedSurface = {
-    surfaceId,
-    appRoot: parsed.origin,
-    warnings,
-    extracted: {
-      routes: [parsed.pathname || "/"],
-      hasShell: false,
-      designSystemComponents: [],
-      authAware: authMode === "browser-session",
-    },
-    onboarding: {
-      sourceUrl: sanitizedSourceUrl,
-      authMode,
-      extractMode,
-      startedAt,
-      completedAt,
-      detection: {
-        adapter: "remote-url-bootstrap",
-        framework: "unknown",
-        profile: "bootstrap",
-      },
-    },
-  };
 
-  const canonicalContract = loadPolicyContract();
-  const contractRaw = readFileSync(join(CONTRACTS_DIR, "surfaces.web.contract.json"), "utf-8");
-  const contractSha = createHash("sha256").update(contractRaw).digest("hex");
-  const findingCodes = ["extract.remote-url.bootstrap-only"];
-  const createdAt = new Date().toISOString();
-  const runDraft: Omit<ContractRun, "runId"> = {
-    workspaceId: getDefaultWorkspaceId(),
-    ingestedAt: createdAt,
-    createdAt,
-    surfaceId,
-    source: "bootstrap",
-    contract: {
-      id: canonicalContract.contractId || "unknown",
-      version: canonicalContract.version || "unknown",
-      sha256: contractSha,
-    },
-    artifacts: {
-      extractionPath: toRelativeRootPath(contractPath),
-      reportPath: toRelativeRootPath(reportPath),
-    },
-    status: "warn",
-    findingCodes,
-    summary: summarizeStatus("warn", findingCodes),
-  };
-  const lineageDraft: Omit<ContractLineageRecord, "lastRunId"> = {
-    lastRunAt: createdAt,
-    lastSource: runDraft.source,
-    lastStatus: runDraft.status,
-    contract: runDraft.contract,
-    artifacts: runDraft.artifacts,
-    findingCodes: runDraft.findingCodes,
-  };
+  if (extractMode === "remote-url") {
+    args.push("--url", request.url!.trim());
+    if (request.authMode === "browser-session") {
+      args.push("--auth-profile", `${new URL(request.url!.trim()).hostname}-default`);
+    }
+  } else {
+    args.push("--app-root", request.appRoot!.trim());
+  }
 
-  return {
-    surfaceId,
-    contractPath,
-    reportPath,
-    contract,
-    extraction,
-    runDraft,
-    lineageDraft,
-  };
+  if (request.surfaceId?.trim()) {
+    args.push("--surface", normalizeSurfaceId(request.surfaceId));
+  }
+  if (request.surfaceName?.trim()) {
+    args.push("--surface-name", request.surfaceName.trim());
+  }
+
+  return args;
 }
 
-export function runOnboardingExtraction(request: OnboardingExtractRequest): OnboardingExtractResponse {
+function parseOnboardingSummary(stdout: string): InterfacectlInitJsonSummary {
+  const parsed = JSON.parse(stdout) as InterfacectlInitJsonSummary;
+  if (
+    parsed.state !== "completed"
+    || typeof parsed.surfaceId !== "string"
+    || typeof parsed.runId !== "string"
+    || typeof parsed.artifacts?.astPath !== "string"
+    || typeof parsed.artifacts?.compatibilityContractPath !== "string"
+    || typeof parsed.artifacts?.extractionReportPath !== "string"
+    || typeof parsed.artifacts?.bundleRoot !== "string"
+  ) {
+    throw new Error("interfacectl init returned an invalid bootstrap summary.");
+  }
+  return parsed;
+}
+
+function generatedAstPath(surfaceId: string): string {
+  return join(GENERATED_DIR, `${surfaceId}.ui.surface.ast.json`);
+}
+
+function generatedCompatibilityContractPath(surfaceId: string): string {
+  return join(GENERATED_DIR, `${surfaceId}.contract.json`);
+}
+
+function generatedExtractionPath(surfaceId: string): string {
+  return join(GENERATED_DIR, `${surfaceId}.extraction.json`);
+}
+
+function generatedBundleRoot(surfaceId: string): string {
+  return join(GENERATED_DIR, `${surfaceId}.bundle`);
+}
+
+export async function runOnboardingExtraction(
+  request: OnboardingExtractRequest,
+): Promise<OnboardingExtractResponse> {
   try {
     const validation = validateOnboardingRequest(request);
     if (!validation.ok) {
       return { state: "failed", error: validation.errors.join(" ") };
     }
-    const draft = buildOnboardingArtifacts(request);
-    writeJsonAtomic(draft.contractPath, draft.contract);
-    writeJsonAtomic(draft.reportPath, draft.extraction);
 
-    const runId = randomUUID();
-    const run: ContractRun = { ...draft.runDraft, runId };
-
-    withRunStoreLock(() => {
-      const runsDoc = loadContractRuns();
-      const existingRuns = runsDoc.runs;
-      persistRunDocuments([...existingRuns, run]);
-    });
-
-    const membership = getPolicyMembership(draft.surfaceId);
+    const cliResult = await runInterfacectlCli(
+      buildOnboardingCommandArgs(request),
+      { cwd: WORKSPACE_ROOT },
+    );
+    const summary = parseOnboardingSummary(cliResult.stdout);
+    const membership = getPolicyMembership(summary.surfaceId);
 
     return {
       state: "completed",
-      surfaceId: draft.surfaceId,
-      runId,
-      status: run.status,
+      surfaceId: summary.surfaceId,
+      runId: summary.runId,
+      status: summary.status,
       inPolicyContract: membership.inPolicyContract,
-      extraction: {
-        adapter: draft.extraction.onboarding?.detection?.adapter || "remote-url-bootstrap",
-        framework: draft.extraction.onboarding?.detection?.framework || "unknown",
-        profile: draft.extraction.onboarding?.detection?.profile || "bootstrap",
-        reportPath: toRelativeRootPath(draft.reportPath),
-        contractPath: toRelativeRootPath(draft.contractPath),
+      artifacts: {
+        astPath: summary.artifacts.astPath,
+        compatibilityContractPath: summary.artifacts.compatibilityContractPath,
+        reportPath: summary.artifacts.extractionReportPath,
+        bundleRoot: summary.artifacts.bundleRoot,
       },
+      recommendedRoute: `/contracts/governance?bootstrapSurfaceId=${encodeURIComponent(summary.surfaceId)}&bootstrapRunId=${encodeURIComponent(summary.runId)}`,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected onboarding failure.";
@@ -1087,6 +1050,67 @@ export function runOnboardingExtraction(request: OnboardingExtractRequest): Onbo
       error: sanitizeSourceUrl(message),
     };
   }
+}
+
+export function loadBootstrapGovernanceHandoff(
+  surfaceId: string,
+  runId?: string | null,
+): BootstrapGovernanceHandoff | null {
+  const astPath = generatedAstPath(surfaceId);
+  if (!existsSync(astPath)) {
+    return null;
+  }
+
+  const ast = JSON.parse(readFileSync(astPath, "utf-8")) as {
+    astId?: string;
+    version?: string;
+    migration?: { escalations?: unknown[] };
+    surfaces?: Array<{
+      id?: string;
+      displayName?: string;
+      nodes?: Array<{ id?: string }>;
+      platforms?: Array<{ platform?: string }>;
+    }>;
+  };
+  const surface = ast.surfaces?.find((entry) => entry.id === surfaceId) ?? ast.surfaces?.[0];
+  if (!surface) {
+    return null;
+  }
+
+  const runs = loadContractRuns().runs.filter((entry) => entry.surfaceId === surfaceId);
+  const matchedRun =
+    (runId ? runs.find((entry) => entry.runId === runId) : null)
+    ?? runs.sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt))[0]
+    ?? null;
+  const compatibilityContractPath = generatedCompatibilityContractPath(surfaceId);
+  const reportPath = generatedExtractionPath(surfaceId);
+  const bundleRoot = generatedBundleRoot(surfaceId);
+
+  return {
+    surfaceId,
+    displayName: typeof surface.displayName === "string" ? surface.displayName : suggestSurfaceName(surfaceId),
+    astId: typeof ast.astId === "string" ? ast.astId : null,
+    astVersion: typeof ast.version === "string" ? ast.version : null,
+    status: matchedRun?.status ?? null,
+    nodeCount: Array.isArray(surface.nodes) ? surface.nodes.length : 0,
+    platforms: Array.isArray(surface.platforms)
+      ? surface.platforms
+        .map((entry) => (typeof entry.platform === "string" ? entry.platform : null))
+        .filter((entry): entry is string => entry !== null)
+      : [],
+    migrationEscalationCount: Array.isArray(ast.migration?.escalations)
+      ? ast.migration?.escalations.length ?? 0
+      : 0,
+    paths: {
+      astPath: toRelativeRootPath(astPath),
+      compatibilityContractPath: existsSync(compatibilityContractPath)
+        ? toRelativeRootPath(compatibilityContractPath)
+        : null,
+      reportPath: existsSync(reportPath) ? toRelativeRootPath(reportPath) : null,
+      bundleRoot: existsSync(bundleRoot) ? toRelativeRootPath(bundleRoot) : null,
+    },
+    runId: matchedRun?.runId ?? null,
+  };
 }
 
 function runCodesToFindings(surfaceId: string, codes: string[]): Phase0Finding[] {

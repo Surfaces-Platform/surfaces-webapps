@@ -65,7 +65,7 @@ export default function ContractsPage() {
         }}
       >
         <div style={{ maxWidth: 680, margin: "0 auto", padding: "72px 24px" }}>
-          <h1 style={{ fontSize: "28px", fontWeight: 700, marginBottom: "8px" }}>No contracts yet</h1>
+          <h1 style={{ fontSize: "28px", fontWeight: 700, marginBottom: "8px" }}>No governed surfaces yet</h1>
           <p
             style={{
               fontSize: "14px",
@@ -73,7 +73,7 @@ export default function ContractsPage() {
               marginBottom: "28px",
             }}
           >
-            Start onboarding by generating your first contract from a surface URL.
+            Bootstrap your first UI AST from a live URL or a local app root, then continue in governance review.
           </p>
           <OnboardingForm />
         </div>
@@ -134,7 +134,7 @@ export default function ContractsPage() {
               fontWeight: 600,
             }}
           >
-            Open Local Workbench
+            Open Local UI AST Workbench
           </Link>
         </div>
 
