@@ -56,6 +56,64 @@
     "status": "draft"
   },
   "runtime": {
+    "ast": {
+      "kind": "application",
+      "migrationEscalations": [
+        {
+          "code": "marketing.out-of-scope",
+          "message": "Legacy landingPattern metadata was preserved only in compatibility output. AST v1 is scoped to governed application surfaces.",
+          "surfaceId": "surfaces-web"
+        }
+      ],
+      "nodes": [
+        {
+          "children": [
+            "landing.hero",
+            "landing.demos",
+            "landing.guidance",
+            "landing.actions"
+          ],
+          "description": "Root group for Surfaces Web.",
+          "id": "surfaces-web.root",
+          "kind": "group",
+          "label": "Surfaces Web"
+        },
+        {
+          "description": "Primary hero section introducing the surface intent.",
+          "id": "landing.hero",
+          "intent": "primary-intro",
+          "kind": "section",
+          "label": "primary-intro",
+          "sectionId": "landing.hero"
+        },
+        {
+          "description": "Links to generation-time, CI/CD, and adaptive runtime enforcement demos.",
+          "id": "landing.demos",
+          "intent": "enforcement-demos",
+          "kind": "section",
+          "label": "enforcement-demos",
+          "sectionId": "landing.demos"
+        },
+        {
+          "description": "Supplemental copy guiding users to next actions.",
+          "id": "landing.guidance",
+          "intent": "supporting-guidance",
+          "kind": "section",
+          "label": "supporting-guidance",
+          "sectionId": "landing.guidance"
+        },
+        {
+          "description": "Primary calls-to-action for the surface.",
+          "id": "landing.actions",
+          "intent": "primary-actions",
+          "kind": "section",
+          "label": "primary-actions",
+          "sectionId": "landing.actions"
+        }
+      ],
+      "rootNodeId": "surfaces-web.root",
+      "states": []
+    },
     "boundary": {
       "allowSources": [],
       "contentSlot": null,
@@ -102,6 +160,35 @@
         "content"
       ]
     },
+    "platforms": [
+      {
+        "allowedFonts": [
+          "var(--font-geist-sans)",
+          "var(--font-inter)",
+          "Inter",
+          "var(--font-geist-mono)",
+          "Arial",
+          "Helvetica",
+          "sans-serif"
+        ],
+        "domain": "www.surfaces.systems",
+        "layout": {
+          "chromePolicy": {
+            "allowInsetShadow": true,
+            "allowOuterShadow": false,
+            "maxBorderRadiusPx": 8,
+            "policy": "strict",
+            "targets": [
+              "page-container",
+              "top-level-section",
+              "layout-container"
+            ]
+          },
+          "maxContentWidth": 1120
+        },
+        "platform": "web"
+      }
+    ],
     "policy": "strict",
     "policySeverities": {
       "boundary": "off",
