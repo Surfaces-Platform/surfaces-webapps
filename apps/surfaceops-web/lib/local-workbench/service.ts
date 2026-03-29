@@ -7,7 +7,12 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { SURFACEOPS_DESKTOP_SETUP_PATH } from "@surfaces/surfaceops-desktop-bridge";
 import type { BenchmarkCohortManifest } from "@/lib/generation-benchmarks";
-import { runInterfacectlCli, resolveWorkspaceRoot } from "@/lib/interfacectl";
+import {
+  loadInterfacectlUiAstTools,
+  runInterfacectlCli,
+  resolveWorkspaceRoot,
+  type InterfacectlUiAstChange,
+} from "@/lib/interfacectl";
 import { loadSurfaceOpsDesktopModelState } from "@/lib/desktop-models";
 import {
   BENCHMARK_FIXTURE_IDS,
@@ -38,7 +43,8 @@ import type {
   LocalSuggestionStatus,
   LocalWorkbenchChatMessage,
   LocalWorkbenchComparison,
-  LocalWorkbenchContractChange,
+  LocalWorkbenchAstChange,
+  LocalWorkbenchAstSummary,
   LocalWorkbenchData,
   LocalWorkbenchDesignerNote,
   LocalWorkbenchPublish,
@@ -63,7 +69,7 @@ const TARGET = REFERENCE_TARGET;
 const RERUN_ATTEMPT = "001";
 const DEFAULT_LOCAL_LLM_BASE_URL = "http://127.0.0.1:1234/v1";
 const DEFAULT_LOCAL_LLM_MODEL = "openai/gpt-oss-120b";
-const CONTRACT_SESSION_SCHEMA_VERSION = 2;
+const UI_AST_SESSION_SCHEMA_VERSION = 3;
 const IMPLEMENTATION_GUIDANCE_STRATEGY = "json-primary";
 type ImplementationGuidanceStrategy = BenchmarkGuidanceStrategy;
 type ContractRunOutcome = "pass" | "warn" | "fail" | "unknown";
@@ -115,7 +121,8 @@ interface RunRecordFile {
   currentPreviewStdoutPath?: string | null;
   currentPreviewStderrPath?: string | null;
   currentPreviewStderrTail?: string[];
-  contractPath: string;
+  astPath?: string | null;
+  contractPath?: string | null;
   preparedInputPath: string | null;
   guidanceStrategy: string | null;
   guidanceHandoffPath: string | null;
@@ -128,7 +135,8 @@ interface RunRecordFile {
   comparisonPath: string | null;
   suggestionsPath: string | null;
   transcriptPath: string | null;
-  effectiveContractPath: string | null;
+  effectiveAstPath?: string | null;
+  effectiveContractPath?: string | null;
   agentInputPath: string | null;
   explainabilityPath: string | null;
   touchedFiles: string[];
@@ -157,7 +165,7 @@ interface PreviewServerHandle {
   getOutputTail: () => string;
 }
 
-interface ContractDocument {
+interface LegacyContractDocument {
   contractId?: string;
   version?: string;
   description?: string;
@@ -189,36 +197,96 @@ interface ContractDocument {
   }>;
 }
 
-interface ContractSessionFile {
-  schemaVersion: 2;
+interface UiAstDocument {
+  astId?: string;
+  version?: string;
+  description?: string;
+  color?: {
+    policy?: string;
+    allowedValues?: string[];
+  };
+  surfaces?: Array<{
+    id?: string;
+    displayName?: string;
+    rootNodeId?: string;
+    nodes?: Array<{
+      id?: string;
+      kind?: string;
+      sectionId?: string;
+      children?: string[];
+      actionIntent?: string;
+      label?: string;
+      description?: string;
+    }>;
+    platforms?: Array<{
+      platform?: string;
+      allowedFonts?: string[];
+      layout?: {
+        maxContentWidth?: number;
+        requiredContainers?: string[];
+      };
+    }>;
+    states?: Array<{
+      id?: string;
+      kind?: string;
+      description?: string;
+    }>;
+    owner?: string;
+    governance?: {
+      status?: string;
+      roles?: {
+        designers?: string[];
+        engineers?: string[];
+      };
+    };
+    runtime?: {
+      policy?: string;
+      mutationEnvelope?: {
+        mode?: string;
+        allowedSections?: string[];
+      };
+    };
+  }>;
+  migration?: {
+    escalations?: Array<{
+      code?: string;
+      message?: string;
+      surfaceId?: string;
+    }>;
+  };
+}
+
+interface UiAstSessionFile {
+  schemaVersion: 3;
   surfaceId: string;
-  canonicalContractPath: string;
+  canonicalAstPath: string;
   updatedAt: string;
-  workingContract: ContractDocument;
+  workingAst: UiAstDocument;
   chat: LocalWorkbenchChatMessage[];
-  activeContractChanges: LocalWorkbenchContractChange[];
+  activeAstChanges: LocalWorkbenchAstChange[];
   activeDesignerNotes: LocalWorkbenchDesignerNote[];
 }
 
 interface RunExplainabilityFile {
-  schemaVersion: 2;
+  schemaVersion: 3;
   runId: string;
   createdAt: string;
-  effectiveContractPath: string | null;
+  effectiveAstPath: string | null;
   agentInputPath: string | null;
   guidanceStrategy: string | null;
   guidanceHandoffPath: string | null;
-  activeContractChanges: LocalWorkbenchContractChange[];
+  activeAstChanges: LocalWorkbenchAstChange[];
   activeDesignerNotes: LocalWorkbenchDesignerNote[];
 }
 
 interface PublishRecordFile {
-  schemaVersion: 1;
+  schemaVersion: 2;
   publishId: string;
   status: "published";
   createdAt: string;
   sourceRunId: string | null;
-  contractPath: string;
+  astPath?: string;
+  contractPath?: string;
   bundleRoot: string;
   manifestPath: string;
   generationPayloadPath: string;
@@ -307,6 +375,13 @@ function resolveSandboxRoot(): string {
 
 function resolveTargetContractPath(): string {
   return path.join(resolveWorkspaceRoot(), TARGET.contractPath);
+}
+
+function resolveTargetAstPath(): string {
+  if (!TARGET.astPath) {
+    throw new Error(`No canonical UI AST path is configured for ${TARGET.id}.`);
+  }
+  return path.join(resolveWorkspaceRoot(), TARGET.astPath);
 }
 
 function resolveTargetAppPath(): string {
@@ -417,6 +492,141 @@ async function readJsonFile<T>(filePath: string): Promise<T> {
 async function writeJsonFile(filePath: string, value: unknown): Promise<void> {
   await fsp.mkdir(path.dirname(filePath), { recursive: true });
   await fsp.writeFile(filePath, stringifyJson(value), "utf8");
+}
+
+async function migrateLegacyContractDocument(contract: LegacyContractDocument): Promise<UiAstDocument> {
+  const tools = await loadInterfacectlUiAstTools();
+  return tools.normalizeUiAst(tools.migrateLegacyContractToUiAst(contract)) as UiAstDocument;
+}
+
+async function deriveLegacyContractDocument(ast: UiAstDocument): Promise<LegacyContractDocument> {
+  const tools = await loadInterfacectlUiAstTools();
+  return tools.deriveLegacyContractFromUiAst(ast) as LegacyContractDocument;
+}
+
+async function normalizeUiAstDocument(ast: UiAstDocument): Promise<UiAstDocument> {
+  const tools = await loadInterfacectlUiAstTools();
+  return tools.normalizeUiAst(ast) as UiAstDocument;
+}
+
+async function applyUiAstDocumentChange(
+  ast: UiAstDocument,
+  change: InterfacectlUiAstChange,
+): Promise<UiAstDocument> {
+  const tools = await loadInterfacectlUiAstTools();
+  return tools.applyUiAstChange(ast, change) as UiAstDocument;
+}
+
+function targetAstSurface(ast: UiAstDocument) {
+  return ast.surfaces?.find((entry) => entry.id === TARGET.id) ?? ast.surfaces?.[0] ?? null;
+}
+
+function targetAstWebPlatform(ast: UiAstDocument) {
+  const surface = targetAstSurface(ast);
+  return surface?.platforms?.find((entry) => entry.platform === "web") ?? surface?.platforms?.[0] ?? null;
+}
+
+async function loadCanonicalTargetAst(): Promise<UiAstDocument> {
+  const canonicalAstPath = resolveTargetAstPath();
+  if (await fileExists(canonicalAstPath)) {
+    return normalizeUiAstDocument(await readJsonFile<UiAstDocument>(canonicalAstPath));
+  }
+  return migrateLegacyContractDocument(await readJsonFile<LegacyContractDocument>(resolveTargetContractPath()));
+}
+
+async function loadFixtureUiAst(fixture: BenchmarkFixture): Promise<UiAstDocument> {
+  const workspaceRoot = resolveWorkspaceRoot();
+  if (fixture.astPath) {
+    const astPath = path.join(workspaceRoot, fixture.astPath);
+    if (await fileExists(astPath)) {
+      return normalizeUiAstDocument(await readJsonFile<UiAstDocument>(astPath));
+    }
+  }
+  return migrateLegacyContractDocument(
+    await readJsonFile<LegacyContractDocument>(path.join(workspaceRoot, fixture.contractPath)),
+  );
+}
+
+async function summarizeUiAstDocument(ast: UiAstDocument): Promise<LocalWorkbenchAstSummary> {
+  const tools = await loadInterfacectlUiAstTools();
+  const normalized = tools.normalizeUiAst(ast) as UiAstDocument;
+  const genericSummary = tools.summarizeUiAst(normalized) as {
+    astId: string;
+    version: string;
+    surfaceCount: number;
+    platformCount: number;
+    nodeCount: number;
+    migrationEscalationCount: number;
+    surfaces: Array<{
+      surfaceId: string;
+      platforms: string[];
+      sectionIds: string[];
+      owner: string | null;
+      governanceStatus: string | null;
+      runtimePolicy: string | null;
+      maxContentWidthByPlatform: Partial<Record<string, number>>;
+    }>;
+  };
+  const surface = targetAstSurface(normalized);
+  const webPlatform = targetAstWebPlatform(normalized);
+  const surfaceSummary =
+    genericSummary.surfaces.find((entry) => entry.surfaceId === TARGET.id) ?? genericSummary.surfaces[0] ?? null;
+
+  return {
+    astId: genericSummary.astId,
+    version: genericSummary.version,
+    description: normalized.description ?? "",
+    surfaceCount: genericSummary.surfaceCount,
+    platformCount: genericSummary.platformCount,
+    nodeCount: genericSummary.nodeCount,
+    migrationEscalationCount: genericSummary.migrationEscalationCount,
+    platformIds: surfaceSummary?.platforms ?? [],
+    requiredSections: surfaceSummary?.sectionIds ?? [],
+    allowedFonts: [...new Set(webPlatform?.allowedFonts ?? [])],
+    maxContentWidth:
+      typeof webPlatform?.layout?.maxContentWidth === "number" ? webPlatform.layout.maxContentWidth : null,
+    colorPolicy: normalized.color?.policy ?? "off",
+    allowedColors: [...new Set(normalized.color?.allowedValues ?? [])],
+    owner: surfaceSummary?.owner ?? null,
+    governanceStatus: surfaceSummary?.governanceStatus ?? null,
+    runtimePolicy: surfaceSummary?.runtimePolicy ?? "off",
+    mutationMode:
+      typeof surface?.runtime?.mutationEnvelope?.mode === "string"
+        ? surface.runtime.mutationEnvelope.mode
+        : null,
+  };
+}
+
+async function uiAstSummaryText(ast: UiAstDocument): Promise<string> {
+  const summary = await summarizeUiAstDocument(ast);
+  return [
+    `${summary.astId} v${summary.version}`,
+    summary.description || "Working UI AST for the local workbench.",
+    `Platforms: ${summary.platformIds.join(", ") || "none recorded"}`,
+    `Required sections: ${summary.requiredSections.join(", ") || "none recorded"}`,
+    `Fonts: ${summary.allowedFonts.join(", ") || "none recorded"}`,
+    `Max content width: ${summary.maxContentWidth ?? "not specified"}`,
+    `Color policy: ${summary.colorPolicy}`,
+    `Allowed colors: ${summary.allowedColors.join(", ") || "none recorded"}`,
+    `Owner: ${summary.owner ?? "unassigned"}`,
+    `Governance status: ${summary.governanceStatus ?? "draft"}`,
+    `Runtime policy: ${summary.runtimePolicy}`,
+    `Mutation mode: ${summary.mutationMode ?? "unspecified"}`,
+    `Surface count: ${summary.surfaceCount}`,
+    `Platform projection count: ${summary.platformCount}`,
+    `Node count: ${summary.nodeCount}`,
+    `Migration escalations: ${summary.migrationEscalationCount}`,
+  ].join("\n");
+}
+
+function buildUiAstSummaryMessage(summaryText: string): LocalWorkbenchChatMessage {
+  return {
+    id: "ui-ast-summary",
+    role: "system",
+    title: "Working UI AST",
+    content: summaryText,
+    createdAt: new Date(0).toISOString(),
+  };
 }
 
 async function fileExists(filePath: string): Promise<boolean> {
@@ -657,11 +867,12 @@ async function appendCanonicalRunArtifact(run: CanonicalContractRunArtifact): Pr
 async function appendLocalWorkbenchGenerationRunArtifact(input: {
   runId: string;
   createdAt: string;
-  effectiveContractPath: string;
+  effectiveAstPath: string;
   validatePath: string;
   validatePayload: Record<string, unknown>;
 }): Promise<void> {
-  const contract = await readJsonFile<ContractDocument>(input.effectiveContractPath);
+  const ast = await readJsonFile<UiAstDocument>(input.effectiveAstPath);
+  const contract = await deriveLegacyContractDocument(ast);
   const contractId =
     typeof contract.contractId === "string" && contract.contractId.trim().length > 0
       ? contract.contractId
@@ -835,7 +1046,7 @@ function normalizePhaseHistory(value: unknown): LocalWorkbenchRunPhaseEntry[] {
 function normalizeRunRecord(record: RunRecordFile): RunRecordFile {
   return {
     ...record,
-    schemaVersion: typeof record.schemaVersion === "number" ? record.schemaVersion : 2,
+    schemaVersion: typeof record.schemaVersion === "number" ? record.schemaVersion : 3,
     model: typeof record.model === "string" ? record.model : null,
     currentPhase: RUN_PHASES.includes(String(record.currentPhase ?? "") as LocalWorkbenchRunPhase)
       ? (String(record.currentPhase) as LocalWorkbenchRunPhase)
@@ -898,94 +1109,8 @@ function withRunPhaseMessage(
   return nextHistory;
 }
 
-function summarizeContract(contract: ContractDocument) {
-  const surface = contract.surfaces?.find((entry) => entry.id === TARGET.id) ?? contract.surfaces?.[0];
-  return {
-    contractId: contract.contractId ?? TARGET.id,
-    version: contract.version ?? "0.0.0",
-    description: contract.description ?? "",
-    requiredSections: [
-      ...new Set(
-        (surface?.requiredSections ?? contract.sections?.map((entry) => entry.id).filter(Boolean) ?? []).filter(
-          (entry): entry is string => typeof entry === "string" && entry.length > 0,
-        ),
-      ),
-    ],
-    allowedFonts: [...new Set(surface?.allowedFonts ?? [])],
-    maxContentWidth: typeof surface?.layout?.maxContentWidth === "number" ? surface.layout.maxContentWidth : null,
-    colorPolicy: contract.color?.policy ?? "off",
-    allowedColors: [...new Set(contract.color?.allowedValues ?? [])],
-    owner: typeof surface?.owner === "string" ? surface.owner : null,
-    governanceStatus: typeof surface?.governance?.status === "string" ? surface.governance.status : null,
-    runtimePolicy: surface?.runtime?.policy ?? "off",
-    mutationMode: typeof surface?.runtime?.mutationEnvelope?.mode === "string"
-      ? surface.runtime.mutationEnvelope.mode
-      : null,
-  };
-}
-
-function contractSummaryText(contract: ContractDocument): string {
-  const summary = summarizeContract(contract);
-  return [
-    `${summary.contractId} v${summary.version}`,
-    summary.description || "Working contract for the local workbench.",
-    `Required sections: ${summary.requiredSections.join(", ") || "none recorded"}`,
-    `Fonts: ${summary.allowedFonts.join(", ") || "none recorded"}`,
-    `Max content width: ${summary.maxContentWidth ?? "not specified"}`,
-    `Color policy: ${summary.colorPolicy}`,
-    `Allowed colors: ${summary.allowedColors.join(", ") || "none recorded"}`,
-    `Owner: ${summary.owner ?? "unassigned"}`,
-    `Governance status: ${summary.governanceStatus ?? "draft"}`,
-    `Runtime policy: ${summary.runtimePolicy}`,
-    `Mutation mode: ${summary.mutationMode ?? "unspecified"}`,
-  ].join("\n");
-}
-
-function buildContractSummaryMessage(contract: ContractDocument): LocalWorkbenchChatMessage {
-  return {
-    id: "contract-summary",
-    role: "system",
-    title: "Working contract",
-    content: contractSummaryText(contract),
-    createdAt: new Date(0).toISOString(),
-  };
-}
-
-function cloneContract(contract: ContractDocument): ContractDocument {
-  return parseJson<ContractDocument>(JSON.stringify(contract), "working contract clone");
-}
-
-function ensureTargetSurface(contract: ContractDocument) {
-  contract.surfaces ??= [];
-  let surface = contract.surfaces.find((entry) => entry.id === TARGET.id);
-  if (!surface) {
-    surface = {
-      id: TARGET.id,
-      allowedFonts: [],
-      layout: {},
-      requiredSections: [],
-      governance: { roles: { designers: [], engineers: [] } },
-      runtime: { mutationEnvelope: { allowedSections: [] } },
-    };
-    contract.surfaces.push(surface);
-  }
-  surface.allowedFonts ??= [];
-  surface.layout ??= {};
-  surface.requiredSections ??= [];
-  surface.governance ??= {};
-  surface.governance.roles ??= {};
-  surface.governance.roles.designers ??= [];
-  surface.governance.roles.engineers ??= [];
-  surface.runtime ??= {};
-  surface.runtime.mutationEnvelope ??= {};
-  surface.runtime.mutationEnvelope.allowedSections ??= [];
-  return surface;
-}
-
-function ensureContractColor(contract: ContractDocument) {
-  contract.color ??= {};
-  contract.color.allowedValues ??= [];
-  return contract.color;
+function cloneUiAst(ast: UiAstDocument): UiAstDocument {
+  return parseJson<UiAstDocument>(JSON.stringify(ast), "working UI AST clone");
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {
@@ -1336,74 +1461,79 @@ function uniqueByContent<T extends { content: string }>(items: T[]): T[] {
   });
 }
 
-function mergeActiveContractChange(
-  current: LocalWorkbenchContractChange[],
-  canonicalContract: ContractDocument,
+async function mergeActiveAstChange(
+  current: LocalWorkbenchAstChange[],
+  canonicalAst: UiAstDocument,
   sourceMessageId: string,
   createdAt: string,
   change: {
-    field: LocalWorkbenchContractChange["field"];
-    action: LocalWorkbenchContractChange["action"];
+    path: LocalWorkbenchAstChange["path"];
+    action: LocalWorkbenchAstChange["action"];
     value: string | number;
     summary: string;
   },
-): LocalWorkbenchContractChange[] {
-  const canonicalSummary = summarizeContract(canonicalContract);
-  const canonicalSurface = canonicalContract.surfaces?.find((entry) => entry.id === TARGET.id) ?? canonicalContract.surfaces?.[0];
+): Promise<LocalWorkbenchAstChange[]> {
+  const canonicalSummary = await summarizeUiAstDocument(canonicalAst);
+  const canonicalSurface = targetAstSurface(canonicalAst);
+  const canonicalPlatform = targetAstWebPlatform(canonicalAst);
   const next = current.filter((entry) => {
     if (
-      change.field === "color.allowedValues"
-      || change.field === "surfaces.reference-target-web.allowedFonts"
-      || change.field === "surfaces.reference-target-web.governance.roles.designers"
-      || change.field === "surfaces.reference-target-web.governance.roles.engineers"
-      || change.field === "surfaces.reference-target-web.runtime.mutationEnvelope.allowedSections"
+      change.path === "color.allowedValues"
+      || change.path === "surfaces[reference-target-web].platforms[web].allowedFonts"
+      || change.path === "surfaces[reference-target-web].governance.roles.designers"
+      || change.path === "surfaces[reference-target-web].governance.roles.engineers"
+      || change.path === "surfaces[reference-target-web].runtime.mutationEnvelope.allowedSections"
     ) {
-      return !(entry.field === change.field && String(entry.value) === String(change.value));
+      return !(entry.path === change.path && String(entry.value) === String(change.value));
     }
-    return entry.field !== change.field;
+    return entry.path !== change.path;
   });
 
   if (
-    (change.field === "color.policy" && String(change.value) === canonicalSummary.colorPolicy)
+    (change.path === "color.policy" && String(change.value) === canonicalSummary.colorPolicy)
     || (
-      change.field === "surfaces.reference-target-web.layout.maxContentWidth"
+      change.path === "surfaces[reference-target-web].platforms[web].layout.maxContentWidth"
       && Number(change.value) === canonicalSummary.maxContentWidth
     )
     || (
-      change.field === "color.allowedValues"
+      change.path === "color.allowedValues"
       && canonicalSummary.allowedColors.includes(String(change.value))
     )
     || (
-      change.field === "surfaces.reference-target-web.allowedFonts"
+      change.path === "surfaces[reference-target-web].platforms[web].allowedFonts"
       && canonicalSummary.allowedFonts.includes(String(change.value))
     )
     || (
-      change.field === "surfaces.reference-target-web.owner"
+      change.path === "surfaces[reference-target-web].owner"
       && String(change.value) === canonicalSummary.owner
     )
     || (
-      change.field === "surfaces.reference-target-web.governance.status"
+      change.path === "surfaces[reference-target-web].governance.status"
       && String(change.value) === canonicalSummary.governanceStatus
     )
     || (
-      change.field === "surfaces.reference-target-web.runtime.policy"
+      change.path === "surfaces[reference-target-web].runtime.policy"
       && String(change.value) === canonicalSummary.runtimePolicy
     )
     || (
-      change.field === "surfaces.reference-target-web.runtime.mutationEnvelope.mode"
+      change.path === "surfaces[reference-target-web].runtime.mutationEnvelope.mode"
       && String(change.value) === canonicalSummary.mutationMode
     )
     || (
-      change.field === "surfaces.reference-target-web.governance.roles.designers"
+      change.path === "surfaces[reference-target-web].governance.roles.designers"
       && (canonicalSurface?.governance?.roles?.designers ?? []).includes(String(change.value))
     )
     || (
-      change.field === "surfaces.reference-target-web.governance.roles.engineers"
+      change.path === "surfaces[reference-target-web].governance.roles.engineers"
       && (canonicalSurface?.governance?.roles?.engineers ?? []).includes(String(change.value))
     )
     || (
-      change.field === "surfaces.reference-target-web.runtime.mutationEnvelope.allowedSections"
+      change.path === "surfaces[reference-target-web].runtime.mutationEnvelope.allowedSections"
       && (canonicalSurface?.runtime?.mutationEnvelope?.allowedSections ?? []).includes(String(change.value))
+    )
+    || (
+      change.path === "surfaces[reference-target-web].platforms[web].allowedFonts"
+      && (canonicalPlatform?.allowedFonts ?? []).includes(String(change.value))
     )
   ) {
     return next;
@@ -1411,7 +1541,7 @@ function mergeActiveContractChange(
 
   next.push({
     id: randomUUID(),
-    field: change.field,
+    path: change.path,
     action: change.action,
     value: change.value,
     summary: change.summary,
@@ -1421,74 +1551,16 @@ function mergeActiveContractChange(
   return next;
 }
 
-function applyContractChange(contract: ContractDocument, change: {
-  field: LocalWorkbenchContractChange["field"];
-  action: LocalWorkbenchContractChange["action"];
-  value: string | number;
-}): void {
-  const surface = ensureTargetSurface(contract);
-  const color = ensureContractColor(contract);
-
-  switch (change.field) {
-    case "color.allowedValues":
-      if (typeof change.value === "string" && !color.allowedValues?.includes(change.value)) {
-        color.allowedValues?.push(change.value);
-      }
-      return;
-    case "color.policy":
-      if (typeof change.value === "string") {
-        color.policy = change.value;
-      }
-      return;
-    case "surfaces.reference-target-web.layout.maxContentWidth":
-      if (typeof change.value === "number") {
-        surface.layout!.maxContentWidth = change.value;
-      }
-      return;
-    case "surfaces.reference-target-web.allowedFonts":
-      if (typeof change.value === "string" && !surface.allowedFonts?.includes(change.value)) {
-        surface.allowedFonts?.push(change.value);
-      }
-      return;
-    case "surfaces.reference-target-web.owner":
-      if (typeof change.value === "string") {
-        surface.owner = change.value;
-      }
-      return;
-    case "surfaces.reference-target-web.governance.status":
-      if (typeof change.value === "string") {
-        surface.governance!.status = change.value;
-      }
-      return;
-    case "surfaces.reference-target-web.governance.roles.designers":
-      if (typeof change.value === "string" && !surface.governance?.roles?.designers?.includes(change.value)) {
-        surface.governance?.roles?.designers?.push(change.value);
-      }
-      return;
-    case "surfaces.reference-target-web.governance.roles.engineers":
-      if (typeof change.value === "string" && !surface.governance?.roles?.engineers?.includes(change.value)) {
-        surface.governance?.roles?.engineers?.push(change.value);
-      }
-      return;
-    case "surfaces.reference-target-web.runtime.policy":
-      if (typeof change.value === "string") {
-        surface.runtime!.policy = change.value;
-      }
-      return;
-    case "surfaces.reference-target-web.runtime.mutationEnvelope.mode":
-      if (typeof change.value === "string") {
-        surface.runtime!.mutationEnvelope!.mode = change.value;
-      }
-      return;
-    case "surfaces.reference-target-web.runtime.mutationEnvelope.allowedSections":
-      if (
-        typeof change.value === "string"
-        && !surface.runtime?.mutationEnvelope?.allowedSections?.includes(change.value)
-      ) {
-        surface.runtime?.mutationEnvelope?.allowedSections?.push(change.value);
-      }
-      return;
-  }
+async function applyWorkbenchAstChange(
+  ast: UiAstDocument,
+  change: {
+    path: LocalWorkbenchAstChange["path"];
+    action: LocalWorkbenchAstChange["action"];
+    value: string | number;
+    summary: string;
+  },
+): Promise<UiAstDocument> {
+  return applyUiAstDocumentChange(ast, change);
 }
 
 function appendDesignerNotes(
@@ -1527,7 +1599,7 @@ function normalizeStoredChatMessage(
     ? record.title.trim()
     : role === "user"
       ? "Designer"
-      : "Contract shaper";
+      : "UI AST shaper";
   const content = typeof record.content === "string" ? record.content : "";
   const createdAt = typeof record.createdAt === "string" && record.createdAt.trim()
     ? record.createdAt
@@ -1543,17 +1615,29 @@ function normalizeStoredChatMessage(
 }
 
 async function replayLegacyContractSession(
-  existing: Partial<ContractSessionFile> & { schemaVersion?: number },
-): Promise<ContractSessionFile> {
-  const canonicalContractPath = existing.canonicalContractPath ?? resolveTargetContractPath();
-  const canonicalContract = await readJsonFile<ContractDocument>(canonicalContractPath);
+  existing: Partial<UiAstSessionFile> & {
+    schemaVersion?: number;
+    canonicalContractPath?: string;
+    workingContract?: LegacyContractDocument;
+    activeContractChanges?: LocalWorkbenchAstChange[];
+  },
+): Promise<UiAstSessionFile> {
+  const canonicalAstPath = existing.canonicalAstPath ?? resolveTargetAstPath();
+  const canonicalAst =
+    existing.canonicalContractPath && !(await fileExists(canonicalAstPath))
+      ? await migrateLegacyContractDocument(
+          await readJsonFile<LegacyContractDocument>(existing.canonicalContractPath),
+        )
+      : await loadCanonicalTargetAst();
   const fallbackTimestamp = existing.updatedAt ?? new Date().toISOString();
   const originalChat = (Array.isArray(existing.chat) ? existing.chat : [])
     .map((entry) => normalizeStoredChatMessage(entry, fallbackTimestamp))
     .filter((entry): entry is LocalWorkbenchChatMessage => Boolean(entry));
 
-  let workingContract = cloneContract(canonicalContract);
-  let activeContractChanges: LocalWorkbenchContractChange[] = [];
+  let workingAst = existing.workingContract
+    ? await migrateLegacyContractDocument(existing.workingContract)
+    : cloneUiAst(canonicalAst);
+  let activeAstChanges: LocalWorkbenchAstChange[] = [];
   let activeDesignerNotes: LocalWorkbenchDesignerNote[] = [];
   const nextChat: LocalWorkbenchChatMessage[] = [];
   let pendingAssistantMessage: LocalWorkbenchChatMessage | null = null;
@@ -1564,15 +1648,15 @@ async function replayLegacyContractSession(
       const result = await shapeLocalWorkbenchContract({
         config: resolveLocalLlmConfig(),
         message: message.content,
-        contractSummary: contractSummaryText(workingContract),
+        astSummary: await uiAstSummaryText(workingAst),
         activeDesignerNotes,
       });
 
-      for (const change of result.contractChanges) {
-        applyContractChange(workingContract, change);
-        activeContractChanges = mergeActiveContractChange(
-          activeContractChanges,
-          canonicalContract,
+      for (const change of result.astChanges) {
+        workingAst = await applyWorkbenchAstChange(workingAst, change);
+        activeAstChanges = await mergeActiveAstChange(
+          activeAstChanges,
+          canonicalAst,
           message.id,
           message.createdAt,
           change,
@@ -1589,7 +1673,7 @@ async function replayLegacyContractSession(
       pendingAssistantMessage = {
         id: randomUUID(),
         role: "assistant",
-        title: "Contract shaper",
+        title: "UI AST shaper",
         content: result.assistantMessage,
         createdAt: message.createdAt,
       };
@@ -1614,32 +1698,41 @@ async function replayLegacyContractSession(
   }
 
   return {
-    schemaVersion: CONTRACT_SESSION_SCHEMA_VERSION,
+    schemaVersion: UI_AST_SESSION_SCHEMA_VERSION,
     surfaceId: TARGET.id,
-    canonicalContractPath,
+    canonicalAstPath,
     updatedAt: new Date().toISOString(),
-    workingContract,
+    workingAst,
     chat: nextChat,
-    activeContractChanges,
+    activeAstChanges,
     activeDesignerNotes,
   };
 }
 
-async function loadOrInitContractSession(): Promise<ContractSessionFile> {
+async function loadOrInitContractSession(): Promise<UiAstSessionFile> {
   const sessionPath = resolveContractSessionPath();
   if (await fileExists(sessionPath)) {
-    const existing = await readJsonFile<Partial<ContractSessionFile> & { schemaVersion?: number }>(sessionPath);
-    if (existing.schemaVersion === CONTRACT_SESSION_SCHEMA_VERSION) {
+    const existing = await readJsonFile<
+      Partial<UiAstSessionFile> & {
+        schemaVersion?: number;
+        canonicalContractPath?: string;
+        workingContract?: LegacyContractDocument;
+        activeContractChanges?: LocalWorkbenchAstChange[];
+      }
+    >(sessionPath);
+    if (existing.schemaVersion === UI_AST_SESSION_SCHEMA_VERSION && existing.workingAst) {
       return {
-        schemaVersion: CONTRACT_SESSION_SCHEMA_VERSION,
+        schemaVersion: UI_AST_SESSION_SCHEMA_VERSION,
         surfaceId: TARGET.id,
-        canonicalContractPath: existing.canonicalContractPath ?? resolveTargetContractPath(),
+        canonicalAstPath: existing.canonicalAstPath ?? resolveTargetAstPath(),
         updatedAt: existing.updatedAt ?? new Date().toISOString(),
-        workingContract: existing.workingContract ?? await readJsonFile<ContractDocument>(resolveTargetContractPath()),
+        workingAst: await normalizeUiAstDocument(
+          existing.workingAst ?? await loadCanonicalTargetAst(),
+        ),
         chat: (Array.isArray(existing.chat) ? existing.chat : [])
           .map((entry) => normalizeStoredChatMessage(entry, existing.updatedAt ?? new Date().toISOString()))
           .filter((entry): entry is LocalWorkbenchChatMessage => Boolean(entry)),
-        activeContractChanges: Array.isArray(existing.activeContractChanges) ? existing.activeContractChanges : [],
+        activeAstChanges: Array.isArray(existing.activeAstChanges) ? existing.activeAstChanges : [],
         activeDesignerNotes: Array.isArray(existing.activeDesignerNotes) ? existing.activeDesignerNotes : [],
       };
     }
@@ -1649,23 +1742,23 @@ async function loadOrInitContractSession(): Promise<ContractSessionFile> {
     return upgradedSession;
   }
 
-  const canonicalContractPath = resolveTargetContractPath();
-  const workingContract = await readJsonFile<ContractDocument>(canonicalContractPath);
+  const canonicalAstPath = resolveTargetAstPath();
+  const workingAst = await loadCanonicalTargetAst();
   const session = {
-    schemaVersion: CONTRACT_SESSION_SCHEMA_VERSION,
+    schemaVersion: UI_AST_SESSION_SCHEMA_VERSION,
     surfaceId: TARGET.id,
-    canonicalContractPath,
+    canonicalAstPath,
     updatedAt: new Date().toISOString(),
-    workingContract,
+    workingAst,
     chat: [],
-    activeContractChanges: [],
+    activeAstChanges: [],
     activeDesignerNotes: [],
-  } satisfies ContractSessionFile;
+  } satisfies UiAstSessionFile;
   await writeJsonFile(sessionPath, session);
   return session;
 }
 
-async function writeContractSession(session: ContractSessionFile): Promise<void> {
+async function writeContractSession(session: UiAstSessionFile): Promise<void> {
   await writeJsonFile(resolveContractSessionPath(), session);
 }
 
@@ -1882,21 +1975,22 @@ function mergeBenchmarkAcceptedSuggestions(input: {
   return [...merged.values()];
 }
 
-function buildChatMessages(session: ContractSessionFile): LocalWorkbenchChatMessage[] {
+async function buildChatMessages(session: UiAstSessionFile): Promise<LocalWorkbenchChatMessage[]> {
+  const summaryMessage = buildUiAstSummaryMessage(await uiAstSummaryText(session.workingAst));
   if (session.chat.length === 0) {
     return [
-      buildContractSummaryMessage(session.workingContract),
+      summaryMessage,
       {
         id: "empty-chat",
         role: "assistant",
-        title: "Contract shaper",
-        content: "Send a designer instruction to shape the working contract before the next rerun.",
+        title: "UI AST shaper",
+        content: "Send a designer instruction to shape the working UI AST before the next rerun.",
         createdAt: session.updatedAt,
       },
     ];
   }
 
-  return [buildContractSummaryMessage(session.workingContract), ...session.chat];
+  return [summaryMessage, ...session.chat];
 }
 
 async function runCommand(
@@ -2265,7 +2359,7 @@ function buildPublishView(record: PublishRecordFile): LocalWorkbenchPublish {
     status: record.status,
     createdAt: record.createdAt,
     sourceRunId: record.sourceRunId,
-    contractPath: record.contractPath,
+    astPath: record.astPath ?? record.contractPath ?? "",
     bundleRoot: record.bundleRoot,
     manifestPath: record.manifestPath,
     generationPayloadPath: record.generationPayloadPath,
@@ -2320,7 +2414,7 @@ async function buildRunView(record: RunRecordFile): Promise<LocalWorkbenchRun> {
     transcriptPath: record.transcriptPath,
     touchedFiles: record.touchedFiles,
     errorMessage: record.errorMessage,
-    effectiveContractPath: record.effectiveContractPath,
+    effectiveAstPath: record.effectiveAstPath ?? record.effectiveContractPath ?? null,
     guidanceStrategy: record.guidanceStrategy,
     guidanceHandoffPath: record.guidanceHandoffPath,
     agentInputPath: record.agentInputPath,
@@ -2426,7 +2520,7 @@ export async function loadLocalWorkbenchRunDetail(runId: string): Promise<LocalW
 
 export async function loadLocalWorkbenchData(): Promise<LocalWorkbenchData> {
   const session = await loadOrInitContractSession();
-  const contract = summarizeContract(session.workingContract);
+  const ast = await summarizeUiAstDocument(session.workingAst);
   const records = await listRunRecords();
   const publishRecords = await listPublishRecords();
   const activeAcceptedSuggestions = await loadAcceptedSuggestions();
@@ -2445,7 +2539,7 @@ export async function loadLocalWorkbenchData(): Promise<LocalWorkbenchData> {
   let promotionReadiness: PromotionReadinessReport | null = null;
   try {
     const contractSnapshotPath = resolveCurrentPromotionReadinessContractPath();
-    await writeJsonFile(contractSnapshotPath, session.workingContract);
+    await writeJsonFile(contractSnapshotPath, await deriveLegacyContractDocument(session.workingAst));
     promotionReadiness = await generatePromotionReadinessReport({
       contractPath: contractSnapshotPath,
       outputPath: resolveCurrentPromotionReadinessPath(),
@@ -2462,10 +2556,10 @@ export async function loadLocalWorkbenchData(): Promise<LocalWorkbenchData> {
       id: TARGET.id,
       label: TARGET.label,
       appRoot: resolveTargetAppPath(),
-      contractPath: resolveTargetContractPath(),
+      astPath: resolveTargetAstPath(),
       implementationBrief: TARGET.implementationBrief,
     },
-    contract,
+    ast,
     latestRun,
     runs,
     latestPublish: publishes[0] ?? null,
@@ -2473,11 +2567,11 @@ export async function loadLocalWorkbenchData(): Promise<LocalWorkbenchData> {
     promotionReadiness,
     activeAcceptedSuggestions,
     latestRunOperatorNote,
-    activeContractChanges: session.activeContractChanges,
+    activeAstChanges: session.activeAstChanges,
     activeDesignerNotes: session.activeDesignerNotes,
     latestRunAgentInput,
     latestRunGuidanceHandoff,
-    chat: buildChatMessages(session),
+    chat: await buildChatMessages(session),
     localModel: resolveLocalModelState(),
   };
 }
@@ -2491,21 +2585,21 @@ export async function appendLocalWorkbenchChatMessage(input: { message: string }
   const now = new Date().toISOString();
   const sourceMessageId = randomUUID();
   const session = await loadOrInitContractSession();
-  const canonicalContract = await readJsonFile<ContractDocument>(session.canonicalContractPath);
+  const canonicalAst = await readJsonFile<UiAstDocument>(session.canonicalAstPath);
   const result = await shapeLocalWorkbenchContract({
     config: resolveLocalLlmConfig(),
     message: trimmedMessage,
-    contractSummary: contractSummaryText(session.workingContract),
+    astSummary: await uiAstSummaryText(session.workingAst),
     activeDesignerNotes: session.activeDesignerNotes,
   });
 
-  const nextContract = cloneContract(session.workingContract);
-  let nextActiveContractChanges = [...session.activeContractChanges];
-  for (const change of result.contractChanges) {
-    applyContractChange(nextContract, change);
-    nextActiveContractChanges = mergeActiveContractChange(
-      nextActiveContractChanges,
-      canonicalContract,
+  let nextAst = cloneUiAst(session.workingAst);
+  let nextActiveAstChanges = [...session.activeAstChanges];
+  for (const change of result.astChanges) {
+    nextAst = await applyWorkbenchAstChange(nextAst, change);
+    nextActiveAstChanges = await mergeActiveAstChange(
+      nextActiveAstChanges,
+      canonicalAst,
       sourceMessageId,
       now,
       change,
@@ -2515,7 +2609,7 @@ export async function appendLocalWorkbenchChatMessage(input: { message: string }
   const nextSession = {
     ...session,
     updatedAt: now,
-    workingContract: nextContract,
+    workingAst: nextAst,
     chat: [
       ...session.chat,
       {
@@ -2528,14 +2622,14 @@ export async function appendLocalWorkbenchChatMessage(input: { message: string }
       {
         id: randomUUID(),
         role: "assistant",
-        title: "Contract shaper",
+        title: "UI AST shaper",
         content: result.assistantMessage,
         createdAt: now,
       },
     ],
-    activeContractChanges: nextActiveContractChanges,
+    activeAstChanges: nextActiveAstChanges,
     activeDesignerNotes: appendDesignerNotes(session.activeDesignerNotes, result.designerNotes, sourceMessageId, now),
-  } satisfies ContractSessionFile;
+  } satisfies UiAstSessionFile;
 
   await writeContractSession(nextSession);
 }
@@ -2549,7 +2643,8 @@ export async function publishLocalWorkbenchContract(): Promise<LocalWorkbenchPub
 
   const publishId = buildRunId();
   const publishDir = resolvePublishDirectory(publishId);
-  const contractPath = path.join(publishDir, "published-contract.json");
+  const astPath = path.join(publishDir, "published-ui-ast.json");
+  const promotionReadinessContractPath = path.join(publishDir, "promotion-readiness.contract.json");
   const bundleRoot = path.join(publishDir, "bundle");
   const generationPayloadPath = path.join(publishDir, "generation.json");
   const runtimePayloadPath = path.join(publishDir, "runtime.json");
@@ -2558,9 +2653,10 @@ export async function publishLocalWorkbenchContract(): Promise<LocalWorkbenchPub
   const createdAt = new Date().toISOString();
 
   await fsp.mkdir(publishDir, { recursive: true });
-  await writeJsonFile(contractPath, session.workingContract);
+  await writeJsonFile(astPath, session.workingAst);
+  await writeJsonFile(promotionReadinessContractPath, await deriveLegacyContractDocument(session.workingAst));
   const promotionReadiness = await generatePromotionReadinessReport({
-    contractPath,
+    contractPath: promotionReadinessContractPath,
     outputPath: promotionReadinessPath,
     mode: "block",
     latestRunOperatorNote,
@@ -2572,7 +2668,7 @@ export async function publishLocalWorkbenchContract(): Promise<LocalWorkbenchPub
     );
   }
   await runInterfacectlCli(
-    ["compile", "--contract", contractPath, "--out", bundleRoot],
+    ["compile", "--ast", astPath, "--out", bundleRoot],
     { cwd: resolveWorkspaceRoot() },
   );
   await runInterfacectlCli(
@@ -2585,7 +2681,7 @@ export async function publishLocalWorkbenchContract(): Promise<LocalWorkbenchPub
   );
 
   const publishRecord = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     publishId,
     status: "published",
     createdAt,
@@ -2593,7 +2689,7 @@ export async function publishLocalWorkbenchContract(): Promise<LocalWorkbenchPub
       promotionReadinessSurface(promotionReadiness)?.sourceKpis.find((entry) => entry.source === "generation")?.latestRun?.runId ??
       latestRun?.runId ??
       null,
-    contractPath,
+    astPath,
     bundleRoot,
     manifestPath,
     generationPayloadPath,
@@ -2655,22 +2751,22 @@ async function failRunPhase(runId: string, phase: LocalWorkbenchRunPhase, messag
 async function writeRunExplainability(input: {
   runId: string;
   explainabilityPath: string;
-  effectiveContractPath: string | null;
+  effectiveAstPath: string | null;
   agentInputPath: string | null;
   guidanceStrategy: string | null;
   guidanceHandoffPath: string | null;
-  activeContractChanges: LocalWorkbenchContractChange[];
+  activeAstChanges: LocalWorkbenchAstChange[];
   activeDesignerNotes: LocalWorkbenchDesignerNote[];
 }): Promise<void> {
   await writeJsonFile(input.explainabilityPath, {
-    schemaVersion: 2,
+    schemaVersion: 3,
     runId: input.runId,
     createdAt: new Date().toISOString(),
-    effectiveContractPath: input.effectiveContractPath,
+    effectiveAstPath: input.effectiveAstPath,
     agentInputPath: input.agentInputPath,
     guidanceStrategy: input.guidanceStrategy,
     guidanceHandoffPath: input.guidanceHandoffPath,
-    activeContractChanges: input.activeContractChanges,
+    activeAstChanges: input.activeAstChanges,
     activeDesignerNotes: input.activeDesignerNotes,
   } satisfies RunExplainabilityFile);
 }
@@ -2913,8 +3009,8 @@ async function runReferenceTargetImplementationSession(input: {
   sessionsRoot: string;
   bundleRoot: string;
   preparedPayload: Record<string, unknown>;
-  effectiveContractPath: string;
-  effectiveContract: ContractDocument;
+  effectiveAstPath: string;
+  effectiveAst: UiAstDocument;
   implementationBrief: string;
   guidanceStrategy: ImplementationGuidanceStrategy;
   briefFile: string;
@@ -2925,7 +3021,7 @@ async function runReferenceTargetImplementationSession(input: {
     acceptedSuggestions: LocalWorkbenchAcceptedSuggestion[];
     designerNotes: LocalWorkbenchDesignerNote[];
   };
-  activeContractChanges: LocalWorkbenchContractChange[];
+  activeAstChanges: LocalWorkbenchAstChange[];
   baselineValidate?: Record<string, unknown> | null;
   agentBudgets?: LocalLlmAgentBudgets;
 }): Promise<ReferenceTargetImplementationSessionResult> {
@@ -2979,7 +3075,7 @@ async function runReferenceTargetImplementationSession(input: {
       preparedPayload: input.preparedPayload,
       implementationBrief: input.implementationBrief,
       acceptedSuggestions: input.runtimeGuidance.acceptedSuggestions,
-      effectiveContractSummary: contractSummaryText(input.effectiveContract),
+      effectiveAstSummary: await uiAstSummaryText(input.effectiveAst),
       activeDesignerNotes: input.runtimeGuidance.designerNotes,
       maxTurns: input.agentBudgets?.maxTurns,
       maxToolCalls: input.agentBudgets?.maxToolCalls,
@@ -2996,11 +3092,11 @@ async function runReferenceTargetImplementationSession(input: {
     await writeRunExplainability({
       runId: input.runId,
       explainabilityPath,
-      effectiveContractPath: input.effectiveContractPath,
+      effectiveAstPath: input.effectiveAstPath,
       agentInputPath,
       guidanceStrategy: input.guidanceStrategy,
       guidanceHandoffPath,
-      activeContractChanges: input.activeContractChanges,
+      activeAstChanges: input.activeAstChanges,
       activeDesignerNotes: input.runtimeGuidance.designerNotes,
     });
 
@@ -3077,14 +3173,14 @@ export async function startLocalWorkbenchRerun(): Promise<StartLocalRerunResult>
   const preparedPath = path.join(runDir, "prepared-input.json");
   const sessionsRoot = path.join(runDir, "sessions");
   const transcriptPath = path.join(runDir, "agent-trace.json");
-  const effectiveContractPath = path.join(runDir, "effective-contract.json");
+  const effectiveAstPath = path.join(runDir, "effective-ui-ast.json");
   const agentInputPath = path.join(runDir, "agent-input.txt");
   const explainabilityPath = path.join(runDir, "explainability.json");
 
   await fsp.mkdir(runDir, { recursive: true });
-  await writeJsonFile(effectiveContractPath, session.workingContract);
+  await writeJsonFile(effectiveAstPath, session.workingAst);
   await writeJsonFile(resolveRunRecordPath(runId), {
-    schemaVersion: 2,
+    schemaVersion: 3,
     runId,
     status: "running",
     createdAt: runCreatedAt,
@@ -3098,7 +3194,6 @@ export async function startLocalWorkbenchRerun(): Promise<StartLocalRerunResult>
     writeCount: 0,
     lastToolName: null,
     lastError: null,
-    contractPath: effectiveContractPath,
     preparedInputPath: preparedPath,
     guidanceStrategy: IMPLEMENTATION_GUIDANCE_STRATEGY,
     guidanceHandoffPath: null,
@@ -3111,7 +3206,7 @@ export async function startLocalWorkbenchRerun(): Promise<StartLocalRerunResult>
     comparisonPath: null,
     suggestionsPath: null,
     transcriptPath,
-    effectiveContractPath,
+    effectiveAstPath,
     agentInputPath,
     explainabilityPath,
     touchedFiles: [],
@@ -3151,9 +3246,9 @@ export async function startLocalWorkbenchRerun(): Promise<StartLocalRerunResult>
   }
 
   try {
-    await runPhase("compile", "Compile the canonical bundle for the local workbench.", async () => {
+    await runPhase("compile", "Compile the canonical UI AST bundle for the local workbench.", async () => {
       await runInterfacectlCli(
-        ["compile", "--contract", effectiveContractPath, "--out", bundleRoot],
+        ["compile", "--ast", effectiveAstPath, "--out", bundleRoot],
         { cwd: resolveWorkspaceRoot() },
       );
     });
@@ -3278,7 +3373,7 @@ export async function startLocalWorkbenchRerun(): Promise<StartLocalRerunResult>
         preparedPayload,
         implementationBrief: TARGET.implementationBrief,
         acceptedSuggestions: activeAcceptedSuggestions,
-        effectiveContractSummary: contractSummaryText(session.workingContract),
+        effectiveAstSummary: await uiAstSummaryText(session.workingAst),
         activeDesignerNotes: session.activeDesignerNotes,
       }).catch(async (error) => {
         const transcript = extractTranscriptFromError(error);
@@ -3289,16 +3384,16 @@ export async function startLocalWorkbenchRerun(): Promise<StartLocalRerunResult>
       });
       await writeJsonFile(transcriptPath, result.transcript);
       await fsp.writeFile(agentInputPath, result.agentInput, "utf8");
-      await writeRunExplainability({
-        runId,
-        explainabilityPath,
-        effectiveContractPath,
-        agentInputPath,
-        guidanceStrategy: IMPLEMENTATION_GUIDANCE_STRATEGY,
-        guidanceHandoffPath: null,
-        activeContractChanges: session.activeContractChanges,
-        activeDesignerNotes: session.activeDesignerNotes,
-      });
+    await writeRunExplainability({
+      runId,
+      explainabilityPath,
+      effectiveAstPath,
+      agentInputPath,
+      guidanceStrategy: IMPLEMENTATION_GUIDANCE_STRATEGY,
+      guidanceHandoffPath: null,
+      activeAstChanges: session.activeAstChanges,
+      activeDesignerNotes: session.activeDesignerNotes,
+    });
       await updateRunRecord(runId, {
         transcriptPath,
         touchedFiles: result.touchedFiles,
@@ -3385,7 +3480,7 @@ export async function startLocalWorkbenchRerun(): Promise<StartLocalRerunResult>
     await appendLocalWorkbenchGenerationRunArtifact({
       runId,
       createdAt: runCreatedAt,
-      effectiveContractPath,
+      effectiveAstPath,
       validatePath: currentValidatePath,
       validatePayload: currentValidate,
     });
@@ -3502,19 +3597,17 @@ export async function runBenchmarkCohort(input: {
     const strategyArtifactsDir = path.join(fixtureDir, "strategies");
     const bundleRoot = path.join(fixtureDir, "bundle");
     const preparedPath = path.join(fixtureDir, "prepared-input.json");
-    const effectiveContractPath = path.join(fixtureDir, "effective-contract.json");
+    const effectiveAstPath = path.join(fixtureDir, "effective-ui-ast.json");
     const briefPath = path.join(fixtureDir, "implementation-brief.md");
     const baselineSeedDir = path.join(fixtureDir, "baseline-seed");
 
     await fsp.mkdir(fixtureDir, { recursive: true });
-    const effectiveContract = await readJsonFile<ContractDocument>(
-      path.join(workspaceRoot, fixture.contractPath),
-    );
-    await writeJsonFile(effectiveContractPath, effectiveContract);
+    const effectiveAst = await loadFixtureUiAst(fixture);
+    await writeJsonFile(effectiveAstPath, effectiveAst);
     const frozenBrief = await writeFrozenTextFile(briefPath, profile.implementationBrief);
 
     await runInterfacectlCli(
-      ["compile", "--contract", effectiveContractPath, "--out", bundleRoot],
+      ["compile", "--ast", effectiveAstPath, "--out", bundleRoot],
       { cwd: workspaceRoot },
     );
     await runInterfacectlCli(
@@ -3555,8 +3648,8 @@ export async function runBenchmarkCohort(input: {
         sessionsRoot,
         bundleRoot,
         preparedPayload,
-        effectiveContractPath,
-        effectiveContract,
+        effectiveAstPath,
+        effectiveAst,
         implementationBrief: profile.implementationBrief,
         guidanceStrategy,
         briefFile: frozenBrief.path,
@@ -3567,7 +3660,7 @@ export async function runBenchmarkCohort(input: {
           acceptedSuggestions,
           designerNotes: profile.designerNotes,
         },
-        activeContractChanges: [],
+        activeAstChanges: [],
         baselineValidate,
         agentBudgets: benchmarkAgentBudgets,
       }));
@@ -3629,7 +3722,7 @@ export async function runBenchmarkCohort(input: {
       },
       paths: {
         fixtureDir,
-        effectiveContractPath,
+        effectiveAstPath,
         preparedInputPath: preparedPath,
         acceptedSuggestionsPath: runtimeGuidancePaths.acceptedSuggestionsPath,
         designerNotesPath: runtimeGuidancePaths.designerNotesPath,

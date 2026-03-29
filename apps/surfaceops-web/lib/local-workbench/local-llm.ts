@@ -9,7 +9,7 @@ import { CSS_NAMED_COLOR_NAMES, normalizeCssNamedColor } from "./css-named-color
 import { promptInstructionsForFinding } from "./finding-guidance";
 import type {
   LocalWorkbenchAcceptedSuggestion,
-  LocalWorkbenchContractChange,
+  LocalWorkbenchAstChange,
   LocalWorkbenchDesignerNote,
 } from "./types";
 
@@ -38,9 +38,9 @@ export interface LocalLlmAgentResult {
 
 export interface LocalContractShaperResult {
   assistantMessage: string;
-  contractChanges: Array<{
-    field: LocalWorkbenchContractChange["field"];
-    action: LocalWorkbenchContractChange["action"];
+  astChanges: Array<{
+    path: LocalWorkbenchAstChange["path"];
+    action: LocalWorkbenchAstChange["action"];
     value: string | number;
     summary: string;
   }>;
@@ -98,7 +98,7 @@ interface AgentOptions {
   guidanceHandoff?: Record<string, unknown> | null;
   implementationBrief: string;
   acceptedSuggestions?: LocalWorkbenchAcceptedSuggestion[];
-  effectiveContractSummary?: string;
+  effectiveAstSummary?: string;
   activeDesignerNotes?: LocalWorkbenchDesignerNote[];
   maxWrites?: number;
   maxToolCalls?: number;
@@ -293,10 +293,10 @@ function buildSystemPrompt(options: AgentOptions) {
     "After any successful apply_text_edits call, finish must use noChanges=false.",
     `Guidance strategy: ${guidanceStrategy}`,
     guidanceStrategy === "json-primary" && options.guidanceHandoff
-      ? "Use the canonical guidance handoff JSON as the primary source of contract truth for this implementation pass."
+      ? "Use the canonical guidance handoff JSON as the primary source of UI AST truth for this implementation pass."
       : null,
-    guidanceStrategy !== "json-primary" && !options.guidanceHandoff && options.effectiveContractSummary
-      ? `Effective working contract:\n${options.effectiveContractSummary}`
+    guidanceStrategy !== "json-primary" && !options.guidanceHandoff && options.effectiveAstSummary
+      ? `Effective working UI AST:\n${options.effectiveAstSummary}`
       : null,
     acceptedSuggestionSummary,
     designerNoteSummary,
@@ -447,14 +447,14 @@ function buildGuidanceSection(options: AgentOptions, guidanceStrategy: GuidanceS
     const promptSummary = asRecord(handoff.promptSummary);
     const sections = [
       typeof promptSummary.effectiveContractSummary === "string"
-        ? `Effective working contract:\n${promptSummary.effectiveContractSummary}`
-        : options.effectiveContractSummary
-          ? `Effective working contract:\n${options.effectiveContractSummary}`
+        ? `Effective working UI AST:\n${promptSummary.effectiveContractSummary}`
+        : options.effectiveAstSummary
+          ? `Effective working UI AST:\n${options.effectiveAstSummary}`
           : null,
       typeof promptSummary.preparedGuidanceSummary === "string"
-        ? `Prepared contract guidance:\n${promptSummary.preparedGuidanceSummary}`
+        ? `Prepared UI AST guidance:\n${promptSummary.preparedGuidanceSummary}`
         : options.preparedPayload
-          ? `Prepared contract guidance:\n${buildPreparedGuidanceSummary(options.preparedPayload)}`
+          ? `Prepared UI AST guidance:\n${buildPreparedGuidanceSummary(options.preparedPayload)}`
           : null,
     ].filter(Boolean);
     return sections.length > 0 ? sections.join("\n\n") : null;
@@ -1243,19 +1243,19 @@ function deriveColorUsageNote(message: string, colorValue: string): string | nul
 }
 
 function buildTruthfulAssistantMessage(
-  contractChanges: LocalContractShaperResult["contractChanges"],
+  astChanges: LocalContractShaperResult["astChanges"],
   designerNotes: string[],
 ): string {
-  if (contractChanges.length > 0 && designerNotes.length > 0) {
-    return `Applied: ${contractChanges.map((change) => change.summary).join(" ")} Designer notes: ${designerNotes.join(" ")}`;
+  if (astChanges.length > 0 && designerNotes.length > 0) {
+    return `Applied: ${astChanges.map((change) => change.summary).join(" ")} Designer notes: ${designerNotes.join(" ")}`;
   }
-  if (contractChanges.length > 0) {
-    return `Applied: ${contractChanges.map((change) => change.summary).join(" ")}`;
+  if (astChanges.length > 0) {
+    return `Applied: ${astChanges.map((change) => change.summary).join(" ")}`;
   }
   if (designerNotes.length > 0) {
     return `Captured as designer notes: ${designerNotes.join(" ")}`;
   }
-  return "No supported contract changes were extracted.";
+  return "No supported UI AST changes were extracted.";
 }
 
 function extractExplicitColorValues(message: string): string[] {
@@ -1290,21 +1290,21 @@ function extractContextualNamedColorValues(message: string): string[] {
 }
 
 function fallbackShapeDesignerMessage(message: string): LocalContractShaperResult {
-  const contractChanges: LocalContractShaperResult["contractChanges"] = [];
+  const astChanges: LocalContractShaperResult["astChanges"] = [];
   const designerNotes: string[] = [];
   const trimmed = message.trim();
   const fallbackColorNotes: string[] = [];
   const addStructuredColorValue = (rawValue: string) => {
     const parsed = parseStructuredColorValue(rawValue);
     if (parsed.kind === "supported" && parsed.value) {
-      if (contractChanges.some((change) => change.field === "color.allowedValues" && change.value === parsed.value)) {
+      if (astChanges.some((change) => change.path === "color.allowedValues" && change.value === parsed.value)) {
         return;
       }
-      contractChanges.push({
-        field: "color.allowedValues",
+      astChanges.push({
+        path: "color.allowedValues",
         action: "add",
         value: parsed.value,
-        summary: `Allow color ${parsed.value} in the working contract.`,
+        summary: `Allow color ${parsed.value} in the working UI AST.`,
       });
       const usageNote = deriveColorUsageNote(trimmed, parsed.value);
       if (usageNote) {
@@ -1330,8 +1330,8 @@ function fallbackShapeDesignerMessage(message: string): LocalContractShaperResul
   const widthMatch = trimmed.match(/\bmax(?:imum)?(?:\s+content)?\s+(\d{3,4})\s*px\b/i)
     ?? trimmed.match(/\bmax\s+(\d{3,4})\s*px\b/i);
   if (widthMatch) {
-    contractChanges.push({
-      field: "surfaces.reference-target-web.layout.maxContentWidth",
+    astChanges.push({
+      path: "surfaces[reference-target-web].platforms[web].layout.maxContentWidth",
       action: "set",
       value: Number(widthMatch[1]),
       summary: `Set max content width to ${widthMatch[1]}px.`,
@@ -1341,8 +1341,8 @@ function fallbackShapeDesignerMessage(message: string): LocalContractShaperResul
   const policyMatch = trimmed.match(/\bcolor policy\b.*\b(off|warn|strict)\b/i)
     ?? trimmed.match(/\b(off|warn|strict)\b.*\bcolor\b/i);
   if (policyMatch) {
-    contractChanges.push({
-      field: "color.policy",
+    astChanges.push({
+      path: "color.policy",
       action: "set",
       value: policyMatch[1].toLowerCase(),
       summary: `Set color policy to ${policyMatch[1].toLowerCase()}.`,
@@ -1353,8 +1353,8 @@ function fallbackShapeDesignerMessage(message: string): LocalContractShaperResul
     .map((match) => match[1]?.trim() ?? "")
     .filter(Boolean);
   for (const font of fontMatches) {
-    contractChanges.push({
-      field: "surfaces.reference-target-web.allowedFonts",
+    astChanges.push({
+      path: "surfaces[reference-target-web].platforms[web].allowedFonts",
       action: "add",
       value: font,
       summary: `Allow font ${font}.`,
@@ -1363,8 +1363,8 @@ function fallbackShapeDesignerMessage(message: string): LocalContractShaperResul
 
   const ownerMatch = trimmed.match(/\bowner\b(?:\s+is)?\s+([@a-zA-Z0-9._-]+(?:@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})?)/i);
   if (ownerMatch?.[1]) {
-    contractChanges.push({
-      field: "surfaces.reference-target-web.owner",
+    astChanges.push({
+      path: "surfaces[reference-target-web].owner",
       action: "set",
       value: ownerMatch[1],
       summary: `Set surface owner to ${ownerMatch[1]}.`,
@@ -1374,8 +1374,8 @@ function fallbackShapeDesignerMessage(message: string): LocalContractShaperResul
   const governanceStatusMatch = trimmed.match(/\b(?:governance|publish)\s+status\b.*\b(draft|review|approved|published)\b/i)
     ?? trimmed.match(/\bmark\b.*\b(draft|review|approved|published)\b/i);
   if (governanceStatusMatch?.[1]) {
-    contractChanges.push({
-      field: "surfaces.reference-target-web.governance.status",
+    astChanges.push({
+      path: "surfaces[reference-target-web].governance.status",
       action: "set",
       value: governanceStatusMatch[1].toLowerCase(),
       summary: `Set governance status to ${governanceStatusMatch[1].toLowerCase()}.`,
@@ -1384,8 +1384,8 @@ function fallbackShapeDesignerMessage(message: string): LocalContractShaperResul
 
   const runtimePolicyMatch = trimmed.match(/\bruntime policy\b.*\b(off|warn|strict)\b/i);
   if (runtimePolicyMatch?.[1]) {
-    contractChanges.push({
-      field: "surfaces.reference-target-web.runtime.policy",
+    astChanges.push({
+      path: "surfaces[reference-target-web].runtime.policy",
       action: "set",
       value: runtimePolicyMatch[1].toLowerCase(),
       summary: `Set runtime policy to ${runtimePolicyMatch[1].toLowerCase()}.`,
@@ -1394,8 +1394,8 @@ function fallbackShapeDesignerMessage(message: string): LocalContractShaperResul
 
   const mutationModeMatch = trimmed.match(/\b(?:mutation|adaptation)\s+mode\b.*\b(locked|content-only|slot-bound|layout-tuning|section-assembly|freeform)\b/i);
   if (mutationModeMatch?.[1]) {
-    contractChanges.push({
-      field: "surfaces.reference-target-web.runtime.mutationEnvelope.mode",
+    astChanges.push({
+      path: "surfaces[reference-target-web].runtime.mutationEnvelope.mode",
       action: "set",
       value: mutationModeMatch[1].toLowerCase(),
       summary: `Set mutation mode to ${mutationModeMatch[1].toLowerCase()}.`,
@@ -1423,40 +1423,44 @@ function fallbackShapeDesignerMessage(message: string): LocalContractShaperResul
   }
   const normalizedDesignerNotes = uniqueStrings(designerNotes);
   return {
-    assistantMessage: buildTruthfulAssistantMessage(contractChanges, normalizedDesignerNotes),
-    contractChanges,
-    designerNotes: normalizedDesignerNotes.length > 0 ? normalizedDesignerNotes : contractChanges.length === 0 ? [trimmed] : [],
+    assistantMessage: buildTruthfulAssistantMessage(astChanges, normalizedDesignerNotes),
+    astChanges,
+    designerNotes: normalizedDesignerNotes.length > 0 ? normalizedDesignerNotes : astChanges.length === 0 ? [trimmed] : [],
   };
 }
 
 function sanitizeContractShaperResult(payload: unknown, message: string): LocalContractShaperResult {
   const record = asRecord(payload);
-  const rawChanges = Array.isArray(record.contractChanges) ? record.contractChanges : [];
-  const contractChanges: LocalContractShaperResult["contractChanges"] = [];
+  const rawChanges = Array.isArray(record.astChanges)
+    ? record.astChanges
+    : Array.isArray(record.contractChanges)
+      ? record.contractChanges
+      : [];
+  const astChanges: LocalContractShaperResult["astChanges"] = [];
   const inferredDesignerNotes: string[] = [];
 
   for (const entry of rawChanges) {
     const candidate = asRecord(entry);
-    const field = String(candidate.field ?? "") as LocalWorkbenchContractChange["field"];
-    const action = String(candidate.action ?? "") as LocalWorkbenchContractChange["action"];
+    const path = String(candidate.path ?? candidate.field ?? "") as LocalWorkbenchAstChange["path"];
+    const action = String(candidate.action ?? "") as LocalWorkbenchAstChange["action"];
     const value = candidate.value;
     const summary = typeof candidate.summary === "string" && candidate.summary.trim()
       ? candidate.summary.trim()
-      : `Update ${field}.`;
+      : `Update ${path}.`;
 
     if (
-      field === "color.allowedValues"
+      path === "color.allowedValues"
       && action === "add"
       && typeof value === "string"
       && value.trim()
     ) {
       const parsedColor = parseStructuredColorValue(value);
       if (parsedColor.kind === "supported" && parsedColor.value) {
-        contractChanges.push({
-          field,
+        astChanges.push({
+          path,
           action,
           value: parsedColor.value,
-          summary: `Allow color ${parsedColor.value} in the working contract.`,
+          summary: `Allow color ${parsedColor.value} in the working UI AST.`,
         });
         const usageNote = deriveColorUsageNote(message, parsedColor.value);
         if (usageNote) {
@@ -1471,102 +1475,102 @@ function sanitizeContractShaperResult(payload: unknown, message: string): LocalC
     }
 
     if (
-      field === "surfaces.reference-target-web.allowedFonts"
+      path === "surfaces[reference-target-web].platforms[web].allowedFonts"
       && action === "add"
       && typeof value === "string"
       && value.trim()
     ) {
-      contractChanges.push({ field, action, value: value.trim(), summary });
+      astChanges.push({ path, action, value: value.trim(), summary });
       continue;
     }
 
     if (
-      field === "color.policy"
+      path === "color.policy"
       && action === "set"
       && typeof value === "string"
       && ["off", "warn", "strict"].includes(value.toLowerCase())
     ) {
-      contractChanges.push({ field, action, value: value.toLowerCase(), summary });
+      astChanges.push({ path, action, value: value.toLowerCase(), summary });
       continue;
     }
 
     if (
-      field === "surfaces.reference-target-web.layout.maxContentWidth"
+      path === "surfaces[reference-target-web].platforms[web].layout.maxContentWidth"
       && action === "set"
       && typeof value === "number"
       && Number.isFinite(value)
       && value > 0
     ) {
-      contractChanges.push({ field, action, value, summary });
+      astChanges.push({ path, action, value, summary });
     }
 
     if (
-      field === "surfaces.reference-target-web.owner"
+      path === "surfaces[reference-target-web].owner"
       && action === "set"
       && typeof value === "string"
       && value.trim()
     ) {
-      contractChanges.push({ field, action, value: value.trim(), summary });
+      astChanges.push({ path, action, value: value.trim(), summary });
       continue;
     }
 
     if (
-      field === "surfaces.reference-target-web.governance.status"
+      path === "surfaces[reference-target-web].governance.status"
       && action === "set"
       && typeof value === "string"
       && ["draft", "review", "approved", "published"].includes(value.toLowerCase())
     ) {
-      contractChanges.push({ field, action, value: value.toLowerCase(), summary });
+      astChanges.push({ path, action, value: value.toLowerCase(), summary });
       continue;
     }
 
     if (
-      field === "surfaces.reference-target-web.governance.roles.designers"
+      path === "surfaces[reference-target-web].governance.roles.designers"
       && action === "add"
       && typeof value === "string"
       && value.trim()
     ) {
-      contractChanges.push({ field, action, value: value.trim(), summary });
+      astChanges.push({ path, action, value: value.trim(), summary });
       continue;
     }
 
     if (
-      field === "surfaces.reference-target-web.governance.roles.engineers"
+      path === "surfaces[reference-target-web].governance.roles.engineers"
       && action === "add"
       && typeof value === "string"
       && value.trim()
     ) {
-      contractChanges.push({ field, action, value: value.trim(), summary });
+      astChanges.push({ path, action, value: value.trim(), summary });
       continue;
     }
 
     if (
-      field === "surfaces.reference-target-web.runtime.policy"
+      path === "surfaces[reference-target-web].runtime.policy"
       && action === "set"
       && typeof value === "string"
       && ["off", "warn", "strict"].includes(value.toLowerCase())
     ) {
-      contractChanges.push({ field, action, value: value.toLowerCase(), summary });
+      astChanges.push({ path, action, value: value.toLowerCase(), summary });
       continue;
     }
 
     if (
-      field === "surfaces.reference-target-web.runtime.mutationEnvelope.mode"
+      path === "surfaces[reference-target-web].runtime.mutationEnvelope.mode"
       && action === "set"
       && typeof value === "string"
       && ["locked", "content-only", "slot-bound", "layout-tuning", "section-assembly", "freeform"].includes(value.toLowerCase())
     ) {
-      contractChanges.push({ field, action, value: value.toLowerCase(), summary });
+      astChanges.push({ path, action, value: value.toLowerCase(), summary });
       continue;
     }
 
     if (
-      field === "surfaces.reference-target-web.runtime.mutationEnvelope.allowedSections"
+      path === "surfaces[reference-target-web].runtime.mutationEnvelope.allowedSections"
       && action === "add"
       && typeof value === "string"
       && value.trim()
     ) {
-      contractChanges.push({ field, action, value: value.trim(), summary });
+      astChanges.push({ path, action, value: value.trim(), summary });
     }
   }
 
@@ -1580,17 +1584,17 @@ function sanitizeContractShaperResult(payload: unknown, message: string): LocalC
   const fallback = fallbackShapeDesignerMessage(message);
   const normalizedDesignerNotes = designerNotes.length > 0
     ? designerNotes
-    : contractChanges.length === 0
+    : astChanges.length === 0
       ? fallback.designerNotes
       : [];
   const assistantMessage = buildTruthfulAssistantMessage(
-    contractChanges,
+    astChanges,
     normalizedDesignerNotes,
   );
 
   return {
     assistantMessage,
-    contractChanges,
+    astChanges,
     designerNotes: normalizedDesignerNotes,
   };
 }
@@ -1598,7 +1602,7 @@ function sanitizeContractShaperResult(payload: unknown, message: string): LocalC
 export async function shapeLocalWorkbenchContract(input: {
   config: LocalLlmConfig;
   message: string;
-  contractSummary: string;
+  astSummary: string;
   activeDesignerNotes?: LocalWorkbenchDesignerNote[];
 }): Promise<LocalContractShaperResult> {
   const fallback = fallbackShapeDesignerMessage(input.message);
@@ -1607,29 +1611,29 @@ export async function shapeLocalWorkbenchContract(input: {
     ? input.activeDesignerNotes.map((note) => `- ${note.content}`).join("\n")
     : "none";
   const prompt = [
-    "You convert designer chat messages into supported working-contract changes.",
+    "You convert designer chat messages into supported working UI AST changes.",
     "Return only JSON.",
-    "Supported change fields:",
+    "Supported change paths:",
     '- `color.allowedValues` with action `add` and a CSS color value.',
     '- `color.policy` with action `set` and one of `off`, `warn`, `strict`.',
-    '- `surfaces.reference-target-web.layout.maxContentWidth` with action `set` and a number.',
-    '- `surfaces.reference-target-web.allowedFonts` with action `add` and a string font value.',
-    '- `surfaces.reference-target-web.owner` with action `set` and an owner handle or email.',
-    '- `surfaces.reference-target-web.governance.status` with action `set` and one of `draft`, `review`, `approved`, `published`.',
-    '- `surfaces.reference-target-web.governance.roles.designers` with action `add` and a designer handle or email.',
-    '- `surfaces.reference-target-web.governance.roles.engineers` with action `add` and an engineer handle or email.',
-    '- `surfaces.reference-target-web.runtime.policy` with action `set` and one of `off`, `warn`, `strict`.',
-    '- `surfaces.reference-target-web.runtime.mutationEnvelope.mode` with action `set` and one of `locked`, `content-only`, `slot-bound`, `layout-tuning`, `section-assembly`, `freeform`.',
-    '- `surfaces.reference-target-web.runtime.mutationEnvelope.allowedSections` with action `add` and a section id.',
+    '- `surfaces[reference-target-web].platforms[web].layout.maxContentWidth` with action `set` and a number.',
+    '- `surfaces[reference-target-web].platforms[web].allowedFonts` with action `add` and a string font value.',
+    '- `surfaces[reference-target-web].owner` with action `set` and an owner handle or email.',
+    '- `surfaces[reference-target-web].governance.status` with action `set` and one of `draft`, `review`, `approved`, `published`.',
+    '- `surfaces[reference-target-web].governance.roles.designers` with action `add` and a designer handle or email.',
+    '- `surfaces[reference-target-web].governance.roles.engineers` with action `add` and an engineer handle or email.',
+    '- `surfaces[reference-target-web].runtime.policy` with action `set` and one of `off`, `warn`, `strict`.',
+    '- `surfaces[reference-target-web].runtime.mutationEnvelope.mode` with action `set` and one of `locked`, `content-only`, `slot-bound`, `layout-tuning`, `section-assembly`, `freeform`.',
+    '- `surfaces[reference-target-web].runtime.mutationEnvelope.allowedSections` with action `add` and a section id.',
     "Normalize named CSS colors to canonical lowercase 6-digit hex.",
     "Keep explicit hex, rgb()/rgba(), hsl()/hsla(), and var(...) values as given.",
-    "Do not use transparent/currentColor/inherit/unset/initial/revert/revert-layer as contract changes; capture them in designerNotes instead.",
+    "Do not use transparent/currentColor/inherit/unset/initial/revert/revert-layer as UI AST changes; capture them in designerNotes instead.",
     "Anything else must go into `designerNotes` as short strings.",
-    "Do not invent unsupported fields or actions.",
-    `Current working contract summary:\n${input.contractSummary}`,
+    "Do not invent unsupported paths or actions.",
+    `Current working UI AST summary:\n${input.astSummary}`,
     `Active designer notes:\n${activeNotesSummary}`,
     `Designer message:\n${input.message.trim()}`,
-    'Return JSON as {"assistantMessage": string, "contractChanges": [], "designerNotes": []}.',
+    'Return JSON as {"assistantMessage": string, "astChanges": [], "designerNotes": []}.',
   ].join("\n\n");
 
   try {

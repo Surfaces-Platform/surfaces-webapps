@@ -213,7 +213,7 @@ function deriveLatestResultState({
       tone: "neutral",
       label: "Ready",
       title: "No rerun yet",
-      summary: "Review the surface and contract, then trigger the first regeneration when you are ready to test the flow.",
+      summary: "Review the surface and UI AST, then trigger the first regeneration when you are ready to test the flow.",
       detail: null,
     };
   }
@@ -245,13 +245,13 @@ function nextActionCopy({
   acceptedSuggestionCount: number;
 }) {
   if (!modelConfigured) {
-    return "Refine the contract in chat now, then configure the local model before attempting another regeneration.";
+    return "Refine the UI AST in chat now, then configure the local model before attempting another regeneration.";
   }
   if (openSuggestionCount > 0) {
     return `There ${openSuggestionCount === 1 ? "is" : "are"} ${openSuggestionCount} open suggestion${openSuggestionCount === 1 ? "" : "s"}. Review them below, accept the ones that should steer the next pass, then regenerate.`;
   }
   if (latestRun?.status === "failed") {
-    return "Review the latest failure, then try another regeneration or switch to chat if the contract needs more guidance first.";
+    return "Review the latest failure, then try another regeneration or switch to chat if the UI AST needs more guidance first.";
   }
   if (latestRunOperatorNote) {
     return "The last pass made progress but still needs another targeted patch. Regenerate again after reviewing the evidence.";
@@ -260,7 +260,7 @@ function nextActionCopy({
     return "Accepted guidance is active. Regenerate when you want to test the next implementation pass against those decisions.";
   }
   if (!latestRun) {
-    return "Trigger the first regeneration when you are ready to evaluate the surface against the current contract.";
+    return "Trigger the first regeneration when you are ready to evaluate the surface against the current UI AST.";
   }
   return "If the latest result is close, refine in chat. If you need another implementation pass, regenerate.";
 }
@@ -363,7 +363,7 @@ export function LocalWorkbench({
   const showImplementationDebug = Boolean(
     data.latestRunAgentInput.path
       || data.latestRunAgentInput.content
-      || latestRun?.effectiveContractPath
+      || latestRun?.effectiveAstPath
       || latestRun?.explainabilityPath,
   );
 
@@ -486,7 +486,7 @@ export function LocalWorkbench({
       throw new Error(json.error ?? "Contract chat update failed.");
     }
     setChatDraft("");
-    setFeedback("Working contract updated. Review the latest result and regenerate when you want to test the change.");
+    setFeedback("Working UI AST updated. Review the latest result and regenerate when you want to test the change.");
     router.refresh();
   }
 
@@ -498,9 +498,9 @@ export function LocalWorkbench({
     });
     const json = await response.json();
     if (!response.ok || !json.ok) {
-      throw new Error(json.error ?? "Local contract publish failed.");
+      throw new Error(json.error ?? "Local UI AST publish failed.");
     }
-    setFeedback(`Published revision ${json.publish.publishId}. Runtime and generation artifacts are frozen for this contract snapshot.`);
+    setFeedback(`Published revision ${json.publish.publishId}. Runtime and generation artifacts are frozen for this UI AST snapshot.`);
     router.refresh();
   }
 
@@ -549,14 +549,14 @@ export function LocalWorkbench({
         >
           <div>
             <div style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: "0.08em", color: colors.neutral[600] }}>
-              Contract workbench
+              UI AST workbench
             </div>
             <h1 style={{ fontSize: 32, lineHeight: 1.04, margin: "8px 0 10px", fontWeight: 800 }}>
               {data.target.label}
             </h1>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 10, color: colors.neutral[600], fontSize: 13 }}>
-              <span>{data.contract.contractId}</span>
-              <span>v{data.contract.version}</span>
+              <span>{data.ast.astId}</span>
+              <span>v{data.ast.version}</span>
               <span>Local-only reference-target flow</span>
             </div>
           </div>
@@ -773,7 +773,7 @@ export function LocalWorkbench({
                     }
                     style={secondaryButton(isPending)}
                   >
-                    {isPending && pendingAction === "publish" ? "Publishing..." : "Publish current contract"}
+                    {isPending && pendingAction === "publish" ? "Publishing..." : "Publish current UI AST"}
                   </button>
                   {data.localModel.managementPath ? (
                     <button type="button" onClick={openModelSetup} style={secondaryButton(isPending)}>
@@ -807,7 +807,7 @@ export function LocalWorkbench({
                 <div>
                   <strong style={{ display: "block", fontSize: 15, marginBottom: 6 }}>Published revisions</strong>
                   <div style={{ fontSize: 12, color: colors.neutral[600] }}>
-                    Local publishes freeze the effective contract plus the compiled generation and runtime artifacts.
+                    Local publishes freeze the effective UI AST plus the compiled generation and runtime artifacts.
                   </div>
                 </div>
                 {data.latestPublish ? (
@@ -855,7 +855,7 @@ export function LocalWorkbench({
                 <div>
                   <strong style={{ display: "block", fontSize: 15, marginBottom: 6 }}>Publish readiness</strong>
                   <div style={{ fontSize: 12, color: promotionReadinessStyles.text }}>
-                    Publish now uses a frozen readiness artifact backed by canonical generation evidence and contract provenance.
+                    Publish now uses a frozen readiness artifact backed by canonical generation evidence and bundle-derived compatibility provenance.
                   </div>
                 </div>
                 {promotionReadiness && promotionReadinessSurface ? (
@@ -951,7 +951,7 @@ export function LocalWorkbench({
                       </div>
                     ) : (
                       <div style={{ fontSize: 13, color: promotionReadinessStyles.text }}>
-                        Current generation evidence is fresh, contract-matched, and ready to freeze into a publish.
+                        Current generation evidence is fresh, UI-AST-matched, and ready to freeze into a publish.
                       </div>
                     )}
                   </>
@@ -1057,18 +1057,19 @@ export function LocalWorkbench({
                 <summary style={{ cursor: "pointer", fontSize: 15, fontWeight: 700 }}>Technical context</summary>
                 <div style={{ display: "grid", gap: 14, marginTop: 14 }}>
                   <section style={{ border: `1px solid ${colors.neutral[200]}`, borderRadius: 14, padding: 14 }}>
-                    <strong style={{ display: "block", marginBottom: 10 }}>Contract summary</strong>
+                    <strong style={{ display: "block", marginBottom: 10 }}>UI AST summary</strong>
                     <div style={{ display: "grid", gap: 6, fontSize: 13, color: colors.neutral[800] }}>
-                      <div>ID: {data.contract.contractId}</div>
-                      <div>Version: {data.contract.version}</div>
-                      <div>Max width: {data.contract.maxContentWidth ?? "not specified"}</div>
-                      <div>Color policy: {data.contract.colorPolicy}</div>
-                      <div>Sections: {data.contract.requiredSections.join(", ") || "none"}</div>
-                      <div>Fonts: {data.contract.allowedFonts.join(", ") || "none"}</div>
-                      <div>Owner: {data.contract.owner ?? "unassigned"}</div>
-                      <div>Governance status: {data.contract.governanceStatus ?? "draft"}</div>
-                      <div>Runtime policy: {data.contract.runtimePolicy}</div>
-                      <div>Mutation mode: {data.contract.mutationMode ?? "unspecified"}</div>
+                      <div>ID: {data.ast.astId}</div>
+                      <div>Version: {data.ast.version}</div>
+                      <div>Platforms: {data.ast.platformIds.join(", ") || "none"}</div>
+                      <div>Max width: {data.ast.maxContentWidth ?? "not specified"}</div>
+                      <div>Color policy: {data.ast.colorPolicy}</div>
+                      <div>Sections: {data.ast.requiredSections.join(", ") || "none"}</div>
+                      <div>Fonts: {data.ast.allowedFonts.join(", ") || "none"}</div>
+                      <div>Owner: {data.ast.owner ?? "unassigned"}</div>
+                      <div>Governance status: {data.ast.governanceStatus ?? "draft"}</div>
+                      <div>Runtime policy: {data.ast.runtimePolicy}</div>
+                      <div>Mutation mode: {data.ast.mutationMode ?? "unspecified"}</div>
                     </div>
                   </section>
 
@@ -1175,7 +1176,7 @@ export function LocalWorkbench({
                         <div style={{ display: "grid", gap: 6, fontSize: 13, color: colors.neutral[800] }}>
                           <div>Created: {new Date(activeTraceRun.createdAt).toLocaleString()}</div>
                           <div>Completed: {activeTraceRun.completedAt ? new Date(activeTraceRun.completedAt).toLocaleString() : "still running"}</div>
-                          <div>Contract snapshot: {activeTraceRun.effectiveContractPath ?? "Unavailable"}</div>
+                          <div>UI AST snapshot: {activeTraceRun.effectiveAstPath ?? "Unavailable"}</div>
                           <div>Explainability artifact: {activeTraceRun.explainabilityPath ?? "Unavailable"}</div>
                           <div>Agent input path: {activeTraceRun.agentInputPath ?? "Unavailable"}</div>
                           {activeTraceRun.agentSummary ? <div>Finish summary: {activeTraceRun.agentSummary}</div> : null}
@@ -1369,7 +1370,7 @@ export function LocalWorkbench({
                 <div style={{ padding: "14px 16px", borderBottom: `1px solid ${colors.neutral[200]}` }}>
                   <strong style={{ display: "block", fontSize: 15 }}>Designer chat</strong>
                   <div style={{ fontSize: 12, color: colors.neutral[600], marginTop: 4 }}>
-                    Refine the contract here, then return to controls when you want to evaluate the next implementation pass.
+                    Refine the UI AST here, then return to controls when you want to evaluate the next implementation pass.
                   </div>
                 </div>
                 <div style={{ display: "grid", gap: 12, padding: 16, maxHeight: 560, overflowY: "auto" }}>
@@ -1429,7 +1430,7 @@ export function LocalWorkbench({
                     disabled={isPending || chatDraft.trim().length === 0}
                     style={primaryButton(isPending || chatDraft.trim().length === 0)}
                   >
-                    {isPending && pendingAction === "chat" ? "Updating contract..." : "Send to contract shaper"}
+                    {isPending && pendingAction === "chat" ? "Updating UI AST..." : "Send to UI AST shaper"}
                   </button>
                 </form>
               </section>
@@ -1438,14 +1439,14 @@ export function LocalWorkbench({
             <aside style={{ display: "grid", gap: 18 }}>
               <section style={{ ...shellPanel(), padding: 16, display: "grid", gap: 14 }}>
                 <div>
-                  <strong style={{ display: "block", fontSize: 15, marginBottom: 8 }}>Active contract changes</strong>
+                  <strong style={{ display: "block", fontSize: 15, marginBottom: 8 }}>Active UI AST changes</strong>
                   <div style={{ display: "grid", gap: 10 }}>
-                    {data.activeContractChanges.length === 0 ? (
-                      <div style={{ fontSize: 13, color: colors.neutral[600] }}>No working-contract deltas yet.</div>
+                    {data.activeAstChanges.length === 0 ? (
+                      <div style={{ fontSize: 13, color: colors.neutral[600] }}>No working UI AST deltas yet.</div>
                     ) : (
-                      data.activeContractChanges.map((change) => (
+                      data.activeAstChanges.map((change) => (
                         <article key={change.id} style={{ border: `1px solid ${colors.neutral[200]}`, borderRadius: 12, padding: 12 }}>
-                          <div style={{ fontSize: 12, color: colors.neutral[600], marginBottom: 6 }}>{change.field}</div>
+                          <div style={{ fontSize: 12, color: colors.neutral[600], marginBottom: 6 }}>{change.path}</div>
                           <div style={{ fontSize: 13, color: colors.neutral[900], marginBottom: 6 }}>{change.summary}</div>
                           <div style={{ fontSize: 12, color: colors.neutral[600] }}>Value: {String(change.value)}</div>
                         </article>
@@ -1479,7 +1480,7 @@ export function LocalWorkbench({
                         Agent input path: {data.latestRunAgentInput.path ?? "Unavailable"}
                       </div>
                       <div style={{ fontSize: 12, color: colors.neutral[600] }}>
-                        Effective contract snapshot: {latestRun?.effectiveContractPath ?? "Unavailable"}
+                        Effective UI AST snapshot: {latestRun?.effectiveAstPath ?? "Unavailable"}
                       </div>
                       <div style={{ fontSize: 12, color: colors.neutral[600] }}>
                         Explainability artifact: {latestRun?.explainabilityPath ?? "Unavailable"}

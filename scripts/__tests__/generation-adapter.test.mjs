@@ -29,6 +29,12 @@ const benchmarkAsyncDataAstPath = path.join(
   "generated",
   "benchmark-async-data-web.ui.surface.ast.json",
 );
+const referenceTargetAstPath = path.join(
+  repoRoot,
+  "contracts",
+  "generated",
+  "reference-target-web.ui.surface.ast.json",
+);
 
 function runCommand(command, args, options = {}) {
   const child = spawn(command, args, {
@@ -103,6 +109,13 @@ function parseTrailingJson(output) {
     throw new Error(`JSON payload not found in output:\n${output}`);
   }
   return JSON.parse(output.slice(startIndex));
+}
+
+function assertAstFirstBundleConventions(payload, expected) {
+  assert.equal(payload.bundle.version, "3.0");
+  assert.equal(payload.ast.id, expected.astId);
+  assert.equal(payload.surface.surfaceId, expected.surfaceId);
+  assert.match(payload.bundle.sourcePaths.contract, /derived\/contract\.normalized\.json$/);
 }
 
 test("consumer scripts are resolver-backed and local adapter implementation is removed", async () => {
@@ -446,11 +459,11 @@ test("consumer smoke: benchmark async data AST stays fresh and drives bundle pre
     const generationPayload = JSON.parse(await fsp.readFile(preparedGenerationPath, "utf8"));
     const runtimePayload = JSON.parse(await fsp.readFile(preparedRuntimePath, "utf8"));
 
-    assert.equal(generationPayload.bundle.version, "3.0");
-    assert.equal(generationPayload.ast.id, "benchmark-async-data-web.generated");
-    assert.equal(generationPayload.surface.surfaceId, "benchmark-async-data-web");
+    assertAstFirstBundleConventions(generationPayload, {
+      astId: "benchmark-async-data-web.generated",
+      surfaceId: "benchmark-async-data-web",
+    });
     assert.equal(generationPayload.generation.ast.rootNodeId, "benchmark-async-data-web.root");
-    assert.match(generationPayload.bundle.sourcePaths.contract, /derived\/contract\.normalized\.json$/);
 
     assert.equal(runtimePayload.bundle.version, "3.0");
     assert.equal(runtimePayload.ast.id, "benchmark-async-data-web.generated");
@@ -461,6 +474,73 @@ test("consumer smoke: benchmark async data AST stays fresh and drives bundle pre
         .map((node) => node.sectionId),
       ["data.hero", "data.stream", "data.queue", "data.health"],
     );
+  } finally {
+    await fsp.rm(tempDir, { recursive: true, force: true });
+    await fsp.rm(bundleRoot, { recursive: true, force: true });
+  }
+});
+
+test("consumer smoke: reference target AST uses the same AST-first bundle conventions as the benchmark path", async () => {
+  assert.ok(
+    fs.existsSync(referenceTargetAstPath),
+    `Reference target AST fixture missing at ${referenceTargetAstPath}.`,
+  );
+
+  const tempDir = await fsp.mkdtemp(path.join(os.tmpdir(), "surfaces-reference-target-ast-"));
+  const bundleRoot = path.join(repoRoot, "artifacts", "generation-bundles", `reference-target-web-${Date.now()}`);
+  const preparedGenerationPath = path.join(tempDir, "prepared-generation.json");
+
+  try {
+    const compileResult = await runCommand(
+      "node",
+      [
+        "scripts/interfacectl-tool.mjs",
+        "run",
+        "cli",
+        "compile",
+        "--ast",
+        referenceTargetAstPath,
+        "--out",
+        bundleRoot,
+      ],
+      {
+        cwd: repoRoot,
+        env: {
+          SURFACES_INTERFACECTL_ROOT: interfacectlRoot,
+        },
+      },
+    );
+    assert.equal(compileResult.exitCode, 0, compileResult.stderr);
+
+    const prepareResult = await runCommand(
+      "node",
+      [
+        "scripts/interfacectl-tool.mjs",
+        "run",
+        "cli",
+        "prepare-generation",
+        "--bundle-root",
+        bundleRoot,
+        "--surface",
+        "reference-target-web",
+        "--out",
+        preparedGenerationPath,
+      ],
+      {
+        cwd: repoRoot,
+        env: {
+          SURFACES_INTERFACECTL_ROOT: interfacectlRoot,
+        },
+      },
+    );
+    assert.equal(prepareResult.exitCode, 0, prepareResult.stderr);
+
+    const generationPayload = JSON.parse(await fsp.readFile(preparedGenerationPath, "utf8"));
+    assertAstFirstBundleConventions(generationPayload, {
+      astId: "reference-target-web.generated",
+      surfaceId: "reference-target-web",
+    });
+    assert.equal(generationPayload.generation.ast.rootNodeId, "reference-target-web.root");
   } finally {
     await fsp.rm(tempDir, { recursive: true, force: true });
     await fsp.rm(bundleRoot, { recursive: true, force: true });

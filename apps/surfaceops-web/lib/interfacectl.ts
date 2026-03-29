@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 function resolveRepoRoot(start = process.cwd()): string {
   let current = path.resolve(start);
@@ -42,10 +43,71 @@ function defaultInterfacectlRoot(): string | null {
   return null;
 }
 
+export type InterfacectlUiAstChangeAction = "set" | "add";
+
+export interface InterfacectlUiAstChange {
+  path: string;
+  action: InterfacectlUiAstChangeAction;
+  value: string | number;
+  summary: string;
+}
+
+export interface InterfacectlUiAstTools {
+  applyUiAstChange: (ast: unknown, change: InterfacectlUiAstChange) => unknown;
+  deriveLegacyContractFromUiAst: (ast: unknown) => unknown;
+  migrateLegacyContractToUiAst: (contract: unknown) => unknown;
+  normalizeUiAst: (ast: unknown) => unknown;
+  summarizeUiAst: (ast: unknown) => unknown;
+}
+
+let cachedUiAstTools: Promise<InterfacectlUiAstTools> | null = null;
+
 export interface InterfacectlResult {
   exitCode: number;
   stdout: string;
   stderr: string;
+}
+
+export function resolveInterfacectlRoot(): string {
+  const configuredRoot = process.env.SURFACES_INTERFACECTL_ROOT?.trim();
+  if (configuredRoot) {
+    return path.resolve(configuredRoot);
+  }
+  const detectedRoot = defaultInterfacectlRoot();
+  if (detectedRoot) {
+    return detectedRoot;
+  }
+  throw new Error("Could not resolve the interfacectl root.");
+}
+
+export async function loadInterfacectlUiAstTools(): Promise<InterfacectlUiAstTools> {
+  if (!cachedUiAstTools) {
+    cachedUiAstTools = (async () => {
+      const modulePath = path.join(
+        resolveInterfacectlRoot(),
+        "packages",
+        "interfacectl-validator",
+        "dist",
+        "index.js",
+      );
+      const moduleUrl = pathToFileURL(modulePath).href;
+      const loaded = await import(moduleUrl) as Partial<InterfacectlUiAstTools>;
+      const tools = {
+        applyUiAstChange: loaded.applyUiAstChange,
+        deriveLegacyContractFromUiAst: loaded.deriveLegacyContractFromUiAst,
+        migrateLegacyContractToUiAst: loaded.migrateLegacyContractToUiAst,
+        normalizeUiAst: loaded.normalizeUiAst,
+        summarizeUiAst: loaded.summarizeUiAst,
+      };
+      for (const [name, value] of Object.entries(tools)) {
+        if (typeof value !== "function") {
+          throw new Error(`interfacectl validator export ${name} is unavailable.`);
+        }
+      }
+      return tools as InterfacectlUiAstTools;
+    })();
+  }
+  return cachedUiAstTools;
 }
 
 export async function runInterfacectlCli(
@@ -56,14 +118,11 @@ export async function runInterfacectlCli(
     acceptExitCodes?: number[];
   },
 ): Promise<InterfacectlResult> {
-  const detectedRoot = process.env.SURFACES_INTERFACECTL_ROOT ? null : defaultInterfacectlRoot();
   const env = {
     ...process.env,
     ...(process.env.SURFACES_INTERFACECTL_ROOT
       ? {}
-      : detectedRoot
-        ? { SURFACES_INTERFACECTL_ROOT: detectedRoot }
-        : {}),
+      : { SURFACES_INTERFACECTL_ROOT: resolveInterfacectlRoot() }),
     ...options.env,
   };
   const resolver = resolveResolverScript();

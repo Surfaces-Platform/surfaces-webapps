@@ -295,7 +295,7 @@ describe("runLocalLlmAgent", () => {
           acceptedAt: "2026-03-13T21:24:00.000Z",
         },
       ],
-      effectiveContractSummary: "Max content width: 2000\nColor policy: warn",
+      effectiveAstSummary: "Max content width: 2000\nColor policy: warn",
       activeDesignerNotes: [
         {
           id: "note-1",
@@ -319,7 +319,7 @@ describe("runLocalLlmAgent", () => {
     expect(input).toContain("Use apply_text_edits for small localized patches only. Do not rewrite full files.");
     expect(input).toContain("After any successful apply_text_edits call, finish must use noChanges=false.");
     expect(input).toContain("Resolve accepted findings before finish; combine same-file fixes when possible.");
-    expect(input).toContain("Effective working contract:");
+    expect(input).toContain("Effective working UI AST:");
     expect(input).toContain("Max content width: 2000");
     expect(input).toContain("Active designer notes that are not yet schema-backed contract fields:");
     expect(input).toContain("Edge-to-edge layout intent should be preserved.");
@@ -1098,15 +1098,15 @@ describe("runLocalLlmAgent", () => {
         JSON.stringify({
           output_text: JSON.stringify({
             assistantMessage: "Added highlight color and updated width.",
-            contractChanges: [
+            astChanges: [
               {
-                field: "color.allowedValues",
+                path: "color.allowedValues",
                 action: "add",
                 value: "#8BAE3F",
-                summary: "Allow color #8BAE3F in the working contract.",
+                summary: "Allow color #8BAE3F in the working UI AST.",
               },
               {
-                field: "surfaces.reference-target-web.layout.maxContentWidth",
+                path: "surfaces[reference-target-web].platforms[web].layout.maxContentWidth",
                 action: "set",
                 value: 2000,
                 summary: "Set max content width to 2000px.",
@@ -1129,13 +1129,13 @@ describe("runLocalLlmAgent", () => {
         model: "openai/gpt-oss-20b",
       },
       message: "go edge-to-edge, max 2000px, add #8BAE3F",
-      contractSummary: "reference-target-web.generated v0.1.0",
+      astSummary: "reference-target-web.generated v0.1.0",
     });
 
-    expect(result.contractChanges).toEqual(
+    expect(result.astChanges).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ field: "color.allowedValues", value: "#8BAE3F" }),
-        expect.objectContaining({ field: "surfaces.reference-target-web.layout.maxContentWidth", value: 2000 }),
+        expect.objectContaining({ path: "color.allowedValues", value: "#8BAE3F" }),
+        expect.objectContaining({ path: "surfaces[reference-target-web].platforms[web].layout.maxContentWidth", value: 2000 }),
       ]),
     );
     expect(result.designerNotes).toContain("Edge-to-edge layout intent should be preserved.");
@@ -1155,12 +1155,12 @@ describe("runLocalLlmAgent", () => {
         model: "openai/gpt-oss-20b",
       },
       message: "the background color of the shell should be pink",
-      contractSummary: "reference-target-web.generated v0.1.0",
+      astSummary: "reference-target-web.generated v0.1.0",
     });
 
-    expect(result.contractChanges).toEqual([
+    expect(result.astChanges).toEqual([
       expect.objectContaining({
-        field: "color.allowedValues",
+        path: "color.allowedValues",
         value: "#ffc0cb",
       }),
     ]);
@@ -1174,9 +1174,9 @@ describe("runLocalLlmAgent", () => {
         JSON.stringify({
           output_text: JSON.stringify({
             assistantMessage: "The shell background is now pink.",
-            contractChanges: [
+            astChanges: [
               {
-                field: "color.allowedValues",
+                path: "color.allowedValues",
                 action: "add",
                 value: "pink",
                 summary: "Update color.allowedValues.",
@@ -1199,12 +1199,12 @@ describe("runLocalLlmAgent", () => {
         model: "openai/gpt-oss-20b",
       },
       message: "the background color of the shell should be pink",
-      contractSummary: "reference-target-web.generated v0.1.0",
+      astSummary: "reference-target-web.generated v0.1.0",
     });
 
-    expect(result.contractChanges).toEqual([
+    expect(result.astChanges).toEqual([
       expect.objectContaining({
-        field: "color.allowedValues",
+        path: "color.allowedValues",
         value: "#ffc0cb",
       }),
     ]);
@@ -1234,12 +1234,12 @@ describe("runLocalLlmAgent", () => {
         model: "openai/gpt-oss-20b",
       },
       message: "the background color of the shell should be pink",
-      contractSummary: "reference-target-web.generated v0.1.0",
+      astSummary: "reference-target-web.generated v0.1.0",
     });
 
-    expect(result.contractChanges).toEqual([
+    expect(result.astChanges).toEqual([
       expect.objectContaining({
-        field: "color.allowedValues",
+        path: "color.allowedValues",
         value: "#ffc0cb",
       }),
     ]);
@@ -1254,12 +1254,12 @@ describe("runLocalLlmAgent", () => {
         JSON.stringify({
           output_text: JSON.stringify({
             assistantMessage: "Added transparent as an allowed color.",
-            contractChanges: [
+            astChanges: [
               {
-                field: "color.allowedValues",
+                path: "color.allowedValues",
                 action: "add",
                 value: "transparent",
-                summary: "Allow color transparent in the working contract.",
+                summary: "Allow color transparent in the working UI AST.",
               },
             ],
             designerNotes: ["Shell background should use transparent."],
@@ -1279,10 +1279,10 @@ describe("runLocalLlmAgent", () => {
         model: "openai/gpt-oss-20b",
       },
       message: "the background color of the shell should be transparent",
-      contractSummary: "reference-target-web.generated v0.1.0",
+      astSummary: "reference-target-web.generated v0.1.0",
     });
 
-    expect(result.contractChanges).toEqual([]);
+    expect(result.astChanges).toEqual([]);
     expect(result.designerNotes).toEqual(
       expect.arrayContaining(["Shell background should use transparent."]),
     );

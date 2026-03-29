@@ -1,0 +1,185 @@
+{
+  "$schema": "https://contracts.surfaces.local/ui.surface.ast.schema.json",
+  "astId": "reference-target-web.generated",
+  "color": {
+    "allowedValues": [
+      "#f9fbff",
+      "#fdfefe",
+      "rgba(255, 255, 255, 0.94)",
+      "var(--bg)",
+      "var(--muted)",
+      "var(--surface)",
+      "var(--text)"
+    ],
+    "policy": "warn"
+  },
+  "constraints": {
+    "motion": {
+      "allowedDurationsMs": [
+        120
+      ],
+      "allowedTimingFunctions": [
+        "linear"
+      ]
+    }
+  },
+  "description": "Generated from the reference target fixture and curated for deterministic workspace validation.",
+  "migration": {
+    "escalations": [],
+    "sourceFormat": "web.surface.contract@1"
+  },
+  "surfaces": [
+    {
+      "displayName": "Reference Target Web",
+      "icons": {
+        "allowedSources": [],
+        "policy": "warn"
+      },
+      "id": "reference-target-web",
+      "kind": "application",
+      "nodes": [
+        {
+          "children": [
+            "landing.hero",
+            "landing.capabilities",
+            "landing.contracts",
+            "landing.tokens",
+            "landing.observability",
+            "landing.actions"
+          ],
+          "description": "Root group for Reference Target Web.",
+          "id": "reference-target-web.root",
+          "kind": "group",
+          "label": "Reference Target Web"
+        },
+        {
+          "description": "Hero introduction for the deterministic reference target fixture.",
+          "id": "landing.hero",
+          "intent": "hero",
+          "kind": "section",
+          "label": "hero",
+          "sectionId": "landing.hero"
+        },
+        {
+          "description": "Capability grid that groups the reference target cards.",
+          "id": "landing.capabilities",
+          "intent": "feature-grid",
+          "kind": "section",
+          "label": "feature-grid",
+          "sectionId": "landing.capabilities"
+        },
+        {
+          "description": "Contract validation summary card within the capabilities grid.",
+          "id": "landing.contracts",
+          "intent": "contract-summary",
+          "kind": "section",
+          "label": "contract-summary",
+          "sectionId": "landing.contracts"
+        },
+        {
+          "description": "Token baseline card describing the design-token path.",
+          "id": "landing.tokens",
+          "intent": "token-summary",
+          "kind": "section",
+          "label": "token-summary",
+          "sectionId": "landing.tokens"
+        },
+        {
+          "description": "Observability card describing deterministic simulation behaviors.",
+          "id": "landing.observability",
+          "intent": "observability-summary",
+          "kind": "section",
+          "label": "observability-summary",
+          "sectionId": "landing.observability"
+        },
+        {
+          "description": "Optional destructive action simulation card for guard validation.",
+          "id": "landing.actions",
+          "intent": "destructive-action",
+          "kind": "section",
+          "label": "destructive-action",
+          "sectionId": "landing.actions"
+        }
+      ],
+      "phase0": {
+        "authPosture": "public",
+        "requiresShell": true
+      },
+      "platforms": [
+        {
+          "allowedFonts": [
+            "Inter",
+            "sans-serif",
+            "var(--font-inter)"
+          ],
+          "layout": {
+            "chromePolicy": {
+              "allowInsetShadow": false,
+              "allowOuterShadow": false,
+              "maxBorderRadiusPx": 0,
+              "policy": "off",
+              "targets": [
+                "layout-container",
+                "page-container",
+                "top-level-section"
+              ]
+            },
+            "maxContentWidth": 1160,
+            "requiredContainers": [
+              "page-container"
+            ],
+            "targetAcquisition": {
+              "destructiveGapPx": 16,
+              "minEdgeInsetPx": 8,
+              "minGapPx": 8,
+              "minHitAreaPx": 44,
+              "modality": "touch-mouse",
+              "policy": "warn"
+            }
+          },
+          "platform": "web"
+        }
+      ],
+      "rootNodeId": "reference-target-web.root"
+    }
+  ],
+  "tokens": {
+    "layout": {
+      "allowedTokens": [
+        "var(--contract-max-width)"
+      ],
+      "policy": "warn",
+      "tokenMetadata": [
+        {
+          "aliases": [],
+          "attributes": [
+            "max-width"
+          ],
+          "normalizedValue": "1160px",
+          "token": "var(--contract-max-width)"
+        }
+      ]
+    },
+    "motion": {
+      "allowedTokens": [],
+      "policy": "warn"
+    },
+    "typography": {
+      "allowedTokens": [
+        "var(--font-inter)"
+      ],
+      "policy": "warn",
+      "tokenMetadata": [
+        {
+          "aliases": [],
+          "attributes": [
+            "font-family"
+          ],
+          "normalizedValue": "var(--font-inter)",
+          "token": "var(--font-inter)"
+        }
+      ]
+    }
+  },
+  "version": "0.1.0"
+}
