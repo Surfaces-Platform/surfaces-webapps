@@ -69,9 +69,9 @@ test("onboarding smoke: CLI init non-interactive writes artifacts and lineage", 
     assert.ok(fs.existsSync(lineagePath), "Expected contract-lineage.json");
 
     const runs = JSON.parse(await fsp.readFile(runsPath, "utf8"));
-    assert.ok(runs.runs.some((entry) => entry.surfaceId === "smoke-surface" && entry.source === "generation"));
+    assert.ok(runs.runs.some((entry) => entry.surfaceId === "smoke-surface" && entry.source === "bootstrap"));
     const lineage = JSON.parse(await fsp.readFile(lineagePath, "utf8"));
-    assert.equal(lineage.surfaces["smoke-surface"]?.lastSource, "generation");
+    assert.equal(lineage.surfaces["smoke-surface"]?.lastSource, "bootstrap");
 
     const validator = run("node", [path.join(repoRoot, "scripts/validate-run-artifacts.mjs")], { cwd: sandbox });
     assert.equal(validator.status, 0, validator.stderr || validator.stdout);
@@ -94,8 +94,8 @@ test("onboarding smoke: API route direct call succeeds and returns policy member
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
-            url: "https://customer.example.com/dashboard?token=secret",
-            authMode: "browser-session",
+            url: "https://example.com/products",
+            authMode: "none",
             extractMode: "remote-url"
           })
         });
@@ -121,7 +121,7 @@ test("onboarding smoke: API route direct call succeeds and returns policy member
     assert.equal(payload.body.status, "warn");
     assert.equal(payload.body.inPolicyContract, false);
     assert.ok(payload.body.surfaceId);
-    assert.ok(payload.body.extraction.reportPath.includes(".extraction.json"));
+    assert.ok(payload.body.artifacts.reportPath.includes(".extraction.json"));
   } finally {
     await fsp.rm(sandbox, { recursive: true, force: true });
   }

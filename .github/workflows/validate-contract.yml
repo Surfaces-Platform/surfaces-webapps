@@ -123,10 +123,19 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
+    env:
+      SURFACES_INTERFACECTL_ROOT: ${{ github.workspace }}/interfacectl
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
+          token: ${{ secrets.INTERFACECTL_TOKEN || github.token }}
+
+      - name: Checkout interfacectl
+        uses: actions/checkout@v4
+        with:
+          repository: Surfaces-Platform/interfacectl
+          path: interfacectl
           token: ${{ secrets.INTERFACECTL_TOKEN || github.token }}
 
       - name: Setup pnpm
@@ -141,8 +150,15 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build interfacectl
+        run: pnpm run interfacectl:build
+
       - name: Build platform auth package
         run: pnpm --filter @surfaces/platform-auth build
+
+      - name: Install interfacectl Playwright browser
+        working-directory: interfacectl
+        run: pnpm --filter @surfaces/interfacectl-cli exec playwright install chromium
 
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium
