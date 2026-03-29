@@ -75,6 +75,22 @@ function buildData(overrides: Partial<LocalWorkbenchData> = {}): LocalWorkbenchD
       runtimePolicy: "off",
       mutationMode: null,
     },
+    lifecycle: {
+      stage: "validated",
+      validationStatus: "passed",
+      approvalStatus: "draft",
+      publicationStatus: "unpublished",
+      observationStatus: "pending",
+      requiredRoles: ["designer", "engineering"],
+    },
+    review: {
+      status: "unchanged",
+      requiresHumanReview: false,
+      changeCount: 0,
+      nodeChangeCount: 0,
+      governanceChangeCount: 0,
+      platformChangeCount: 0,
+    },
     latestRun: null,
     runs: [],
     latestPublish: null,
@@ -235,6 +251,31 @@ describe("LocalWorkbench", () => {
   it("renders publish readiness KPIs and blocking reasons", () => {
     const html = renderToStaticMarkup(React.createElement(LocalWorkbench, {
       data: buildData({
+        latestPublish: {
+          publishId: "publish-1",
+          status: "published",
+          createdAt: "2026-03-16T18:40:00.000Z",
+          sourceRunId: "run-1",
+          astPath: "/tmp/publish-1/published-ui-ast.json",
+          bundleRoot: "/tmp/publish-1/bundle",
+          manifestPath: "/tmp/publish-1/bundle/manifest.json",
+          generationPayloadPath: "/tmp/publish-1/generation.json",
+          runtimePayloadPath: "/tmp/publish-1/runtime.json",
+          lifecycleStage: "published",
+          integrationEvidencePath: "/tmp/publish-1/integration-evidence.json",
+          promotionRecordPath: "/tmp/publish-1/promotion-record.json",
+          integrationEvidence: {
+            consumer: "surfaceops-workbench",
+            platform: "web",
+            integratedAt: "2026-03-16T18:40:00.000Z",
+            passCount: 2,
+            warnCount: 0,
+            blockCount: 0,
+            exceptionCount: 0,
+          },
+          promotionReadinessPath: "/tmp/publish-1/promotion-readiness.json",
+          promotionReadiness: null,
+        },
         promotionReadiness: {
           schemaVersion: 2,
           generatedAt: "2026-03-16T18:30:00.000Z",
@@ -326,6 +367,9 @@ describe("LocalWorkbench", () => {
     expect(html).toContain("Recurring findings");
     expect(html).toContain("motion.none-detected (2)");
     expect(html).toContain("promotion.contract-mismatch");
+    expect(html).toContain("Lifecycle and review");
+    expect(html).toContain("Integration summary: 2 pass, 0 warn, 0 block, 0 exceptions");
+    expect(html).toContain("Promotion record: /tmp/publish-1/promotion-record.json");
   });
 
   it("renders trace inspection around the selected run without replacing the controls shell", () => {

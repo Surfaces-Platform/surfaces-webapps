@@ -63,6 +63,18 @@ describe("local workbench routes", () => {
       manifestPath: "/tmp/publish-1/bundle/manifest.json",
       generationPayloadPath: "/tmp/publish-1/generation.json",
       runtimePayloadPath: "/tmp/publish-1/runtime.json",
+      lifecycleStage: "published",
+      integrationEvidencePath: "/tmp/publish-1/integration-evidence.json",
+      promotionRecordPath: "/tmp/publish-1/promotion-record.json",
+      integrationEvidence: {
+        consumer: "surfaceops-workbench",
+        platform: "web",
+        integratedAt: "2026-03-16T18:00:00.000Z",
+        passCount: 2,
+        warnCount: 0,
+        blockCount: 0,
+        exceptionCount: 0,
+      },
       promotionReadinessPath: "/tmp/publish-1/promotion-readiness.json",
       promotionReadiness: null,
     });

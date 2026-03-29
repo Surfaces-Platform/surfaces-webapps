@@ -247,6 +247,34 @@ export interface PromotionReadinessReport {
   surfaces: PromotionReadinessSurface[];
 }
 
+export interface LocalWorkbenchLifecycleSummary {
+  stage: string;
+  validationStatus: string;
+  approvalStatus: string;
+  publicationStatus: string;
+  observationStatus: string;
+  requiredRoles: string[];
+}
+
+export interface LocalWorkbenchReviewSummary {
+  status: string;
+  requiresHumanReview: boolean;
+  changeCount: number;
+  nodeChangeCount: number;
+  governanceChangeCount: number;
+  platformChangeCount: number;
+}
+
+export interface LocalWorkbenchIntegrationEvidenceSummary {
+  consumer: string;
+  platform: string;
+  integratedAt: string;
+  passCount: number;
+  warnCount: number;
+  blockCount: number;
+  exceptionCount: number;
+}
+
 export interface LocalWorkbenchPublish {
   publishId: string;
   status: LocalWorkbenchPublishStatus;
@@ -257,6 +285,10 @@ export interface LocalWorkbenchPublish {
   manifestPath: string;
   generationPayloadPath: string;
   runtimePayloadPath: string;
+  lifecycleStage: string;
+  integrationEvidencePath: string | null;
+  promotionRecordPath: string | null;
+  integrationEvidence: LocalWorkbenchIntegrationEvidenceSummary | null;
   promotionReadinessPath: string | null;
   promotionReadiness: PromotionReadinessReport | null;
 }
@@ -292,6 +324,8 @@ export interface LocalWorkbenchData {
     implementationBrief: string;
   };
   ast: LocalWorkbenchAstSummary;
+  lifecycle: LocalWorkbenchLifecycleSummary;
+  review: LocalWorkbenchReviewSummary;
   latestRun: LocalWorkbenchRun | null;
   runs: LocalWorkbenchRun[];
   latestPublish: LocalWorkbenchPublish | null;

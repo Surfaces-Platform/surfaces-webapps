@@ -11,6 +11,10 @@ import {
   loadInterfacectlUiAstTools,
   runInterfacectlCli,
   resolveWorkspaceRoot,
+  type InterfacectlUiAstIntegrationEvidence,
+  type InterfacectlUiAstLifecycleRecord,
+  type InterfacectlUiAstPromotionRecord,
+  type InterfacectlUiAstReviewArtifact,
   type InterfacectlUiAstChange,
 } from "@/lib/interfacectl";
 import { loadSurfaceOpsDesktopModelState } from "@/lib/desktop-models";
@@ -291,6 +295,10 @@ interface PublishRecordFile {
   manifestPath: string;
   generationPayloadPath: string;
   runtimePayloadPath: string;
+  integrationEvidencePath?: string | null;
+  integrationEvidence?: InterfacectlUiAstIntegrationEvidence | null;
+  promotionRecordPath?: string | null;
+  promotionRecord?: InterfacectlUiAstPromotionRecord | null;
   promotionReadinessPath?: string | null;
   promotionReadiness?: PromotionReadinessReport | null;
 }
@@ -594,6 +602,72 @@ async function summarizeUiAstDocument(ast: UiAstDocument): Promise<LocalWorkbenc
       typeof surface?.runtime?.mutationEnvelope?.mode === "string"
         ? surface.runtime.mutationEnvelope.mode
         : null,
+  };
+}
+
+async function buildLifecycleSummary(
+  ast: UiAstDocument,
+  options: {
+    publishedAt?: string;
+    observedAt?: string;
+    lastRuntimeVerdict?: string;
+  } = {},
+) {
+  const tools = await loadInterfacectlUiAstTools();
+  const lifecycle = tools.buildUiAstLifecycleRecord(ast, {
+    surfaceId: TARGET.id,
+    validationStatus: "passed",
+    ...(options.publishedAt ? { publishedAt: options.publishedAt } : {}),
+    ...(options.observedAt ? { observedAt: options.observedAt } : {}),
+    ...(options.lastRuntimeVerdict ? { lastRuntimeVerdict: options.lastRuntimeVerdict } : {}),
+  }) as InterfacectlUiAstLifecycleRecord;
+
+  return {
+    stage: lifecycle.stage,
+    validationStatus: lifecycle.validation.status,
+    approvalStatus: lifecycle.approval.status,
+    publicationStatus: lifecycle.publication.status,
+    observationStatus: lifecycle.observation.status,
+    requiredRoles: lifecycle.approval.requiredRoles,
+  };
+}
+
+async function buildReviewSummary(canonicalAst: UiAstDocument, workingAst: UiAstDocument) {
+  const tools = await loadInterfacectlUiAstTools();
+  const review = tools.buildUiAstReviewArtifact(
+    canonicalAst,
+    workingAst,
+    TARGET.id,
+  ) as InterfacectlUiAstReviewArtifact;
+
+  return {
+    status: review.review.status,
+    requiresHumanReview: review.review.requiresHumanReview,
+    changeCount: review.summary.changeCount,
+    nodeChangeCount: review.summary.nodeChangeCount,
+    governanceChangeCount: review.summary.governanceChangeCount,
+    platformChangeCount: review.summary.platformChangeCount,
+  };
+}
+
+async function summarizeIntegrationEvidence(
+  filePath: string | null | undefined,
+) {
+  if (!filePath || !(await fileExists(filePath))) {
+    return null;
+  }
+  const evidence = await readJsonFile<InterfacectlUiAstIntegrationEvidence>(filePath);
+  const passCount = evidence.compatibilityChecks.filter((entry) => entry.status === "pass").length;
+  const warnCount = evidence.compatibilityChecks.filter((entry) => entry.status === "warn").length;
+  const blockCount = evidence.compatibilityChecks.filter((entry) => entry.status === "block").length;
+  return {
+    consumer: evidence.consumer,
+    platform: evidence.platform,
+    integratedAt: evidence.integratedAt,
+    passCount,
+    warnCount,
+    blockCount,
+    exceptionCount: evidence.exceptions.length,
   };
 }
 
@@ -2353,7 +2427,10 @@ async function listPublishRecords(): Promise<PublishRecordFile[]> {
     .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
 }
 
-function buildPublishView(record: PublishRecordFile): LocalWorkbenchPublish {
+async function buildPublishView(record: PublishRecordFile): Promise<LocalWorkbenchPublish> {
+  const integrationEvidence = await summarizeIntegrationEvidence(
+    record.integrationEvidencePath ?? null,
+  );
   return {
     publishId: record.publishId,
     status: record.status,
@@ -2364,6 +2441,10 @@ function buildPublishView(record: PublishRecordFile): LocalWorkbenchPublish {
     manifestPath: record.manifestPath,
     generationPayloadPath: record.generationPayloadPath,
     runtimePayloadPath: record.runtimePayloadPath,
+    lifecycleStage: record.promotionRecord?.lifecycleStage ?? "published",
+    integrationEvidencePath: record.integrationEvidencePath ?? null,
+    promotionRecordPath: record.promotionRecordPath ?? null,
+    integrationEvidence,
     promotionReadinessPath: record.promotionReadinessPath ?? null,
     promotionReadiness: record.promotionReadiness ?? null,
   };
@@ -2520,13 +2601,21 @@ export async function loadLocalWorkbenchRunDetail(runId: string): Promise<LocalW
 
 export async function loadLocalWorkbenchData(): Promise<LocalWorkbenchData> {
   const session = await loadOrInitContractSession();
+  const canonicalAst = await readJsonFile<UiAstDocument>(session.canonicalAstPath);
   const ast = await summarizeUiAstDocument(session.workingAst);
   const records = await listRunRecords();
   const publishRecords = await listPublishRecords();
   const activeAcceptedSuggestions = await loadAcceptedSuggestions();
   const runs = await Promise.all(records.map((record) => buildRunView(record)));
-  const publishes = publishRecords.map((record) => buildPublishView(record));
+  const publishes = await Promise.all(publishRecords.map((record) => buildPublishView(record)));
   const latestRun = runs[0] ?? null;
+  const latestPublish = publishes[0] ?? null;
+  const review = await buildReviewSummary(canonicalAst, session.workingAst);
+  const lifecycle = await buildLifecycleSummary(session.workingAst, {
+    ...(review.changeCount === 0 && latestPublish
+      ? { publishedAt: latestPublish.createdAt }
+      : {}),
+  });
   const latestRunOperatorNote = buildEditedUnresolvedAcceptedSuggestionMessage(latestRun, activeAcceptedSuggestions);
   const latestRunAgentInput: LocalWorkbenchAgentInput = {
     path: latestRun?.agentInputPath ?? null,
@@ -2560,9 +2649,11 @@ export async function loadLocalWorkbenchData(): Promise<LocalWorkbenchData> {
       implementationBrief: TARGET.implementationBrief,
     },
     ast,
+    lifecycle,
+    review,
     latestRun,
     runs,
-    latestPublish: publishes[0] ?? null,
+    latestPublish,
     publishes,
     promotionReadiness,
     activeAcceptedSuggestions,
@@ -2648,6 +2739,8 @@ export async function publishLocalWorkbenchContract(): Promise<LocalWorkbenchPub
   const bundleRoot = path.join(publishDir, "bundle");
   const generationPayloadPath = path.join(publishDir, "generation.json");
   const runtimePayloadPath = path.join(publishDir, "runtime.json");
+  const integrationEvidencePath = path.join(publishDir, "integration-evidence.json");
+  const promotionRecordPath = path.join(publishDir, "promotion-record.json");
   const promotionReadinessPath = path.join(publishDir, "promotion-readiness.json");
   const manifestPath = path.join(bundleRoot, "manifest.json");
   const createdAt = new Date().toISOString();
@@ -2680,20 +2773,66 @@ export async function publishLocalWorkbenchContract(): Promise<LocalWorkbenchPub
     { cwd: resolveWorkspaceRoot() },
   );
 
+  const tools = await loadInterfacectlUiAstTools();
+  const integrationContractDocument = await readJsonFile<{ integration?: unknown } | Record<string, unknown>>(
+    path.join(bundleRoot, "surfaces", TARGET.id, "integration.json"),
+  );
+  const integrationContract =
+    "integration" in integrationContractDocument
+      ? integrationContractDocument.integration
+      : integrationContractDocument;
+  const manifest = await readJsonFile<{ bundleVersion?: unknown }>(manifestPath);
+  const bundleVersion =
+    typeof manifest.bundleVersion === "string" && manifest.bundleVersion.trim()
+      ? manifest.bundleVersion
+      : "3.0";
+  const sourceRunId =
+    promotionReadinessSurface(promotionReadiness)?.sourceKpis.find((entry) => entry.source === "generation")?.latestRun?.runId ??
+    latestRun?.runId ??
+    null;
+  const lifecycle = tools.buildUiAstLifecycleRecord(session.workingAst, {
+    surfaceId: TARGET.id,
+    validationStatus: "passed",
+    publishedAt: createdAt,
+  }) as InterfacectlUiAstLifecycleRecord;
+  const integrationEvidence = tools.buildUiAstIntegrationEvidence({
+    contract: integrationContract,
+    consumer: "surfaceops-workbench",
+    platform: "web",
+    bundleVersion,
+    integratedAt: createdAt,
+  }) as InterfacectlUiAstIntegrationEvidence;
+  const promotionRecord = tools.buildUiAstPromotionRecord({
+    promotionId: publishId,
+    promotedAt: createdAt,
+    ast: session.workingAst,
+    surfaceId: TARGET.id,
+    lifecycle,
+    sourceRunId,
+    astPath,
+    bundleRoot,
+    generationPayloadPath,
+    runtimePayloadPath,
+    integrationEvidencePath,
+  }) as InterfacectlUiAstPromotionRecord;
+  await writeJsonFile(integrationEvidencePath, integrationEvidence);
+  await writeJsonFile(promotionRecordPath, promotionRecord);
+
   const publishRecord = {
     schemaVersion: 2,
     publishId,
     status: "published",
     createdAt,
-    sourceRunId:
-      promotionReadinessSurface(promotionReadiness)?.sourceKpis.find((entry) => entry.source === "generation")?.latestRun?.runId ??
-      latestRun?.runId ??
-      null,
+    sourceRunId,
     astPath,
     bundleRoot,
     manifestPath,
     generationPayloadPath,
     runtimePayloadPath,
+    integrationEvidencePath,
+    integrationEvidence,
+    promotionRecordPath,
+    promotionRecord,
     promotionReadinessPath,
     promotionReadiness,
   } satisfies PublishRecordFile;

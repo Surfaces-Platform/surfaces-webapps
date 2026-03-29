@@ -118,6 +118,57 @@ function assertAstFirstBundleConventions(payload, expected) {
   assert.match(payload.bundle.sourcePaths.contract, /derived\/contract\.normalized\.json$/);
 }
 
+function assertAstControlPlanePayloads({
+  generationPayload,
+  runtimePayload,
+  bundleRoot,
+  surfaceId,
+}) {
+  assert.equal(
+    generationPayload.bundle.sourcePaths.lifecycle,
+    path.join(bundleRoot, "surfaces", surfaceId, "lifecycle.json"),
+  );
+  assert.equal(
+    generationPayload.bundle.sourcePaths.proposal,
+    path.join(bundleRoot, "surfaces", surfaceId, "proposal.json"),
+  );
+  assert.equal(
+    generationPayload.bundle.sourcePaths.integration,
+    path.join(bundleRoot, "surfaces", surfaceId, "integration.json"),
+  );
+  assert.equal(typeof generationPayload.lifecycle.stage, "string");
+  assert.equal(
+    generationPayload.proposal.adapter.requestSchemaId.endsWith("ui.ast.proposal.request.schema.json"),
+    true,
+  );
+  assert.ok(
+    generationPayload.integration.rendererBindings.some((binding) => binding.platform === "web"),
+    "generation payload should retain web renderer bindings in the per-platform slice",
+  );
+
+  assert.equal(
+    runtimePayload.bundle.sourcePaths.lifecycle,
+    path.join(bundleRoot, "surfaces", surfaceId, "lifecycle.json"),
+  );
+  assert.equal(
+    runtimePayload.bundle.sourcePaths.integration,
+    path.join(bundleRoot, "surfaces", surfaceId, "integration.json"),
+  );
+  assert.equal(
+    runtimePayload.bundle.sourcePaths.observation,
+    path.join(bundleRoot, "surfaces", surfaceId, "observation.json"),
+  );
+  assert.equal(typeof runtimePayload.lifecycle.stage, "string");
+  assert.ok(
+    runtimePayload.integration.rendererBindings.some((binding) => binding.platform === "web"),
+    "runtime payload should retain web renderer bindings in the per-platform slice",
+  );
+  assert.equal(
+    runtimePayload.observation.verdictSchemaId.endsWith("ui.ast.runtime.verdict.schema.json"),
+    true,
+  );
+}
+
 test("consumer scripts are resolver-backed and local adapter implementation is removed", async () => {
   const packageJson = JSON.parse(await fsp.readFile(packageJsonPath, "utf8"));
 
@@ -463,6 +514,12 @@ test("consumer smoke: benchmark async data AST stays fresh and drives bundle pre
       astId: "benchmark-async-data-web.generated",
       surfaceId: "benchmark-async-data-web",
     });
+    assertAstControlPlanePayloads({
+      generationPayload,
+      runtimePayload,
+      bundleRoot,
+      surfaceId: "benchmark-async-data-web",
+    });
     assert.equal(generationPayload.generation.ast.rootNodeId, "benchmark-async-data-web.root");
 
     assert.equal(runtimePayload.bundle.version, "3.0");
@@ -489,6 +546,7 @@ test("consumer smoke: reference target AST uses the same AST-first bundle conven
   const tempDir = await fsp.mkdtemp(path.join(os.tmpdir(), "surfaces-reference-target-ast-"));
   const bundleRoot = path.join(repoRoot, "artifacts", "generation-bundles", `reference-target-web-${Date.now()}`);
   const preparedGenerationPath = path.join(tempDir, "prepared-generation.json");
+  const preparedRuntimePath = path.join(tempDir, "prepared-runtime.json");
 
   try {
     const compileResult = await runCommand(
@@ -535,12 +593,43 @@ test("consumer smoke: reference target AST uses the same AST-first bundle conven
     );
     assert.equal(prepareResult.exitCode, 0, prepareResult.stderr);
 
+    const prepareRuntimeResult = await runCommand(
+      "node",
+      [
+        "scripts/interfacectl-tool.mjs",
+        "run",
+        "cli",
+        "prepare-runtime",
+        "--bundle-root",
+        bundleRoot,
+        "--surface",
+        "reference-target-web",
+        "--out",
+        preparedRuntimePath,
+      ],
+      {
+        cwd: repoRoot,
+        env: {
+          SURFACES_INTERFACECTL_ROOT: interfacectlRoot,
+        },
+      },
+    );
+    assert.equal(prepareRuntimeResult.exitCode, 0, prepareRuntimeResult.stderr);
+
     const generationPayload = JSON.parse(await fsp.readFile(preparedGenerationPath, "utf8"));
+    const runtimePayload = JSON.parse(await fsp.readFile(preparedRuntimePath, "utf8"));
     assertAstFirstBundleConventions(generationPayload, {
       astId: "reference-target-web.generated",
       surfaceId: "reference-target-web",
     });
+    assertAstControlPlanePayloads({
+      generationPayload,
+      runtimePayload,
+      bundleRoot,
+      surfaceId: "reference-target-web",
+    });
     assert.equal(generationPayload.generation.ast.rootNodeId, "reference-target-web.root");
+    assert.equal(runtimePayload.runtime.ast.rootNodeId, "reference-target-web.root");
   } finally {
     await fsp.rm(tempDir, { recursive: true, force: true });
     await fsp.rm(bundleRoot, { recursive: true, force: true });

@@ -77,6 +77,16 @@ function stableClone<T>(value: T): T {
 }
 
 function buildMockUiAstTools() {
+  function findSurface(ast: Record<string, any>, surfaceId = "reference-target-web") {
+    return ast.surfaces?.find((entry: { id?: string }) => entry.id === surfaceId) ?? ast.surfaces?.[0] ?? {};
+  }
+
+  function findWebPlatform(surface: Record<string, any>) {
+    return surface.platforms?.find((entry: { platform?: string }) => entry.platform === "web")
+      ?? surface.platforms?.[0]
+      ?? {};
+  }
+
   function migrateLegacyContractToUiAst(contract: Record<string, any>) {
     const surface = contract.surfaces?.[0] ?? {};
     const requiredSections = [...new Set<string>(
@@ -247,7 +257,7 @@ function buildMockUiAstTools() {
   function summarizeUiAst(ast: Record<string, any>) {
     const normalized = normalizeUiAst(ast);
     const surface = normalized.surfaces?.[0] ?? {};
-    const web = surface.platforms?.find((entry: { platform?: string }) => entry.platform === "web") ?? surface.platforms?.[0] ?? {};
+    const web = findWebPlatform(surface);
     return {
       astId: normalized.astId ?? "reference-target-web.generated",
       version: normalized.version ?? "0.1.0",
@@ -273,11 +283,123 @@ function buildMockUiAstTools() {
     };
   }
 
+  function buildUiAstLifecycleRecord(ast: Record<string, any>, options: Record<string, any> = {}) {
+    const normalized = normalizeUiAst(ast);
+    const surface = findSurface(normalized, options.surfaceId);
+    const governanceStatus = surface.governance?.status ?? "draft";
+    const requiredRoles = [
+      ...(surface.governance?.roles?.designers?.length ? ["designer"] : []),
+      ...(surface.governance?.roles?.engineers?.length ? ["engineering"] : []),
+    ];
+    const validationStatus = options.validationStatus ?? "passed";
+    const approvalStatus =
+      governanceStatus === "approved" || governanceStatus === "published"
+        ? "approved"
+        : governanceStatus === "review"
+          ? "pending"
+          : "draft";
+    const publicationStatus = options.publishedAt ? "published" : "unpublished";
+    const observationStatus = options.observedAt ? "observed" : "pending";
+    const stage =
+      observationStatus === "observed"
+        ? "observed"
+        : publicationStatus === "published"
+          ? "published"
+          : approvalStatus === "approved"
+            ? "approved"
+            : validationStatus === "passed"
+              ? "validated"
+              : "draft";
+
+    return {
+      stage,
+      validation: { status: validationStatus },
+      approval: {
+        status: approvalStatus,
+        requiredRoles: requiredRoles.length > 0 ? requiredRoles : ["designer", "engineering"],
+      },
+      publication: { status: publicationStatus },
+      observation: {
+        status: observationStatus,
+        ...(options.lastRuntimeVerdict ? { lastVerdict: String(options.lastRuntimeVerdict) } : {}),
+      },
+    };
+  }
+
+  function buildUiAstReviewArtifact(before: Record<string, any>, after: Record<string, any>, surfaceId = "reference-target-web") {
+    const normalizedBefore = normalizeUiAst(before);
+    const normalizedAfter = normalizeUiAst(after);
+    const beforeSurface = findSurface(normalizedBefore, surfaceId);
+    const afterSurface = findSurface(normalizedAfter, surfaceId);
+    const beforeWeb = findWebPlatform(beforeSurface);
+    const afterWeb = findWebPlatform(afterSurface);
+    const nodeChanged = JSON.stringify(beforeSurface.nodes ?? []) !== JSON.stringify(afterSurface.nodes ?? []);
+    const governanceChanged =
+      beforeSurface.owner !== afterSurface.owner ||
+      JSON.stringify(beforeSurface.governance ?? {}) !== JSON.stringify(afterSurface.governance ?? {}) ||
+      JSON.stringify(beforeSurface.runtime ?? {}) !== JSON.stringify(afterSurface.runtime ?? {});
+    const platformChanged =
+      JSON.stringify(beforeWeb.allowedFonts ?? []) !== JSON.stringify(afterWeb.allowedFonts ?? []) ||
+      JSON.stringify(beforeWeb.layout ?? {}) !== JSON.stringify(afterWeb.layout ?? {});
+    const colorChanged = JSON.stringify(normalizedBefore.color ?? {}) !== JSON.stringify(normalizedAfter.color ?? {});
+    const changeCount = [nodeChanged, governanceChanged, platformChanged, colorChanged].filter(Boolean).length;
+    const requiresHumanReview = governanceChanged || platformChanged || nodeChanged;
+
+    return {
+      review: {
+        status: changeCount === 0 ? "unchanged" : requiresHumanReview ? "needs-review" : "ready",
+        requiresHumanReview,
+      },
+      summary: {
+        changeCount,
+        nodeChangeCount: nodeChanged ? 1 : 0,
+        governanceChangeCount: governanceChanged ? 1 : 0,
+        platformChangeCount: platformChanged ? 1 : 0,
+      },
+    };
+  }
+
+  function buildUiAstIntegrationEvidence(options: Record<string, any>) {
+    const requiredChecks = Array.isArray(options.contract?.evidence?.requiredChecks)
+      ? options.contract.evidence.requiredChecks
+      : ["integration.binding.valid", "projection.available"];
+    return {
+      consumer: options.consumer ?? "surfaceops-workbench",
+      platform: options.platform ?? "web",
+      integratedAt: options.integratedAt ?? "2026-03-28T00:00:00.000Z",
+      compatibilityChecks: requiredChecks.map((code: string) => ({
+        code,
+        status: "pass",
+        message: `${code} passed.`,
+      })),
+      exceptions: options.exceptions ?? [],
+    };
+  }
+
+  function buildUiAstPromotionRecord(options: Record<string, any>) {
+    return {
+      promotionId: options.promotionId ?? "publish-1",
+      promotedAt: options.promotedAt ?? "2026-03-28T00:00:00.000Z",
+      lifecycleStage: options.lifecycle?.stage === "observed" ? "observed" : "published",
+      artifacts: {
+        astPath: options.astPath,
+        bundleRoot: options.bundleRoot,
+        generationPayloadPath: options.generationPayloadPath,
+        runtimePayloadPath: options.runtimePayloadPath,
+        ...(options.integrationEvidencePath ? { integrationEvidencePath: options.integrationEvidencePath } : {}),
+      },
+    };
+  }
+
   return {
     migrateLegacyContractToUiAst,
     deriveLegacyContractFromUiAst,
     normalizeUiAst,
     applyUiAstChange,
+    buildUiAstIntegrationEvidence,
+    buildUiAstLifecycleRecord,
+    buildUiAstPromotionRecord,
+    buildUiAstReviewArtifact,
     summarizeUiAst,
   };
 }
@@ -889,6 +1011,15 @@ describe("local workbench service", () => {
         }),
       ]),
     );
+    expect(data.lifecycle).toMatchObject({
+      stage: "validated",
+      validationStatus: "passed",
+    });
+    expect(data.review).toMatchObject({
+      status: "ready",
+      requiresHumanReview: false,
+      changeCount: 1,
+    });
 
     const sessionPath = path.join(
       workspaceRoot,
@@ -1028,6 +1159,10 @@ describe("local workbench service", () => {
     expect(data.ast.governanceStatus).toBe("review");
     expect(data.ast.runtimePolicy).toBe("strict");
     expect(data.ast.mutationMode).toBe("slot-bound");
+    expect(data.review).toMatchObject({
+      status: "needs-review",
+      requiresHumanReview: true,
+    });
   });
 
   it("upgrades a legacy session by replaying named-color chat turns into structured contract state", async () => {
@@ -1426,8 +1561,20 @@ describe("local workbench service", () => {
       const outIndex = args.indexOf("--out");
       if (command === "compile" && outIndex >= 0) {
         const bundleRoot = args[outIndex + 1]!;
-        await fs.mkdir(bundleRoot, { recursive: true });
-        await fs.writeFile(path.join(bundleRoot, "manifest.json"), JSON.stringify({ bundleVersion: "2.0" }), "utf8");
+        const surfaceDir = path.join(bundleRoot, "surfaces", "reference-target-web");
+        await fs.mkdir(surfaceDir, { recursive: true });
+        await fs.writeFile(path.join(bundleRoot, "manifest.json"), JSON.stringify({ bundleVersion: "3.0" }), "utf8");
+        await fs.writeFile(
+          path.join(surfaceDir, "integration.json"),
+          JSON.stringify({
+            integration: {
+              evidence: {
+                requiredChecks: ["integration.binding.valid", "projection.available"],
+              },
+            },
+          }),
+          "utf8",
+        );
         return { stdout: "", stderr: "" };
       }
       if ((command === "prepare-generation" || command === "prepare-runtime") && outIndex >= 0) {
@@ -1441,11 +1588,24 @@ describe("local workbench service", () => {
 
     expect(publish.status).toBe("published");
     expect(publish.sourceRunId).toBe("run-1");
+    expect(publish.lifecycleStage).toBe("published");
+    expect(publish.integrationEvidencePath).toContain("integration-evidence.json");
+    expect(publish.promotionRecordPath).toContain("promotion-record.json");
+    expect(publish.integrationEvidence).toMatchObject({
+      consumer: "surfaceops-workbench",
+      platform: "web",
+      passCount: 2,
+      warnCount: 0,
+      blockCount: 0,
+      exceptionCount: 0,
+    });
     expect(publish.promotionReadinessPath).toContain("promotion-readiness.json");
     expect(publish.promotionReadiness?.summary.readyForPromotion).toBe(true);
     await expect(fs.readFile(publish.astPath, "utf8")).resolves.toContain("\"astId\"");
     await expect(fs.readFile(publish.generationPayloadPath, "utf8")).resolves.toContain("\"command\":\"prepare-generation\"");
     await expect(fs.readFile(publish.runtimePayloadPath, "utf8")).resolves.toContain("\"command\":\"prepare-runtime\"");
+    await expect(fs.readFile(publish.integrationEvidencePath!, "utf8")).resolves.toContain("\"surfaceops-workbench\"");
+    await expect(fs.readFile(publish.promotionRecordPath!, "utf8")).resolves.toContain("\"lifecycleStage\": \"published\"");
     await expect(fs.readFile(publish.promotionReadinessPath!, "utf8")).resolves.toContain("\"readyForPromotion\": true");
   });
 

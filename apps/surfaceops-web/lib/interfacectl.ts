@@ -52,8 +52,62 @@ export interface InterfacectlUiAstChange {
   summary: string;
 }
 
+export interface InterfacectlUiAstLifecycleRecord {
+  stage: string;
+  validation: { status: string };
+  approval: { status: string; requiredRoles: string[] };
+  publication: { status: string };
+  observation: { status: string; lastVerdict?: string };
+}
+
+export interface InterfacectlUiAstReviewArtifact {
+  review: {
+    status: string;
+    requiresHumanReview: boolean;
+  };
+  summary: {
+    changeCount: number;
+    nodeChangeCount: number;
+    governanceChangeCount: number;
+    platformChangeCount: number;
+  };
+}
+
+export interface InterfacectlUiAstIntegrationEvidence {
+  consumer: string;
+  platform: string;
+  integratedAt: string;
+  compatibilityChecks: Array<{
+    code: string;
+    status: string;
+    message: string;
+  }>;
+  exceptions: Array<{
+    code: string;
+    approvedBy: string;
+    note?: string;
+  }>;
+}
+
+export interface InterfacectlUiAstPromotionRecord {
+  promotionId: string;
+  promotedAt: string;
+  lifecycleStage: string;
+  artifacts: {
+    astPath: string;
+    bundleRoot: string;
+    generationPayloadPath: string;
+    runtimePayloadPath: string;
+    integrationEvidencePath?: string;
+  };
+}
+
 export interface InterfacectlUiAstTools {
   applyUiAstChange: (ast: unknown, change: InterfacectlUiAstChange) => unknown;
+  buildUiAstIntegrationEvidence: (options: unknown) => unknown;
+  buildUiAstLifecycleRecord: (ast: unknown, options?: unknown) => unknown;
+  buildUiAstPromotionRecord: (options: unknown) => unknown;
+  buildUiAstReviewArtifact: (before: unknown, after: unknown, surfaceId?: string) => unknown;
   deriveLegacyContractFromUiAst: (ast: unknown) => unknown;
   migrateLegacyContractToUiAst: (contract: unknown) => unknown;
   normalizeUiAst: (ast: unknown) => unknown;
@@ -94,6 +148,10 @@ export async function loadInterfacectlUiAstTools(): Promise<InterfacectlUiAstToo
       const loaded = await import(moduleUrl) as Partial<InterfacectlUiAstTools>;
       const tools = {
         applyUiAstChange: loaded.applyUiAstChange,
+        buildUiAstIntegrationEvidence: loaded.buildUiAstIntegrationEvidence,
+        buildUiAstLifecycleRecord: loaded.buildUiAstLifecycleRecord,
+        buildUiAstPromotionRecord: loaded.buildUiAstPromotionRecord,
+        buildUiAstReviewArtifact: loaded.buildUiAstReviewArtifact,
         deriveLegacyContractFromUiAst: loaded.deriveLegacyContractFromUiAst,
         migrateLegacyContractToUiAst: loaded.migrateLegacyContractToUiAst,
         normalizeUiAst: loaded.normalizeUiAst,

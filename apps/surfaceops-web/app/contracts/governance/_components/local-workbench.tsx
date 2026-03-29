@@ -357,6 +357,8 @@ export function LocalWorkbench({
       ? (promotionReadiness.summary.readyForPromotion ? "neutral" : "warning")
       : "info",
   );
+  const lifecycle = data.lifecycle;
+  const review = data.review;
   const selectedRunSummary = data.runs.find((entry) => entry.runId === selectedRunId) ?? latestRun ?? null;
   const activeTraceRun = selectedDetail?.run ?? selectedRunSummary ?? null;
   const previewDebug = selectedDetail?.previewDebug ?? null;
@@ -826,6 +828,24 @@ export function LocalWorkbench({
                       Generation payload: {data.latestPublish.generationPayloadPath}
                     </div>
                     <div style={{ fontSize: 12, color: colors.neutral[600] }}>
+                      Lifecycle stage: {data.latestPublish.lifecycleStage}
+                    </div>
+                    <div style={{ fontSize: 12, color: colors.neutral[600] }}>
+                      Integration evidence: {data.latestPublish.integrationEvidencePath ?? "Unavailable"}
+                    </div>
+                    {data.latestPublish.integrationEvidence ? (
+                      <div style={{ fontSize: 12, color: colors.neutral[600] }}>
+                        Integration summary: {data.latestPublish.integrationEvidence.passCount} pass,{" "}
+                        {data.latestPublish.integrationEvidence.warnCount} warn,{" "}
+                        {data.latestPublish.integrationEvidence.blockCount} block,{" "}
+                        {data.latestPublish.integrationEvidence.exceptionCount} exception
+                        {data.latestPublish.integrationEvidence.exceptionCount === 1 ? "" : "s"}
+                      </div>
+                    ) : null}
+                    <div style={{ fontSize: 12, color: colors.neutral[600] }}>
+                      Promotion record: {data.latestPublish.promotionRecordPath ?? "Unavailable"}
+                    </div>
+                    <div style={{ fontSize: 12, color: colors.neutral[600] }}>
                       Readiness artifact: {data.latestPublish.promotionReadinessPath ?? "Unavailable"}
                     </div>
                     {data.latestPublish.promotionReadiness ? (
@@ -1070,6 +1090,24 @@ export function LocalWorkbench({
                       <div>Governance status: {data.ast.governanceStatus ?? "draft"}</div>
                       <div>Runtime policy: {data.ast.runtimePolicy}</div>
                       <div>Mutation mode: {data.ast.mutationMode ?? "unspecified"}</div>
+                    </div>
+                  </section>
+
+                  <section style={{ border: `1px solid ${colors.neutral[200]}`, borderRadius: 14, padding: 14 }}>
+                    <strong style={{ display: "block", marginBottom: 10 }}>Lifecycle and review</strong>
+                    <div style={{ display: "grid", gap: 6, fontSize: 13, color: colors.neutral[800] }}>
+                      <div>Lifecycle stage: {lifecycle.stage}</div>
+                      <div>Validation status: {lifecycle.validationStatus}</div>
+                      <div>Approval status: {lifecycle.approvalStatus}</div>
+                      <div>Publication status: {lifecycle.publicationStatus}</div>
+                      <div>Observation status: {lifecycle.observationStatus}</div>
+                      <div>Required roles: {lifecycle.requiredRoles.join(", ") || "none"}</div>
+                      <div>Review status: {review.status}</div>
+                      <div>Requires human review: {review.requiresHumanReview ? "yes" : "no"}</div>
+                      <div>Total changes: {review.changeCount}</div>
+                      <div>Node changes: {review.nodeChangeCount}</div>
+                      <div>Governance changes: {review.governanceChangeCount}</div>
+                      <div>Platform changes: {review.platformChangeCount}</div>
                     </div>
                   </section>
 
