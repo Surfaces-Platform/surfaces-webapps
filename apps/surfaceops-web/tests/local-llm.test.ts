@@ -902,6 +902,62 @@ describe("runLocalLlmAgent", () => {
     );
   });
 
+  it("rejects duplicate lexical declarations before writing the candidate file", async () => {
+    const repoRoot = await createRepo({
+      "apps/reference-target-web/app/page.tsx": [
+        "export default async function Page({ searchParams }: { searchParams: Promise<{ simulateUnobservableTargets?: string }> }) {",
+        "  const params = await searchParams;",
+        "  const simulateUnobservableTargets = Boolean(params.simulateUnobservableTargets);",
+        "  const includeTargetMarkers = !simulateUnobservableTargets;",
+        "  return <div>{String(includeTargetMarkers)}</div>;",
+        "}",
+        "",
+      ].join("\n"),
+    });
+    const pagePath = path.join(repoRoot, "apps", "reference-target-web", "app", "page.tsx");
+
+    mockFetchSequence([
+      toolResponse("read_file", { path: "apps/reference-target-web/app/page.tsx" }, "call-1"),
+      toolResponse(
+        "apply_text_edits",
+        {
+          path: "apps/reference-target-web/app/page.tsx",
+          edits: [
+            {
+              kind: "insert_after",
+              anchorText: "  const includeTargetMarkers = !simulateUnobservableTargets;\n",
+              text: "  const includeTargetMarkers = !simulateUnobservableTargets;\n",
+            },
+          ],
+        },
+        "call-2",
+      ),
+      toolResponse("finish", { summary: "No change after duplicate declaration edit.", noChanges: true }, "call-3"),
+    ]);
+
+    const result = await runLocalLlmAgent({
+      config: {
+        baseUrl: "http://localhost:1234/v1",
+        model: "openai/gpt-oss-20b",
+      },
+      repoRoot,
+      allowedRoots: ["apps/reference-target-web"],
+      preparedPayload: { summary: { text: "Keep the fixture deterministic." } },
+      implementationBrief: "Make a small contract-guided change.",
+    });
+
+    expect(result.noChanges).toBe(true);
+    expect(result.touchedFiles).toEqual([]);
+    await expect(fs.readFile(pagePath, "utf8")).resolves.not.toContain(
+      "const includeTargetMarkers = !simulateUnobservableTargets;\n  const includeTargetMarkers = !simulateUnobservableTargets;",
+    );
+
+    const retryRequest = vi.mocked(global.fetch).mock.calls[2]?.[1];
+    const retryInput = retryRequest?.body ? JSON.parse(String(retryRequest.body)).input : "";
+    expect(retryInput).toContain("apply_text_edits validation failed for apps/reference-target-web/app/page.tsx");
+    expect(retryInput).toContain("Identifier 'includeTargetMarkers' has already been declared");
+  });
+
   it("returns noChanges=true-after-edit errors so the model can finish cleanly", async () => {
     const repoRoot = await createRepo({
       "apps/reference-target-web/app/page.tsx": "export default function Page() { return <div>before</div>; }\n",

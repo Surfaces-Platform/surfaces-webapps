@@ -721,6 +721,167 @@ function formatTypeScriptDiagnostic(filePath: string, diagnostic: ts.Diagnostic)
   return `${message} (${filePath})`;
 }
 
+function scriptKindForPath(filePath: string): ts.ScriptKind {
+  const extension = path.extname(filePath).toLowerCase();
+  switch (extension) {
+    case ".tsx":
+      return ts.ScriptKind.TSX;
+    case ".jsx":
+      return ts.ScriptKind.JSX;
+    case ".js":
+      return ts.ScriptKind.JS;
+    default:
+      return ts.ScriptKind.TS;
+  }
+}
+
+function collectBindingNames(name: ts.BindingName, target: string[]): void {
+  if (ts.isIdentifier(name)) {
+    target.push(name.text);
+    return;
+  }
+  for (const element of name.elements) {
+    if (ts.isOmittedExpression(element)) {
+      continue;
+    }
+    collectBindingNames(element.name, target);
+  }
+}
+
+function formatNodeLocation(filePath: string, sourceFile: ts.SourceFile, node: ts.Node): string {
+  const position = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile));
+  return `${filePath}:${position.line + 1}:${position.character + 1}`;
+}
+
+function validateNoDuplicateLexicalDeclarations(filePath: string, content: string): void {
+  const sourceFile = ts.createSourceFile(
+    filePath,
+    content,
+    ts.ScriptTarget.ESNext,
+    true,
+    scriptKindForPath(filePath),
+  );
+
+  const registerName = (
+    scope: Map<string, ts.Node>,
+    name: string,
+    node: ts.Node,
+  ): void => {
+    const prior = scope.get(name);
+    if (prior) {
+      throw new LocalLlmAgentError(
+        `apply_text_edits validation failed for ${filePath}: Identifier '${name}' has already been declared (${formatNodeLocation(filePath, sourceFile, node)}; previous declaration at ${formatNodeLocation(filePath, sourceFile, prior)})`,
+      );
+    }
+    scope.set(name, node);
+  };
+
+  const registerBindingName = (scope: Map<string, ts.Node>, name: ts.BindingName): void => {
+    const identifiers: string[] = [];
+    collectBindingNames(name, identifiers);
+    for (const identifier of identifiers) {
+      registerName(scope, identifier, name);
+    }
+  };
+
+  const registerImportBindings = (scope: Map<string, ts.Node>, clause: ts.ImportClause): void => {
+    if (clause.name) {
+      registerName(scope, clause.name.text, clause.name);
+    }
+    if (!clause.namedBindings) {
+      return;
+    }
+    if (ts.isNamespaceImport(clause.namedBindings)) {
+      registerName(scope, clause.namedBindings.name.text, clause.namedBindings.name);
+      return;
+    }
+    for (const element of clause.namedBindings.elements) {
+      registerName(scope, element.name.text, element.name);
+    }
+  };
+
+  const visitStatements = (statements: readonly ts.Statement[], scope: Map<string, ts.Node>): void => {
+    for (const statement of statements) {
+      visitNode(statement, scope);
+    }
+  };
+
+  const visitFunctionLike = (node: ts.FunctionLikeDeclarationBase): void => {
+    const functionScope = new Map<string, ts.Node>();
+    for (const parameter of node.parameters) {
+      registerBindingName(functionScope, parameter.name);
+    }
+    if (node.body && ts.isBlock(node.body)) {
+      visitStatements(node.body.statements, functionScope);
+    }
+  };
+
+  const visitNode = (node: ts.Node, scope: Map<string, ts.Node>): void => {
+    if (ts.isImportDeclaration(node) && node.importClause) {
+      registerImportBindings(scope, node.importClause);
+      return;
+    }
+    if (ts.isVariableDeclarationList(node) && (node.flags & ts.NodeFlags.BlockScoped) !== 0) {
+      for (const declaration of node.declarations) {
+        registerBindingName(scope, declaration.name);
+      }
+    }
+    if (ts.isFunctionDeclaration(node) && node.name) {
+      registerName(scope, node.name.text, node.name);
+    }
+    if (ts.isClassDeclaration(node) && node.name) {
+      registerName(scope, node.name.text, node.name);
+    }
+    if (ts.isEnumDeclaration(node)) {
+      registerName(scope, node.name.text, node.name);
+    }
+    if (ts.isTypeAliasDeclaration(node)) {
+      registerName(scope, node.name.text, node.name);
+    }
+    if (ts.isInterfaceDeclaration(node)) {
+      registerName(scope, node.name.text, node.name);
+    }
+
+    if (ts.isSourceFile(node)) {
+      visitStatements(node.statements, scope);
+      return;
+    }
+    if (ts.isFunctionLike(node) && "body" in node) {
+      visitFunctionLike(node as ts.FunctionLikeDeclarationBase);
+      return;
+    }
+    if (ts.isBlock(node)) {
+      visitStatements(node.statements, new Map<string, ts.Node>());
+      return;
+    }
+    if (ts.isCaseBlock(node)) {
+      for (const clause of node.clauses) {
+        visitNode(clause, new Map<string, ts.Node>());
+      }
+      return;
+    }
+    if (ts.isCaseClause(node) || ts.isDefaultClause(node)) {
+      const clauseScope = new Map<string, ts.Node>();
+      for (const statement of node.statements) {
+        visitNode(statement, clauseScope);
+      }
+      return;
+    }
+    if (ts.isCatchClause(node)) {
+      const catchScope = new Map<string, ts.Node>();
+      if (node.variableDeclaration) {
+        registerBindingName(catchScope, node.variableDeclaration.name);
+      }
+      visitNode(node.block, catchScope);
+      return;
+    }
+
+    ts.forEachChild(node, (child) => visitNode(child, scope));
+  };
+
+  visitNode(sourceFile, new Map<string, ts.Node>());
+}
+
 function validateScriptContent(filePath: string, content: string): void {
   const result = ts.transpileModule(content, {
     fileName: filePath,
@@ -737,6 +898,7 @@ function validateScriptContent(filePath: string, content: string): void {
       `apply_text_edits validation failed for ${filePath}: ${formatTypeScriptDiagnostic(filePath, diagnostic)}`,
     );
   }
+  validateNoDuplicateLexicalDeclarations(filePath, content);
 }
 
 function validateJsonContent(filePath: string, content: string): void {
