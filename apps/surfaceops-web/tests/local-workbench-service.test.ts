@@ -2686,7 +2686,7 @@ describe("local workbench service", () => {
     const result = await runBenchmarkCohort({
       cohortId: "20260315010000",
       fixtureIds,
-      strategies: ["baseline-primary", "json-primary"],
+      strategies: ["unguided", "baseline-primary"],
       requestedModelLabel: "gpt-oss-20b",
       resolvedModelId: "openai/gpt-oss-20b",
     });
@@ -2810,7 +2810,7 @@ describe("local workbench service", () => {
     const result = await runBenchmarkCohort({
       cohortId: "20260315011500",
       fixtureIds: [fixtureId],
-      strategies: ["baseline-primary", "json-primary"],
+      strategies: ["unguided", "baseline-primary"],
       profilesByFixtureId: {
         "benchmark-shared-shell-web": {
           ...getBenchmarkFixtureProfile(fixtureId),

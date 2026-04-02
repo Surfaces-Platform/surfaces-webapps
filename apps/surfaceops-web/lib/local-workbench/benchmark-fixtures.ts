@@ -57,9 +57,13 @@ export const REFERENCE_TARGET_FIXTURE = {
   contractPath: "contracts/generated/reference-target-web.contract.json",
   astPath: "contracts/generated/reference-target-web.ui.surface.ast.json",
   implementationBrief:
-    "Refine the reference target UI to better match the UI AST-guided surface while preserving deterministic fixture behavior.",
+    [
+      "Build an image editing workbench.",
+      "Treat it like a real browser-based product surface, not a marketing page.",
+      "Make it feel plausible in one shot with minimal direction while preserving deterministic fixture behavior.",
+    ].join(" "),
   devPort: 3004,
-  defaultStrategies: ["baseline-primary", "json-primary"],
+  defaultStrategies: ["baseline-primary"],
   primaryEditableFiles: ["apps/reference-target-web/app/page.tsx"],
   stylesheetFiles: ["apps/reference-target-web/app/globals.css"],
   tokenFiles: ["apps/reference-target-web/app/globals.css"],

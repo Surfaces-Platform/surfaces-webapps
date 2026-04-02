@@ -316,6 +316,7 @@ interface FrozenRuntimeGuidancePaths {
 }
 
 interface ReferenceTargetImplementationSessionResult {
+  status: "succeeded" | "failed";
   guidanceStrategy: ImplementationGuidanceStrategy;
   sessionId: string;
   sessionDir: string;
@@ -327,9 +328,10 @@ interface ReferenceTargetImplementationSessionResult {
   previewPath: string | null;
   touchedFiles: string[];
   noChanges: boolean;
-  validate: Record<string, unknown>;
+  validate: Record<string, unknown> | null;
   comparison: LocalWorkbenchComparison | null;
   remainingAcceptedSuggestions: LocalWorkbenchAcceptedSuggestion[];
+  errorMessage: string | null;
 }
 
 interface LocalLlmAgentBudgets {
@@ -2953,11 +2955,14 @@ function normalizeBenchmarkStrategies(
   if (allowed.length !== unique.length) {
     throw new Error("Benchmark cohorts only support prompt-summary, baseline-primary, json-primary, and unguided.");
   }
-  if (!allowed.includes("baseline-primary") || !allowed.includes("json-primary")) {
-    throw new Error("Benchmark cohorts must include baseline-primary and json-primary.");
-  }
   if (allowed.length < 2) {
     throw new Error("Benchmark cohorts require at least two guidance strategies.");
+  }
+  if (!allowed.includes("unguided")) {
+    throw new Error("Benchmark cohorts must include unguided as the no-contract control arm.");
+  }
+  if (!allowed.some((entry) => entry === "prompt-summary" || entry === "baseline-primary" || entry === "json-primary")) {
+    throw new Error("Benchmark cohorts must include at least one guided strategy.");
   }
 
   const ordered: ImplementationGuidanceStrategy[] = [];
@@ -2969,6 +2974,45 @@ function normalizeBenchmarkStrategies(
   }
   ordered.push("baseline-primary", "json-primary");
   return ordered.filter((entry, index, values) => allowed.includes(entry) && values.indexOf(entry) === index);
+}
+
+async function writeFailedBenchmarkSessionSummary(input: {
+  fixture: BenchmarkFixture;
+  sessionId: string;
+  sessionDir: string;
+  guidanceStrategy: ImplementationGuidanceStrategy;
+  errorMessage: string;
+}): Promise<void> {
+  const summaryPath = path.join(input.sessionDir, "summary.json");
+  const markdownPath = path.join(input.sessionDir, "summary.md");
+  await fsp.mkdir(input.sessionDir, { recursive: true });
+  await writeJsonFile(summaryPath, {
+    schemaVersion: 1,
+    sessionId: input.sessionId,
+    surfaceId: input.fixture.id,
+    guidanceStrategy: input.guidanceStrategy,
+    latestStatus: "block",
+    latestOutcome: "error",
+    errorMessage: input.errorMessage,
+    attempts: [],
+  });
+  await fsp.writeFile(
+    markdownPath,
+    [
+      "# Generation Session Summary",
+      "",
+      `Surface: ${input.fixture.id}`,
+      `Strategy: ${input.guidanceStrategy}`,
+      "Status: block",
+      "Outcome: error",
+      "",
+      "## Error",
+      "",
+      input.errorMessage,
+      "",
+    ].join("\n"),
+    "utf8",
+  );
 }
 
 function buildBenchmarkComparisonPairs(
@@ -3301,13 +3345,15 @@ async function runReferenceTargetImplementationSession(input: {
   const agentInputPath = path.join(input.artifactBaseDir, "agent-input.txt");
   const explainabilityPath = path.join(input.artifactBaseDir, "explainability.json");
   const assessmentPath = path.join(input.artifactBaseDir, "attempt.assessment.json");
+  const sessionDir = path.join(input.sessionsRoot, input.fixture.id, input.sessionId);
+  const summaryPath = path.join(sessionDir, "summary.json");
   await fsp.mkdir(input.artifactBaseDir, { recursive: true });
 
   const sandboxRoot = await createSandbox(input.runId, input.sandboxLabel, {
     includeWorkingTree: true,
   });
   try {
-    const sessionDir = await initReferenceTargetGenerationSession({
+    await initReferenceTargetGenerationSession({
       fixture: input.fixture,
       bundleRoot: input.bundleRoot,
       sessionsRoot: input.sessionsRoot,
@@ -3412,6 +3458,7 @@ async function runReferenceTargetImplementationSession(input: {
     );
 
     return {
+      status: "succeeded",
       guidanceStrategy: input.guidanceStrategy,
       sessionId: input.sessionId,
       sessionDir,
@@ -3419,13 +3466,48 @@ async function runReferenceTargetImplementationSession(input: {
       guidanceHandoffPath,
       agentInputPath,
       explainabilityPath,
-      summaryPath: path.join(sessionDir, "summary.json"),
+      summaryPath,
       previewPath: path.join(sessionDir, "attempts", `${RERUN_ATTEMPT}.preview.png`),
       touchedFiles: agentResult.touchedFiles,
       noChanges: agentResult.noChanges,
       validate,
       comparison,
       remainingAcceptedSuggestions,
+      errorMessage: null,
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    await writeFailedBenchmarkSessionSummary({
+      fixture: input.fixture,
+      sessionId: input.sessionId,
+      sessionDir,
+      guidanceStrategy: input.guidanceStrategy,
+      errorMessage: message,
+    }).catch(() => undefined);
+    if (!await fileExists(transcriptPath)) {
+      await writeJsonFile(transcriptPath, {
+        schemaVersion: 1,
+        errorMessage: message,
+        events: [],
+      }).catch(() => undefined);
+    }
+    return {
+      status: "failed",
+      guidanceStrategy: input.guidanceStrategy,
+      sessionId: input.sessionId,
+      sessionDir,
+      transcriptPath,
+      guidanceHandoffPath,
+      agentInputPath,
+      explainabilityPath,
+      summaryPath,
+      previewPath: null,
+      touchedFiles: [],
+      noChanges: true,
+      validate: null,
+      comparison: null,
+      remainingAcceptedSuggestions: input.runtimeGuidance.acceptedSuggestions,
+      errorMessage: message,
     };
   } finally {
     await removeSandbox(sandboxRoot).catch(() => undefined);
@@ -4042,12 +4124,14 @@ export async function runBenchmarkCohort(input: {
 
     const manifestComparisons: BenchmarkRunManifest["fixtures"][number]["comparisons"] = [];
     for (const pair of comparisonPairs) {
-      const baseline = sessionResults.find((result) => result.guidanceStrategy === pair.baselineGuidanceStrategy);
-      const guided = sessionResults.find((result) => result.guidanceStrategy === pair.guidedGuidanceStrategy);
+      const baseline = sessionResults.find((result) =>
+        result.guidanceStrategy === pair.baselineGuidanceStrategy && result.status === "succeeded"
+      );
+      const guided = sessionResults.find((result) =>
+        result.guidanceStrategy === pair.guidedGuidanceStrategy && result.status === "succeeded"
+      );
       if (!baseline || !guided) {
-        throw new Error(
-          `Could not resolve benchmark sessions for ${fixture.id}: ${pair.baselineGuidanceStrategy} vs ${pair.guidedGuidanceStrategy}.`,
-        );
+        continue;
       }
       const comparisonResult = await runInterfacectlCli(
         [

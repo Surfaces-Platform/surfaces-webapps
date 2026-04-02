@@ -73,6 +73,7 @@ export interface BenchmarkReportSessionEvidence {
   sessionId: string;
   latestStatus: string | null;
   latestOutcome: string | null;
+  errorMessage: string | null;
   summaryPath: string;
   guidanceHandoffPath: string;
   guidanceHandoffText: string | null;
@@ -248,6 +249,23 @@ interface ComparisonArtifact {
     guidedRubricAtLeastAsGood: boolean;
     guidedRubricBetterDimensions: BenchmarkAssessmentDimension[];
     meetsGoal: boolean;
+  };
+}
+
+interface EvidenceSessionSummary {
+  latestStatus?: string;
+  latestOutcome?: string;
+  firstAcceptableAttempt?: number | null;
+  attempts?: Array<{
+    status?: string;
+    outcome?: string;
+    findingCodes?: string[];
+  }>;
+  latestAssessment?: Partial<Record<BenchmarkAssessmentDimension, BenchmarkAssessmentGrade>>;
+  heuristics?: {
+    latestAttempt?: Partial<Record<BenchmarkHeuristicKey, number | null>>;
+    repeatedFindingCarryoverCount?: number;
+    rerunsToAcceptableOutcome?: number | null;
   };
 }
 
@@ -477,6 +495,7 @@ function buildRunEvidence(benchmarkRoot: string): BenchmarkReportRunEvidence | n
           readOptionalJsonFile<{
             latestStatus?: string;
             latestOutcome?: string;
+            errorMessage?: string;
             attempts?: Array<{ preview?: {
               imagePath?: string;
               url?: string;
@@ -518,6 +537,7 @@ function buildRunEvidence(benchmarkRoot: string): BenchmarkReportRunEvidence | n
             sessionId: session.sessionId,
             latestStatus: summary?.latestStatus ?? null,
             latestOutcome: summary?.latestOutcome ?? null,
+            errorMessage: typeof summary?.errorMessage === "string" ? summary.errorMessage : null,
             summaryPath: session.summaryPath,
             guidanceHandoffPath: session.guidanceHandoffPath,
             guidanceHandoffText: readOptionalTextFile(session.guidanceHandoffPath),
@@ -536,33 +556,164 @@ function buildRunEvidence(benchmarkRoot: string): BenchmarkReportRunEvidence | n
   };
 }
 
-function readComparisonArtifact(filePath: string): ComparisonArtifact | null {
-  if (!filePath || !fs.existsSync(filePath)) {
-    return null;
-  }
-  return readJsonFile<ComparisonArtifact>(filePath);
+function isNonBlockingStatus(status: string | null | undefined): boolean {
+  return status === "pass" || status === "warn";
 }
 
-function buildVisualizationFromComparisons(comparisons: ComparisonArtifact[]): BenchmarkReportVisualizationData | null {
-  if (comparisons.length === 0) {
+function gradeValue(grade: BenchmarkAssessmentGrade): number {
+  switch (grade) {
+    case "strong":
+      return 2;
+    case "partial":
+      return 1;
+    default:
+      return 0;
+  }
+}
+
+function coerceAssessmentGrade(value: unknown): BenchmarkAssessmentGrade {
+  return value === "strong" || value === "partial" || value === "weak" ? value : "weak";
+}
+
+function readEvidenceSessionSummary(session: BenchmarkReportSessionEvidence): EvidenceSessionSummary | null {
+  return readOptionalJsonFile<EvidenceSessionSummary>(session.summaryPath);
+}
+
+function resolveFirstAttemptFindingCount(summary: EvidenceSessionSummary | null): number {
+  const attempt = Array.isArray(summary?.attempts) ? summary.attempts[0] : null;
+  if (attempt) {
+    return Array.isArray(attempt.findingCodes) ? attempt.findingCodes.length : 0;
+  }
+  return summary?.latestStatus === "block" ? 1 : 0;
+}
+
+function resolveFirstAttemptBlockingFindingCount(summary: EvidenceSessionSummary | null): number {
+  const attempt = Array.isArray(summary?.attempts) ? summary.attempts[0] : null;
+  if (attempt?.status === "block") {
+    return Array.isArray(attempt.findingCodes) && attempt.findingCodes.length > 0 ? attempt.findingCodes.length : 1;
+  }
+  return summary?.latestStatus === "block" ? 1 : 0;
+}
+
+function resolveFirstAcceptableAttempt(summary: EvidenceSessionSummary | null): number | null {
+  if (typeof summary?.firstAcceptableAttempt === "number" && Number.isFinite(summary.firstAcceptableAttempt)) {
+    return summary.firstAcceptableAttempt;
+  }
+  if (isNonBlockingStatus(summary?.latestStatus ?? null)) {
+    return Array.isArray(summary?.attempts) && summary.attempts.length > 0 ? summary.attempts.length : 1;
+  }
+  return null;
+}
+
+function resolveHeuristicValue(
+  summary: EvidenceSessionSummary | null,
+  key: BenchmarkHeuristicKey,
+): number | null {
+  if (key === "repeatedFindingCarryoverCount") {
+    return typeof summary?.heuristics?.repeatedFindingCarryoverCount === "number"
+      ? summary.heuristics.repeatedFindingCarryoverCount
+      : 0;
+  }
+  if (key === "rerunsToAcceptableOutcome") {
+    return typeof summary?.heuristics?.rerunsToAcceptableOutcome === "number"
+      ? summary.heuristics.rerunsToAcceptableOutcome
+      : null;
+  }
+  const value = summary?.heuristics?.latestAttempt?.[key];
+  return typeof value === "number" ? value : null;
+}
+
+function deriveVisualizationComparisonFromSessions(input: {
+  surfaceId: string;
+  baselineGuidanceStrategy: string;
+  guidedGuidanceStrategy: string;
+  baselineSession: BenchmarkReportSessionEvidence;
+  guidedSession: BenchmarkReportSessionEvidence;
+}): BenchmarkVisualizationComparison {
+  const baselineSummary = readEvidenceSessionSummary(input.baselineSession);
+  const guidedSummary = readEvidenceSessionSummary(input.guidedSession);
+
+  const rubric = Object.fromEntries(
+    ASSESSMENT_DIMENSIONS.map((dimension) => {
+      const baseline = coerceAssessmentGrade(baselineSummary?.latestAssessment?.[dimension]);
+      const guided = coerceAssessmentGrade(guidedSummary?.latestAssessment?.[dimension]);
+      return [dimension, {
+        baseline,
+        guided,
+        delta: gradeValue(guided) - gradeValue(baseline),
+      }];
+    }),
+  ) as BenchmarkVisualizationComparison["rubric"];
+
+  const firstAttemptFindingCountDelta =
+    resolveFirstAttemptFindingCount(guidedSummary) - resolveFirstAttemptFindingCount(baselineSummary);
+  const firstAttemptBlockingFindingCountDelta =
+    resolveFirstAttemptBlockingFindingCount(guidedSummary) - resolveFirstAttemptBlockingFindingCount(baselineSummary);
+  const baselineAcceptableAttempt = resolveFirstAcceptableAttempt(baselineSummary);
+  const guidedAcceptableAttempt = resolveFirstAcceptableAttempt(guidedSummary);
+
+  const heuristics: BenchmarkHeuristicDelta = {
+    unresolvedAcceptedSuggestionRate: (() => {
+      const baseline = resolveHeuristicValue(baselineSummary, "unresolvedAcceptedSuggestionRate");
+      const guided = resolveHeuristicValue(guidedSummary, "unresolvedAcceptedSuggestionRate");
+      return baseline === null || guided === null ? null : guided - baseline;
+    })(),
+    noChangesAfterEditFailureCount: (() => {
+      const baseline = resolveHeuristicValue(baselineSummary, "noChangesAfterEditFailureCount") ?? 0;
+      const guided = resolveHeuristicValue(guidedSummary, "noChangesAfterEditFailureCount") ?? 0;
+      return guided - baseline;
+    })(),
+    recoverableToolErrorCount: (() => {
+      const baseline = resolveHeuristicValue(baselineSummary, "recoverableToolErrorCount") ?? 0;
+      const guided = resolveHeuristicValue(guidedSummary, "recoverableToolErrorCount") ?? 0;
+      return guided - baseline;
+    })(),
+    touchedFilesPerResolvedFinding: (() => {
+      const baseline = resolveHeuristicValue(baselineSummary, "touchedFilesPerResolvedFinding");
+      const guided = resolveHeuristicValue(guidedSummary, "touchedFilesPerResolvedFinding");
+      return baseline === null || guided === null ? null : guided - baseline;
+    })(),
+    repeatedFindingCarryoverCount: (() => {
+      const baseline = resolveHeuristicValue(baselineSummary, "repeatedFindingCarryoverCount") ?? 0;
+      const guided = resolveHeuristicValue(guidedSummary, "repeatedFindingCarryoverCount") ?? 0;
+      return guided - baseline;
+    })(),
+    rerunsToAcceptableOutcome: (() => {
+      const baseline = resolveHeuristicValue(baselineSummary, "rerunsToAcceptableOutcome");
+      const guided = resolveHeuristicValue(guidedSummary, "rerunsToAcceptableOutcome");
+      return baseline === null || guided === null ? null : guided - baseline;
+    })(),
+  };
+
+  const guidedRubricBetterDimensions = ASSESSMENT_DIMENSIONS.filter((dimension) => rubric[dimension].delta > 0);
+
+  return {
+    surfaceId: input.surfaceId,
+    baselineGuidanceStrategy: input.baselineGuidanceStrategy,
+    guidedGuidanceStrategy: input.guidedGuidanceStrategy,
+    meetsGoal: guidedSummary?.latestStatus === "pass",
+    guidedReachedAcceptableNoLater: guidedAcceptableAttempt !== null
+      && (baselineAcceptableAttempt === null || guidedAcceptableAttempt <= baselineAcceptableAttempt),
+    guidedFewerFirstAttemptBlockingFindings: firstAttemptBlockingFindingCountDelta < 0,
+    guidedRubricAtLeastAsGood: ASSESSMENT_DIMENSIONS.every((dimension) => rubric[dimension].delta >= 0),
+    guidedRubricBetterDimensions,
+    firstAttemptFindingCountDelta,
+    firstAttemptBlockingFindingCountDelta,
+    attemptsToAcceptableOutcomeDelta:
+      baselineAcceptableAttempt !== null && guidedAcceptableAttempt !== null
+        ? guidedAcceptableAttempt - baselineAcceptableAttempt
+        : null,
+    rubric,
+    heuristics,
+  };
+}
+
+function buildVisualizationFromVisualizationComparisons(
+  visualizationComparisons: BenchmarkVisualizationComparison[],
+): BenchmarkReportVisualizationData | null {
+  if (visualizationComparisons.length === 0) {
     return null;
   }
-
-  const visualizationComparisons: BenchmarkVisualizationComparison[] = comparisons.map((comparison) => ({
-    surfaceId: comparison.surfaceId,
-    baselineGuidanceStrategy: comparison.baseline.guidanceStrategy,
-    guidedGuidanceStrategy: comparison.guided.guidanceStrategy,
-    meetsGoal: comparison.checks.meetsGoal,
-    guidedReachedAcceptableNoLater: comparison.checks.guidedReachedAcceptableNoLater,
-    guidedFewerFirstAttemptBlockingFindings: comparison.checks.guidedFewerFirstAttemptBlockingFindings,
-    guidedRubricAtLeastAsGood: comparison.checks.guidedRubricAtLeastAsGood,
-    guidedRubricBetterDimensions: comparison.checks.guidedRubricBetterDimensions,
-    firstAttemptFindingCountDelta: comparison.delta.firstAttemptFindingCountDelta,
-    firstAttemptBlockingFindingCountDelta: comparison.delta.firstAttemptBlockingFindingCountDelta,
-    attemptsToAcceptableOutcomeDelta: comparison.delta.attemptsToAcceptableOutcome.delta,
-    rubric: comparison.delta.rubric,
-    heuristics: comparison.heuristics.delta,
-  }));
 
   const rubric = Object.fromEntries(
     ASSESSMENT_DIMENSIONS.map((dimension) => {
@@ -646,7 +797,76 @@ function buildVisualizationFromComparisons(comparisons: ComparisonArtifact[]): B
   };
 }
 
-function resolveArtifactVisualization(report: ArtifactBenchmarkReport): BenchmarkReportVisualizationData | null {
+function buildVisualizationFromRunEvidence(evidence: BenchmarkReportRunEvidence | null): BenchmarkReportVisualizationData | null {
+  if (!evidence) {
+    return null;
+  }
+
+  const visualizationComparisons: BenchmarkVisualizationComparison[] = [];
+  for (const fixture of evidence.fixtures) {
+    const sessionsByStrategy = new Map(fixture.sessions.map((session) => [session.guidanceStrategy, session]));
+    const candidatePairs = fixture.comparisons.length > 0
+      ? fixture.comparisons.map((comparison) => ({
+          baselineGuidanceStrategy: comparison.baselineGuidanceStrategy,
+          guidedGuidanceStrategy: comparison.guidedGuidanceStrategy,
+        }))
+      : [
+          { baselineGuidanceStrategy: "unguided", guidedGuidanceStrategy: "baseline-primary" },
+          { baselineGuidanceStrategy: "unguided", guidedGuidanceStrategy: "json-primary" },
+          { baselineGuidanceStrategy: "baseline-primary", guidedGuidanceStrategy: "json-primary" },
+          { baselineGuidanceStrategy: "prompt-summary", guidedGuidanceStrategy: "baseline-primary" },
+          { baselineGuidanceStrategy: "prompt-summary", guidedGuidanceStrategy: "json-primary" },
+        ];
+
+    for (const pair of candidatePairs) {
+      const baselineSession = sessionsByStrategy.get(pair.baselineGuidanceStrategy);
+      const guidedSession = sessionsByStrategy.get(pair.guidedGuidanceStrategy);
+      if (!baselineSession || !guidedSession) {
+        continue;
+      }
+      visualizationComparisons.push(deriveVisualizationComparisonFromSessions({
+        surfaceId: fixture.surfaceId,
+        baselineGuidanceStrategy: pair.baselineGuidanceStrategy,
+        guidedGuidanceStrategy: pair.guidedGuidanceStrategy,
+        baselineSession,
+        guidedSession,
+      }));
+    }
+  }
+
+  return buildVisualizationFromVisualizationComparisons(visualizationComparisons);
+}
+
+function readComparisonArtifact(filePath: string): ComparisonArtifact | null {
+  if (!filePath || !fs.existsSync(filePath)) {
+    return null;
+  }
+  return readJsonFile<ComparisonArtifact>(filePath);
+}
+
+function buildVisualizationFromComparisons(comparisons: ComparisonArtifact[]): BenchmarkReportVisualizationData | null {
+  const visualizationComparisons: BenchmarkVisualizationComparison[] = comparisons.map((comparison) => ({
+    surfaceId: comparison.surfaceId,
+    baselineGuidanceStrategy: comparison.baseline.guidanceStrategy,
+    guidedGuidanceStrategy: comparison.guided.guidanceStrategy,
+    meetsGoal: comparison.checks.meetsGoal,
+    guidedReachedAcceptableNoLater: comparison.checks.guidedReachedAcceptableNoLater,
+    guidedFewerFirstAttemptBlockingFindings: comparison.checks.guidedFewerFirstAttemptBlockingFindings,
+    guidedRubricAtLeastAsGood: comparison.checks.guidedRubricAtLeastAsGood,
+    guidedRubricBetterDimensions: comparison.checks.guidedRubricBetterDimensions,
+    firstAttemptFindingCountDelta: comparison.delta.firstAttemptFindingCountDelta,
+    firstAttemptBlockingFindingCountDelta: comparison.delta.firstAttemptBlockingFindingCountDelta,
+    attemptsToAcceptableOutcomeDelta: comparison.delta.attemptsToAcceptableOutcome.delta,
+    rubric: comparison.delta.rubric,
+    heuristics: comparison.heuristics.delta,
+  }));
+  return buildVisualizationFromVisualizationComparisons(visualizationComparisons);
+}
+
+function resolveArtifactVisualization(
+  report: ArtifactBenchmarkReport,
+  evidence: BenchmarkReportRunEvidence | null,
+): BenchmarkReportVisualizationData | null {
   if (report.visualization) {
     return report.visualization;
   }
@@ -655,7 +875,7 @@ function resolveArtifactVisualization(report: ArtifactBenchmarkReport): Benchmar
     .map((comparison) => readComparisonArtifact(comparison.comparisonPath))
     .filter((comparison): comparison is ComparisonArtifact => Boolean(comparison));
 
-  return buildVisualizationFromComparisons(comparisons);
+  return buildVisualizationFromComparisons(comparisons) ?? buildVisualizationFromRunEvidence(evidence);
 }
 
 function buildArchiveReportDocument(fileName: string, archiveDir: string): BenchmarkReportDocument {
@@ -695,6 +915,7 @@ function buildArtifactReportDocument(cohortId: string, benchmarksDir: string): B
 
   const markdown = fs.readFileSync(markdownPath, "utf8");
   const report = readJsonFile<ArtifactBenchmarkReport>(reportPath);
+  const evidence = buildRunEvidence(benchmarkRoot);
   const surfaceLabel = benchmark.surfaceIds.length > 0
     ? benchmark.surfaceIds.join(", ")
     : "unknown surfaces";
@@ -711,8 +932,8 @@ function buildArtifactReportDocument(cohortId: string, benchmarksDir: string): B
     fileName: path.basename(markdownPath),
     filePath: markdownPath,
     markdown,
-    visualization: resolveArtifactVisualization(report),
-    evidence: buildRunEvidence(benchmarkRoot),
+    visualization: resolveArtifactVisualization(report, evidence),
+    evidence,
     title: benchmark.surfaceIds.length > 1
       ? `Benchmark Suite Run ${cohortId}`
       : `Benchmark Run ${cohortId}`,

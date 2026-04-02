@@ -240,6 +240,22 @@ function SessionEvidenceCard({ session }: { session: BenchmarkReportSessionEvide
         </span>
       </div>
 
+      {session.errorMessage ? (
+        <div
+          style={{
+            padding: "12px 14px",
+            borderRadius: "12px",
+            border: `1px solid ${colors.neutral[200]}`,
+            backgroundColor: colors.neutral[50],
+            fontSize: "13px",
+            lineHeight: 1.6,
+            color: colors.neutral[800],
+          }}
+        >
+          {session.errorMessage}
+        </div>
+      ) : null}
+
       {session.preview?.dataUrl ? (
         <div style={{ display: "grid", gap: "8px" }}>
           <img

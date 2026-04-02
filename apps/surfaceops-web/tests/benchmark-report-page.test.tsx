@@ -141,6 +141,7 @@ function buildEvidence(): BenchmarkReportRunEvidence {
             sessionId: "run/unguided",
             latestStatus: "warn",
             latestOutcome: "warn",
+            errorMessage: null,
             summaryPath: "/tmp/summary.json",
             guidanceHandoffPath: "/tmp/guidance.json",
             guidanceHandoffText: "{\"surface\":\"reference-target-web\"}",

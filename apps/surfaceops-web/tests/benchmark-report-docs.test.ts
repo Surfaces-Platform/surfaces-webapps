@@ -394,4 +394,169 @@ describe("benchmark report docs", () => {
     expect(report?.visualization?.heuristics.improvedCounts.recoverableToolErrorCount).toBe(1);
     expect(report?.visualization?.comparisons[0]?.firstAttemptBlockingFindingCountDelta).toBe(-1);
   });
+
+  it("derives fallback visualization data from run evidence when no comparison artifacts completed", async () => {
+    const archiveDir = await fs.mkdtemp(path.join(os.tmpdir(), "surfaceops-benchmark-archive-evidence-"));
+    const benchmarksDir = await fs.mkdtemp(path.join(os.tmpdir(), "surfaceops-benchmark-artifacts-evidence-"));
+    tempDirs.push(archiveDir, benchmarksDir);
+
+    const cohortId = "20260315080000";
+    const cohortDir = path.join(benchmarksDir, cohortId);
+    const reportDir = path.join(cohortDir, "report");
+    const briefPath = path.join(cohortDir, "fixtures", "reference-target-web", "implementation-brief.md");
+    const unguidedSummaryPath = path.join(cohortDir, "sessions", "reference-target-web", "unguided", "summary.json");
+    const baselineSummaryPath = path.join(cohortDir, "sessions", "reference-target-web", "baseline-primary", "summary.json");
+    await fs.mkdir(reportDir, { recursive: true });
+    await fs.mkdir(path.dirname(briefPath), { recursive: true });
+    await fs.mkdir(path.dirname(unguidedSummaryPath), { recursive: true });
+    await fs.mkdir(path.dirname(baselineSummaryPath), { recursive: true });
+
+    await fs.writeFile(briefPath, "Build an image editing workbench.\n", "utf8");
+    await fs.writeFile(
+      unguidedSummaryPath,
+      JSON.stringify({
+        latestStatus: "block",
+        latestOutcome: "error",
+        attempts: [],
+      }),
+      "utf8",
+    );
+    await fs.writeFile(
+      baselineSummaryPath,
+      JSON.stringify({
+        latestStatus: "warn",
+        latestOutcome: "warn",
+        attempts: [
+          {
+            status: "warn",
+            findingCodes: ["target.unobservable"],
+          },
+        ],
+        latestAssessment: {
+          structure: "partial",
+          components: "partial",
+          boundary: "partial",
+          visual: "partial",
+          responsiveness: "partial",
+          platformFit: "partial",
+        },
+        heuristics: {
+          latestAttempt: {
+            unresolvedAcceptedSuggestionRate: 1,
+            noChangesAfterEditFailureCount: 0,
+            recoverableToolErrorCount: 0,
+            touchedFilesPerResolvedFinding: null,
+          },
+          repeatedFindingCarryoverCount: 0,
+          rerunsToAcceptableOutcome: null,
+        },
+      }),
+      "utf8",
+    );
+
+    await fs.writeFile(
+      path.join(reportDir, "benchmark-report.json"),
+      JSON.stringify({
+        schemaVersion: 3,
+        generatedAt: "2026-03-15T08:00:00.000Z",
+        comparisons: [],
+        suggestions: [],
+        overall: {
+          surfaceCount: 1,
+          surfacesMeetingGoal: 0,
+          guidedFewerFirstAttemptBlockingFindings: 0,
+          guidedReachedAcceptableNoLater: 0,
+          acceptedSuggestionCount: 0,
+          rejectedSuggestionCount: 0,
+          proposedSuggestionCount: 0,
+        },
+      }),
+      "utf8",
+    );
+    await fs.writeFile(
+      path.join(reportDir, "benchmark-report.md"),
+      "# Generation Benchmark Report\n\nGenerated at: 2026-03-15T08:00:00.000Z\n",
+      "utf8",
+    );
+    await fs.writeFile(
+      path.join(cohortDir, "run.json"),
+      JSON.stringify({
+        schemaVersion: 1,
+        cohortId,
+        generatedAt: "2026-03-15T08:00:00.000Z",
+        evaluationMode: "zero-shot",
+        tool: "local-llm",
+        sourceSpecPath: path.join(cohortDir, "spec.json"),
+        sourceRunPath: null,
+        attemptBudget: 1,
+        guidanceStrategies: ["unguided", "baseline-primary"],
+        comparisonPairs: [
+          {
+            baselineGuidanceStrategy: "unguided",
+            guidedGuidanceStrategy: "baseline-primary",
+          },
+        ],
+        fixtures: [{
+          fixtureId: "reference-target-web",
+          surfaceId: "reference-target-web",
+          brief: {
+            path: briefPath,
+            sha256: "brief-hash",
+          },
+          platformTarget: "web",
+          consumerType: "web-browser",
+          capturePreset: "web-browser",
+          comparisonPairs: [
+            {
+              baselineGuidanceStrategy: "unguided",
+              guidedGuidanceStrategy: "baseline-primary",
+            },
+          ],
+          paths: {},
+          sessions: [
+            {
+              guidanceStrategy: "unguided",
+              sessionId: "20260315080000/unguided",
+              sessionDir: path.dirname(unguidedSummaryPath),
+              summaryPath: unguidedSummaryPath,
+              guidanceHandoffPath: path.join(path.dirname(unguidedSummaryPath), "guidance-handoff.json"),
+              agentInputPath: path.join(path.dirname(unguidedSummaryPath), "agent-input.txt"),
+              previewPath: null,
+            },
+            {
+              guidanceStrategy: "baseline-primary",
+              sessionId: "20260315080000/baseline-primary",
+              sessionDir: path.dirname(baselineSummaryPath),
+              summaryPath: baselineSummaryPath,
+              guidanceHandoffPath: path.join(path.dirname(baselineSummaryPath), "guidance-handoff.json"),
+              agentInputPath: path.join(path.dirname(baselineSummaryPath), "agent-input.txt"),
+              previewPath: null,
+            },
+          ],
+          comparisons: [],
+        }],
+        model: {
+          requestedModelLabel: "gpt-oss-20b",
+          resolvedModelId: "openai/gpt-oss-20b",
+          baseUrl: "http://127.0.0.1:1234/v1",
+          fingerprint: "test-fingerprint",
+        },
+        paths: {
+          benchmarkDir: cohortDir,
+          specPath: path.join(cohortDir, "spec.json"),
+          runPath: path.join(cohortDir, "run.json"),
+          reportJsonPath: path.join(reportDir, "benchmark-report.json"),
+          reportMarkdownPath: path.join(reportDir, "benchmark-report.md"),
+        },
+      }),
+      "utf8",
+    );
+
+    const report = loadBenchmarkReport("run-20260315080000", { archiveDir, benchmarksDir });
+    expect(report?.visualization?.summary.comparisonCount).toBe(1);
+    expect(report?.visualization?.summary.guidedReachedAcceptableNoLaterCount).toBe(1);
+    expect(report?.visualization?.summary.guidedFewerFirstAttemptBlockingFindingsCount).toBe(1);
+    expect(report?.visualization?.comparisons[0]?.guidedGuidanceStrategy).toBe("baseline-primary");
+    expect(report?.visualization?.comparisons[0]?.rubric.visual.delta).toBe(1);
+  });
 });
