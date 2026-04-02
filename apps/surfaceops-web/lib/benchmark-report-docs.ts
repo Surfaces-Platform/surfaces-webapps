@@ -3,7 +3,13 @@ import path from "node:path";
 import { listGenerationBenchmarks, resolveBenchmarksDir } from "@/lib/generation-benchmarks";
 
 export type BenchmarkReportSource = "artifact" | "archive";
-export type BenchmarkAssessmentDimension = "structure" | "components" | "boundary" | "visual" | "responsiveness";
+export type BenchmarkAssessmentDimension =
+  | "structure"
+  | "components"
+  | "boundary"
+  | "visual"
+  | "responsiveness"
+  | "platformFit";
 export type BenchmarkAssessmentGrade = "strong" | "partial" | "weak";
 
 export interface BenchmarkReportListItem {
@@ -182,6 +188,7 @@ const ASSESSMENT_DIMENSIONS: BenchmarkAssessmentDimension[] = [
   "boundary",
   "visual",
   "responsiveness",
+  "platformFit",
 ];
 
 const BENCHMARK_HEURISTICS: Array<{ key: BenchmarkHeuristicKey }> = [
@@ -341,7 +348,7 @@ function buildVisualizationFromComparisons(comparisons: ComparisonArtifact[]): B
       let same = 0;
       let regressed = 0;
       for (const comparison of visualizationComparisons) {
-        const delta = comparison.rubric[dimension].delta;
+        const delta = comparison.rubric[dimension]?.delta ?? 0;
         if (delta > 0) {
           improved += 1;
         } else if (delta < 0) {
@@ -471,6 +478,7 @@ function buildArtifactReportDocument(cohortId: string, benchmarksDir: string): B
   const strategyLabel = benchmark.guidanceStrategies.length > 0
     ? benchmark.guidanceStrategies.join(" vs ")
     : "strategy comparison";
+  const modelLabel = benchmark.requestedModelLabel ?? benchmark.resolvedModelId ?? null;
 
   return {
     id: `run-${cohortId}`,
@@ -484,7 +492,7 @@ function buildArtifactReportDocument(cohortId: string, benchmarksDir: string): B
     title: benchmark.surfaceIds.length > 1
       ? `Benchmark Suite Run ${cohortId}`
       : `Benchmark Run ${cohortId}`,
-    summary: `${surfaceLabel} · ${strategyLabel}`,
+    summary: [surfaceLabel, strategyLabel, modelLabel].filter(Boolean).join(" · "),
     dateLabel: formatDateLabel(benchmark.generatedAt),
     generatedAt: benchmark.generatedAt,
   };

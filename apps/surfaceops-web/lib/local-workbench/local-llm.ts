@@ -54,7 +54,7 @@ type ToolName =
   | "apply_text_edits"
   | "finish";
 
-type GuidanceStrategy = "prompt-summary" | "json-primary" | "unguided";
+type GuidanceStrategy = "prompt-summary" | "baseline-primary" | "json-primary" | "unguided";
 type TextEditOperation =
   | {
     kind: "replace";
@@ -422,12 +422,22 @@ function compactJsonPrimaryPromptContext(guidanceHandoff: Record<string, unknown
 
 function resolveGuidanceStrategy(options: AgentOptions): GuidanceStrategy {
   const explicit = options.guidanceStrategy;
-  if (explicit === "prompt-summary" || explicit === "json-primary" || explicit === "unguided") {
+  if (
+    explicit === "prompt-summary"
+    || explicit === "baseline-primary"
+    || explicit === "json-primary"
+    || explicit === "unguided"
+  ) {
     return explicit;
   }
   const handoff = asRecord(options.guidanceHandoff);
   const handoffStrategy = handoff.guidanceStrategy;
-  if (handoffStrategy === "prompt-summary" || handoffStrategy === "json-primary" || handoffStrategy === "unguided") {
+  if (
+    handoffStrategy === "prompt-summary"
+    || handoffStrategy === "baseline-primary"
+    || handoffStrategy === "json-primary"
+    || handoffStrategy === "unguided"
+  ) {
     return handoffStrategy;
   }
   return "prompt-summary";
@@ -455,6 +465,23 @@ function buildGuidanceSection(options: AgentOptions, guidanceStrategy: GuidanceS
         ? `Prepared UI AST guidance:\n${promptSummary.preparedGuidanceSummary}`
         : options.preparedPayload
           ? `Prepared UI AST guidance:\n${buildPreparedGuidanceSummary(options.preparedPayload)}`
+          : null,
+    ].filter(Boolean);
+    return sections.length > 0 ? sections.join("\n\n") : null;
+  }
+
+  if (guidanceStrategy === "baseline-primary" && options.guidanceHandoff) {
+    const baselinePrimary = asRecord(handoff.baselinePrimary);
+    const sections = [
+      typeof baselinePrimary.effectiveContractSummary === "string"
+        ? `Effective working UI AST:\n${baselinePrimary.effectiveContractSummary}`
+        : options.effectiveAstSummary
+          ? `Effective working UI AST:\n${options.effectiveAstSummary}`
+          : null,
+      typeof baselinePrimary.baselineContractSummary === "string"
+        ? `Baseline contract guidance:\n${baselinePrimary.baselineContractSummary}`
+        : options.preparedPayload
+          ? `Baseline contract guidance:\n${buildPreparedGuidanceSummary(options.preparedPayload)}`
           : null,
     ].filter(Boolean);
     return sections.length > 0 ? sections.join("\n\n") : null;

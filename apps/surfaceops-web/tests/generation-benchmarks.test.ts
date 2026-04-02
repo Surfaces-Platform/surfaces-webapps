@@ -354,7 +354,11 @@ describe("generation benchmarks reader", () => {
       benchmarkDir,
       benchmarkId: "20260314183000",
     });
-    expect(workbench.manifest?.profileName).toBe("Reference Target Web Default");
+    expect(
+      workbench.manifest && "profileName" in workbench.manifest
+        ? workbench.manifest.profileName
+        : null,
+    ).toBe("Reference Target Web Default");
     expect(workbench.comparisonLabels).toEqual({
       baseline: "prompt-summary",
       guided: "json-primary",

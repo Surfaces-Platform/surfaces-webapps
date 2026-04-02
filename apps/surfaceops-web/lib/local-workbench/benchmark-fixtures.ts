@@ -1,6 +1,6 @@
 import type { LocalWorkbenchAcceptedSuggestion, LocalWorkbenchDesignerNote } from "./types";
 
-export type BenchmarkGuidanceStrategy = "prompt-summary" | "json-primary" | "unguided";
+export type BenchmarkGuidanceStrategy = "prompt-summary" | "baseline-primary" | "json-primary" | "unguided";
 
 export interface BenchmarkFixtureGuidanceHints {
   stylesPath: string;
@@ -59,7 +59,7 @@ export const REFERENCE_TARGET_FIXTURE = {
   implementationBrief:
     "Refine the reference target UI to better match the UI AST-guided surface while preserving deterministic fixture behavior.",
   devPort: 3004,
-  defaultStrategies: ["prompt-summary", "json-primary"],
+  defaultStrategies: ["baseline-primary", "json-primary"],
   primaryEditableFiles: ["apps/reference-target-web/app/page.tsx"],
   stylesheetFiles: ["apps/reference-target-web/app/globals.css"],
   tokenFiles: ["apps/reference-target-web/app/globals.css"],
@@ -88,7 +88,7 @@ export const REFERENCE_FLOW_FIXTURE = {
   implementationBrief:
     "Refine the reference flow UI so the staged request, review, and confirm path stays observable and contract-compliant across runtime flow checks.",
   devPort: 3009,
-  defaultStrategies: ["prompt-summary", "json-primary"],
+  defaultStrategies: ["baseline-primary", "json-primary"],
   primaryEditableFiles: ["apps/reference-flow-web/app/page.tsx"],
   stylesheetFiles: ["apps/reference-flow-web/app/globals.css"],
   tokenFiles: ["apps/reference-flow-web/app/globals.css"],
@@ -115,7 +115,7 @@ export const BENCHMARK_SHARED_SHELL_FIXTURE = {
   implementationBrief:
     "Repair the shared-shell benchmark fixture so all routes satisfy the contract while preserving the app's multi-route dashboard structure.",
   devPort: 3005,
-  defaultStrategies: ["prompt-summary", "json-primary"],
+  defaultStrategies: ["baseline-primary", "json-primary"],
   primaryEditableFiles: [
     "apps/benchmark-shared-shell-web/app/_components/shared-shell.tsx",
     "apps/benchmark-shared-shell-web/app/page.tsx",
@@ -148,7 +148,7 @@ export const BENCHMARK_DESTRUCTIVE_FLOW_FIXTURE = {
   implementationBrief:
     "Repair the destructive-flow benchmark fixture so the staged request, review, and confirm experience satisfies the contract without flattening the stateful flow.",
   devPort: 3006,
-  defaultStrategies: ["prompt-summary", "json-primary"],
+  defaultStrategies: ["baseline-primary", "json-primary"],
   primaryEditableFiles: [
     "apps/benchmark-destructive-flow-web/app/page.tsx",
     "apps/benchmark-destructive-flow-web/app/_components/flow-workbench.tsx",
@@ -181,7 +181,7 @@ export const BENCHMARK_DESIGN_TOKENS_FIXTURE = {
   implementationBrief:
     "Repair the dense token-heavy benchmark fixture so the reusable card and metrics system satisfies the contract without collapsing the component hierarchy.",
   devPort: 3007,
-  defaultStrategies: ["prompt-summary", "json-primary"],
+  defaultStrategies: ["baseline-primary", "json-primary"],
   primaryEditableFiles: [
     "apps/benchmark-design-tokens-web/app/page.tsx",
     "apps/benchmark-design-tokens-web/app/_components/token-matrix.tsx",
@@ -214,7 +214,7 @@ export const BENCHMARK_ASYNC_DATA_FIXTURE = {
   implementationBrief:
     "Repair the async data benchmark fixture so the server-driven dashboard and supporting panels satisfy the UI AST while preserving the async data split.",
   devPort: 3008,
-  defaultStrategies: ["prompt-summary", "json-primary"],
+  defaultStrategies: ["baseline-primary", "json-primary"],
   primaryEditableFiles: [
     "apps/benchmark-async-data-web/app/page.tsx",
     "apps/benchmark-async-data-web/app/loading.tsx",

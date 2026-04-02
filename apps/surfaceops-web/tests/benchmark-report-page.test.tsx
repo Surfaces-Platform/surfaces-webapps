@@ -36,6 +36,7 @@ function buildVisualization(): BenchmarkReportVisualizationData {
       boundary: { improved: 0, same: 1, regressed: 0 },
       visual: { improved: 1, same: 0, regressed: 0 },
       responsiveness: { improved: 0, same: 1, regressed: 0 },
+      platformFit: { improved: 0, same: 1, regressed: 0 },
     },
     heuristics: {
       improvedCounts: {
@@ -74,6 +75,7 @@ function buildVisualization(): BenchmarkReportVisualizationData {
           boundary: { baseline: "partial", guided: "partial", delta: 0 },
           visual: { baseline: "partial", guided: "strong", delta: 1 },
           responsiveness: { baseline: "partial", guided: "partial", delta: 0 },
+          platformFit: { baseline: "partial", guided: "partial", delta: 0 },
         },
         heuristics: {
           unresolvedAcceptedSuggestionRate: -0.25,

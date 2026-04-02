@@ -624,6 +624,63 @@ function installBenchmarkCliMocks(input: {
       return { stdout: "", stderr: "" };
     }
 
+    if (command === "replay-generation-benchmark") {
+      const specPath = args[args.indexOf("--spec") + 1]!;
+      const outDir = args[args.indexOf("--out-dir") + 1]!;
+      const cohortId = args[args.indexOf("--cohort-id") + 1]!;
+      const requestedModelLabelIndex = args.indexOf("--requested-model-label");
+      const resolvedModelIdIndex = args.indexOf("--resolved-model-id");
+      const baseUrlIndex = args.indexOf("--base-url");
+      const fingerprintIndex = args.indexOf("--fingerprint");
+      const sourceRunIndex = args.indexOf("--source-run");
+      const spec = JSON.parse(await fs.readFile(specPath, "utf8"));
+      await fs.mkdir(outDir, { recursive: true });
+      await fs.writeFile(
+        path.join(outDir, "run.json"),
+        JSON.stringify({
+          schemaVersion: 1,
+          cohortId,
+          generatedAt: "2026-03-15T01:00:00.000Z",
+          evaluationMode: spec.evaluationMode ?? "zero-shot",
+          tool: "local-llm",
+          sourceSpecPath: specPath,
+          sourceRunPath: sourceRunIndex === -1 ? null : args[sourceRunIndex + 1],
+          attemptBudget: spec.attemptBudget ?? 1,
+          guidanceStrategies: spec.guidanceStrategies,
+          comparisonPairs: spec.comparisonPairs,
+          model: {
+            requestedModelLabel: requestedModelLabelIndex === -1 ? null : args[requestedModelLabelIndex + 1],
+            resolvedModelId: resolvedModelIdIndex === -1 ? null : args[resolvedModelIdIndex + 1],
+            baseUrl: baseUrlIndex === -1 ? null : args[baseUrlIndex + 1],
+            fingerprint: fingerprintIndex === -1 ? null : args[fingerprintIndex + 1],
+          },
+          paths: {
+            benchmarkDir: outDir,
+            specPath,
+            runPath: path.join(outDir, "run.json"),
+            reportJsonPath: null,
+            reportMarkdownPath: null,
+          },
+          fixtures: spec.fixtures.map((fixture: Record<string, unknown>) => ({
+            ...fixture,
+            sessions: [],
+            comparisons: [],
+          })),
+        }),
+        "utf8",
+      );
+      return {
+        stdout: JSON.stringify({
+          paths: {
+            benchmarkDir: outDir,
+            runPath: path.join(outDir, "run.json"),
+            specPath,
+          },
+        }),
+        stderr: "",
+      };
+    }
+
     if (command === "init-generation-session") {
       const surfaceId = args[args.indexOf("--surface") + 1]!;
       const sessionId = args[args.indexOf("--session") + 1]!;
@@ -2628,17 +2685,17 @@ describe("local workbench service", () => {
     const result = await runBenchmarkCohort({
       cohortId: "20260315010000",
       fixtureIds,
-      strategies: ["prompt-summary", "json-primary"],
+      strategies: ["baseline-primary", "json-primary"],
     });
 
-    const manifest = JSON.parse(
-      await fs.readFile(path.join(result.benchmarkDir, "manifest.json"), "utf8"),
+    const runManifest = JSON.parse(
+      await fs.readFile(path.join(result.benchmarkDir, "run.json"), "utf8"),
     ) as {
       schemaVersion: number;
       fixtures: Array<{ fixtureId: string; paths: { acceptedSuggestionsPath: string } }>;
     };
-    expect(manifest.schemaVersion).toBe(2);
-    expect(manifest.fixtures.map((fixture) => fixture.fixtureId)).toEqual(fixtureIds);
+    expect(runManifest.schemaVersion).toBe(1);
+    expect(runManifest.fixtures.map((fixture) => fixture.fixtureId)).toEqual(fixtureIds);
 
     const referenceRuntimeGuidance = JSON.parse(
       await fs.readFile(
@@ -2748,7 +2805,7 @@ describe("local workbench service", () => {
     const result = await runBenchmarkCohort({
       cohortId: "20260315011500",
       fixtureIds: [fixtureId],
-      strategies: ["prompt-summary", "json-primary"],
+      strategies: ["baseline-primary", "json-primary"],
       profilesByFixtureId: {
         "benchmark-shared-shell-web": {
           ...getBenchmarkFixtureProfile(fixtureId),
