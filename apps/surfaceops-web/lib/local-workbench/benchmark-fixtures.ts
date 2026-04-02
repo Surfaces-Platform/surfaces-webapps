@@ -24,6 +24,7 @@ export interface BenchmarkFixture {
   stylesheetFiles: string[];
   tokenFiles: string[];
   guidanceHints: BenchmarkFixtureGuidanceHints;
+  authoringMode?: "repair" | "scratch";
 }
 
 export interface BenchmarkFixtureProfile {
@@ -57,13 +58,9 @@ export const REFERENCE_TARGET_FIXTURE = {
   contractPath: "contracts/generated/reference-target-web.contract.json",
   astPath: "contracts/generated/reference-target-web.ui.surface.ast.json",
   implementationBrief:
-    [
-      "Build an image editing workbench.",
-      "Treat it like a real browser-based product surface, not a marketing page.",
-      "Make it feel plausible in one shot with minimal direction while preserving deterministic fixture behavior.",
-    ].join(" "),
+    "Refine the reference target UI to better match the UI AST-guided surface while preserving deterministic fixture behavior.",
   devPort: 3004,
-  defaultStrategies: ["baseline-primary"],
+  defaultStrategies: ["baseline-primary", "json-primary"],
   primaryEditableFiles: ["apps/reference-target-web/app/page.tsx"],
   stylesheetFiles: ["apps/reference-target-web/app/globals.css"],
   tokenFiles: ["apps/reference-target-web/app/globals.css"],
@@ -82,6 +79,44 @@ export const REFERENCE_TARGET_FIXTURE = {
       "landing.actions": "apps/reference-target-web/app/page.tsx",
     },
   },
+} as const satisfies BenchmarkFixture;
+
+export const BENCHMARK_IMAGE_WORKBENCH_FIXTURE = {
+  id: "benchmark-image-workbench-web",
+  label: "Benchmark Image Workbench Web",
+  appPath: "apps/benchmark-image-workbench-web",
+  contractPath: "contracts/generated/benchmark-image-workbench-web.contract.json",
+  astPath: "contracts/generated/benchmark-image-workbench-web.ui.surface.ast.json",
+  implementationBrief:
+    [
+      "Build an image editing workbench.",
+      "Treat it like a real browser-based product surface, not a marketing page.",
+      "Keep the direction minimal, but make the result feel plausible and production-minded in a single pass.",
+    ].join(" "),
+  devPort: 3010,
+  defaultStrategies: ["baseline-primary"],
+  primaryEditableFiles: [
+    "apps/benchmark-image-workbench-web/app/page.tsx",
+    "apps/benchmark-image-workbench-web/app/globals.css",
+  ],
+  stylesheetFiles: ["apps/benchmark-image-workbench-web/app/globals.css"],
+  tokenFiles: ["apps/benchmark-image-workbench-web/app/globals.css"],
+  guidanceHints: {
+    stylesPath: "apps/benchmark-image-workbench-web/app/globals.css",
+    motionSelectors: [".shellSection", ".toolChip", ".adjustmentRow"],
+    primaryPagePath: "apps/benchmark-image-workbench-web/app/page.tsx",
+    pageFramePath: "apps/benchmark-image-workbench-web/app/page.tsx",
+    widthPath: "apps/benchmark-image-workbench-web/app/globals.css",
+    sectionPaths: {
+      "workbench.header": "apps/benchmark-image-workbench-web/app/page.tsx",
+      "workbench.tools": "apps/benchmark-image-workbench-web/app/page.tsx",
+      "workbench.canvas": "apps/benchmark-image-workbench-web/app/page.tsx",
+      "workbench.adjustments": "apps/benchmark-image-workbench-web/app/page.tsx",
+      "workbench.assets": "apps/benchmark-image-workbench-web/app/page.tsx",
+      "workbench.export": "apps/benchmark-image-workbench-web/app/page.tsx",
+    },
+  },
+  authoringMode: "scratch",
 } as const satisfies BenchmarkFixture;
 
 export const REFERENCE_FLOW_FIXTURE = {
@@ -247,6 +282,7 @@ export const BENCHMARK_ASYNC_DATA_FIXTURE = {
 
 export const BENCHMARK_FIXTURES = [
   REFERENCE_TARGET_FIXTURE,
+  BENCHMARK_IMAGE_WORKBENCH_FIXTURE,
   BENCHMARK_SHARED_SHELL_FIXTURE,
   BENCHMARK_DESTRUCTIVE_FLOW_FIXTURE,
   BENCHMARK_DESIGN_TOKENS_FIXTURE,

@@ -3386,6 +3386,7 @@ async function runReferenceTargetImplementationSession(input: {
       repoRoot: sandboxRoot,
       allowedRoots: [input.fixture.appPath],
       surfaceId: input.fixture.id,
+      authoringMode: input.fixture.authoringMode ?? "repair",
       guidanceHints: input.fixture.guidanceHints,
       guidanceStrategy: input.guidanceStrategy,
       guidanceHandoff,
@@ -4093,9 +4094,20 @@ export async function runBenchmarkCohort(input: {
       acceptedSuggestions,
       profile.designerNotes,
     );
+    const unguidedRuntimeGuidancePaths = await writeFrozenRuntimeGuidancePaths(
+      path.join(fixtureDir, "unguided-runtime-guidance"),
+      [],
+      [],
+    );
 
     const sessionResults: ReferenceTargetImplementationSessionResult[] = [];
     for (const guidanceStrategy of guidanceStrategies) {
+      const strategyRuntimeGuidance = guidanceStrategy === "unguided"
+        ? { acceptedSuggestions: [], designerNotes: [] }
+        : { acceptedSuggestions, designerNotes: profile.designerNotes };
+      const strategyRuntimeGuidancePaths = guidanceStrategy === "unguided"
+        ? unguidedRuntimeGuidancePaths
+        : runtimeGuidancePaths;
       sessionResults.push(await runReferenceTargetImplementationSession({
         fixture,
         llm,
@@ -4111,11 +4123,8 @@ export async function runBenchmarkCohort(input: {
         briefFile: frozenBrief.path,
         sessionId: `${cohortId}/${guidanceStrategy}`,
         sandboxLabel: `benchmark-${fixture.id}-${guidanceStrategy}`,
-        runtimeGuidancePaths,
-        runtimeGuidance: {
-          acceptedSuggestions,
-          designerNotes: profile.designerNotes,
-        },
+        runtimeGuidancePaths: strategyRuntimeGuidancePaths,
+        runtimeGuidance: strategyRuntimeGuidance,
         activeAstChanges: [],
         baselineValidate,
         agentBudgets: benchmarkAgentBudgets,

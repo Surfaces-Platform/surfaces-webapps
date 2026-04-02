@@ -2756,13 +2756,94 @@ describe("local workbench service", () => {
       expect(options.config?.model).toBe("openai/gpt-oss-20b");
     }
     expect(acceptedSuggestionsByFixture.get("reference-target-web")).toEqual([
-      referenceRuntimeGuidance.suggestions,
+      [],
       referenceRuntimeGuidance.suggestions,
     ]);
     expect(acceptedSuggestionsByFixture.get("benchmark-shared-shell-web")).toEqual([
-      sharedShellRuntimeGuidance.suggestions,
+      [],
       sharedShellRuntimeGuidance.suggestions,
     ]);
+  });
+
+  it("exposes the scratch image-workbench fixture as a contract-guided benchmark target", async () => {
+    const fixture = getBenchmarkFixture("benchmark-image-workbench-web");
+    const profile = getBenchmarkFixtureProfile("benchmark-image-workbench-web");
+
+    expect(fixture.authoringMode).toBe("scratch");
+    expect(fixture.primaryEditableFiles).toEqual([
+      "apps/benchmark-image-workbench-web/app/page.tsx",
+      "apps/benchmark-image-workbench-web/app/globals.css",
+    ]);
+    expect(fixture.implementationBrief).toContain("Build an image editing workbench.");
+    expect(fixture.guidanceHints.sectionPaths).toMatchObject({
+      "workbench.header": "apps/benchmark-image-workbench-web/app/page.tsx",
+      "workbench.canvas": "apps/benchmark-image-workbench-web/app/page.tsx",
+      "workbench.export": "apps/benchmark-image-workbench-web/app/page.tsx",
+    });
+    expect(profile.defaultStrategies).toEqual(["baseline-primary"]);
+    expect(profile.acceptedSuggestions).toEqual([]);
+    expect(profile.designerNotes).toEqual([]);
+  });
+
+  it("keeps unguided benchmark runs free of accepted repair suggestions", async () => {
+    const fixtureId = "benchmark-shared-shell-web";
+    await seedBenchmarkSandboxDependencies(workspaceRoot, [fixtureId]);
+    await seedBenchmarkContracts(workspaceRoot, [fixtureId]);
+    installBenchmarkCliMocks({
+      workspaceRoot,
+      baselineFindingsByFixtureId: {
+        "benchmark-shared-shell-web": [
+          {
+            code: "section.missing",
+            message: "Missing required sections: reports.metrics.",
+          },
+        ],
+      },
+      repairMapByFixtureId: {
+        "benchmark-shared-shell-web": [
+          {
+            code: "section.missing",
+            action: {
+              type: "ensure-required-sections",
+              sectionIds: ["reports.metrics"],
+            },
+          },
+        ],
+      },
+    });
+
+    const acceptedSuggestionsByStrategy = new Map<string, LocalWorkbenchAcceptedSuggestion[]>();
+    mockedLocalLlm.runLocalLlmAgent.mockImplementation(async (options: {
+      guidanceStrategy?: string;
+      acceptedSuggestions?: LocalWorkbenchAcceptedSuggestion[];
+    }) => {
+      acceptedSuggestionsByStrategy.set(options.guidanceStrategy ?? "unknown", options.acceptedSuggestions ?? []);
+      return {
+        transcript: [],
+        touchedFiles: ["apps/benchmark-shared-shell-web/app/reports/page.tsx"],
+        summary: "Applied shared-shell benchmark changes.",
+        noChanges: false,
+        agentInput: "System:\nBenchmark",
+        toolCallCount: 1,
+        writeCount: 1,
+        lastToolName: "finish",
+      };
+    });
+
+    await runBenchmarkCohort({
+      cohortId: "20260315013000",
+      fixtureIds: [fixtureId],
+      strategies: ["unguided", "baseline-primary"],
+    });
+
+    expect(acceptedSuggestionsByStrategy.get("unguided")).toEqual([]);
+    expect(acceptedSuggestionsByStrategy.get("baseline-primary")).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          findingCode: "section.missing",
+        }),
+      ]),
+    );
   });
 
   it("lets explicit fixture profile guidance override baseline-derived suggestions by finding code", async () => {

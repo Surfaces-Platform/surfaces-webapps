@@ -92,6 +92,7 @@ interface AgentOptions {
   repoRoot: string;
   allowedRoots: string[];
   surfaceId?: string;
+  authoringMode?: "repair" | "scratch";
   guidanceHints?: BenchmarkFixtureGuidanceHints | null;
   preparedPayload?: Record<string, unknown>;
   guidanceStrategy?: GuidanceStrategy;
@@ -272,6 +273,7 @@ async function searchAllowedFiles(repoRoot: string, allowedRoots: string[], patt
 
 function buildSystemPrompt(options: AgentOptions) {
   const guidanceStrategy = resolveGuidanceStrategy(options);
+  const authoringMode = options.authoringMode ?? "repair";
   const handoffSection = buildGuidanceSection(options, guidanceStrategy);
   const acceptedSuggestionSummary = buildAcceptedSuggestionSummary(options);
   const designerNoteSummary = buildDesignerNoteSummary(options.activeDesignerNotes ?? []);
@@ -283,12 +285,16 @@ function buildSystemPrompt(options: AgentOptions) {
     "Forbidden paths include contracts, docs, CI, SurfaceOps app code, and any file outside the allowed write roots.",
     "Before any apply_text_edits call, you must call read_file on that exact path in this session. Search results are not a substitute for reading file contents.",
     "If you are unsure which files exist, call list_allowed_files before attempting read_file.",
-    "Use apply_text_edits for small localized patches only. Do not rewrite full files.",
+    authoringMode === "scratch"
+      ? "This benchmark starts from a neutral scaffold. You may replace the contents of existing allowed files wholesale when needed to author the requested surface from scratch."
+      : "Use apply_text_edits for small localized patches only. Do not rewrite full files.",
     "If you need to inspect a file after editing it, call read_file again.",
     "Use tools instead of guessing file contents.",
     "Do not add or modify documentation.",
     "Do not create new files.",
-    "Make one focused implementation pass that resolves every active accepted suggestion you can address in the touched file set, then call finish.",
+    authoringMode === "scratch"
+      ? "Treat placeholder scaffold copy as disposable. Make one focused implementation pass that turns the allowed files into the requested surface, then call finish."
+      : "Make one focused implementation pass that resolves every active accepted suggestion you can address in the touched file set, then call finish.",
     "If no justified implementation change is needed, call finish with noChanges=true.",
     "After any successful apply_text_edits call, finish must use noChanges=false.",
     `Guidance strategy: ${guidanceStrategy}`,
