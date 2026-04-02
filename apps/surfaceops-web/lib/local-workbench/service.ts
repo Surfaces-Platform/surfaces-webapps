@@ -3072,6 +3072,18 @@ function defaultCapturePresetForConsumerType(consumerType: BenchmarkConsumerType
   }
 }
 
+function defaultRequestedModelLabel(resolvedModelId: string | null): string | null {
+  if (!resolvedModelId) {
+    return null;
+  }
+  const trimmed = resolvedModelId.trim();
+  if (!trimmed) {
+    return null;
+  }
+  const segments = trimmed.split("/");
+  return segments[segments.length - 1] || trimmed;
+}
+
 function buildBenchmarkSpecFixture(input: {
   fixture: BenchmarkFixture;
   brief: { path: string; sha256: string };
@@ -3096,7 +3108,11 @@ function buildBenchmarkSpecFixture(input: {
     comparisonPairs: input.comparisonPairs.map((pair) => ({ ...pair })),
     paths: {
       ...(input.fixtureDir ? { fixtureDir: input.fixtureDir } : {}),
+      sourceContractPath: path.join(resolveWorkspaceRoot(), input.fixture.contractPath),
+      ...(input.fixture.astPath ? { sourceAstPath: path.join(resolveWorkspaceRoot(), input.fixture.astPath) } : {}),
       ...(input.effectiveAstPath ? { effectiveAstPath: input.effectiveAstPath } : {}),
+      ...(input.fixtureDir ? { bundleRoot: path.join(input.fixtureDir, "bundle") } : {}),
+      ...(input.fixtureDir ? { compiledContractPath: path.join(input.fixtureDir, "bundle", "derived", "contract.normalized.json") } : {}),
       ...(input.preparedInputPath ? { preparedInputPath: input.preparedInputPath } : {}),
       ...(input.acceptedSuggestionsPath ? { acceptedSuggestionsPath: input.acceptedSuggestionsPath } : {}),
       ...(input.designerNotesPath ? { designerNotesPath: input.designerNotesPath } : {}),
@@ -3848,7 +3864,7 @@ export async function runBenchmarkCohort(input: {
     throw new Error(`Unsupported benchmark tool: ${tool}`);
   }
   const resolvedModelId = input.resolvedModelId?.trim() || llm.model;
-  const requestedModelLabel = input.requestedModelLabel?.trim() || null;
+  const requestedModelLabel = input.requestedModelLabel?.trim() || defaultRequestedModelLabel(resolvedModelId);
   const consumerType = input.consumerType ?? "web-browser";
   const platformTarget = input.platformTarget ?? "web";
   const capturePreset = input.capturePreset ?? defaultCapturePresetForConsumerType(consumerType);
@@ -3891,6 +3907,7 @@ export async function runBenchmarkCohort(input: {
         platformTarget,
         consumerType,
         capturePreset,
+        fixtureDir,
       }));
     }
     spec = {
@@ -4063,6 +4080,10 @@ export async function runBenchmarkCohort(input: {
       ...fixtureSpec,
       paths: {
         fixtureDir,
+        sourceContractPath: fixtureSpec.paths?.sourceContractPath,
+        sourceAstPath: fixtureSpec.paths?.sourceAstPath,
+        bundleRoot,
+        compiledContractPath: path.join(bundleRoot, "derived", "contract.normalized.json"),
         effectiveAstPath,
         preparedInputPath: preparedPath,
         acceptedSuggestionsPath: runtimeGuidancePaths.acceptedSuggestionsPath,

@@ -13,7 +13,7 @@ function printUsage(): void {
       `  --fixture-id <id|all>  Benchmark one fixture or the full suite (${BENCHMARK_FIXTURE_IDS.join(", ")}).`,
       "  --spec <path>         Replay a frozen benchmark spec.",
       "  --cohort-id <id>      Override the default timestamp-based cohort id.",
-      "  --requested-model-label <label>  Record a human-stable requested model label (for example qwen3.5-9b).",
+      "  --requested-model-label <label>  Record a human-stable requested model label (for example gpt-oss-20b).",
       "  --resolved-model-id <id>         Override the resolved runtime model id (defaults from SURFACEOPS_LOCAL_LLM_MODEL).",
       "  --source-run <path>   Optional source benchmark run when replaying a spec.",
       "  --help               Show this help text.",

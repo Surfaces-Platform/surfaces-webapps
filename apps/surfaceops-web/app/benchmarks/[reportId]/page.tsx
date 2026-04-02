@@ -5,6 +5,7 @@ import remarkGfm from "remark-gfm";
 import { colors } from "@surfaces/ui/tokens/colors";
 import { BenchmarkMetricsVisualization } from "@/app/benchmarks/_components/benchmark-metrics-visualization";
 import { BenchmarkReportSwitcher } from "@/app/benchmarks/_components/benchmark-report-switcher";
+import type { BenchmarkReportArtifactText, BenchmarkReportRunEvidence, BenchmarkReportSessionEvidence } from "@/lib/benchmark-report-docs";
 import { listBenchmarkReports, loadBenchmarkReport } from "@/lib/benchmark-report-docs";
 
 export const dynamic = "force-dynamic";
@@ -166,6 +167,283 @@ function MarkdownBody({ markdown }: { markdown: string }) {
   );
 }
 
+function ArtifactPanel({ artifact }: { artifact: BenchmarkReportArtifactText }) {
+  return (
+    <div
+      style={{
+        padding: "16px",
+        borderRadius: "16px",
+        border: `1px solid ${colors.neutral[200]}`,
+        backgroundColor: "#fcfcfd",
+        display: "grid",
+        gap: "10px",
+      }}
+    >
+      <div>
+        <div style={{ fontSize: "11px", fontWeight: 700, color: colors.structure.primary, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+          {artifact.label}
+        </div>
+        <div style={{ marginTop: "6px", fontSize: "13px", color: colors.neutral[600], wordBreak: "break-all" }}>
+          {artifact.path}
+        </div>
+      </div>
+      <details>
+        <summary style={{ cursor: "pointer", fontSize: "13px", fontWeight: 600, color: colors.neutral[800] }}>
+          Show artifact
+        </summary>
+        <pre
+          style={{
+            marginTop: "10px",
+            overflowX: "auto",
+            padding: "14px 16px",
+            borderRadius: "12px",
+            backgroundColor: "#0f172a",
+            color: "#e2e8f0",
+            fontSize: "12px",
+            lineHeight: 1.6,
+          }}
+        >
+          {artifact.text ?? "Artifact file not available."}
+        </pre>
+      </details>
+    </div>
+  );
+}
+
+function SessionEvidenceCard({ session }: { session: BenchmarkReportSessionEvidence }) {
+  return (
+    <div
+      style={{
+        padding: "16px",
+        borderRadius: "18px",
+        border: `1px solid ${colors.neutral[200]}`,
+        backgroundColor: colors.neutral[0],
+        display: "grid",
+        gap: "14px",
+      }}
+    >
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center" }}>
+        <span
+          style={{
+            padding: "6px 10px",
+            borderRadius: "999px",
+            backgroundColor: colors.neutral[100],
+            fontSize: "12px",
+            fontWeight: 700,
+            color: colors.neutral[900],
+          }}
+        >
+          {session.guidanceStrategy}
+        </span>
+        <span style={{ fontSize: "12px", color: colors.neutral[600] }}>
+          {session.latestStatus ?? "unknown"} / {session.latestOutcome ?? "unknown"}
+        </span>
+      </div>
+
+      {session.preview?.dataUrl ? (
+        <div style={{ display: "grid", gap: "8px" }}>
+          <img
+            src={session.preview.dataUrl}
+            alt={`${session.guidanceStrategy} preview`}
+            style={{
+              width: "100%",
+              borderRadius: "14px",
+              border: `1px solid ${colors.neutral[200]}`,
+              objectFit: "cover",
+              backgroundColor: colors.neutral[50],
+            }}
+          />
+          <div style={{ fontSize: "12px", color: colors.neutral[600], lineHeight: 1.6 }}>
+            <div>{session.preview.imagePath}</div>
+            {session.preview.capturedAt ? <div>Captured: {session.preview.capturedAt}</div> : null}
+            {session.preview.finalUrl ? <div>Final URL: {session.preview.finalUrl}</div> : null}
+          </div>
+        </div>
+      ) : (
+        <div
+          style={{
+            padding: "16px",
+            borderRadius: "14px",
+            border: `1px dashed ${colors.neutral[400]}`,
+            fontSize: "13px",
+            color: colors.neutral[600],
+          }}
+        >
+          Screenshot not captured.
+        </div>
+      )}
+
+      <details>
+        <summary style={{ cursor: "pointer", fontSize: "13px", fontWeight: 600, color: colors.neutral[800] }}>
+          Show agent prompt
+        </summary>
+        <div style={{ marginTop: "8px", fontSize: "12px", color: colors.neutral[600], wordBreak: "break-all" }}>
+          {session.agentInputPath}
+        </div>
+        <pre
+          style={{
+            marginTop: "10px",
+            overflowX: "auto",
+            padding: "14px 16px",
+            borderRadius: "12px",
+            backgroundColor: "#0f172a",
+            color: "#e2e8f0",
+            fontSize: "12px",
+            lineHeight: 1.6,
+          }}
+        >
+          {session.agentInputText ?? "Prompt file not available."}
+        </pre>
+      </details>
+
+      <details>
+        <summary style={{ cursor: "pointer", fontSize: "13px", fontWeight: 600, color: colors.neutral[800] }}>
+          Show guidance handoff
+        </summary>
+        <div style={{ marginTop: "8px", fontSize: "12px", color: colors.neutral[600], wordBreak: "break-all" }}>
+          {session.guidanceHandoffPath}
+        </div>
+        <pre
+          style={{
+            marginTop: "10px",
+            overflowX: "auto",
+            padding: "14px 16px",
+            borderRadius: "12px",
+            backgroundColor: "#0f172a",
+            color: "#e2e8f0",
+            fontSize: "12px",
+            lineHeight: 1.6,
+          }}
+        >
+          {session.guidanceHandoffText ?? "Guidance handoff file not available."}
+        </pre>
+      </details>
+    </div>
+  );
+}
+
+function RunEvidenceSection({ evidence }: { evidence: BenchmarkReportRunEvidence }) {
+  const runMetadata = [
+    { label: "Model", value: evidence.model.requestedModelLabel ?? evidence.model.resolvedModelId ?? "unknown" },
+    { label: "Resolved ID", value: evidence.model.resolvedModelId ?? "not recorded" },
+    { label: "Tool", value: evidence.tool },
+    { label: "Mode", value: evidence.evaluationMode },
+    { label: "Attempt budget", value: String(evidence.attemptBudget) },
+    { label: "Guidance", value: evidence.guidanceStrategies.join(", ") },
+    { label: "Base URL", value: evidence.model.baseUrl ?? "not recorded" },
+    { label: "Fingerprint", value: evidence.model.fingerprint ?? "not recorded" },
+    { label: "Source spec", value: evidence.sourceSpecPath },
+    { label: "Source run", value: evidence.sourceRunPath ?? "none" },
+  ];
+
+  return (
+    <section
+      data-testid="benchmark-report-evidence"
+      style={{
+        marginBottom: "18px",
+        padding: "22px",
+        borderRadius: "22px",
+        border: `1px solid ${colors.neutral[200]}`,
+        backgroundColor: colors.neutral[0],
+        boxShadow: "0 24px 56px rgba(15, 23, 42, 0.08)",
+        display: "grid",
+        gap: "18px",
+      }}
+    >
+      <div style={{ display: "grid", gap: "6px" }}>
+        <div style={{ fontSize: "12px", fontWeight: 700, color: colors.structure.primary, letterSpacing: "0.06em", textTransform: "uppercase" }}>
+          Zero-shot evidence
+        </div>
+        <div style={{ fontSize: "24px", fontWeight: 700, color: colors.neutral[900] }}>Run prompt, contract, and screenshot evidence</div>
+        <div style={{ fontSize: "14px", lineHeight: 1.7, color: colors.neutral[600] }}>
+          This section captures the actual model, prompt files, contract artifacts, and screenshots produced by the selected zero-shot benchmark run.
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {runMetadata.map((item) => (
+          <div
+            key={item.label}
+            style={{
+              padding: "16px",
+              borderRadius: "16px",
+              border: `1px solid ${colors.neutral[200]}`,
+              backgroundColor: "#fcfcfd",
+            }}
+          >
+            <div style={{ fontSize: "11px", fontWeight: 700, color: colors.neutral[600], textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              {item.label}
+            </div>
+            <div style={{ marginTop: "8px", fontSize: "16px", fontWeight: 600, color: colors.neutral[900], wordBreak: "break-word" }}>
+              {item.value}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {evidence.fixtures.map((fixture) => (
+        <section
+          key={fixture.fixtureId}
+          style={{
+            padding: "18px",
+            borderRadius: "18px",
+            border: `1px solid ${colors.neutral[200]}`,
+            backgroundColor: "#fcfcfd",
+            display: "grid",
+            gap: "16px",
+          }}
+        >
+          <div>
+            <div style={{ fontSize: "18px", fontWeight: 700, color: colors.neutral[900] }}>{fixture.surfaceId}</div>
+            <div style={{ marginTop: "6px", fontSize: "13px", color: colors.neutral[600] }}>
+              {fixture.platformTarget} · {fixture.consumerType} · {fixture.capturePreset}
+            </div>
+          </div>
+
+          <details open>
+            <summary style={{ cursor: "pointer", fontSize: "13px", fontWeight: 600, color: colors.neutral[800] }}>
+              Benchmark brief
+            </summary>
+            <div style={{ marginTop: "8px", fontSize: "12px", color: colors.neutral[600], wordBreak: "break-all" }}>
+              {fixture.brief.path}
+            </div>
+            <pre
+              style={{
+                marginTop: "10px",
+                overflowX: "auto",
+                padding: "14px 16px",
+                borderRadius: "12px",
+                backgroundColor: "#0f172a",
+                color: "#e2e8f0",
+                fontSize: "12px",
+                lineHeight: 1.6,
+              }}
+            >
+              {fixture.brief.text ?? "Brief file not available."}
+            </pre>
+          </details>
+
+          {fixture.contracts.length > 0 ? (
+            <div className="grid gap-4 xl:grid-cols-2">
+              {fixture.contracts.map((artifact) => <ArtifactPanel key={`${fixture.fixtureId}:${artifact.label}`} artifact={artifact} />)}
+            </div>
+          ) : null}
+
+          {fixture.inputs.length > 0 ? (
+            <div className="grid gap-4 xl:grid-cols-2">
+              {fixture.inputs.map((artifact) => <ArtifactPanel key={`${fixture.fixtureId}:${artifact.label}`} artifact={artifact} />)}
+            </div>
+          ) : null}
+
+          <div className="grid gap-4 xl:grid-cols-3">
+            {fixture.sessions.map((session) => <SessionEvidenceCard key={`${fixture.fixtureId}:${session.sessionId}`} session={session} />)}
+          </div>
+        </section>
+      ))}
+    </section>
+  );
+}
+
 export default async function BenchmarkReportPage({
   params,
 }: { params: Promise<{ reportId: string }> }) {
@@ -270,6 +548,7 @@ export default async function BenchmarkReportPage({
           </div>
 
           {report.visualization ? <BenchmarkMetricsVisualization visualization={report.visualization} /> : null}
+          {report.evidence ? <RunEvidenceSection evidence={report.evidence} /> : null}
 
           <article
             style={{

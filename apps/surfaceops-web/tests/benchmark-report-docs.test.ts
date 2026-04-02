@@ -25,6 +25,7 @@ function buildVisualization() {
       boundary: { improved: 0, same: 1, regressed: 0 },
       visual: { improved: 1, same: 0, regressed: 0 },
       responsiveness: { improved: 0, same: 1, regressed: 0 },
+      platformFit: { improved: 0, same: 1, regressed: 0 },
     },
     heuristics: {
       improvedCounts: {
@@ -63,6 +64,7 @@ function buildVisualization() {
           boundary: { baseline: "partial", guided: "partial", delta: 0 },
           visual: { baseline: "partial", guided: "strong", delta: 1 },
           responsiveness: { baseline: "partial", guided: "partial", delta: 0 },
+          platformFit: { baseline: "partial", guided: "partial", delta: 0 },
         },
         heuristics: {
           unresolvedAcceptedSuggestionRate: -0.25,
@@ -98,6 +100,7 @@ function buildComparisonArtifact() {
         boundary: { baseline: "partial", guided: "partial", delta: 0 },
         visual: { baseline: "partial", guided: "strong", delta: 1 },
         responsiveness: { baseline: "partial", guided: "partial", delta: 0 },
+        platformFit: { baseline: "partial", guided: "partial", delta: 0 },
       },
     },
     heuristics: {
@@ -192,7 +195,15 @@ describe("benchmark report docs", () => {
 
     const cohortId = "20260315060000";
     const cohortDir = path.join(benchmarksDir, cohortId);
+    const fixtureDir = path.join(cohortDir, "fixtures", "reference-target-web");
+    const briefPath = path.join(fixtureDir, "implementation-brief.md");
+    const effectiveAstPath = path.join(fixtureDir, "effective-ui-ast.json");
+    const preparedInputPath = path.join(fixtureDir, "prepared-input.json");
     await fs.mkdir(path.join(cohortDir, "report"), { recursive: true });
+    await fs.mkdir(fixtureDir, { recursive: true });
+    await fs.writeFile(briefPath, "Reference target prompt.\n", "utf8");
+    await fs.writeFile(effectiveAstPath, JSON.stringify({ surface: "reference-target-web" }), "utf8");
+    await fs.writeFile(preparedInputPath, JSON.stringify({ summary: { text: "Prepared guidance." } }), "utf8");
     await fs.writeFile(
       path.join(cohortDir, "report", "benchmark-report.json"),
       JSON.stringify({
@@ -249,11 +260,49 @@ describe("benchmark report docs", () => {
       "utf8",
     );
     await fs.writeFile(
-      path.join(cohortDir, "manifest.json"),
+      path.join(cohortDir, "run.json"),
       JSON.stringify({
+        schemaVersion: 1,
+        cohortId,
+        generatedAt: "2026-03-15T06:00:00.000Z",
+        evaluationMode: "zero-shot",
+        tool: "local-llm",
+        sourceSpecPath: path.join(cohortDir, "spec.json"),
+        sourceRunPath: null,
+        attemptBudget: 1,
         guidanceStrategies: ["prompt-summary", "json-primary"],
-        fixtures: [{ surfaceId: "reference-target-web" }],
-        model: { fingerprint: "test-fingerprint" },
+        comparisonPairs: [],
+        fixtures: [{
+          fixtureId: "reference-target-web",
+          surfaceId: "reference-target-web",
+          brief: {
+            path: briefPath,
+            sha256: "brief-hash",
+          },
+          platformTarget: "web",
+          consumerType: "web-browser",
+          capturePreset: "web-browser",
+          comparisonPairs: [],
+          paths: {
+            effectiveAstPath,
+            preparedInputPath,
+          },
+          sessions: [],
+          comparisons: [],
+        }],
+        model: {
+          requestedModelLabel: "gpt-oss-120b",
+          resolvedModelId: "openai/gpt-oss-120b",
+          baseUrl: "http://127.0.0.1:1234/v1",
+          fingerprint: "test-fingerprint",
+        },
+        paths: {
+          benchmarkDir: cohortDir,
+          specPath: path.join(cohortDir, "spec.json"),
+          runPath: path.join(cohortDir, "run.json"),
+          reportJsonPath: path.join(cohortDir, "report", "benchmark-report.json"),
+          reportMarkdownPath: path.join(cohortDir, "report", "benchmark-report.md"),
+        },
       }),
       "utf8",
     );
@@ -263,13 +312,15 @@ describe("benchmark report docs", () => {
       id: "run-20260315060000",
       source: "artifact",
       title: "Benchmark Run 20260315060000",
-      summary: "reference-target-web · prompt-summary vs json-primary",
+      summary: "reference-target-web · prompt-summary vs json-primary · gpt-oss-120b",
       dateLabel: "March 15, 2026",
     });
 
     const report = loadBenchmarkReport("run-20260315060000", { archiveDir, benchmarksDir });
     expect(report?.visualization?.summary.comparisonCount).toBe(1);
     expect(report?.visualization?.comparisons[0]?.guidedRubricBetterDimensions).toEqual(["visual"]);
+    expect(report?.evidence?.model.requestedModelLabel).toBe("gpt-oss-120b");
+    expect(report?.evidence?.fixtures[0]?.brief.text).toContain("Reference target prompt.");
   });
 
   it("derives visualization data for legacy v2 artifact reports from comparison artifacts", async () => {

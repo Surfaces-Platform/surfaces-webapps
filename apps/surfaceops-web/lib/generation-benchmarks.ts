@@ -21,6 +21,10 @@ export interface BenchmarkSpecFixture {
   comparisonPairs: BenchmarkComparisonPair[];
   paths?: {
     fixtureDir?: string;
+    sourceContractPath?: string;
+    sourceAstPath?: string;
+    bundleRoot?: string;
+    compiledContractPath?: string;
     effectiveAstPath?: string;
     preparedInputPath?: string;
     acceptedSuggestionsPath?: string;
@@ -107,6 +111,10 @@ interface LegacyBenchmarkCohortManifestFixture {
   };
   paths: {
     fixtureDir: string;
+    sourceContractPath?: string;
+    sourceAstPath?: string;
+    bundleRoot?: string;
+    compiledContractPath?: string;
     effectiveAstPath: string;
     preparedInputPath: string;
     acceptedSuggestionsPath: string;
@@ -548,7 +556,7 @@ function readOptionalText(filePath: string | null | undefined): string | null {
   return fs.readFileSync(filePath, "utf8");
 }
 
-function loadBenchmarkManifest(rootDir: string): BenchmarkManifest | null {
+export function loadBenchmarkManifest(rootDir: string): BenchmarkManifest | null {
   return (
     readOptionalJson<BenchmarkRunManifest>(path.join(rootDir, "run.json"))
     ?? readOptionalJson<LegacyBenchmarkCohortManifest>(path.join(rootDir, "manifest.json"))

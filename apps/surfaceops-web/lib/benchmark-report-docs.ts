@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import { listGenerationBenchmarks, resolveBenchmarksDir } from "@/lib/generation-benchmarks";
+import type { BenchmarkRunManifest } from "@/lib/generation-benchmarks";
+import { listGenerationBenchmarks, loadBenchmarkManifest, resolveBenchmarksDir } from "@/lib/generation-benchmarks";
 
 export type BenchmarkReportSource = "artifact" | "archive";
 export type BenchmarkAssessmentDimension =
@@ -48,6 +49,74 @@ export interface BenchmarkReportVisualizationData {
 export interface BenchmarkReportDocument extends BenchmarkReportListItem {
   markdown: string;
   visualization: BenchmarkReportVisualizationData | null;
+  evidence: BenchmarkReportRunEvidence | null;
+}
+
+export interface BenchmarkReportArtifactText {
+  label: string;
+  path: string;
+  language: "json" | "markdown" | "text";
+  text: string | null;
+}
+
+export interface BenchmarkReportPreviewEvidence {
+  imagePath: string;
+  dataUrl: string | null;
+  url: string | null;
+  finalUrl: string | null;
+  capturedAt: string | null;
+  waitFor: string | null;
+}
+
+export interface BenchmarkReportSessionEvidence {
+  guidanceStrategy: string;
+  sessionId: string;
+  latestStatus: string | null;
+  latestOutcome: string | null;
+  summaryPath: string;
+  guidanceHandoffPath: string;
+  guidanceHandoffText: string | null;
+  agentInputPath: string;
+  agentInputText: string | null;
+  preview: BenchmarkReportPreviewEvidence | null;
+}
+
+export interface BenchmarkReportFixtureEvidence {
+  fixtureId: string;
+  surfaceId: string;
+  platformTarget: "web" | "ios" | "android";
+  consumerType: "web-browser" | "desktop-shell" | "ios-native" | "android-native";
+  capturePreset: string;
+  brief: {
+    path: string;
+    sha256: string;
+    text: string | null;
+  };
+  contracts: BenchmarkReportArtifactText[];
+  inputs: BenchmarkReportArtifactText[];
+  sessions: BenchmarkReportSessionEvidence[];
+  comparisons: Array<{
+    baselineGuidanceStrategy: string;
+    guidedGuidanceStrategy: string;
+    comparisonPath: string;
+  }>;
+}
+
+export interface BenchmarkReportRunEvidence {
+  cohortId: string;
+  evaluationMode: "zero-shot" | "iterative";
+  tool: string;
+  sourceSpecPath: string;
+  sourceRunPath: string | null;
+  guidanceStrategies: string[];
+  attemptBudget: number;
+  model: {
+    requestedModelLabel: string | null;
+    resolvedModelId: string | null;
+    baseUrl: string | null;
+    fingerprint: string | null;
+  };
+  fixtures: BenchmarkReportFixtureEvidence[];
 }
 
 export interface BenchmarkReportLookupOptions {
@@ -314,6 +383,159 @@ function readJsonFile<T>(filePath: string): T {
   return JSON.parse(fs.readFileSync(filePath, "utf8")) as T;
 }
 
+function readOptionalJsonFile<T>(filePath: string | null | undefined): T | null {
+  if (!filePath || !fs.existsSync(filePath)) {
+    return null;
+  }
+  return readJsonFile<T>(filePath);
+}
+
+function readOptionalTextFile(filePath: string | null | undefined): string | null {
+  if (!filePath || !fs.existsSync(filePath)) {
+    return null;
+  }
+  return fs.readFileSync(filePath, "utf8").trim();
+}
+
+function inferArtifactLanguage(filePath: string): BenchmarkReportArtifactText["language"] {
+  if (filePath.endsWith(".json")) {
+    return "json";
+  }
+  if (filePath.endsWith(".md")) {
+    return "markdown";
+  }
+  return "text";
+}
+
+function buildArtifactText(label: string, filePath: string | null | undefined): BenchmarkReportArtifactText | null {
+  if (!filePath) {
+    return null;
+  }
+  return {
+    label,
+    path: filePath,
+    language: inferArtifactLanguage(filePath),
+    text: readOptionalTextFile(filePath),
+  };
+}
+
+function toPreviewDataUrl(imagePath: string | null | undefined): string | null {
+  if (!imagePath || !fs.existsSync(imagePath)) {
+    return null;
+  }
+  return `data:image/png;base64,${fs.readFileSync(imagePath).toString("base64")}`;
+}
+
+function buildPreviewEvidence(
+  summary: { attempts?: Array<{ preview?: {
+    imagePath?: string;
+    url?: string;
+    finalUrl?: string;
+    capturedAt?: string;
+    waitFor?: string;
+  } }> } | null,
+  fallbackImagePath: string | null,
+): BenchmarkReportPreviewEvidence | null {
+  const preview = summary?.attempts
+    ?.slice()
+    .reverse()
+    .find((attempt) => attempt.preview)?.preview;
+  const imagePath = preview?.imagePath ?? fallbackImagePath;
+  if (!imagePath) {
+    return null;
+  }
+  return {
+    imagePath,
+    dataUrl: toPreviewDataUrl(imagePath),
+    url: preview?.url ?? null,
+    finalUrl: preview?.finalUrl ?? null,
+    capturedAt: preview?.capturedAt ?? null,
+    waitFor: preview?.waitFor ?? null,
+  };
+}
+
+function buildRunEvidence(benchmarkRoot: string): BenchmarkReportRunEvidence | null {
+  const manifest = loadBenchmarkManifest(benchmarkRoot);
+  if (!manifest?.model || !("requestedModelLabel" in manifest.model)) {
+    return null;
+  }
+  const run = manifest as BenchmarkRunManifest;
+
+  return {
+    cohortId: run.cohortId,
+    evaluationMode: run.evaluationMode,
+    tool: run.tool,
+    sourceSpecPath: run.sourceSpecPath,
+    sourceRunPath: run.sourceRunPath,
+    guidanceStrategies: [...run.guidanceStrategies],
+    attemptBudget: run.attemptBudget,
+    model: { ...run.model },
+    fixtures: run.fixtures.map((fixture) => {
+      const summaryByStrategy = new Map(
+        fixture.sessions.map((session) => [
+          session.guidanceStrategy,
+          readOptionalJsonFile<{
+            latestStatus?: string;
+            latestOutcome?: string;
+            attempts?: Array<{ preview?: {
+              imagePath?: string;
+              url?: string;
+              finalUrl?: string;
+              capturedAt?: string;
+              waitFor?: string;
+            } }>;
+          }>(session.summaryPath),
+        ] as const),
+      );
+
+      return {
+        fixtureId: fixture.fixtureId,
+        surfaceId: fixture.surfaceId,
+        platformTarget: fixture.platformTarget,
+        consumerType: fixture.consumerType,
+        capturePreset: fixture.capturePreset,
+        brief: {
+          path: fixture.brief.path,
+          sha256: fixture.brief.sha256,
+          text: readOptionalTextFile(fixture.brief.path),
+        },
+        contracts: [
+          buildArtifactText("Source contract", fixture.paths?.sourceContractPath),
+          buildArtifactText("Source AST", fixture.paths?.sourceAstPath),
+          buildArtifactText("Effective AST", fixture.paths?.effectiveAstPath),
+          buildArtifactText("Compiled contract", fixture.paths?.compiledContractPath),
+        ].filter((entry): entry is BenchmarkReportArtifactText => Boolean(entry)),
+        inputs: [
+          buildArtifactText("Prepared input", fixture.paths?.preparedInputPath),
+          buildArtifactText("Accepted suggestions", fixture.paths?.acceptedSuggestionsPath),
+          buildArtifactText("Designer notes", fixture.paths?.designerNotesPath),
+          buildArtifactText("Baseline validate", fixture.paths?.baselineValidatePath),
+        ].filter((entry): entry is BenchmarkReportArtifactText => Boolean(entry)),
+        sessions: fixture.sessions.map((session) => {
+          const summary = summaryByStrategy.get(session.guidanceStrategy) ?? null;
+          return {
+            guidanceStrategy: session.guidanceStrategy,
+            sessionId: session.sessionId,
+            latestStatus: summary?.latestStatus ?? null,
+            latestOutcome: summary?.latestOutcome ?? null,
+            summaryPath: session.summaryPath,
+            guidanceHandoffPath: session.guidanceHandoffPath,
+            guidanceHandoffText: readOptionalTextFile(session.guidanceHandoffPath),
+            agentInputPath: session.agentInputPath,
+            agentInputText: readOptionalTextFile(session.agentInputPath),
+            preview: buildPreviewEvidence(summary, session.previewPath),
+          };
+        }),
+        comparisons: fixture.comparisons.map((comparison) => ({
+          baselineGuidanceStrategy: comparison.baselineGuidanceStrategy,
+          guidedGuidanceStrategy: comparison.guidedGuidanceStrategy,
+          comparisonPath: comparison.comparisonPath,
+        })),
+      };
+    }),
+  };
+}
+
 function readComparisonArtifact(filePath: string): ComparisonArtifact | null {
   if (!filePath || !fs.existsSync(filePath)) {
     return null;
@@ -450,6 +672,7 @@ function buildArchiveReportDocument(fileName: string, archiveDir: string): Bench
     filePath,
     markdown,
     visualization: null,
+    evidence: null,
     title: parseTitle(markdown, fallbackTitle),
     summary: parseSummary(markdown),
     dateLabel: formatDateLabel(generatedAt),
@@ -489,6 +712,7 @@ function buildArtifactReportDocument(cohortId: string, benchmarksDir: string): B
     filePath: markdownPath,
     markdown,
     visualization: resolveArtifactVisualization(report),
+    evidence: buildRunEvidence(benchmarkRoot),
     title: benchmark.surfaceIds.length > 1
       ? `Benchmark Suite Run ${cohortId}`
       : `Benchmark Run ${cohortId}`,
