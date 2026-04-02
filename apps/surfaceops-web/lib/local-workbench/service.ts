@@ -3858,13 +3858,17 @@ export async function runBenchmarkCohort(input: {
   const runPath = path.join(benchmarkDir, "run.json");
 
   await fsp.mkdir(benchmarkDir, { recursive: true });
-  const llm = resolveLocalLlmConfig();
+  const configuredLlm = resolveLocalLlmConfig();
   const tool = input.tool ?? "local-llm";
   if (tool !== "local-llm") {
     throw new Error(`Unsupported benchmark tool: ${tool}`);
   }
-  const resolvedModelId = input.resolvedModelId?.trim() || llm.model;
+  const resolvedModelId = input.resolvedModelId?.trim() || configuredLlm.model;
   const requestedModelLabel = input.requestedModelLabel?.trim() || defaultRequestedModelLabel(resolvedModelId);
+  const llm: LocalLlmConfig = {
+    ...configuredLlm,
+    model: resolvedModelId,
+  };
   const consumerType = input.consumerType ?? "web-browser";
   const platformTarget = input.platformTarget ?? "web";
   const capturePreset = input.capturePreset ?? defaultCapturePresetForConsumerType(consumerType);

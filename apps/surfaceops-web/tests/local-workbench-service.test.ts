@@ -2687,6 +2687,8 @@ describe("local workbench service", () => {
       cohortId: "20260315010000",
       fixtureIds,
       strategies: ["baseline-primary", "json-primary"],
+      requestedModelLabel: "gpt-oss-20b",
+      resolvedModelId: "openai/gpt-oss-20b",
     });
 
     const runManifest = JSON.parse(
@@ -2746,10 +2748,12 @@ describe("local workbench service", () => {
     for (const [options] of mockedLocalLlm.runLocalLlmAgent.mock.calls as Array<[{
       surfaceId?: string;
       acceptedSuggestions?: LocalWorkbenchAcceptedSuggestion[];
+      config?: { model?: string };
     }]>) {
       const fixtureCallSet = acceptedSuggestionsByFixture.get(options.surfaceId ?? "") ?? [];
       fixtureCallSet.push(options.acceptedSuggestions ?? []);
       acceptedSuggestionsByFixture.set(options.surfaceId ?? "", fixtureCallSet);
+      expect(options.config?.model).toBe("openai/gpt-oss-20b");
     }
     expect(acceptedSuggestionsByFixture.get("reference-target-web")).toEqual([
       referenceRuntimeGuidance.suggestions,
