@@ -1023,6 +1023,7 @@ describe("local workbench service", () => {
       boundary: "partial",
       visual: "partial",
       responsiveness: "partial",
+      platformFit: "partial",
       notes: "Baseline snapshot before local agent edits.",
       touchedFiles: ["apps/reference-target-web/app/page.tsx"],
     });

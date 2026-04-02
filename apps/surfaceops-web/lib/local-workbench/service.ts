@@ -2344,6 +2344,7 @@ export function buildAssessmentPayload(
     boundary: "partial",
     visual: "partial",
     responsiveness: "partial",
+    platformFit: "partial",
     notes,
     touchedFiles,
     ...(heuristics ? { heuristics } : {}),
