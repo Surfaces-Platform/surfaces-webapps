@@ -12,9 +12,20 @@ interface NavigationSection {
 
 interface SurfaceInfo {
   name: string;
-  url: string;
   descriptor: string;
 }
+
+interface RoutedSurfaceInfo extends SurfaceInfo {
+  kind: 'routed';
+  surface: 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev';
+}
+
+interface ExternalSurfaceInfo extends SurfaceInfo {
+  kind: 'external';
+  url: string;
+}
+
+type NavigationSurfaceInfo = RoutedSurfaceInfo | ExternalSurfaceInfo;
 
 interface NavigationProps {
   currentSurface: 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev';
@@ -213,26 +224,36 @@ export default function Navigation({
   const activeTheme = colors[theme];
 
   // System surfaces
-  const surfaces: SurfaceInfo[] = [
+  const surfaces: NavigationSurfaceInfo[] = [
     {
+      kind: 'routed',
       name: 'surfaces.systems',
-      url: '/',
+      surface: 'surfaces',
       descriptor: 'Canonical source of interface truth'
     },
     {
+      kind: 'routed',
       name: 'surfaceops.ai',
-      url: '/surfaceops',
+      surface: 'surfaceops',
       descriptor: 'Operational enforcement and monitoring'
     },
     {
+      kind: 'routed',
       name: 'interfacectl.com',
-      url: '/interfacectl',
+      surface: 'interfacectl',
       descriptor: 'Executable interface control'
     },
     {
+      kind: 'routed',
       name: 'surfaces.dev',
-      url: '/surfaces-dev',
+      surface: 'surfaces-dev',
       descriptor: 'Developer documentation and reference'
+    },
+    {
+      kind: 'external',
+      name: 'judgmentkit.ai',
+      url: 'https://judgmentkit.ai',
+      descriptor: 'Embedded MCP judgment for live design decisions'
     }
   ];
 
@@ -399,35 +420,29 @@ export default function Navigation({
                         (currentSurface === 'interfacectl' && surface.name === 'interfacectl.com') ||
                         (currentSurface === 'surfaces-dev' && surface.name === 'surfaces.dev');
 
-                      const targetSurface = (surface.name === 'surfaces.dev' ? 'surfaces-dev' : surface.name.split('.')[0]) as 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev';
-                      const targetUrl = getContextualRoute(currentSurface, targetSurface, currentContext);
+                      const targetUrl = surface.kind === 'routed'
+                        ? getContextualRoute(currentSurface, surface.surface, currentContext)
+                        : surface.url;
 
                       return (
                         <a
                           key={idx}
                           href={targetUrl}
                           onClick={(e) => {
-                            const targetSurface = (surface.name === 'surfaces.dev' ? 'surfaces-dev' : surface.name.split('.')[0]) as 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev';
-                            const targetUrl = getContextualRoute(currentSurface, targetSurface, currentContext);
-                            
                             e.preventDefault();
                             setSystemMenuOpen(false);
-                            
-                            if (targetSurface !== currentSurface) {
+
+                            if (surface.kind === 'routed' && surface.surface !== currentSurface) {
                               // Call onSurfaceChange callback if provided
                               if (onSurfaceChange) {
-                                onSurfaceChange(targetSurface);
+                                onSurfaceChange(surface.surface);
                               }
-                              
-                              // Navigate to target URL (handles cross-domain in production, cross-port in dev)
-                              if (typeof window !== 'undefined') {
-                                window.location.href = targetUrl;
-                              }
-                            } else {
-                              // Same surface - navigate using default link behavior
-                              if (typeof window !== 'undefined') {
-                                window.location.href = targetUrl;
-                              }
+                            }
+
+                            // Navigate to target URL (handles cross-domain in production, cross-port in dev,
+                            // and direct external destinations like JudgmentKit)
+                            if (typeof window !== 'undefined') {
+                              window.location.href = targetUrl;
                             }
                           }}
                           style={{
