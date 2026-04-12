@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronDownIcon } from '../icons';
+import { ArrowTopRightOnSquareIcon, ChevronDownIcon } from '../icons';
 import { Icon } from './Icon';
 
 interface NavigationSection {
@@ -428,11 +428,18 @@ export default function Navigation({
                         <a
                           key={idx}
                           href={targetUrl}
+                          target={surface.kind === 'external' ? '_blank' : undefined}
+                          rel={surface.kind === 'external' ? 'noreferrer noopener' : undefined}
                           onClick={(e) => {
-                            e.preventDefault();
                             setSystemMenuOpen(false);
 
-                            if (surface.kind === 'routed' && surface.surface !== currentSurface) {
+                            if (surface.kind === 'external') {
+                              return;
+                            }
+
+                            e.preventDefault();
+
+                            if (surface.surface !== currentSurface) {
                               // Call onSurfaceChange callback if provided
                               if (onSurfaceChange) {
                                 onSurfaceChange(surface.surface);
@@ -473,7 +480,17 @@ export default function Navigation({
                               fontFamily: surface.name === 'interfacectl.com' || surface.name === 'surfaces.dev' ? 'JetBrains Mono, monospace' : 'Inter, sans-serif'
                             }}
                           >
-                            {surface.name}
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                              <span>{surface.name}</span>
+                              {surface.kind === 'external' ? (
+                                <Icon
+                                  icon={ArrowTopRightOnSquareIcon}
+                                  size={12}
+                                  decorative
+                                  style={{ flexShrink: 0 }}
+                                />
+                              ) : null}
+                            </span>
                           </div>
                           <div
                             style={{

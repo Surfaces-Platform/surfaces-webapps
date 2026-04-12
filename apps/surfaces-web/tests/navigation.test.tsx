@@ -73,6 +73,8 @@ describe("Navigation", () => {
     const judgmentKitLink = getDropdownLink("judgmentkit.ai");
 
     expect(judgmentKitLink.href).toBe("https://judgmentkit.ai/");
+    expect(judgmentKitLink.target).toBe("_blank");
+    expect(judgmentKitLink.rel).toBe("noreferrer noopener");
     expect(container.textContent).toContain("Embedded MCP judgment for live design decisions");
   });
 
