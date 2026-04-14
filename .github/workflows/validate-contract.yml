@@ -5,8 +5,9 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
-  schedule:
-    - cron: "0 7 * * *"
+
+env:
+  INTERFACECTL_CI_REF: 0b9731b3947b9c2a53d1b9ed713e9018c751dc76
 
 jobs:
   validate:
@@ -32,6 +33,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Surfaces-Platform/interfacectl
+          ref: ${{ env.INTERFACECTL_CI_REF }}
           path: interfacectl
           token: ${{ secrets.INTERFACECTL_TOKEN || github.token }}
       
@@ -135,6 +137,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Surfaces-Platform/interfacectl
+          ref: ${{ env.INTERFACECTL_CI_REF }}
           path: interfacectl
           token: ${{ secrets.INTERFACECTL_TOKEN || github.token }}
 
