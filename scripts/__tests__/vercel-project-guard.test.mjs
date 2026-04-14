@@ -25,7 +25,7 @@ function createSandbox() {
   const projectMap = {
     scopeSlug: "surfaces-platform",
     orgId: "team_test123",
-    allowedExternalProjects: ["design-judgment-kit"],
+    allowedExternalProjects: ["design-judgment-kit", "judgmentkit-ai"],
     disallowedScopes: [
       {
         scopeSlug: "mikelong-design",
@@ -57,6 +57,7 @@ function createSandbox() {
       { name: "interfacectl.com", id: "prj_interfacectl" },
       { name: "reference-target-web", id: "prj_reference_target" },
       { name: "design-judgment-kit", id: "prj_design_kit" },
+      { name: "judgmentkit-ai", id: "prj_judgmentkit_ai" },
     ],
     "mikelong-design": [],
   };
@@ -367,7 +368,7 @@ test("audit passes when only managed and allowlisted external projects exist", (
 
   assert.equal(result.status, 0, output);
   assert.match(output, /Managed projects \(3\): interfacectl\.com, reference-target-web, surfaceops\.ai/);
-  assert.match(output, /Allowed external projects \(1\): design-judgment-kit/);
+  assert.match(output, /Allowed external projects \(2\): design-judgment-kit, judgmentkit-ai/);
   assert.match(output, /Disallowed scopes \(1\): mikelong-design/);
   assert.match(output, /Project audit passed: no unknown, missing, or disallowed projects/);
 });
