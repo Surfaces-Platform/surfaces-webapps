@@ -2,7 +2,8 @@
   "scopeSlug": "surfaces-platform",
   "orgId": "team_Kw6YLfcGtRy40u9UEvifOh1r",
   "allowedExternalProjects": [
-    "design-judgment-kit"
+    "design-judgment-kit",
+    "judgmentkit-ai"
   ],
   "disallowedScopes": [
     {
