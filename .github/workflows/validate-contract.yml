@@ -84,6 +84,7 @@ jobs:
         run: pnpm run validate:contract:json
 
       - name: Upload validation artifact
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: interfacectl-report
@@ -106,6 +107,7 @@ jobs:
             --output ./artifacts/promotion-readiness.json
 
       - name: Upload promotion readiness artifact
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: promotion-readiness
