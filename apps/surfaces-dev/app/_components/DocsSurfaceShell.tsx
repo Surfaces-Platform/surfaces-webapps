@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import Navigation from '@surfaces/ui/components/Navigation';
+import type { NavigationSurfaceId } from '@surfaces/ui/components/Navigation';
 import { colors } from '@surfaces/ui/tokens/colors';
 import { interfacectlDocsNavigationLinks } from '../../../_shared/interfacectl-doc-links.js';
 
@@ -63,7 +64,7 @@ export function SurfacesDevShell({
   activeTab,
   children
 }: SurfacesDevShellProps) {
-  const handleSurfaceChange = (surface: 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev') => {
+  const handleSurfaceChange = (surface: NavigationSurfaceId) => {
     console.log('Surface change:', surface);
   };
 

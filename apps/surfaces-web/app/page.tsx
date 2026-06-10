@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import { useState } from 'react';
 import { ReleaseUpdatesPanel } from '@surfaces/ui/components/ReleaseUpdatesPanel';
 import Navigation from '@surfaces/ui/components/Navigation';
+import type { NavigationSurfaceId } from '@surfaces/ui/components/Navigation';
 import { colors } from '@surfaces/ui/tokens/colors';
 import { fadeUpVariants, staggerContainer } from '@surfaces/ui/utils/motion';
 
@@ -31,7 +32,7 @@ export default function Home() {
       new URLSearchParams(window.location.search).get('simulateDuplicateNav') === '1'
   );
 
-  const handleSurfaceChange = (surface: 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev') => {
+  const handleSurfaceChange = (surface: NavigationSurfaceId) => {
     // Handle surface change - could use router for Next.js navigation
     console.log('Surface change:', surface);
   };

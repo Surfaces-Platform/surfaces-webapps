@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { motion } from 'motion/react';
 import Navigation from '@surfaces/ui/components/Navigation';
+import type { NavigationSurfaceId } from '@surfaces/ui/components/Navigation';
 import { colors } from '@surfaces/ui/tokens/colors';
 import { fadeVariants, staggerContainerFast } from '@surfaces/ui/utils/motion';
 import {
@@ -27,7 +28,7 @@ const quickStartSteps = [
 ];
 
 export default function Home() {
-  const handleSurfaceChange = (surface: 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev') => {
+  const handleSurfaceChange = (surface: NavigationSurfaceId) => {
     console.log('Surface change:', surface);
   };
 

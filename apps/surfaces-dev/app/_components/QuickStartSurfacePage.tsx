@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import { motion } from 'motion/react';
 import Navigation from '@surfaces/ui/components/Navigation';
+import type { NavigationSurfaceId } from '@surfaces/ui/components/Navigation';
 import { colors } from '@surfaces/ui/tokens/colors';
 import { fadeVariants, staggerContainerFast } from '@surfaces/ui/utils/motion';
 import { interfacectlDocsNavigationLinks } from '../../../_shared/interfacectl-doc-links.js';
@@ -74,7 +75,7 @@ export default function QuickStartSurfacePage({
   referenceCards = [],
   actions
 }: QuickStartSurfacePageProps) {
-  const handleSurfaceChange = (surface: 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev') => {
+  const handleSurfaceChange = (surface: NavigationSurfaceId) => {
     console.log('Surface change:', surface);
   };
 

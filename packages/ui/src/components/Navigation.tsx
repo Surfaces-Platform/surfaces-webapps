@@ -2,8 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowTopRightOnSquareIcon, ChevronDownIcon } from '../icons';
+import { ChevronDownIcon } from '../icons';
 import { Icon } from './Icon';
+
+export type NavigationSurfaceId = 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev' | 'judgmentkit';
+type ContextualSurfaceId = Exclude<NavigationSurfaceId, 'judgmentkit'>;
 
 interface NavigationSection {
   label: string;
@@ -11,24 +14,13 @@ interface NavigationSection {
 }
 
 interface SurfaceInfo {
+  id: NavigationSurfaceId;
   name: string;
   descriptor: string;
 }
 
-interface RoutedSurfaceInfo extends SurfaceInfo {
-  kind: 'routed';
-  surface: 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev';
-}
-
-interface ExternalSurfaceInfo extends SurfaceInfo {
-  kind: 'external';
-  url: string;
-}
-
-type NavigationSurfaceInfo = RoutedSurfaceInfo | ExternalSurfaceInfo;
-
 interface NavigationProps {
-  currentSurface: 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev';
+  currentSurface: NavigationSurfaceId;
   sections: NavigationSection[];
   utilities?: {
     label: string;
@@ -39,28 +31,31 @@ interface NavigationProps {
     contentType?: 'docs' | 'concepts' | 'usage' | 'commands' | 'spec' | 'overview' | 'operations' | 'states';
     subject?: 'contracts' | 'validation' | 'drift' | 'enforcement';
   };
-  onSurfaceChange?: (surface: 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev') => void;
+  onSurfaceChange?: (surface: NavigationSurfaceId) => void;
 }
 
 // Get domain configuration based on environment
-function getDomainConfig(): Record<'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev', string> {
+function getDomainConfig(): Record<NavigationSurfaceId, string> {
   // Check if we're in production (check if hostname matches production domains)
   const isProduction = typeof window !== 'undefined' && 
     (window.location.hostname === 'surfaces.systems' || 
      window.location.hostname === 'surfaceops.ai' || 
      window.location.hostname === 'interfacectl.com' ||
      window.location.hostname === 'surfaces.dev' ||
+     window.location.hostname === 'judgmentkit.ai' ||
      window.location.hostname.endsWith('.surfaces.systems') ||
      window.location.hostname.endsWith('.surfaceops.ai') ||
      window.location.hostname.endsWith('.interfacectl.com') ||
-     window.location.hostname.endsWith('.surfaces.dev'));
+     window.location.hostname.endsWith('.surfaces.dev') ||
+     window.location.hostname.endsWith('.judgmentkit.ai'));
 
   if (isProduction) {
     return {
       surfaces: 'https://surfaces.systems',
       surfaceops: 'https://surfaceops.ai',
       interfacectl: 'https://interfacectl.com',
-      'surfaces-dev': 'https://surfaces.dev'
+      'surfaces-dev': 'https://surfaces.dev',
+      judgmentkit: 'https://judgmentkit.ai'
     };
   }
 
@@ -69,14 +64,15 @@ function getDomainConfig(): Record<'surfaces' | 'surfaceops' | 'interfacectl' | 
     surfaces: process.env.NEXT_PUBLIC_SURFACES_URL || 'http://localhost:3000',
     surfaceops: process.env.NEXT_PUBLIC_SURFACEOPS_URL || 'http://localhost:3001',
     interfacectl: process.env.NEXT_PUBLIC_INTERFACECTL_URL || 'http://localhost:3002',
-    'surfaces-dev': process.env.NEXT_PUBLIC_SURFACES_DEV_URL || 'http://localhost:3003'
+    'surfaces-dev': process.env.NEXT_PUBLIC_SURFACES_DEV_URL || 'http://localhost:3003',
+    judgmentkit: process.env.NEXT_PUBLIC_JUDGMENTKIT_URL || 'http://localhost:3004'
   };
 }
 
 // Context-preserving routing logic
 function getContextualRoute(
-  fromSurface: 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev',
-  toSurface: 'surfaces' | 'surfaceops' | 'interfacectl' | 'surfaces-dev',
+  fromSurface: ContextualSurfaceId,
+  toSurface: ContextualSurfaceId,
   context?: {
     contentType?: string;
     subject?: string;
@@ -154,6 +150,27 @@ function getContextualRoute(
   return `${baseUrl}${path}`;
 }
 
+function isContextualSurface(surface: NavigationSurfaceId): surface is ContextualSurfaceId {
+  return surface !== 'judgmentkit';
+}
+
+function getSurfaceRoute(
+  fromSurface: NavigationSurfaceId,
+  toSurface: NavigationSurfaceId,
+  context?: {
+    contentType?: string;
+    subject?: string;
+  }
+): string {
+  const domains = getDomainConfig();
+
+  if (isContextualSurface(fromSurface) && isContextualSurface(toSurface)) {
+    return getContextualRoute(fromSurface, toSurface, context);
+  }
+
+  return `${domains[toSurface]}/`;
+}
+
 /**
  * Navigation Component
  * 
@@ -224,47 +241,46 @@ export default function Navigation({
   const activeTheme = colors[theme];
 
   // System surfaces
-  const surfaces: NavigationSurfaceInfo[] = [
+  const surfaces: SurfaceInfo[] = [
     {
-      kind: 'routed',
+      id: 'surfaces',
       name: 'surfaces.systems',
-      surface: 'surfaces',
       descriptor: 'Canonical source of interface truth'
     },
     {
-      kind: 'routed',
+      id: 'surfaceops',
       name: 'surfaceops.ai',
-      surface: 'surfaceops',
       descriptor: 'Operational enforcement and monitoring'
     },
     {
-      kind: 'routed',
+      id: 'interfacectl',
       name: 'interfacectl.com',
-      surface: 'interfacectl',
       descriptor: 'Executable interface control'
     },
     {
-      kind: 'routed',
+      id: 'surfaces-dev',
       name: 'surfaces.dev',
-      surface: 'surfaces-dev',
       descriptor: 'Developer documentation and reference'
     },
     {
-      kind: 'external',
+      id: 'judgmentkit',
       name: 'judgmentkit.ai',
-      url: 'https://judgmentkit.ai',
       descriptor: 'Embedded MCP judgment for live design decisions'
     }
   ];
 
   // System identifier display name
-  const identifiers = {
+  const identifiers: Record<NavigationSurfaceId, string> = {
     surfaces: 'Surfaces',
     surfaceops: 'surfaceops',
     interfacectl: 'interfacectl',
-    'surfaces-dev': 'surfaces.dev'
+    'surfaces-dev': 'surfaces.dev',
+    judgmentkit: 'JudgmentKit'
   };
 
+  const monoSurfaceIds: NavigationSurfaceId[] = ['interfacectl', 'surfaces-dev'];
+  const usesMonoFont = monoSurfaceIds.includes(currentSurface);
+  const currentSurfaceInfo = surfaces.find((surface) => surface.id === currentSurface);
 
   return (
     <nav
@@ -303,7 +319,7 @@ export default function Navigation({
               fontWeight: 600,
               color: activeTheme.text,
               textDecoration: 'none',
-              fontFamily: currentSurface === 'interfacectl' || currentSurface === 'surfaces-dev' ? 'JetBrains Mono, monospace' : 'Inter, sans-serif'
+              fontFamily: usesMonoFont ? 'JetBrains Mono, monospace' : 'Inter, sans-serif'
             }}
           >
             {identifiers[currentSurface]}
@@ -324,7 +340,7 @@ export default function Navigation({
                   fontWeight: 400,
                   color: activeTheme.textMuted,
                   textDecoration: 'none',
-                  fontFamily: currentSurface === 'interfacectl' || currentSurface === 'surfaces-dev' ? 'JetBrains Mono, monospace' : 'Inter, sans-serif',
+                  fontFamily: usesMonoFont ? 'JetBrains Mono, monospace' : 'Inter, sans-serif',
                   transition: 'color 0.12s linear'
                 }}
                 onMouseEnter={(e) => {
@@ -362,7 +378,7 @@ export default function Navigation({
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                fontFamily: currentSurface === 'interfacectl' || currentSurface === 'surfaces-dev' ? 'JetBrains Mono, monospace' : 'Inter, sans-serif',
+                fontFamily: usesMonoFont ? 'JetBrains Mono, monospace' : 'Inter, sans-serif',
                 transition: 'color 0.12s linear'
               }}
               onMouseEnter={(e) => {
@@ -372,10 +388,7 @@ export default function Navigation({
                 e.currentTarget.style.color = activeTheme.textMuted;
               }}
             >
-              {currentSurface === 'surfaces' ? 'surfaces.systems' : 
-               currentSurface === 'surfaceops' ? 'surfaceops.ai' : 
-               currentSurface === 'surfaces-dev' ? 'surfaces.dev' :
-               'interfacectl.com'}
+              {currentSurfaceInfo?.name ?? 'surfaces.systems'}
               <Icon icon={ChevronDownIcon} size={14} decorative />
             </button>
 
@@ -414,40 +427,27 @@ export default function Navigation({
                     }}
                   >
                     {surfaces.map((surface, idx) => {
-                      const isCurrent = 
-                        (currentSurface === 'surfaces' && surface.name === 'surfaces.systems') ||
-                        (currentSurface === 'surfaceops' && surface.name === 'surfaceops.ai') ||
-                        (currentSurface === 'interfacectl' && surface.name === 'interfacectl.com') ||
-                        (currentSurface === 'surfaces-dev' && surface.name === 'surfaces.dev');
-
-                      const targetUrl = surface.kind === 'routed'
-                        ? getContextualRoute(currentSurface, surface.surface, currentContext)
-                        : surface.url;
+                      const isCurrent = currentSurface === surface.id;
+                      const targetUrl = getSurfaceRoute(currentSurface, surface.id, currentContext);
 
                       return (
                         <a
                           key={idx}
                           href={targetUrl}
-                          target={surface.kind === 'external' ? '_blank' : undefined}
-                          rel={surface.kind === 'external' ? 'noreferrer noopener' : undefined}
+                          aria-current={isCurrent ? 'page' : undefined}
                           onClick={(e) => {
                             setSystemMenuOpen(false);
-
-                            if (surface.kind === 'external') {
-                              return;
-                            }
-
                             e.preventDefault();
 
-                            if (surface.surface !== currentSurface) {
+                            if (surface.id !== currentSurface) {
                               // Call onSurfaceChange callback if provided
                               if (onSurfaceChange) {
-                                onSurfaceChange(surface.surface);
+                                onSurfaceChange(surface.id);
                               }
                             }
 
                             // Navigate to target URL (handles cross-domain in production, cross-port in dev,
-                            // and direct external destinations like JudgmentKit)
+                            // and the JudgmentKit site switch)
                             if (typeof window !== 'undefined') {
                               window.location.href = targetUrl;
                             }
@@ -477,19 +477,11 @@ export default function Navigation({
                               fontWeight: 600,
                               color: activeTheme.text,
                               marginBottom: '4px',
-                              fontFamily: surface.name === 'interfacectl.com' || surface.name === 'surfaces.dev' ? 'JetBrains Mono, monospace' : 'Inter, sans-serif'
+                              fontFamily: monoSurfaceIds.includes(surface.id) ? 'JetBrains Mono, monospace' : 'Inter, sans-serif'
                             }}
                           >
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                               <span>{surface.name}</span>
-                              {surface.kind === 'external' ? (
-                                <Icon
-                                  icon={ArrowTopRightOnSquareIcon}
-                                  size={12}
-                                  decorative
-                                  style={{ flexShrink: 0 }}
-                                />
-                              ) : null}
                             </span>
                           </div>
                           <div
@@ -527,7 +519,7 @@ export default function Navigation({
                     fontWeight: 400,
                     color: activeTheme.textMuted,
                     textDecoration: 'none',
-                    fontFamily: currentSurface === 'interfacectl' || currentSurface === 'surfaces-dev' ? 'JetBrains Mono, monospace' : 'Inter, sans-serif',
+                    fontFamily: usesMonoFont ? 'JetBrains Mono, monospace' : 'Inter, sans-serif',
                     transition: 'color 0.12s linear'
                   }}
                   onMouseEnter={(e) => {
