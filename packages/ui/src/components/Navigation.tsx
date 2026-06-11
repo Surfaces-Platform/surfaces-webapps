@@ -22,6 +22,11 @@ interface SurfaceInfo {
 interface NavigationProps {
   currentSurface: NavigationSurfaceId;
   sections: NavigationSection[];
+  /**
+   * @deprecated Utility links are intentionally no longer rendered in the
+   * shared site header. Kept temporarily so existing consumers can update
+   * without a breaking prop change.
+   */
   utilities?: {
     label: string;
     href: string;
@@ -34,39 +39,83 @@ interface NavigationProps {
   onSurfaceChange?: (surface: NavigationSurfaceId) => void;
 }
 
-// Get domain configuration based on environment
-function getDomainConfig(): Record<NavigationSurfaceId, string> {
-  // Check if we're in production (check if hostname matches production domains)
-  const isProduction = typeof window !== 'undefined' && 
-    (window.location.hostname === 'surfaces.systems' || 
-     window.location.hostname === 'surfaceops.ai' || 
-     window.location.hostname === 'interfacectl.com' ||
-     window.location.hostname === 'surfaces.dev' ||
-     window.location.hostname === 'judgmentkit.ai' ||
-     window.location.hostname.endsWith('.surfaces.systems') ||
-     window.location.hostname.endsWith('.surfaceops.ai') ||
-     window.location.hostname.endsWith('.interfacectl.com') ||
-     window.location.hostname.endsWith('.surfaces.dev') ||
-     window.location.hostname.endsWith('.judgmentkit.ai'));
+const productionDomainConfig: Record<NavigationSurfaceId, string> = {
+  surfaces: 'https://surfaces.systems',
+  surfaceops: 'https://surfaceops.ai',
+  interfacectl: 'https://interfacectl.com',
+  'surfaces-dev': 'https://surfaces.dev',
+  judgmentkit: 'https://judgmentkit.ai'
+};
 
-  if (isProduction) {
-    return {
-      surfaces: 'https://surfaces.systems',
-      surfaceops: 'https://surfaceops.ai',
-      interfacectl: 'https://interfacectl.com',
-      'surfaces-dev': 'https://surfaces.dev',
-      judgmentkit: 'https://judgmentkit.ai'
-    };
+const localDomainConfig: Record<NavigationSurfaceId, string> = {
+  surfaces: 'http://localhost:3000',
+  surfaceops: 'http://localhost:3001',
+  interfacectl: 'http://localhost:3002',
+  'surfaces-dev': 'http://localhost:3003',
+  judgmentkit: 'http://localhost:3004'
+};
+
+function withEnvironmentOverrides(
+  fallback: Record<NavigationSurfaceId, string>
+): Record<NavigationSurfaceId, string> {
+  return {
+    surfaces: process.env.NEXT_PUBLIC_SURFACES_URL || fallback.surfaces,
+    surfaceops: process.env.NEXT_PUBLIC_SURFACEOPS_URL || fallback.surfaceops,
+    interfacectl: process.env.NEXT_PUBLIC_INTERFACECTL_URL || fallback.interfacectl,
+    'surfaces-dev': process.env.NEXT_PUBLIC_SURFACES_DEV_URL || fallback['surfaces-dev'],
+    judgmentkit: process.env.NEXT_PUBLIC_JUDGMENTKIT_URL || fallback.judgmentkit
+  };
+}
+
+function isProductionHostname(hostname: string): boolean {
+  return (
+    hostname === 'surfaces.systems' ||
+    hostname === 'surfaceops.ai' ||
+    hostname === 'interfacectl.com' ||
+    hostname === 'surfaces.dev' ||
+    hostname === 'judgmentkit.ai' ||
+    hostname.endsWith('.surfaces.systems') ||
+    hostname.endsWith('.surfaceops.ai') ||
+    hostname.endsWith('.interfacectl.com') ||
+    hostname.endsWith('.surfaces.dev') ||
+    hostname.endsWith('.judgmentkit.ai')
+  );
+}
+
+function isLocalHostname(hostname: string): boolean {
+  return (
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname === '::1' ||
+    hostname.endsWith('.localhost')
+  );
+}
+
+function isVercelRuntime(): boolean {
+  return (
+    process.env.VERCEL === '1' ||
+    Boolean(process.env.VERCEL_ENV) ||
+    Boolean(process.env.VERCEL_URL) ||
+    Boolean(process.env.NEXT_PUBLIC_VERCEL_ENV) ||
+    Boolean(process.env.NEXT_PUBLIC_VERCEL_URL)
+  );
+}
+
+// Get domain configuration based on environment
+function getDomainConfig(hostname = typeof window !== 'undefined' ? window.location.hostname : undefined): Record<NavigationSurfaceId, string> {
+  if (hostname) {
+    if (isProductionHostname(hostname)) {
+      return productionDomainConfig;
+    }
+
+    if (isLocalHostname(hostname)) {
+      return withEnvironmentOverrides(localDomainConfig);
+    }
+
+    return withEnvironmentOverrides(productionDomainConfig);
   }
 
-  // Development: use environment variables or fallback to default ports
-  return {
-    surfaces: process.env.NEXT_PUBLIC_SURFACES_URL || 'http://localhost:3000',
-    surfaceops: process.env.NEXT_PUBLIC_SURFACEOPS_URL || 'http://localhost:3001',
-    interfacectl: process.env.NEXT_PUBLIC_INTERFACECTL_URL || 'http://localhost:3002',
-    'surfaces-dev': process.env.NEXT_PUBLIC_SURFACES_DEV_URL || 'http://localhost:3003',
-    judgmentkit: process.env.NEXT_PUBLIC_JUDGMENTKIT_URL || 'http://localhost:3004'
-  };
+  return withEnvironmentOverrides(isVercelRuntime() ? productionDomainConfig : localDomainConfig);
 }
 
 // Context-preserving routing logic
@@ -76,9 +125,9 @@ function getContextualRoute(
   context?: {
     contentType?: string;
     subject?: string;
-  }
+  },
+  domains = getDomainConfig()
 ): string {
-  const domains = getDomainConfig();
   const baseUrl = domains[toSurface];
 
   // Get path based on context
@@ -154,18 +203,19 @@ function isContextualSurface(surface: NavigationSurfaceId): surface is Contextua
   return surface !== 'judgmentkit';
 }
 
-function getSurfaceRoute(
+export function getSurfaceRoute(
   fromSurface: NavigationSurfaceId,
   toSurface: NavigationSurfaceId,
   context?: {
     contentType?: string;
     subject?: string;
-  }
+  },
+  hostname?: string
 ): string {
-  const domains = getDomainConfig();
+  const domains = getDomainConfig(hostname);
 
   if (isContextualSurface(fromSurface) && isContextualSurface(toSurface)) {
-    return getContextualRoute(fromSurface, toSurface, context);
+    return getContextualRoute(fromSurface, toSurface, context, domains);
   }
 
   return `${domains[toSurface]}/`;
@@ -178,7 +228,7 @@ function getSurfaceRoute(
  * 
  * Features:
  * - Sticky header with backdrop blur (56px height, 1120px max-width)
- * - System identifier, section links, system dropdown, and utility links
+ * - System identifier, section links, and system dropdown
  * - Context-preserving routing when switching between surfaces
  * - Environment-aware domain configuration (dev ports vs production domains)
  * - Full keyboard navigation support (ESC, Enter, Arrow keys, Tab)
@@ -187,7 +237,6 @@ function getSurfaceRoute(
  * 
  * @param currentSurface - The current surface being displayed
  * @param sections - Array of navigation sections with label and href
- * @param utilities - Optional array of utility links (e.g., GitHub, Docs)
  * @param theme - Theme mode: 'light' or 'dark'
  * @param currentContext - Optional context for context-preserving routing
  * @param onSurfaceChange - Optional callback when surface changes
@@ -197,7 +246,6 @@ function getSurfaceRoute(
 export default function Navigation({ 
   currentSurface, 
   sections, 
-  utilities = [],
   theme = 'light',
   currentContext,
   onSurfaceChange
@@ -356,7 +404,7 @@ export default function Navigation({
           </div>
         </div>
 
-        {/* Right Side: System Switch + Utilities */}
+        {/* Right Side: System Switch */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -502,38 +550,6 @@ export default function Navigation({
               )}
             </AnimatePresence>
           </div>
-
-          {/* Utilities (Right) */}
-          {utilities.length > 0 && (
-            <div style={{
-              display: isMobile ? 'none' : 'flex',
-              alignItems: 'center',
-              gap: '24px'
-            }}>
-              {utilities.map((utility, idx) => (
-                <a
-                  key={idx}
-                  href={utility.href}
-                  style={{
-                    fontSize: '12px',
-                    fontWeight: 400,
-                    color: activeTheme.textMuted,
-                    textDecoration: 'none',
-                    fontFamily: usesMonoFont ? 'JetBrains Mono, monospace' : 'Inter, sans-serif',
-                    transition: 'color 0.12s linear'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = activeTheme.text;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = activeTheme.textMuted;
-                  }}
-                >
-                  {utility.label}
-                </a>
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </nav>

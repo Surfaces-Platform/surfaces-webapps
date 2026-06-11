@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 
 import React, { act } from "react";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createRoot, type Root } from "react-dom/client";
-import Navigation from "@surfaces/ui/components/Navigation";
+import Navigation, { getSurfaceRoute } from "@surfaces/ui/components/Navigation";
 import type { NavigationSurfaceId } from "@surfaces/ui/components/Navigation";
 
 let container: HTMLDivElement;
@@ -31,6 +31,7 @@ async function renderNavigation(currentSurface: NavigationSurfaceId = "surfaces"
           { label: "Philosophy", href: "#philosophy" },
           { label: "System", href: "#system" },
         ]}
+        utilities={[{ label: "GitHub API", href: "https://github.com/surfaces-labs/surfaces" }]}
         theme="light"
       />,
     );
@@ -65,6 +66,7 @@ describe("Navigation", () => {
       root.unmount();
     });
     container.remove();
+    vi.unstubAllEnvs();
   });
 
   it("includes judgmentkit.ai as a same-tab shared system dropdown item", async () => {
@@ -78,6 +80,13 @@ describe("Navigation", () => {
     expect(judgmentKitLink.getAttribute("rel")).toBeNull();
     expect(judgmentKitLink.querySelector("svg")).toBeNull();
     expect(container.textContent).toContain("Embedded MCP judgment for live design decisions");
+  });
+
+  it("does not render utility links in the shared site header", async () => {
+    await renderNavigation();
+
+    expect(container.textContent).not.toContain("GitHub API");
+    expect(container.querySelector('a[href="https://github.com/surfaces-labs/surfaces"]')).toBeNull();
   });
 
   it("marks judgmentkit.ai active when JudgmentKit renders the shared navigation", async () => {
@@ -111,5 +120,34 @@ describe("Navigation", () => {
     expect(surfacesLink.href).toBe("http://localhost:3000/");
     expect(surfacesLink.getAttribute("target")).toBeNull();
     expect(surfacesLink.getAttribute("rel")).toBeNull();
+  });
+
+  it("uses localhost defaults only for local hostnames", () => {
+    expect(getSurfaceRoute("surfaces", "judgmentkit", undefined, "localhost")).toBe("http://localhost:3004/");
+    expect(getSurfaceRoute("surfaces", "judgmentkit", undefined, "127.0.0.1")).toBe("http://localhost:3004/");
+  });
+
+  it("uses public domains on Vercel preview hostnames by default", () => {
+    expect(getSurfaceRoute("surfaces", "judgmentkit", undefined, "surfaces-web-git-branch.vercel.app")).toBe(
+      "https://judgmentkit.ai/",
+    );
+    expect(
+      getSurfaceRoute("surfaces", "surfaceops", { contentType: "concepts", subject: "contracts" }, "surfaces-web-git-branch.vercel.app"),
+    ).toBe("https://surfaceops.ai/#overview");
+  });
+
+  it("uses public domains on production hostnames", () => {
+    expect(getSurfaceRoute("surfaces", "judgmentkit", undefined, "surfaces.systems")).toBe(
+      "https://judgmentkit.ai/",
+    );
+  });
+
+  it("allows a JudgmentKit URL override for local and preview testing", () => {
+    vi.stubEnv("NEXT_PUBLIC_JUDGMENTKIT_URL", "http://127.0.0.1:4173");
+
+    expect(getSurfaceRoute("surfaces", "judgmentkit", undefined, "localhost")).toBe("http://127.0.0.1:4173/");
+    expect(getSurfaceRoute("surfaces", "judgmentkit", undefined, "surfaces-web-git-branch.vercel.app")).toBe(
+      "http://127.0.0.1:4173/",
+    );
   });
 });
