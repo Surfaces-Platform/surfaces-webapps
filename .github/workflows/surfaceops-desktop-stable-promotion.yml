@@ -78,4 +78,5 @@ jobs:
 
       - name: Summarize no-op promotion
         if: ${{ steps.promotion.outputs.changed != 'true' }}
-        run: echo "No stable promotion performed: ${{ steps.promotion.outputs.reason }}"
+        run: |
+          echo "No stable promotion performed: ${{ steps.promotion.outputs.reason }}"
