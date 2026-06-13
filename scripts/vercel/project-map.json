@@ -3,7 +3,9 @@
   "orgId": "team_Kw6YLfcGtRy40u9UEvifOh1r",
   "allowedExternalProjects": [
     "design-judgment-kit",
-    "judgmentkit-ai"
+    "judgmentkit-ai",
+    "kanban.cards",
+    "web"
   ],
   "disallowedScopes": [
     {
