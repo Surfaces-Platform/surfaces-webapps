@@ -51,3 +51,16 @@ test("GitHub Actions artifact uploads declare bounded retention", async () => {
     }
   }
 });
+
+test("GitHub Actions inline run commands avoid YAML mapping ambiguity", async () => {
+  const workflows = await readWorkflowFiles();
+  const ambiguousRunLine = /^[ \t]*run:[ \t]+[^|>].*:[ \t]+/m;
+
+  for (const { name, content } of workflows) {
+    assert.doesNotMatch(
+      content,
+      ambiguousRunLine,
+      `${name} should use a block scalar for run commands containing ': '`,
+    );
+  }
+});
