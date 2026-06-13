@@ -32,18 +32,17 @@ test("desktop release workflows rely on the repo packageManager pnpm version ins
   assert.doesNotMatch(releaseWorkflow, /version:\s*10\.26\.2/);
 });
 
-test("desktop release workflows cache the prepared runtime and package without rebuilding it", async () => {
+test("desktop release workflows rebuild the prepared runtime without Actions caches", async () => {
   const rehearsalWorkflow = await readWorkflow("surfaceops-desktop-release-rehearsal.yml");
   const releaseWorkflow = await readWorkflow("surfaceops-desktop-release.yml");
 
   for (const workflow of [rehearsalWorkflow, releaseWorkflow]) {
-    assert.match(workflow, /uses:\s*actions\/cache\/restore@v4/);
-    assert.match(workflow, /uses:\s*actions\/cache\/save@v4/);
-    assert.match(workflow, /path:\s*apps\/surfaceops-desktop\/\.desktop-runtime/);
-    assert.match(workflow, /key:\s*\$\{\{\s*runner\.os\s*\}\}-surfaceops-desktop-runtime-\$\{\{\s*github\.sha\s*\}\}/);
-    assert.match(workflow, /if:\s*steps\.desktop-runtime-cache\.outputs\.cache-hit != 'true'/);
     assert.match(workflow, /pnpm --filter surfaceops-desktop run build:runtime/);
     assert.match(workflow, /pnpm --filter surfaceops-desktop run package:mac:ci/);
+    assert.doesNotMatch(workflow, /actions\/cache/);
+    assert.doesNotMatch(workflow, /cache:\s*pnpm/);
+    assert.doesNotMatch(workflow, /desktop-runtime-cache/);
+    assert.doesNotMatch(workflow, /surfaceops-desktop-runtime-\$\{\{\s*github\.sha\s*\}\}/);
     assert.doesNotMatch(workflow, /pnpm --filter surfaceops-desktop run dist:mac:ci/);
   }
 });
@@ -59,8 +58,14 @@ test("desktop release workflows use the shared upload helper and keep debug arti
     assert.match(workflow, /--extra "artifacts\/surfaceops-desktop-release-notes\.json"/);
     assert.match(workflow, /if:\s*failure\(\)/);
     assert.match(workflow, /if-no-files-found:\s*ignore/);
+    assert.match(workflow, /retention-days:\s*1/);
+    assert.match(workflow, /apps\/surfaceops-desktop\/dist\/\*\.dmg/);
+    assert.match(workflow, /apps\/surfaceops-desktop\/dist\/\*\.zip/);
+    assert.match(workflow, /apps\/surfaceops-desktop\/dist\/\*\.blockmap/);
+    assert.match(workflow, /apps\/surfaceops-desktop\/dist\/\*\.yml/);
     assert.doesNotMatch(workflow, /mapfile -t release_assets/);
     assert.doesNotMatch(workflow, /gh release upload "\$\{RELEASE_TAG\}"\s+apps\/surfaceops-desktop\/dist\/\*/);
+    assert.doesNotMatch(workflow, /apps\/surfaceops-desktop\/dist\/\*\s*$/m);
   }
 });
 

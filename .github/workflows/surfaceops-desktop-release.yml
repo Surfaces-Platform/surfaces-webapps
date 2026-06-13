@@ -27,17 +27,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Restore prepared desktop runtime
-        id: desktop-runtime-cache
-        uses: actions/cache/restore@v4
-        with:
-          path: apps/surfaceops-desktop/.desktop-runtime
-          key: ${{ runner.os }}-surfaceops-desktop-runtime-${{ github.sha }}
 
       - name: Derive release metadata
         run: |
@@ -69,15 +61,7 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.SURFACEOPS_DESKTOP_APPLE_TEAM_ID }}
 
       - name: Prepare desktop runtime
-        if: steps.desktop-runtime-cache.outputs.cache-hit != 'true'
         run: pnpm --filter surfaceops-desktop run build:runtime
-
-      - name: Save prepared desktop runtime
-        if: steps.desktop-runtime-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: apps/surfaceops-desktop/.desktop-runtime
-          key: ${{ runner.os }}-surfaceops-desktop-runtime-${{ github.sha }}
 
       - name: Build desktop artifacts
         run: pnpm --filter surfaceops-desktop run package:mac:ci
@@ -172,6 +156,10 @@ jobs:
         with:
           name: surfaceops-desktop-debug-${{ env.RELEASE_VERSION }}
           if-no-files-found: ignore
+          retention-days: 1
           path: |
-            apps/surfaceops-desktop/dist/*
+            apps/surfaceops-desktop/dist/*.dmg
+            apps/surfaceops-desktop/dist/*.zip
+            apps/surfaceops-desktop/dist/*.blockmap
+            apps/surfaceops-desktop/dist/*.yml
             artifacts/**/*.json
