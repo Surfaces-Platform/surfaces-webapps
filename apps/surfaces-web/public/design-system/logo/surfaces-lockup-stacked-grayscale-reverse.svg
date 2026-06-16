@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 280" role="img" aria-labelledby="surfaces-lockup-stacked-grayscale-reverse-title surfaces-lockup-stacked-grayscale-reverse-desc">
-  <title id="surfaces-lockup-stacked-grayscale-reverse-title">Surfaces Platform stacked grayscale reverse lockup</title>
-  <desc id="surfaces-lockup-stacked-grayscale-reverse-desc">Stacked wordmark-first Surfaces Platform grayscale lockup for dark backgrounds.</desc>
+  <title id="surfaces-lockup-stacked-grayscale-reverse-title">Surfaces stacked grayscale reverse lockup</title>
+  <desc id="surfaces-lockup-stacked-grayscale-reverse-desc">Stacked wordmark-first Surfaces grayscale lockup for dark backgrounds.</desc>
   <g transform="translate(150 28)">
     <rect x="0" y="0" width="60" height="66" rx="4" fill="#F7F7F4"/>
     <rect x="12" y="12" width="37" height="10" rx="0.75" fill="#0D0D0D"/>
@@ -9,5 +9,4 @@
     <rect x="37" y="28" width="12" height="10" rx="0.75" fill="#B8B8B2"/>
   </g>
   <text x="180" y="144" text-anchor="middle" fill="#F7F7F4" font-family="Inter, SF Pro Display, Helvetica Neue, Arial, sans-serif" font-size="54" font-weight="620">Surfaces</text>
-  <text x="180" y="176" text-anchor="middle" fill="#B8B8B2" font-family="Inter, SF Pro Text, Helvetica Neue, Arial, sans-serif" font-size="18" font-weight="650">Platform</text>
 </svg>

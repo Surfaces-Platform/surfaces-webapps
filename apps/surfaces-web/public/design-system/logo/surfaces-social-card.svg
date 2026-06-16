@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="surfaces-social-card-title surfaces-social-card-desc">
-  <title id="surfaces-social-card-title">Surfaces Platform social card</title>
-  <desc id="surfaces-social-card-desc">A restrained design-system reference card for Surfaces Platform.</desc>
+  <title id="surfaces-social-card-title">Surfaces social card</title>
+  <desc id="surfaces-social-card-desc">A restrained design-system reference card for Surfaces.</desc>
   <rect width="1200" height="630" fill="#F7F7F4"/>
   <rect x="72" y="72" width="1056" height="486" rx="8" fill="#FFFFFF" stroke="#D6D6D0" stroke-width="2"/>
   <g transform="translate(128 126)">
@@ -11,7 +11,6 @@
     <rect x="39" y="30" width="12" height="11" rx="0.75" fill="#575757"/>
   </g>
   <text x="218" y="176" fill="#0D0D0D" font-family="Inter, SF Pro Display, Helvetica Neue, Arial, sans-serif" font-size="70" font-weight="620">Surfaces</text>
-  <text x="224" y="222" fill="#575757" font-family="Inter, SF Pro Text, Helvetica Neue, Arial, sans-serif" font-size="23" font-weight="650">Platform</text>
   <text x="130" y="340" fill="#0D0D0D" font-family="Inter, SF Pro Display, Helvetica Neue, Arial, sans-serif" font-size="54" font-weight="650">Design system</text>
   <text x="130" y="402" fill="#0D0D0D" font-family="Inter, SF Pro Display, Helvetica Neue, Arial, sans-serif" font-size="54" font-weight="650">reference and resources.</text>
   <rect x="748" y="150" width="284" height="318" rx="6" fill="#0D0D0D"/>

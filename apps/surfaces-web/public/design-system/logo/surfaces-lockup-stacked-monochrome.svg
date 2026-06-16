@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 280" role="img" aria-labelledby="surfaces-lockup-stacked-monochrome-title surfaces-lockup-stacked-monochrome-desc">
-  <title id="surfaces-lockup-stacked-monochrome-title">Surfaces Platform stacked monochrome lockup</title>
-  <desc id="surfaces-lockup-stacked-monochrome-desc">One-color Surfaces Platform stacked lockup.</desc>
+  <title id="surfaces-lockup-stacked-monochrome-title">Surfaces stacked monochrome lockup</title>
+  <desc id="surfaces-lockup-stacked-monochrome-desc">One-color Surfaces stacked lockup.</desc>
   <g transform="translate(150 28)">
     <defs>
       <mask id="stacked-mono-mark-mask" maskUnits="userSpaceOnUse">
@@ -13,5 +13,4 @@
     <rect x="0" y="0" width="60" height="66" rx="4" fill="#0D0D0D" mask="url(#stacked-mono-mark-mask)"/>
   </g>
   <text x="180" y="144" text-anchor="middle" fill="#0D0D0D" font-family="Inter, SF Pro Display, Helvetica Neue, Arial, sans-serif" font-size="54" font-weight="620">Surfaces</text>
-  <text x="180" y="176" text-anchor="middle" fill="#0D0D0D" font-family="Inter, SF Pro Text, Helvetica Neue, Arial, sans-serif" font-size="18" font-weight="650">Platform</text>
 </svg>

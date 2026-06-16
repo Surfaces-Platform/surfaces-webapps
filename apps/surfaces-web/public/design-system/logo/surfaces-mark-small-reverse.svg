@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="surfaces-mark-small-reverse-title surfaces-mark-small-reverse-desc">
-  <title id="surfaces-mark-small-reverse-title">Surfaces Platform small reverse mark</title>
+  <title id="surfaces-mark-small-reverse-title">Surfaces small reverse mark</title>
   <desc id="surfaces-mark-small-reverse-desc">A simplified one-color Surfaces mark for small sizes on dark backgrounds.</desc>
   <defs>
     <mask id="surface-small-reverse-mask" maskUnits="userSpaceOnUse">

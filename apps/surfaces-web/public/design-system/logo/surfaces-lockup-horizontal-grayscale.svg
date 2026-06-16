@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 128" role="img" aria-labelledby="surfaces-lockup-horizontal-grayscale-title surfaces-lockup-horizontal-grayscale-desc">
-  <title id="surfaces-lockup-horizontal-grayscale-title">Surfaces Platform horizontal grayscale lockup</title>
-  <desc id="surfaces-lockup-horizontal-grayscale-desc">Wordmark-first Surfaces Platform grayscale lockup with a compact geometric mark.</desc>
+  <title id="surfaces-lockup-horizontal-grayscale-title">Surfaces horizontal grayscale lockup</title>
+  <desc id="surfaces-lockup-horizontal-grayscale-desc">Wordmark-first Surfaces grayscale lockup with a compact geometric mark.</desc>
   <g transform="translate(24 23)">
     <rect x="8" y="4" width="44" height="48" rx="3" fill="#0D0D0D"/>
     <rect x="17" y="13" width="27" height="8" rx="0.5" fill="#F7F7F4"/>
@@ -9,5 +9,4 @@
     <rect x="35" y="25" width="9" height="8" rx="0.5" fill="#575757"/>
   </g>
   <text x="104" y="66" fill="#0D0D0D" font-family="Inter, SF Pro Display, Helvetica Neue, Arial, sans-serif" font-size="52" font-weight="620">Surfaces</text>
-  <text x="108" y="94" fill="#575757" font-family="Inter, SF Pro Text, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="650">Platform</text>
 </svg>

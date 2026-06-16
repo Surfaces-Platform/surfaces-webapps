@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 128" role="img" aria-labelledby="surfaces-lockup-horizontal-monochrome-reverse-title surfaces-lockup-horizontal-monochrome-reverse-desc">
-  <title id="surfaces-lockup-horizontal-monochrome-reverse-title">Surfaces Platform horizontal monochrome reverse lockup</title>
-  <desc id="surfaces-lockup-horizontal-monochrome-reverse-desc">One-color Surfaces Platform horizontal lockup for dark backgrounds.</desc>
+  <title id="surfaces-lockup-horizontal-monochrome-reverse-title">Surfaces horizontal monochrome reverse lockup</title>
+  <desc id="surfaces-lockup-horizontal-monochrome-reverse-desc">One-color Surfaces horizontal lockup for dark backgrounds.</desc>
   <g transform="translate(24 23)">
     <defs>
       <mask id="horizontal-mono-reverse-mark-mask" maskUnits="userSpaceOnUse">
@@ -13,5 +13,4 @@
     <rect x="8" y="4" width="44" height="48" rx="3" fill="#F7F7F4" mask="url(#horizontal-mono-reverse-mark-mask)"/>
   </g>
   <text x="104" y="66" fill="#F7F7F4" font-family="Inter, SF Pro Display, Helvetica Neue, Arial, sans-serif" font-size="52" font-weight="620">Surfaces</text>
-  <text x="108" y="94" fill="#F7F7F4" font-family="Inter, SF Pro Text, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="650">Platform</text>
 </svg>

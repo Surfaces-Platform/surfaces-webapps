@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="surfaces-mark-title surfaces-mark-desc">
-  <title id="surfaces-mark-title">Surfaces Platform mark</title>
+  <title id="surfaces-mark-title">Surfaces mark</title>
   <desc id="surfaces-mark-desc">A compact geometric Surfaces mark built from a constrained rectangular surface.</desc>
   <rect x="12" y="10" width="40" height="44" rx="3" fill="#0D0D0D"/>
   <rect x="20" y="18" width="25" height="7" rx="0.5" fill="#F7F7F4"/>

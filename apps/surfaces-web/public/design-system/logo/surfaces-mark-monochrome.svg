@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="surfaces-mark-monochrome-title surfaces-mark-monochrome-desc">
-  <title id="surfaces-mark-monochrome-title">Surfaces Platform one-color mark</title>
+  <title id="surfaces-mark-monochrome-title">Surfaces one-color mark</title>
   <desc id="surfaces-mark-monochrome-desc">A one-color Surfaces mark in ink.</desc>
   <defs>
     <mask id="surface-mono-mask" maskUnits="userSpaceOnUse">

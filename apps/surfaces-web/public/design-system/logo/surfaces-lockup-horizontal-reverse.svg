@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 128" role="img" aria-labelledby="surfaces-lockup-horizontal-reverse-title surfaces-lockup-horizontal-reverse-desc">
-  <title id="surfaces-lockup-horizontal-reverse-title">Surfaces Platform horizontal reverse lockup</title>
-  <desc id="surfaces-lockup-horizontal-reverse-desc">Wordmark-first Surfaces Platform lockup for dark backgrounds.</desc>
+  <title id="surfaces-lockup-horizontal-reverse-title">Surfaces horizontal reverse lockup</title>
+  <desc id="surfaces-lockup-horizontal-reverse-desc">Wordmark-first Surfaces lockup for dark backgrounds.</desc>
   <g transform="translate(24 23)">
     <rect x="8" y="4" width="44" height="48" rx="3" fill="#F7F7F4"/>
     <rect x="17" y="13" width="27" height="8" rx="0.5" fill="#0D0D0D"/>
@@ -9,5 +9,4 @@
     <rect x="35" y="25" width="9" height="8" rx="0.5" fill="#B8B8B2"/>
   </g>
   <text x="104" y="66" fill="#F7F7F4" font-family="Inter, SF Pro Display, Helvetica Neue, Arial, sans-serif" font-size="52" font-weight="620">Surfaces</text>
-  <text x="108" y="94" fill="#B8B8B2" font-family="Inter, SF Pro Text, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="650">Platform</text>
 </svg>

@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="surfaces-mark-mono-title surfaces-mark-mono-desc">
-  <title id="surfaces-mark-mono-title">Surfaces Platform current-color mark</title>
+  <title id="surfaces-mark-mono-title">Surfaces current-color mark</title>
   <desc id="surfaces-mark-mono-desc">A current-color Surfaces mark for constrained production.</desc>
   <defs>
     <mask id="surface-current-mask" maskUnits="userSpaceOnUse">

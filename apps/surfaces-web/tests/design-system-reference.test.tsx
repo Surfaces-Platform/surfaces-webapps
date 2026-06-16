@@ -1,4 +1,5 @@
 import React from "react";
+import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 
@@ -105,6 +106,16 @@ describe("Surfaces Design System reference", () => {
     expect(navItems.slice(1).every((item) => item.href.startsWith(`${designSystemBasePath}/`))).toBe(true);
     expect(resources.every((item) => item.href.startsWith(`${designSystemBasePath}/`))).toBe(true);
     expect(new Set(resources.map((item) => item.href)).size).toBe(resources.length);
+  });
+
+  it("keeps logo assets free of secondary tagline text", () => {
+    const logoDirectory = "public/design-system/logo";
+
+    for (const fileName of readdirSync(logoDirectory).filter((item) => item.endsWith(".svg"))) {
+      const svg = readFileSync(`${logoDirectory}/${fileName}`, "utf8");
+
+      expect(svg).not.toContain("Platform");
+    }
   });
 
   it("only renders the top hero specimen on the identity page", () => {
