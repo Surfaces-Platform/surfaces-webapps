@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="surfaces-app-icon-title surfaces-app-icon-desc">
+  <title id="surfaces-app-icon-title">Surfaces Platform app icon</title>
+  <desc id="surfaces-app-icon-desc">Dark app icon with the compact Surfaces mark.</desc>
+  <rect width="1024" height="1024" rx="176" fill="#0D0D0D"/>
+  <rect x="300" y="279" width="424" height="466" rx="30" fill="#F7F7F4"/>
+  <rect x="385" y="364" width="254" height="74" rx="6" fill="#0D0D0D"/>
+  <rect x="385" y="480" width="168" height="74" rx="6" fill="#0D0D0D"/>
+  <rect x="470" y="596" width="169" height="74" rx="6" fill="#0D0D0D"/>
+  <rect x="555" y="480" width="84" height="74" rx="6" fill="#B8B8B2"/>
+</svg>

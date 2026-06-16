@@ -56,7 +56,8 @@ export default function Home() {
           { label: 'Philosophy', href: '#philosophy' },
           { label: 'System', href: '#system' },
           { label: 'Ecosystem', href: '#ecosystem' },
-          { label: 'Documentation', href: '#docs' }
+          { label: 'Documentation', href: '#docs' },
+          { label: 'Design System', href: '/design-system' }
         ]}
         utilities={[
           { label: 'GitHub', href: '#github' },

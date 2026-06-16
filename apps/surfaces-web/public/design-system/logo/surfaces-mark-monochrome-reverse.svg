@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="surfaces-mark-monochrome-reverse-title surfaces-mark-monochrome-reverse-desc">
+  <title id="surfaces-mark-monochrome-reverse-title">Surfaces Platform one-color reverse mark</title>
+  <desc id="surfaces-mark-monochrome-reverse-desc">A one-color Surfaces mark for dark backgrounds.</desc>
+  <defs>
+    <mask id="surface-mono-reverse-mask" maskUnits="userSpaceOnUse">
+      <rect width="64" height="64" fill="#fff"/>
+      <rect x="20" y="18" width="25" height="7" rx="0.5" fill="#000"/>
+      <rect x="20" y="29" width="16" height="7" rx="0.5" fill="#000"/>
+      <rect x="28" y="40" width="17" height="7" rx="0.5" fill="#000"/>
+    </mask>
+  </defs>
+  <rect x="12" y="10" width="40" height="44" rx="3" fill="#F7F7F4" mask="url(#surface-mono-reverse-mask)"/>
+</svg>

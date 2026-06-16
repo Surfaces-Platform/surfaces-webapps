@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="surfaces-mark-grayscale-reverse-title surfaces-mark-grayscale-reverse-desc">
+  <title id="surfaces-mark-grayscale-reverse-title">Surfaces Platform grayscale reverse mark</title>
+  <desc id="surfaces-mark-grayscale-reverse-desc">A compact grayscale Surfaces mark for dark backgrounds.</desc>
+  <rect x="12" y="10" width="40" height="44" rx="3" fill="#F7F7F4"/>
+  <rect x="20" y="18" width="25" height="7" rx="0.5" fill="#0D0D0D"/>
+  <rect x="20" y="29" width="16" height="7" rx="0.5" fill="#0D0D0D"/>
+  <rect x="28" y="40" width="17" height="7" rx="0.5" fill="#0D0D0D"/>
+  <rect x="36" y="29" width="9" height="7" rx="0.5" fill="#B8B8B2"/>
+</svg>

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 280" role="img" aria-labelledby="surfaces-lockup-stacked-monochrome-reverse-title surfaces-lockup-stacked-monochrome-reverse-desc">
+  <title id="surfaces-lockup-stacked-monochrome-reverse-title">Surfaces Platform stacked monochrome reverse lockup</title>
+  <desc id="surfaces-lockup-stacked-monochrome-reverse-desc">One-color Surfaces Platform stacked lockup for dark backgrounds.</desc>
+  <g transform="translate(150 28)">
+    <defs>
+      <mask id="stacked-mono-reverse-mark-mask" maskUnits="userSpaceOnUse">
+        <rect width="80" height="80" fill="#fff"/>
+        <rect x="12" y="12" width="37" height="10" rx="0.75" fill="#000"/>
+        <rect x="12" y="28" width="24" height="10" rx="0.75" fill="#000"/>
+        <rect x="25" y="44" width="24" height="10" rx="0.75" fill="#000"/>
+      </mask>
+    </defs>
+    <rect x="0" y="0" width="60" height="66" rx="4" fill="#F7F7F4" mask="url(#stacked-mono-reverse-mark-mask)"/>
+  </g>
+  <text x="180" y="144" text-anchor="middle" fill="#F7F7F4" font-family="Inter, SF Pro Display, Helvetica Neue, Arial, sans-serif" font-size="54" font-weight="620">Surfaces</text>
+  <text x="180" y="176" text-anchor="middle" fill="#F7F7F4" font-family="Inter, SF Pro Text, Helvetica Neue, Arial, sans-serif" font-size="18" font-weight="650">Platform</text>
+</svg>

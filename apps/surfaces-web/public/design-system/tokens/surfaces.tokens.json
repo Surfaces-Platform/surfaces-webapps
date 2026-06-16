@@ -1,0 +1,258 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "metadata": {
+    "name": "Surfaces Platform Brand Tokens",
+    "purpose": "Grayscale brand primitives and editorial expression tokens. Product state colors live in surfaces.product.tokens.json.",
+    "mode": "Grayscale brand, semantic product color"
+  },
+  "brand": {
+    "name": {
+      "$type": "string",
+      "$value": "Surfaces Platform"
+    },
+    "position": {
+      "$type": "string",
+      "$value": "Governed product-surface infrastructure for AI-native workflows."
+    },
+    "principles": {
+      "quiet": {
+        "$type": "string",
+        "$value": "The identity should feel composed before it feels clever."
+      },
+      "evident": {
+        "$type": "string",
+        "$value": "Product proof is used sparingly and precisely."
+      },
+      "durable": {
+        "$type": "string",
+        "$value": "Every asset must work in grayscale, one-color, product UI, docs, and print."
+      }
+    }
+  },
+  "color": {
+    "primitive": {
+      "black": {
+        "$type": "color",
+        "$value": "#000000"
+      },
+      "ink": {
+        "$type": "color",
+        "$value": "#0D0D0D"
+      },
+      "graphite": {
+        "$type": "color",
+        "$value": "#242424"
+      },
+      "charcoal": {
+        "$type": "color",
+        "$value": "#3A3A37"
+      },
+      "steel": {
+        "$type": "color",
+        "$value": "#575757"
+      },
+      "ash": {
+        "$type": "color",
+        "$value": "#767676"
+      },
+      "line": {
+        "$type": "color",
+        "$value": "#B8B8B2"
+      },
+      "plane": {
+        "$type": "color",
+        "$value": "#D6D6D0"
+      },
+      "mist": {
+        "$type": "color",
+        "$value": "#EFEFEC"
+      },
+      "paper": {
+        "$type": "color",
+        "$value": "#F7F7F4"
+      },
+      "white": {
+        "$type": "color",
+        "$value": "#FFFFFF"
+      }
+    },
+    "alias": {
+      "background": {
+        "$type": "color",
+        "$value": "{color.primitive.paper}"
+      },
+      "foreground": {
+        "$type": "color",
+        "$value": "{color.primitive.ink}"
+      },
+      "foregroundMuted": {
+        "$type": "color",
+        "$value": "{color.primitive.steel}"
+      },
+      "rule": {
+        "$type": "color",
+        "$value": "{color.primitive.line}"
+      },
+      "reverseForeground": {
+        "$type": "color",
+        "$value": "{color.primitive.paper}"
+      },
+      "reverseBackground": {
+        "$type": "color",
+        "$value": "{color.primitive.ink}"
+      }
+    },
+    "expression": {
+      "signature": {
+        "$type": "color",
+        "$value": "{color.primitive.ink}"
+      },
+      "signatureMuted": {
+        "$type": "color",
+        "$value": "{color.primitive.steel}"
+      },
+      "rule": {
+        "$type": "color",
+        "$value": "{color.primitive.line}"
+      },
+      "caption": {
+        "$type": "color",
+        "$value": "{color.primitive.steel}"
+      },
+      "proof": {
+        "$type": "color",
+        "$value": "{color.primitive.white}"
+      },
+      "index": {
+        "$type": "color",
+        "$value": "{color.primitive.ash}"
+      },
+      "surface": {
+        "$type": "color",
+        "$value": "{color.primitive.mist}"
+      }
+    }
+  },
+  "expression": {
+    "signature": {
+      "rule": {
+        "$type": "string",
+        "$value": "Use the signature mark as a quiet secondary symbol; the wordmark is primary."
+      }
+    },
+    "rule": {
+      "stroke": {
+        "$type": "dimension",
+        "$value": "1px"
+      },
+      "heavyStroke": {
+        "$type": "dimension",
+        "$value": "2px"
+      }
+    },
+    "caption": {
+      "fontSize": {
+        "$type": "dimension",
+        "$value": "12px"
+      },
+      "lineHeight": {
+        "$type": "dimension",
+        "$value": "16px"
+      },
+      "weight": {
+        "$type": "fontWeight",
+        "$value": 650
+      }
+    },
+    "proof": {
+      "rule": {
+        "$type": "string",
+        "$value": "Use product proof as an editorial crop, not as dashboard decoration."
+      }
+    },
+    "surface": {
+      "rule": {
+        "$type": "string",
+        "$value": "Use quiet surfaces, rules, and captions to structure brand applications."
+      }
+    }
+  },
+  "radius": {
+    "xs": {
+      "$type": "dimension",
+      "$value": "4px"
+    },
+    "sm": {
+      "$type": "dimension",
+      "$value": "6px"
+    },
+    "md": {
+      "$type": "dimension",
+      "$value": "8px"
+    },
+    "lg": {
+      "$type": "dimension",
+      "$value": "12px"
+    }
+  },
+  "space": {
+    "1": {
+      "$type": "dimension",
+      "$value": "4px"
+    },
+    "2": {
+      "$type": "dimension",
+      "$value": "8px"
+    },
+    "3": {
+      "$type": "dimension",
+      "$value": "12px"
+    },
+    "4": {
+      "$type": "dimension",
+      "$value": "16px"
+    },
+    "6": {
+      "$type": "dimension",
+      "$value": "24px"
+    },
+    "8": {
+      "$type": "dimension",
+      "$value": "32px"
+    },
+    "12": {
+      "$type": "dimension",
+      "$value": "48px"
+    },
+    "16": {
+      "$type": "dimension",
+      "$value": "64px"
+    }
+  },
+  "typography": {
+    "family": {
+      "sans": {
+        "$type": "fontFamily",
+        "$value": "Inter, SF Pro Display, Helvetica Neue, Arial, sans-serif"
+      },
+      "mono": {
+        "$type": "fontFamily",
+        "$value": "SFMono-Regular, ui-monospace, Menlo, Monaco, Consolas, monospace"
+      }
+    },
+    "weight": {
+      "regular": {
+        "$type": "fontWeight",
+        "$value": 400
+      },
+      "medium": {
+        "$type": "fontWeight",
+        "$value": 500
+      },
+      "semibold": {
+        "$type": "fontWeight",
+        "$value": 650
+      }
+    }
+  }
+}
