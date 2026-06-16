@@ -107,6 +107,18 @@ describe("Surfaces Design System reference", () => {
     expect(new Set(resources.map((item) => item.href)).size).toBe(resources.length);
   });
 
+  it("only renders the top hero specimen on the identity page", () => {
+    expect(renderToStaticMarkup(<ReferencePageView page={pages.identity} />)).toContain(
+      'aria-label="Identity specimen"',
+    );
+
+    for (const page of Object.values(pages).filter((item) => item.slug !== "overview" && item.slug !== "identity")) {
+      const html = renderToStaticMarkup(<ReferencePageView page={page} />);
+
+      expect(html).not.toContain(`aria-label="${page.label} specimen"`);
+    }
+  });
+
   it("does not render public leakage terms in reference pages", () => {
     const html = Object.values(pages)
       .map((page) => renderToStaticMarkup(<ReferencePageView page={page} />))

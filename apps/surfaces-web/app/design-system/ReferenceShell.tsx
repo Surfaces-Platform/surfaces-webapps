@@ -110,6 +110,8 @@ function PageHero({ page }: { page: ReferencePage }) {
     );
   }
 
+  const showIdentitySpecimen = page.slug === "identity";
+
   return (
     <section className={`${styles.hero} ${styles.docHero}`} aria-labelledby="page-title">
       <div className={styles.heroCopy}>
@@ -122,15 +124,17 @@ function PageHero({ page }: { page: ReferencePage }) {
           ))}
         </div>
       </div>
-      <section className={styles.specimen} aria-label={`${page.label} specimen`}>
-        <div className={styles.specimenHead}>
-          <h2>{page.label}</h2>
-          <span>{currentReference.version}</span>
-        </div>
-        <div className={styles.specimenLogo}>
-          <img src={logo.lockup} alt="Surfaces horizontal lockup" />
-        </div>
-      </section>
+      {showIdentitySpecimen ? (
+        <section className={styles.specimen} aria-label="Identity specimen">
+          <div className={styles.specimenHead}>
+            <h2>{page.label}</h2>
+            <span>{currentReference.version}</span>
+          </div>
+          <div className={styles.specimenLogo}>
+            <img src={logo.lockup} alt="Surfaces horizontal lockup" />
+          </div>
+        </section>
+      ) : null}
     </section>
   );
 }
