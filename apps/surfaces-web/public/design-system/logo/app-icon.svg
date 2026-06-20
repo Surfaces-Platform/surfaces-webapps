@@ -2,9 +2,7 @@
   <title id="surfaces-app-icon-title">Surfaces app icon</title>
   <desc id="surfaces-app-icon-desc">Dark app icon with the compact Surfaces mark.</desc>
   <rect width="1024" height="1024" rx="176" fill="#0D0D0D"/>
-  <rect x="300" y="279" width="424" height="466" rx="30" fill="#F7F7F4"/>
-  <rect x="385" y="364" width="254" height="74" rx="6" fill="#0D0D0D"/>
-  <rect x="385" y="480" width="168" height="74" rx="6" fill="#0D0D0D"/>
-  <rect x="470" y="596" width="169" height="74" rx="6" fill="#0D0D0D"/>
-  <rect x="555" y="480" width="84" height="74" rx="6" fill="#B8B8B2"/>
+  <g transform="translate(256 256) scale(8)">
+    <path fill="#F7F7F4" fill-rule="evenodd" clip-rule="evenodd" d="M16 8H48C50.209 8 52 9.791 52 12V52C52 54.209 50.209 56 48 56H16C13.791 56 12 54.209 12 52V12C12 9.791 13.791 8 16 8ZM20 16H44V25H20V16ZM20 28H36V37H20V28ZM28 40H44V49H28V40Z"/>
+  </g>
 </svg>

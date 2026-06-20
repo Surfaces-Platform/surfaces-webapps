@@ -115,6 +115,42 @@ describe("Surfaces Design System reference", () => {
       const svg = readFileSync(`${logoDirectory}/${fileName}`, "utf8");
 
       expect(svg).not.toContain("Platform");
+      expect(svg).not.toMatch(/\bfield\b/i);
+    }
+  });
+
+  it("uses optical-size one-color mark assets", () => {
+    const primaryMark = readFileSync("public/design-system/logo/surfaces-mark.svg", "utf8");
+    const smallMark = readFileSync("public/design-system/logo/surfaces-mark-small.svg", "utf8");
+
+    expect(primaryMark).toContain('fill-rule="evenodd"');
+    expect(primaryMark).toContain("M20 16H44V25");
+    expect(primaryMark).not.toMatch(/#575757|#B8B8B2/);
+    expect(smallMark).toContain('fill-rule="evenodd"');
+    expect(smallMark).toContain("M20 19H44V29");
+    expect(smallMark).not.toMatch(/#575757|#B8B8B2/);
+  });
+
+  it("uses the documented grayscale canon for reference UI chrome", () => {
+    const css = readFileSync("app/design-system/reference.module.css", "utf8");
+    const oldShellColors = [
+      "#0f172a",
+      "#1e293b",
+      "#475569",
+      "#64748b",
+      "#94a3b8",
+      "#cbd5e1",
+      "#f1f5f9",
+      "#f8fafc",
+      "#1d4ed8",
+    ];
+
+    for (const color of oldShellColors) {
+      expect(css.toLowerCase()).not.toContain(color);
+    }
+
+    for (const color of ["#0D0D0D", "#242424", "#575757", "#767676", "#B8B8B2", "#D6D6D0", "#EFEFEC", "#F7F7F4"]) {
+      expect(css).toContain(color);
     }
   });
 

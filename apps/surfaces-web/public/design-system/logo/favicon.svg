@@ -1,12 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-labelledby="surfaces-favicon-title">
-  <title id="surfaces-favicon-title">Surfaces favicon</title>
-  <defs>
-    <mask id="surfaces-favicon-mask" maskUnits="userSpaceOnUse">
-      <rect width="32" height="32" fill="#fff"/>
-      <rect x="10" y="9" width="12" height="4" rx="0.5" fill="#000"/>
-      <rect x="10" y="15" width="8" height="4" rx="0.5" fill="#000"/>
-      <rect x="14" y="21" width="8" height="4" rx="0.5" fill="#000"/>
-    </mask>
-  </defs>
-  <rect x="6" y="5" width="20" height="22" rx="1.5" fill="#0D0D0D" mask="url(#surfaces-favicon-mask)"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="favicon-title favicon-desc">
+  <title id="favicon-title">Surfaces favicon</title>
+  <desc id="favicon-desc">A simplified Surfaces mark optimized for favicon sizes.</desc>
+  <path fill="#0D0D0D" fill-rule="evenodd" clip-rule="evenodd" d="M16 8H48C50.209 8 52 9.791 52 12V52C52 54.209 50.209 56 48 56H16C13.791 56 12 54.209 12 52V12C12 9.791 13.791 8 16 8ZM20 19H44V29H20V19ZM20 35H44V45H20V35Z"/>
 </svg>

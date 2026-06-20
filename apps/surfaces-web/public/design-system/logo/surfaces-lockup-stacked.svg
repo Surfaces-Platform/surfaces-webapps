@@ -1,12 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 280" role="img" aria-labelledby="surfaces-lockup-stacked-title surfaces-lockup-stacked-desc">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" role="img" aria-labelledby="surfaces-lockup-stacked-title surfaces-lockup-stacked-desc">
   <title id="surfaces-lockup-stacked-title">Surfaces stacked lockup</title>
-  <desc id="surfaces-lockup-stacked-desc">Stacked wordmark-first Surfaces lockup with a compact geometric mark.</desc>
-  <g transform="translate(150 28)">
-    <rect x="0" y="0" width="60" height="66" rx="4" fill="#0D0D0D"/>
-    <rect x="12" y="12" width="37" height="10" rx="0.75" fill="#F7F7F4"/>
-    <rect x="12" y="28" width="24" height="10" rx="0.75" fill="#F7F7F4"/>
-    <rect x="25" y="44" width="24" height="10" rx="0.75" fill="#F7F7F4"/>
-    <rect x="37" y="28" width="12" height="10" rx="0.75" fill="#575757"/>
+  <desc id="surfaces-lockup-stacked-desc">Stacked Surfaces lockup with the compact one-color mark.</desc>
+  <g transform="translate(148 14)">
+    <path fill="#0D0D0D" fill-rule="evenodd" clip-rule="evenodd" d="M16 8H48C50.209 8 52 9.791 52 12V52C52 54.209 50.209 56 48 56H16C13.791 56 12 54.209 12 52V12C12 9.791 13.791 8 16 8ZM20 16H44V25H20V16ZM20 28H36V37H20V28ZM28 40H44V49H28V40Z"/>
   </g>
-  <text x="180" y="144" text-anchor="middle" fill="#0D0D0D" font-family="Inter, SF Pro Display, Helvetica Neue, Arial, sans-serif" font-size="54" font-weight="620">Surfaces</text>
+  <text x="180" y="132" fill="#0D0D0D" text-anchor="middle" font-family="Inter, SF Pro Display, Helvetica Neue, Arial, sans-serif" font-size="54" font-weight="620">Surfaces</text>
 </svg>

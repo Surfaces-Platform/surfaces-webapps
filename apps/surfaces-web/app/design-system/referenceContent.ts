@@ -120,7 +120,7 @@ export const pages: Record<ReferenceSlug, ReferencePage> = {
     title: "Wordmark first, compact mark second.",
     description:
       "The Surfaces wordmark is the primary identity. The compact mark supports app icons, favicons, dense chrome, avatars, and partner placements where the wordmark will not hold.",
-    meta: ["Minimum lockup / 128 px", "Mark / 16 px minimum", "Clearspace / one mark width"],
+    meta: ["Minimum lockup / 128 px", "Small mark / 16-24 px", "Compact mark / 32 px+"],
   },
   foundations: {
     slug: "foundations",
@@ -242,9 +242,9 @@ export const resources: ResourceItem[] = [
   },
   {
     title: "Small mark",
-    kind: "SVG / 24 px",
+    kind: "SVG / 16-24 px",
     href: `${assetBasePath}/logo/surfaces-mark-small.svg`,
-    note: "Use when the full compact mark loses clarity.",
+    note: "Use for favicon, 16 px, and 24 px placements where the compact mark loses clarity.",
     preview: "mark",
   },
   {

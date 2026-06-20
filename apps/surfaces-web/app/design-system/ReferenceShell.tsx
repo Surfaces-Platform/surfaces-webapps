@@ -26,6 +26,7 @@ const logo = {
   mark: `${assetBasePath}/logo/surfaces-mark.svg`,
   markReverse: `${assetBasePath}/logo/surfaces-mark-reverse.svg`,
   markSmall: `${assetBasePath}/logo/surfaces-mark-small.svg`,
+  markSmallReverse: `${assetBasePath}/logo/surfaces-mark-small-reverse.svg`,
   favicon: `${assetBasePath}/logo/favicon.svg`,
   appIcon: `${assetBasePath}/logo/app-icon.svg`,
   wordmark: `${assetBasePath}/logo/surfaces-wordmark.svg`,
@@ -144,19 +145,31 @@ function ReferenceBoard() {
     <section className={styles.referenceBoard} aria-label="Surfaces reference summary">
       <article className={styles.referenceBrand} aria-label="Identity specimen">
         <img src={logo.lockup} alt="Surfaces horizontal lockup" />
-        <div className={styles.markRow} role="list" aria-label="Small mark examples">
-          <span role="listitem">
-            <img src={logo.favicon} width="16" height="16" alt="" />
-            16 px
-          </span>
-          <span role="listitem">
-            <img src={logo.markSmall} width="24" height="24" alt="" />
-            24 px
-          </span>
-          <span role="listitem">
-            <img src={logo.mark} width="32" height="32" alt="" />
-            32 px
-          </span>
+        <div className={styles.markProof}>
+          <div className={styles.markRow} role="list" aria-label="Small mark examples">
+            <span role="listitem">
+              <img src={logo.favicon} width="16" height="16" alt="" />
+              16 px
+            </span>
+            <span role="listitem">
+              <img src={logo.markSmall} width="24" height="24" alt="" />
+              24 px
+            </span>
+            <span role="listitem">
+              <img src={logo.mark} width="32" height="32" alt="" />
+              32 px
+            </span>
+          </div>
+          <div className={styles.contextRow} role="list" aria-label="Mark context examples">
+            <span className={styles.darkSpecimen} role="listitem">
+              <img src={logo.markSmallReverse} width="24" height="24" alt="" />
+              Reverse
+            </span>
+            <span role="listitem">
+              <img src={logo.appIcon} width="28" height="28" alt="" />
+              App icon
+            </span>
+          </div>
         </div>
       </article>
       <article className={styles.trustPanel} aria-labelledby="reference-status-title">
@@ -290,6 +303,14 @@ function IdentitySections() {
           <span role="listitem">
             <img src={logo.mark} width="32" height="32" alt="" />
             32 px compact mark
+          </span>
+          <span className={styles.darkSpecimen} role="listitem">
+            <img src={logo.markSmallReverse} width="24" height="24" alt="" />
+            Reverse small mark
+          </span>
+          <span role="listitem">
+            <img src={logo.appIcon} width="32" height="32" alt="" />
+            App icon
           </span>
         </div>
       </section>
@@ -769,7 +790,7 @@ function ResourcePreviewStage({ item }: { item: ResourceItem }) {
   }
 
   if (item.preview === "reverse") {
-    return <span className={`${styles.resourcePreview} ${styles.dark} ${styles.iconPreview}`}><img src={item.href.endsWith(".zip") ? logo.lockupReverse : item.href} alt="" /></span>;
+    return <span className={`${styles.resourcePreview} ${styles.dark} ${item.href.endsWith(".zip") ? styles.lockupPreview : styles.iconPreview}`}><img src={item.href.endsWith(".zip") ? logo.lockupReverse : item.href} alt="" /></span>;
   }
 
   if (item.preview === "mark") {

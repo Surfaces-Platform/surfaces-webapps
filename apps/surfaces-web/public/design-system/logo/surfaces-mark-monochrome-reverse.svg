@@ -1,13 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="surfaces-mark-monochrome-reverse-title surfaces-mark-monochrome-reverse-desc">
-  <title id="surfaces-mark-monochrome-reverse-title">Surfaces one-color reverse mark</title>
+  <title id="surfaces-mark-monochrome-reverse-title">Surfaces monochrome reverse mark</title>
   <desc id="surfaces-mark-monochrome-reverse-desc">A one-color Surfaces mark for dark backgrounds.</desc>
-  <defs>
-    <mask id="surface-mono-reverse-mask" maskUnits="userSpaceOnUse">
-      <rect width="64" height="64" fill="#fff"/>
-      <rect x="20" y="18" width="25" height="7" rx="0.5" fill="#000"/>
-      <rect x="20" y="29" width="16" height="7" rx="0.5" fill="#000"/>
-      <rect x="28" y="40" width="17" height="7" rx="0.5" fill="#000"/>
-    </mask>
-  </defs>
-  <rect x="12" y="10" width="40" height="44" rx="3" fill="#F7F7F4" mask="url(#surface-mono-reverse-mask)"/>
+  <path fill="#F7F7F4" fill-rule="evenodd" clip-rule="evenodd" d="M16 8H48C50.209 8 52 9.791 52 12V52C52 54.209 50.209 56 48 56H16C13.791 56 12 54.209 12 52V12C12 9.791 13.791 8 16 8ZM20 16H44V25H20V16ZM20 28H36V37H20V28ZM28 40H44V49H28V40Z"/>
 </svg>
