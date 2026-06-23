@@ -6,7 +6,30 @@ import { fileURLToPath } from "node:url";
 import { interfacectlDocLinks } from "../apps/_shared/interfacectl-doc-links.js";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const workspaceRoot = path.resolve(repoRoot, "../..");
+function findWorkspaceRoot(startPath) {
+  let current = startPath;
+
+  while (true) {
+    if (
+      fs.existsSync(path.join(current, "interfacectl")) &&
+      fs.existsSync(path.join(current, "surfaces-webapps"))
+    ) {
+      return current;
+    }
+
+    if (fs.existsSync(path.join(current, ".worktrees", "interfacectl-main"))) {
+      return current;
+    }
+
+    const parent = path.dirname(current);
+    if (parent === current) {
+      return path.resolve(repoRoot, "../..");
+    }
+    current = parent;
+  }
+}
+
+const workspaceRoot = findWorkspaceRoot(repoRoot);
 
 const docsDir = path.join(repoRoot, "docs", "interfacectl");
 const allowedDocsFiles = new Set(["README.md"]);

@@ -1,4 +1,5 @@
 import QuickStartSurfacePage, { NextContextLinks } from '../_components/QuickStartSurfacePage';
+import { interfacectlIntegrationReferenceCards } from '../../../_shared/interfacectl-doc-links.js';
 
 const integrationSnippet = `# Local/CI hard gate command
 node scripts/interfacectl-tool.mjs run cli compile \\
@@ -33,7 +34,7 @@ export default function IntegrationQuickStartPage() {
       activeTab="integration"
       contextLabel="Integration Quick Start"
       title="Integrate Adapter Enforcement Into Tooling And CI"
-      summary="Use this flow at CI/CD time to connect Generation time checks to promotion gates so hosted tools remain enforceable even when they cannot hard-block in-product."
+      summary="Use this flow at CI/CD time to connect Generation time checks to promotion gates so hosted tools remain enforceable even when they cannot hard-block in-product. It is built on interfacectl and links back to the canonical docs."
       steps={[
         {
           title: 'Pick execution mode.',
@@ -70,6 +71,7 @@ export default function IntegrationQuickStartPage() {
       ]}
       snippetTitle="CI / Local Integration Command"
       snippet={integrationSnippet}
+      referenceCards={interfacectlIntegrationReferenceCards}
       notes={[
         'prepare-generation is optional for the CI gate itself, but it keeps local-agent and CI inputs aligned on the same bundle revision.',
         'Generation session commands live beside the CI path and are for tracked local-agent evaluation, not for replacing the final workspace gate.',

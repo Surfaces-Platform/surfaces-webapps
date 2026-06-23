@@ -7,12 +7,13 @@ import type { NavigationSurfaceId } from '@surfaces/ui/components/Navigation';
 import { colors } from '@surfaces/ui/tokens/colors';
 import { interfacectlDocsNavigationLinks } from '../../../_shared/interfacectl-doc-links.js';
 
-export type SurfacesDevActiveTab = 'generation' | 'integration' | 'runtime' | 'guides';
+export type SurfacesDevActiveTab = 'generation' | 'integration' | 'runtime' | 'mcp' | 'guides';
 
 export const surfacesDevNavSections = [
   { label: 'Generation', href: '/generation' },
   { label: 'Integration', href: '/integration' },
   { label: 'Runtime', href: '/runtime' },
+  { label: 'MCP', href: '/mcp' },
   { label: 'Guides', href: '/guides' }
 ];
 

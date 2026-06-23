@@ -1,5 +1,6 @@
 import { ContextLinkCard } from '../_components/DocsSurfaceShell';
 import QuickStartSurfacePage, { NextContextLinks } from '../_components/QuickStartSurfacePage';
+import { interfacectlGenerationReferenceCards } from '../../../_shared/interfacectl-doc-links.js';
 
 const generationSnippet = `# 1) Compile the contract into a generation bundle
 node scripts/interfacectl-tool.mjs run cli compile \\
@@ -39,7 +40,7 @@ export default function GenerationQuickStartPage() {
       activeTab="generation"
       contextLabel="Generation Quick Start"
       title="Prepare Local Agent Input Before AI UI Generation"
-      summary="Use this flow when a local workspace agent needs one contract-aware payload before generation and a matching validation loop after code is written."
+      summary="Use this flow when a local workspace agent needs one contract-aware payload before generation and a matching validation loop after code is written. It is built on interfacectl and links back to the canonical docs."
       steps={[
         {
           title: 'Compile the bundle.',
@@ -72,6 +73,7 @@ export default function GenerationQuickStartPage() {
       ]}
       snippetTitle="Copy/Paste Start"
       snippet={generationSnippet}
+      referenceCards={interfacectlGenerationReferenceCards}
       notes={[
         'prepare-generation is the local-agent handoff and keeps bundle semantics centralized in interfacectl.',
         'Generation session commands are canonical interfacectl workflow, not repo-local wrappers.',
