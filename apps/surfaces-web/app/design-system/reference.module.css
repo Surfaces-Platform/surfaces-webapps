@@ -904,6 +904,11 @@
   background: var(--sp-color-mist);
 }
 
+.resourcePreview.dark {
+  border-color: var(--sp-color-graphite);
+  background: var(--sp-color-ink);
+}
+
 .resourcePreview img {
   max-width: 72%;
   max-height: 74px;

@@ -782,22 +782,22 @@ function ResourcePreviewStage({ item }: { item: ResourceItem }) {
   }
 
   if (item.preview === "social") {
-    return <span className={`${styles.resourcePreview} ${styles.socialPreview}`}><img src={logo.social} alt="" loading="lazy" /></span>;
+    return <span className={`${styles.resourcePreview} ${styles.socialPreview}`}><img src={logo.social} alt="" loading="eager" decoding="async" /></span>;
   }
 
   if (item.preview === "app") {
-    return <span className={`${styles.resourcePreview} ${styles.iconPreview}`}><img src={logo.appIcon} alt="" loading="lazy" /></span>;
+    return <span className={`${styles.resourcePreview} ${styles.iconPreview}`}><img src={logo.appIcon} alt="" loading="eager" decoding="async" /></span>;
   }
 
   if (item.preview === "reverse") {
-    return <span className={`${styles.resourcePreview} ${styles.dark} ${item.href.endsWith(".zip") ? styles.lockupPreview : styles.iconPreview}`}><img src={item.href.endsWith(".zip") ? logo.lockupReverse : item.href} alt="" loading="lazy" /></span>;
+    return <span className={`${styles.resourcePreview} ${styles.dark} ${item.href.endsWith(".zip") ? styles.lockupPreview : styles.iconPreview}`}><img src={item.href.endsWith(".zip") ? logo.lockupReverse : item.href} alt="" loading="eager" decoding="async" /></span>;
   }
 
   if (item.preview === "mark") {
-    return <span className={`${styles.resourcePreview} ${styles.iconPreview}`}><img src={item.href} alt="" loading="lazy" /></span>;
+    return <span className={`${styles.resourcePreview} ${styles.iconPreview}`}><img src={item.href} alt="" loading="eager" decoding="async" /></span>;
   }
 
-  return <span className={styles.resourcePreview}><img src={item.href} alt="" loading="lazy" /></span>;
+  return <span className={styles.resourcePreview}><img src={item.href} alt="" loading="eager" decoding="async" /></span>;
 }
 
 export const referencePages = pages;
