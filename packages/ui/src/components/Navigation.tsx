@@ -293,27 +293,27 @@ export default function Navigation({
     {
       id: 'surfaces',
       name: 'surfaces.systems',
-      descriptor: 'Canonical source of interface truth'
+      descriptor: 'Product decisions for generated UI'
     },
     {
       id: 'surfaceops',
       name: 'surfaceops.ai',
-      descriptor: 'Operational enforcement and monitoring'
+      descriptor: 'Review operations for product teams'
     },
     {
       id: 'interfacectl',
       name: 'interfacectl.com',
-      descriptor: 'Executable interface control'
+      descriptor: 'Interface checks for engineering teams'
     },
     {
       id: 'surfaces-dev',
       name: 'surfaces.dev',
-      descriptor: 'Developer documentation and reference'
+      descriptor: 'Reference material for builders'
     },
     {
       id: 'judgmentkit',
       name: 'judgmentkit.ai',
-      descriptor: 'Embedded MCP judgment for live design decisions'
+      descriptor: 'Guided review for unclear decisions'
     }
   ];
 
@@ -415,6 +415,8 @@ export default function Navigation({
           <div style={{ position: 'relative' }}>
             <button
               onClick={() => setSystemMenuOpen(!systemMenuOpen)}
+              aria-expanded={systemMenuOpen}
+              aria-haspopup="menu"
               style={{
                 fontSize: '14px',
                 fontWeight: 400,

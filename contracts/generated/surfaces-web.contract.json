@@ -2,12 +2,24 @@
   "$schema": "https://contracts.surfaces.local/web.surface.contract.schema.json",
   "color": {
     "allowedValues": [
-      "#475569",
-      "#e2e8f0",
-      "#ffffff",
-      "rgba(255, 255, 255, 0.8)",
       "var(--background)",
-      "var(--foreground)"
+      "var(--foreground)",
+      "var(--sp-color-ash)",
+      "var(--sp-color-graphite)",
+      "var(--sp-color-ink)",
+      "var(--sp-color-line)",
+      "var(--sp-color-mist)",
+      "var(--sp-color-paper)",
+      "var(--sp-color-steel)",
+      "var(--sp-color-white)",
+      "var(--sp-ui-danger-bg)",
+      "var(--sp-ui-danger-text)",
+      "var(--sp-ui-info-bg)",
+      "var(--sp-ui-info-text)",
+      "var(--sp-ui-success-bg)",
+      "var(--sp-ui-success-text)",
+      "var(--sp-ui-warning-bg)",
+      "var(--sp-ui-warning-text)"
     ],
     "policy": "warn"
   },
@@ -70,7 +82,10 @@
   "tokens": {
     "layout": {
       "allowedTokens": [
-        "var(--contract-max-width)"
+        "var(--contract-max-width)",
+        "var(--sp-radius-lg)",
+        "var(--sp-radius-md)",
+        "var(--sp-radius-sm)"
       ],
       "policy": "warn",
       "tokenMetadata": [
@@ -81,6 +96,30 @@
           ],
           "normalizedValue": "1120px",
           "token": "var(--contract-max-width)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "border-radius"
+          ],
+          "normalizedValue": "8px",
+          "token": "var(--sp-radius-lg)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "border-radius"
+          ],
+          "normalizedValue": "6px",
+          "token": "var(--sp-radius-md)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "border-radius"
+          ],
+          "normalizedValue": "4px",
+          "token": "var(--sp-radius-sm)"
         }
       ]
     },
@@ -130,8 +169,7 @@
   "x_extracted": {
     "authAware": true,
     "designSystemComponents": [
-      "Navigation",
-      "ReleaseUpdatesPanel"
+      "Navigation"
     ],
     "hasShell": true,
     "routes": [
@@ -143,7 +181,9 @@
       "/auth/logout",
       "/auth/session",
       "/demos/ci",
-      "/demos/generation"
+      "/demos/generation",
+      "/design-system",
+      "/design-system/[section]"
     ]
   }
 }

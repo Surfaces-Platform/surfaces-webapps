@@ -71,15 +71,20 @@ describe("Navigation", () => {
 
   it("includes judgmentkit.ai as a same-tab shared system dropdown item", async () => {
     await renderNavigation();
+    expect(getSystemMenuButton().getAttribute("aria-haspopup")).toBe("menu");
+    expect(getSystemMenuButton().getAttribute("aria-expanded")).toBe("false");
+
     await openSystemMenu();
 
     const judgmentKitLink = getDropdownLink("judgmentkit.ai");
 
+    expect(getSystemMenuButton().getAttribute("aria-expanded")).toBe("true");
     expect(judgmentKitLink.href).toBe("http://localhost:3004/");
     expect(judgmentKitLink.getAttribute("target")).toBeNull();
     expect(judgmentKitLink.getAttribute("rel")).toBeNull();
     expect(judgmentKitLink.querySelector("svg")).toBeNull();
-    expect(container.textContent).toContain("Embedded MCP judgment for live design decisions");
+    expect(container.textContent).toContain("Guided review for unclear decisions");
+    expect(container.textContent).not.toContain("Embedded MCP judgment for live design decisions");
   });
 
   it("does not render utility links in the shared site header", async () => {

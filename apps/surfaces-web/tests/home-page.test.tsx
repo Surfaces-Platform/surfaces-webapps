@@ -44,18 +44,28 @@ vi.mock("@surfaces/ui/components/Navigation", async () => {
 import Home from "@/app/page";
 
 describe("surfaces.systems home page", () => {
-  it("renders release updates in the hero and removes the old CTA sections", () => {
+  it("renders the 12B landing page with required contract sections", () => {
     const html = renderToStaticMarkup(React.createElement(Home));
-    const releaseUpdatesMatches = html.match(/Get release updates/g) ?? [];
 
-    expect(html).toContain("Get release updates");
-    expect(html).toContain("data-testid=\"release-updates-panel\"");
-    expect(releaseUpdatesMatches).toHaveLength(1);
+    expect(html).toContain("AI can make a screen. Your team decides what belongs.");
+    expect(html).toContain("Looks right is the dangerous part.");
+    expect(html).toContain("The few questions that change the outcome.");
+    expect(html).toContain("Make the next generated screen easier to review.");
+    expect(html).toContain("Request access");
+    expect(html).toContain("b2b-renewal-unguided.png");
+    expect(html).toContain("b2b-renewal-guided.png");
+    expect(html).toContain('data-contract-section="landing.hero"');
+    expect(html).toContain('data-contract-section="landing.demos"');
+    expect(html).toContain('data-contract-section="landing.guidance"');
+    expect(html).toContain('data-contract-section="landing.actions"');
+    expect(html).toContain('data-contract="page-container"');
+    expect(html).not.toContain("Get release updates");
+    expect(html).not.toContain("Canonical source of interface truth");
+    expect(html).not.toContain("Proof check");
+    expect(html).not.toContain("CI-style check");
     expect(html).not.toContain("See the demos");
     expect(html).not.toContain("Read the philosophy");
     expect(html).not.toContain("Start with Surfaces");
     expect(html).not.toContain("View documentation");
-    expect(html).toContain('data-contract-section="landing.actions"');
-    expect(html).toContain('aria-hidden="true"');
   });
 });

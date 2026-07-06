@@ -3,8 +3,7 @@
   "extracted": {
     "authAware": true,
     "designSystemComponents": [
-      "Navigation",
-      "ReleaseUpdatesPanel"
+      "Navigation"
     ],
     "hasShell": true,
     "routes": [
@@ -16,7 +15,9 @@
       "/auth/logout",
       "/auth/session",
       "/demos/ci",
-      "/demos/generation"
+      "/demos/generation",
+      "/design-system",
+      "/design-system/[section]"
     ]
   },
   "surfaceId": "surfaces-web",

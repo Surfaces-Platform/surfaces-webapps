@@ -8,8 +8,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Surfaces Platform - Canonical source of interface truth",
-  description: "Surfaces is the system layer that defines, enforces, and operates interface contracts across modern software and AI systems.",
+  title: "Surfaces Platform - Product decisions for AI-generated UI",
+  description:
+    "Surfaces keeps the decision behind an AI-generated interface visible before anyone treats the work as ready.",
 };
 
 export default function RootLayout({
