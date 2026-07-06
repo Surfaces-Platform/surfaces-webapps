@@ -125,12 +125,15 @@ describe("Surfaces Design System reference", () => {
     const listing = execFileSync("unzip", ["-l", kitPath], { encoding: "utf8" });
     const mark = execFileSync("unzip", ["-p", kitPath, "surfaces-mark.svg"], { encoding: "utf8" });
     const readme = execFileSync("unzip", ["-p", kitPath, "README.txt"], { encoding: "utf8" });
+    const zippedBrandTokens = execFileSync("unzip", ["-p", kitPath, "surfaces.tokens.json"], { encoding: "utf8" });
 
     expect(existsSync(kitPath)).toBe(true);
     expect(existsSync("public/design-system/brand-kit/surfaces-brand-kit-v1.0.zip")).toBe(false);
     expect(listing).toContain("surfaces.tokens.json");
     expect(listing).toContain("surfaces.product.tokens.json");
     expect(readme).toContain("Version 0.2.0");
+    expect(readme).not.toMatch(/\/Users\/|SurfacesBrand/);
+    expect(zippedBrandTokens).not.toMatch(/\/Users\/|SurfacesBrand/);
     expect(mark).toContain('points="14,14 50,6 50,19 14,27"');
     expect(mark).toContain("#0B0D0E");
   });
