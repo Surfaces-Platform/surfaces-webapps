@@ -1,8 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="surfaces-app-icon-title surfaces-app-icon-desc">
-  <title id="surfaces-app-icon-title">Surfaces app icon</title>
-  <desc id="surfaces-app-icon-desc">Dark app icon with the compact Surfaces mark.</desc>
-  <rect width="1024" height="1024" rx="176" fill="#0D0D0D"/>
-  <g transform="translate(256 256) scale(8)">
-    <path fill="#F7F7F4" fill-rule="evenodd" clip-rule="evenodd" d="M16 8H48C50.209 8 52 9.791 52 12V52C52 54.209 50.209 56 48 56H16C13.791 56 12 54.209 12 52V12C12 9.791 13.791 8 16 8ZM20 16H44V25H20V16ZM20 28H36V37H20V28ZM28 40H44V49H28V40Z"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Surfaces Simple Slab app icon</title>
+  <desc id="desc">Rounded-square app icon with the Simple Slab mark.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#24282B"/>
+      <stop offset="1" stop-color="#050606"/>
+    </linearGradient>
+  </defs>
+  <rect x="64" y="64" width="896" height="896" rx="190" fill="url(#bg)"/>
+  <g transform="translate(238 238) scale(8.55)" shape-rendering="geometricPrecision">
+    <polygon points="14,14 50,6 50,19 14,27" fill="#F7F6F2"/>
+    <polygon points="10,29 50,29 50,40 10,40" fill="#F7F6F2"/>
+    <polygon points="14,43 50,51 50,58 14,50" fill="#8B9096"/>
   </g>
 </svg>

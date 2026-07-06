@@ -1,5 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="surfaces-mark-grayscale-reverse-title surfaces-mark-grayscale-reverse-desc">
-  <title id="surfaces-mark-grayscale-reverse-title">Surfaces grayscale reverse mark</title>
-  <desc id="surfaces-mark-grayscale-reverse-desc">A compact grayscale Surfaces mark for dark backgrounds.</desc>
-  <path fill="#F7F7F4" fill-rule="evenodd" clip-rule="evenodd" d="M16 8H48C50.209 8 52 9.791 52 12V52C52 54.209 50.209 56 48 56H16C13.791 56 12 54.209 12 52V12C12 9.791 13.791 8 16 8ZM20 16H44V25H20V16ZM20 28H36V37H20V28ZM28 40H44V49H28V40Z"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">Surfaces Simple Slab mark reversed</title>
+  <desc id="desc">Three-slab mark for dark backgrounds.</desc>
+  <g shape-rendering="geometricPrecision">
+    <polygon points="14,14 50,6 50,19 14,27" fill="#F7F6F2"/>
+    <polygon points="10,29 50,29 50,40 10,40" fill="#F7F6F2"/>
+    <polygon points="14,43 50,51 50,58 14,50" fill="#8B9096"/>
+  </g>
 </svg>

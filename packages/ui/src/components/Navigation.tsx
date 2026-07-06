@@ -262,27 +262,27 @@ export default function Navigation({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Color tokens - matching specification exactly
+  // Color tokens from the active Simple Slab system.
   const colors = {
     light: {
       background: 'rgba(255, 255, 255, 0.98)',
-      text: '#171717',
-      textMuted: '#525252',
-      border: '#E5E5E5',
+      text: '#0B0D0E',
+      textMuted: '#555B60',
+      border: '#DAD7CF',
       menuBg: '#FFFFFF',
-      menuBorder: '#E5E5E5',
-      menuActive: '#F5F5F5',
-      menuHover: '#FAFAFA'
+      menuBorder: '#DAD7CF',
+      menuActive: '#F7F6F2',
+      menuHover: '#F7F6F2'
     },
     dark: {
-      background: 'rgba(23, 23, 23, 0.98)',
-      text: '#FFFFFF',
-      textMuted: '#A3A3A3',
-      border: '#262626',
-      menuBg: '#171717',
-      menuBorder: '#525252',
-      menuActive: '#262626',
-      menuHover: '#1F1F1F'
+      background: 'rgba(11, 13, 14, 0.98)',
+      text: '#F7F6F2',
+      textMuted: '#8B9096',
+      border: '#3C4145',
+      menuBg: '#0B0D0E',
+      menuBorder: '#555B60',
+      menuActive: '#3C4145',
+      menuHover: '#3C4145'
     }
   };
 
@@ -507,12 +507,12 @@ export default function Navigation({
                             padding: '12px',
                             textDecoration: 'none',
                             borderRadius: '4px',
-                            backgroundColor: isCurrent ? (theme === 'light' ? '#F5F5F5' : '#262626') : 'transparent',
+                            backgroundColor: isCurrent ? activeTheme.menuActive : 'transparent',
                             transition: 'background-color 0.12s linear'
                           }}
                           onMouseEnter={(e) => {
                             if (!isCurrent) {
-                              e.currentTarget.style.backgroundColor = theme === 'light' ? '#FAFAFA' : '#1F1F1F';
+                              e.currentTarget.style.backgroundColor = activeTheme.menuHover;
                             }
                           }}
                           onMouseLeave={(e) => {

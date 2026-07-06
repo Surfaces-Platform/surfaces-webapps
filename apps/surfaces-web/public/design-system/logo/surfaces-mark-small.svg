@@ -1,5 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="surfaces-mark-small-title surfaces-mark-small-desc">
-  <title id="surfaces-mark-small-title">Surfaces small mark</title>
-  <desc id="surfaces-mark-small-desc">A simplified one-color Surfaces mark for 16 to 24 pixel use.</desc>
-  <path fill="#0D0D0D" fill-rule="evenodd" clip-rule="evenodd" d="M16 8H48C50.209 8 52 9.791 52 12V52C52 54.209 50.209 56 48 56H16C13.791 56 12 54.209 12 52V12C12 9.791 13.791 8 16 8ZM20 19H44V29H20V19ZM20 35H44V45H20V35Z"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">Surfaces Simple Slab small mark</title>
+  <desc id="desc">Three simple surface slabs arranged as a compact scalable mark.</desc>
+  <g shape-rendering="geometricPrecision">
+    <polygon points="14,14 50,6 50,19 14,27" fill="#0B0D0E"/>
+    <polygon points="10,29 50,29 50,40 10,40" fill="#0B0D0E"/>
+    <polygon points="14,43 50,51 50,58 14,50" fill="#8B9096"/>
+  </g>
 </svg>

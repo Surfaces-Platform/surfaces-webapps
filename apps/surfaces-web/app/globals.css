@@ -2,24 +2,23 @@
 @import "tailwindcss";
 
 :root {
-  --background: #F7F7F4;
-  --foreground: #0D0D0D;
+  --background: #F7F6F2;
+  --foreground: #0B0D0E;
   --contract-max-width: 1120px;
   --contract-motion-duration: 120ms;
   --contract-motion-timing: linear;
   --font-inter: 'Inter', sans-serif;
-  --sp-color-ink: #0D0D0D;
-  --sp-color-graphite: #242424;
-  --sp-color-steel: #575757;
-  --sp-color-ash: #767676;
-  --sp-color-line: #B8B8B2;
-  --sp-color-plane: #D6D6D0;
-  --sp-color-mist: #EFEFEC;
-  --sp-color-paper: #F7F7F4;
+  --sp-color-ink: #0B0D0E;
+  --sp-color-graphite: #3C4145;
+  --sp-color-steel: #555B60;
+  --sp-color-ash: #8B9096;
+  --sp-color-line: #DAD7CF;
+  --sp-color-plane: #DAD7CF;
+  --sp-color-mist: #F7F6F2;
+  --sp-color-paper: #F7F6F2;
   --sp-color-white: #FFFFFF;
-  --sp-ui-info-bg: #E8EEF2;
-  --sp-ui-info-text: #1E4E63;
-  --sp-ui-focus-ring: #0D0D0D;
+  --sp-ui-proof: #00A7C8;
+  --sp-ui-focus-ring: #0B0D0E;
   --sp-radius-sm: 4px;
   --sp-radius-md: 6px;
   --sp-radius-lg: 8px;
@@ -330,7 +329,7 @@ body {
 
 .preview-proof-layer > div {
   padding-top: 18px;
-  border-top: 2px solid var(--sp-ui-info-text);
+  border-top: 2px solid var(--sp-ui-proof);
 }
 
 .preview-proof-layer + .preview-section-head {
@@ -459,7 +458,7 @@ body {
   background: var(--sp-color-white);
   border-radius: var(--sp-radius-lg);
   padding: clamp(2.5rem, 4vw, 4.25rem);
-  box-shadow: 0 18px 72px rgba(13, 13, 13, 0.08);
+  box-shadow: 0 18px 72px rgba(11, 13, 14, 0.08);
 }
 
 .contract-motion {

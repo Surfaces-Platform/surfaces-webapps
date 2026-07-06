@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 92" role="img" aria-labelledby="surfaces-wordmark-title surfaces-wordmark-desc">
-  <title id="surfaces-wordmark-title">Surfaces wordmark</title>
-  <desc id="surfaces-wordmark-desc">A refined typographic Surfaces wordmark.</desc>
-  <text x="0" y="66" fill="#0D0D0D" font-family="Inter, SF Pro Display, Helvetica Neue, Arial, sans-serif" font-size="64" font-weight="620">Surfaces</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="184" viewBox="0 0 720 184" role="img" aria-labelledby="title desc">
+  <title id="title">Surfaces wordmark</title>
+  <desc id="desc">Surfaces wordmark for the Simple Slab identity system.</desc>
+  <text x="0" y="132" fill="#0B0D0E" font-family="Geist, Inter, Arial, sans-serif" font-size="128" font-weight="780" letter-spacing="0">Surfaces</text>
 </svg>

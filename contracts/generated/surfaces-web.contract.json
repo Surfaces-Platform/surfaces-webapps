@@ -11,15 +11,7 @@
       "var(--sp-color-mist)",
       "var(--sp-color-paper)",
       "var(--sp-color-steel)",
-      "var(--sp-color-white)",
-      "var(--sp-ui-danger-bg)",
-      "var(--sp-ui-danger-text)",
-      "var(--sp-ui-info-bg)",
-      "var(--sp-ui-info-text)",
-      "var(--sp-ui-success-bg)",
-      "var(--sp-ui-success-text)",
-      "var(--sp-ui-warning-bg)",
-      "var(--sp-ui-warning-text)"
+      "var(--sp-color-white)"
     ],
     "policy": "warn"
   },
