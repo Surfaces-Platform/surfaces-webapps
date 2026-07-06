@@ -83,14 +83,6 @@ export default function Home() {
 
       <main id="top" className="preview-container" data-contract="page-container">
         <section className="preview-hero" data-contract-section="landing.hero">
-          <div className="preview-brand-row" aria-hidden="true">
-            <svg className="preview-brand-mark" viewBox="0 0 64 64" focusable="false">
-              <polygon points="14,14 50,6 50,19 14,27" />
-              <polygon points="10,29 50,29 50,40 10,40" />
-              <polygon className="preview-brand-mark-muted" points="14,43 50,51 50,58 14,50" />
-            </svg>
-            <span>Surfaces Platform</span>
-          </div>
           <h1>AI can make a screen. Your team decides what belongs.</h1>
           <p className="preview-lead">
             Surfaces makes the design rationale visible before a generated screen moves into

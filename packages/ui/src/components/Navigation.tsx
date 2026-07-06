@@ -319,7 +319,7 @@ export default function Navigation({
 
   // System identifier display name
   const identifiers: Record<NavigationSurfaceId, string> = {
-    surfaces: 'Surfaces',
+    surfaces: 'Surfaces Platform',
     surfaceops: 'surfaceops',
     interfacectl: 'interfacectl',
     'surfaces-dev': 'surfaces.dev',
@@ -363,13 +363,33 @@ export default function Navigation({
           <a
             href="/"
             style={{
-              fontSize: '14px',
-              fontWeight: 600,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: currentSurface === 'surfaces' ? '10px' : undefined,
+              minHeight: '44px',
+              fontSize: currentSurface === 'surfaces' ? '15px' : '14px',
+              fontWeight: currentSurface === 'surfaces' ? 750 : 600,
               color: activeTheme.text,
               textDecoration: 'none',
               fontFamily: usesMonoFont ? 'JetBrains Mono, monospace' : 'Inter, sans-serif'
             }}
           >
+            {currentSurface === 'surfaces' ? (
+              <svg
+                width="34"
+                height="34"
+                viewBox="0 0 64 64"
+                aria-hidden="true"
+                focusable="false"
+                style={{ display: 'block', flex: '0 0 auto' }}
+              >
+                <g shapeRendering="geometricPrecision">
+                  <polygon points="14,14 50,6 50,19 14,27" fill={activeTheme.text} />
+                  <polygon points="10,29 50,29 50,40 10,40" fill={activeTheme.text} />
+                  <polygon points="14,43 50,51 50,58 14,50" fill={theme === 'dark' ? '#DAD7CF' : '#8B9096'} />
+                </g>
+              </svg>
+            ) : null}
             {identifiers[currentSurface]}
           </a>
 

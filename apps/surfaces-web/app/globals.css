@@ -89,27 +89,6 @@ body {
   padding: 96px 0 104px;
 }
 
-.preview-brand-row {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 56px;
-  color: var(--sp-color-graphite);
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.preview-brand-mark {
-  width: 34px;
-  height: 34px;
-  fill: var(--sp-color-ink);
-  flex: 0 0 auto;
-}
-
-.preview-brand-mark-muted {
-  fill: var(--sp-color-ash);
-}
-
 .preview-hero h1,
 .preview-section h2,
 .preview-cta h2 {
@@ -362,10 +341,6 @@ body {
   .preview-hero {
     min-height: auto;
     padding: 72px 0 84px;
-  }
-
-  .preview-brand-row {
-    margin-bottom: 38px;
   }
 
   .preview-hero h1 {
