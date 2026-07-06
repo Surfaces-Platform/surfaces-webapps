@@ -241,10 +241,10 @@ describe("Surfaces Design System reference", () => {
     }
   });
 
-  it("adds a homepage navigation link to the design system reference", () => {
+  it("does not expose the design system reference in homepage navigation", () => {
     const html = renderToStaticMarkup(<Home />);
 
-    expect(html).toContain('href="/design-system"');
-    expect(html).toContain("Design System");
+    expect(html).not.toContain('href="/design-system"');
+    expect(html).not.toContain("Design System");
   });
 });

@@ -65,8 +65,7 @@ export default function Home() {
         sections={[
           { label: 'The risk', href: '#problem' },
           { label: 'What stays visible', href: '#questions' },
-          { label: 'Request access', href: '#access' },
-          { label: 'Design System', href: '/design-system' }
+          { label: 'Request access', href: '#access' }
         ]}
         theme="light"
       />
