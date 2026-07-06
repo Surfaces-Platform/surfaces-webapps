@@ -93,8 +93,8 @@ export default function Home() {
           </div>
           <h1>AI can make a screen. Your team decides what belongs.</h1>
           <p className="preview-lead">
-            Surfaces keeps the decision beside a generated interface before anyone treats the
-            work as ready.
+            Surfaces makes the design rationale visible before a generated screen moves into
+            handoff.
           </p>
           <div className="preview-actions">
             <a className="preview-button preview-button-primary" href={accessHref}>
