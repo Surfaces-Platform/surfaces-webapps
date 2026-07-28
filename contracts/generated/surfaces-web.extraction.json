@@ -3,7 +3,7 @@
   "extracted": {
     "authAware": true,
     "designSystemComponents": [
-      "Navigation"
+      "Icon"
     ],
     "hasShell": true,
     "routes": [

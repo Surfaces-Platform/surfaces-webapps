@@ -2,6 +2,8 @@
   "$schema": "https://contracts.surfaces.local/web.surface.contract.schema.json",
   "color": {
     "allowedValues": [
+      "rgba(11, 13, 14, 0.08)",
+      "rgba(11, 13, 14, 0.98)",
       "var(--background)",
       "var(--foreground)",
       "var(--sp-color-ash)",
@@ -11,7 +13,17 @@
       "var(--sp-color-mist)",
       "var(--sp-color-paper)",
       "var(--sp-color-steel)",
-      "var(--sp-color-white)"
+      "var(--sp-color-white)",
+      "var(--sp-ui-action-fg)",
+      "var(--sp-ui-action)",
+      "var(--sp-ui-bg)",
+      "var(--sp-ui-border)",
+      "var(--sp-ui-fg-muted)",
+      "var(--sp-ui-fg-secondary)",
+      "var(--sp-ui-fg)",
+      "var(--sp-ui-proof)",
+      "var(--sp-ui-secondary-fg)",
+      "var(--sp-ui-surface)"
     ],
     "policy": "warn"
   },
@@ -75,15 +87,17 @@
     "layout": {
       "allowedTokens": [
         "var(--contract-max-width)",
-        "var(--sp-radius-lg)",
-        "var(--sp-radius-md)",
-        "var(--sp-radius-sm)"
+        "var(--jk-font-size-title)",
+        "var(--jk-radius-control)",
+        "var(--jk-radius-panel)",
+        "var(--sp-radius-md)"
       ],
       "policy": "warn",
       "tokenMetadata": [
         {
           "aliases": [],
           "attributes": [
+            "max-width",
             "width"
           ],
           "normalizedValue": "1120px",
@@ -92,10 +106,30 @@
         {
           "aliases": [],
           "attributes": [
+            "max-width"
+          ],
+          "normalizedValue": "32px",
+          "token": "var(--jk-font-size-title)"
+        },
+        {
+          "aliases": [
+            "var(--sp-radius-sm)"
+          ],
+          "attributes": [
+            "border-radius"
+          ],
+          "normalizedValue": "4px",
+          "token": "var(--jk-radius-control)"
+        },
+        {
+          "aliases": [
+            "var(--sp-radius-lg)"
+          ],
+          "attributes": [
             "border-radius"
           ],
           "normalizedValue": "8px",
-          "token": "var(--sp-radius-lg)"
+          "token": "var(--jk-radius-panel)"
         },
         {
           "aliases": [],
@@ -104,14 +138,6 @@
           ],
           "normalizedValue": "6px",
           "token": "var(--sp-radius-md)"
-        },
-        {
-          "aliases": [],
-          "attributes": [
-            "border-radius"
-          ],
-          "normalizedValue": "4px",
-          "token": "var(--sp-radius-sm)"
         }
       ]
     },
@@ -142,7 +168,17 @@
     },
     "typography": {
       "allowedTokens": [
-        "var(--font-inter)"
+        "var(--font-inter)",
+        "var(--jk-font-size-body-large)",
+        "var(--jk-font-size-body)",
+        "var(--jk-font-size-caption)",
+        "var(--jk-font-size-display)",
+        "var(--jk-font-size-heading)",
+        "var(--jk-font-size-label)",
+        "var(--jk-font-size-title)",
+        "var(--jk-letter-spacing-default)",
+        "var(--jk-line-height-default)",
+        "var(--jk-line-height-tight)"
       ],
       "policy": "warn",
       "tokenMetadata": [
@@ -153,6 +189,86 @@
           ],
           "normalizedValue": "inter, sans-serif",
           "token": "var(--font-inter)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "font-size"
+          ],
+          "normalizedValue": "20px",
+          "token": "var(--jk-font-size-body-large)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "font-size"
+          ],
+          "normalizedValue": "16px",
+          "token": "var(--jk-font-size-body)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "font-size"
+          ],
+          "normalizedValue": "12px",
+          "token": "var(--jk-font-size-caption)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "font-size"
+          ],
+          "normalizedValue": "40px",
+          "token": "var(--jk-font-size-display)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "font-size"
+          ],
+          "normalizedValue": "24px",
+          "token": "var(--jk-font-size-heading)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "font-size"
+          ],
+          "normalizedValue": "14px",
+          "token": "var(--jk-font-size-label)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "font-size"
+          ],
+          "normalizedValue": "32px",
+          "token": "var(--jk-font-size-title)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "letter-spacing"
+          ],
+          "normalizedValue": "0px",
+          "token": "var(--jk-letter-spacing-default)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "line-height"
+          ],
+          "normalizedValue": "1.45",
+          "token": "var(--jk-line-height-default)"
+        },
+        {
+          "aliases": [],
+          "attributes": [
+            "line-height"
+          ],
+          "normalizedValue": "1.15",
+          "token": "var(--jk-line-height-tight)"
         }
       ]
     }
@@ -161,7 +277,7 @@
   "x_extracted": {
     "authAware": true,
     "designSystemComponents": [
-      "Navigation"
+      "Icon"
     ],
     "hasShell": true,
     "routes": [
