@@ -599,6 +599,10 @@ body.menu-open {
   content: "";
 }
 
+.surfaces-homepage .broken-loop > .loop-break::after {
+  background: var(--sp-ui-action);
+}
+
 .surfaces-homepage .loop-fragment strong,
 .surfaces-homepage .loop-fragment > span:last-child {
   display: block;

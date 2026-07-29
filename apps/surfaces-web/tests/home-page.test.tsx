@@ -1,10 +1,13 @@
 // @vitest-environment jsdom
 
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import React from "react";
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import Home from "@/app/page";
 
+const homepageCss = readFileSync(resolve(process.cwd(), "app/homepage.css"), "utf8");
 const reviewHref =
   "mailto:hello@surfaces.systems?subject=Request%20a%20workflow%20review&body=Generated%20workflow%20or%20screen%3A%0ADecision%20your%20team%20needs%20to%20make%3A%0AProduct%20rules%20or%20design-system%20source%3A";
 
@@ -58,6 +61,19 @@ describe("surfaces.systems home page", () => {
     expect(page.querySelectorAll("[style]")).toHaveLength(0);
     expect(html).not.toContain("AI can make a screen. Your team decides what belongs.");
     expect(html).not.toContain("Request access");
+  });
+
+  it("keeps the decision-break connector on the action surface", () => {
+    const { page } = renderHomeDocument();
+
+    expect(
+      page.querySelector(
+        ".broken-loop > .loop-break + .loop-fragment-muted",
+      ),
+    ).not.toBeNull();
+    expect(homepageCss).toMatch(
+      /\.surfaces-homepage \.broken-loop > \.loop-break::after\s*\{\s*background:\s*var\(--sp-ui-action\);\s*\}/,
+    );
   });
 
   it("uses one direct JudgmentKit link and no company dropdown", () => {

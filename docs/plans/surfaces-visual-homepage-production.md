@@ -88,6 +88,9 @@ build fails validation.
    validation, repository style validation, and Git diff checks pass.
 11. The exact committed source is deployed to the Vercel `surfaces.systems`
     production project and both apex and `www` hosts are verified.
+12. The decision-gap connector uses the background of its source segment, with
+    no contrasting diamond artifact at the “Decision unresolved” boundary in
+    light or dark rendering.
 
 ## Risks and mitigations
 
@@ -108,6 +111,10 @@ build fails validation.
   understand the product model before the problem.
   Mitigation: assert the plain-language headline, audience, primary proof
   action, and absence of the former abstract headline in app tests.
+- Risk: a shared connector style paints the wrong surface color when a segment
+  uses a contrasting background.
+  Mitigation: give the decision-break connector an explicit action-surface fill
+  and verify its computed color in light and dark rendered QA.
 
 ## Implementation outline
 
@@ -117,7 +124,8 @@ build fails validation.
    `apps/surfaces-web`.
 3. Use a root-page header with a direct JudgmentKit link and no company
    dropdown; leave the shared Navigation component untouched.
-4. Update homepage tests and regenerate contract artifacts.
+4. Keep the decision-gap connector fill aligned with the segment it visually
+   continues, update homepage tests, and regenerate contract artifacts.
 5. Run static, contract, responsive, light/dark, and production-build checks.
 6. Commit and push the scoped branch, deploy that exact commit to production,
    and verify `surfaces.systems` and `www.surfaces.systems`.
