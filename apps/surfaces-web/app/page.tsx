@@ -47,7 +47,7 @@ const websiteSchema = {
   name: "Surfaces Platform",
   url: "https://surfaces.systems/",
   description:
-    "Surfaces is being built to connect interface exploration, product context, runtime experimentation, and outcome learning. The current offer is a guided workflow review.",
+    "Surfaces helps design-system and platform teams compare AI-generated interface directions, test them in product context, and decide what should ship.",
 };
 
 export default function Home() {

@@ -2,10 +2,11 @@
 
 ## Summary
 
-Replace the root `surfaces.systems` landing page with the reviewed visual-first
-homepage. The page explains the Surfaces product direction through one worked
-experiment, keeps current availability bounded to a guided workflow review, and
-uses one direct external navigation link to `judgmentkit.ai`.
+Keep the root `surfaces.systems` landing page visual-first while making its
+problem and payoff legible on the first phone screen. The hero now tells
+design-system and platform teams that Surfaces helps them decide which
+AI-generated interface should ship, then leads into one worked experiment
+before offering a guided workflow review.
 
 For the root homepage, this plan supersedes the multi-site dropdown direction
 described in `judgmentkit-shared-header.md`. The shared Navigation component and
@@ -71,20 +72,21 @@ build fails validation.
 
 ## Acceptance criteria
 
-1. The hero reads “Turn interface ideas into product evidence.”
+1. The hero reads “AI can generate options. Surfaces helps your team decide what should ship.”
 2. The worked experiment remains the primary explanatory artifact.
-3. The header link order is example, product direction, JudgmentKit, workflow
+3. “See one decision end to end” is the primary hero action and links to the worked experiment.
+4. The header link order is example, product direction, JudgmentKit, workflow
    review.
-4. `https://judgmentkit.ai/` is the only HTTP(S) external anchor on the page,
+5. `https://judgmentkit.ai/` is the only HTTP(S) external anchor on the page,
    opens in the same tab, and has no dropdown treatment.
-5. The three workflow-review calls to action use the same scoped `mailto:`.
-6. Required contract sections occur once and in the required order.
-7. Light and dark themes render without authored inline styles.
-8. Desktop and mobile navigation, full-bleed hero integration, keyboard escape,
+6. The three workflow-review calls to action use the same scoped `mailto:`.
+7. Required contract sections occur once and in the required order.
+8. Light and dark themes render without authored inline styles.
+9. Desktop and mobile navigation, full-bleed hero integration, keyboard escape,
    focus restoration, and page overflow pass rendered QA.
-9. App tests, lint, type-check, build, contract generation, extracted-contract
+10. App tests, lint, type-check, build, contract generation, extracted-contract
    validation, repository style validation, and Git diff checks pass.
-10. The exact committed source is deployed to the Vercel `surfaces.systems`
+11. The exact committed source is deployed to the Vercel `surfaces.systems`
     production project and both apex and `www` hosts are verified.
 
 ## Risks and mitigations
@@ -102,6 +104,10 @@ build fails validation.
 - Risk: the visual direction overstates current availability.
   Mitigation: retain “Illustrative model · no customer results” and distinguish
   the guided review from broader product direction.
+- Risk: the hero drifts back toward category language that requires visitors to
+  understand the product model before the problem.
+  Mitigation: assert the plain-language headline, audience, primary proof
+  action, and absence of the former abstract headline in app tests.
 
 ## Implementation outline
 

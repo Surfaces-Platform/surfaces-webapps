@@ -9,18 +9,18 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://surfaces.systems"),
-  title: "Turn Interface Ideas Into Product Evidence | Surfaces Platform",
+  title: "Decide Which AI-Generated Interface Should Ship | Surfaces Platform",
   description:
-    "Explore the Surfaces product direction for turning interface ideas into product evidence, and request a guided review of one generated workflow.",
+    "Compare AI-generated interface directions, test selected variants in product context, and use outcomes to decide what should move forward.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
     type: "website",
     siteName: "Surfaces Platform",
-    title: "Turn interface ideas into product evidence.",
+    title: "AI can generate options. Surfaces helps your team decide what should ship.",
     description:
-      "Explore the Surfaces product direction for turning interface ideas into product evidence, and request a guided review of one generated workflow.",
+      "Compare AI-generated interface directions, test selected variants in product context, and use outcomes to decide what should move forward.",
     url: "/",
     images: [
       {
@@ -33,9 +33,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Turn interface ideas into product evidence.",
+    title: "AI can generate options. Surfaces helps your team decide what should ship.",
     description:
-      "Explore the Surfaces product direction for turning interface ideas into product evidence, and request a guided review of one generated workflow.",
+      "Compare AI-generated interface directions, test selected variants in product context, and use outcomes to decide what should move forward.",
     images: ["/assets/surfaces-platform-og.png"],
   },
 };

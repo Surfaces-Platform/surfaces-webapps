@@ -25,7 +25,20 @@ describe("surfaces.systems home page", () => {
     );
 
     expect(page.querySelector("h1")?.textContent).toBe(
-      "Turn interface ideas into product evidence.",
+      "AI can generate options. Surfaces helps your team decide what should ship.",
+    );
+    expect(page.querySelector(".eyebrow")?.textContent?.replace(/\s+/g, " ").trim()).toBe(
+      "For design-system and platform teams",
+    );
+    expect(
+      page.querySelector(".hero-lead")?.textContent?.replace(/\s+/g, " ").trim(),
+    ).toBe(
+      "Compare interface directions, test the strongest one in product context, and use outcomes to decide what moves forward.",
+    );
+    expect(html).toContain("See one decision end to end");
+    expect(html).not.toContain("Turn interface ideas into product evidence.");
+    expect(html).not.toContain(
+      "Product direction for design-system and platform teams",
     );
     expect(html).toContain("One experiment—from directions to a decision.");
     expect(html).toContain("One continuous design loop.");
@@ -81,6 +94,17 @@ describe("surfaces.systems home page", () => {
     expect(new Set(reviewLinks.map((link) => link.getAttribute("href")))).toEqual(
       new Set([reviewHref]),
     );
+    const heroActions = Array.from(page.querySelectorAll(".hero .action-row a"));
+    expect(heroActions.map((link) => link.getAttribute("href"))).toEqual([
+      "#example",
+      reviewHref,
+    ]);
+    expect(
+      heroActions.map((link) => link.textContent?.replace(/\s+/g, " ").trim()),
+    ).toEqual([
+      "See one decision end to end",
+      "Request a workflow review",
+    ]);
     expect(page.querySelectorAll('header [aria-haspopup="menu"]')).toHaveLength(0);
     expect(page.querySelectorAll('header [role="menu"]')).toHaveLength(0);
     expect(page.querySelectorAll('header [role="menuitem"]')).toHaveLength(0);
