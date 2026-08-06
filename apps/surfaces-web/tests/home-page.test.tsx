@@ -28,7 +28,7 @@ describe("surfaces.systems home page", () => {
     );
 
     expect(page.querySelector("h1")?.textContent).toBe(
-      "AI can generate options. Surfaces helps your team decide what should ship.",
+      "AI can generate options. Surfaces helps your team decide what to ship.",
     );
     expect(page.querySelector(".eyebrow")?.textContent?.replace(/\s+/g, " ").trim()).toBe(
       "For design-system and platform teams",

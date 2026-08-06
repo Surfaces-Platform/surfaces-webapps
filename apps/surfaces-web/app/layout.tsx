@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "Surfaces Platform",
-    title: "AI can generate options. Surfaces helps your team decide what should ship.",
+    title: "AI can generate options. Surfaces helps your team decide what to ship.",
     description:
       "Compare AI-generated interface directions, test selected variants in product context, and use outcomes to decide what should move forward.",
     url: "/",
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "AI can generate options. Surfaces helps your team decide what should ship.",
+    title: "AI can generate options. Surfaces helps your team decide what to ship.",
     description:
       "Compare AI-generated interface directions, test selected variants in product context, and use outcomes to decide what should move forward.",
     images: ["/assets/surfaces-platform-og.png"],

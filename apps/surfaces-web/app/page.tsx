@@ -47,7 +47,7 @@ const websiteSchema = {
   name: "Surfaces Platform",
   url: "https://surfaces.systems/",
   description:
-    "Surfaces helps design-system and platform teams compare AI-generated interface directions, test them in product context, and decide what should ship.",
+    "Surfaces helps design-system and platform teams compare AI-generated interface directions, test them in product context, and decide what to ship.",
 };
 
 export default function Home() {
