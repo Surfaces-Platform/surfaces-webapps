@@ -48,7 +48,7 @@ describe("surfaces.systems home page", () => {
     expect(page.querySelector(".eyebrow")).toBeNull();
     const heroLead = page.querySelector(".hero-lead")?.textContent?.replace(/\s+/g, " ").trim();
     expect(heroLead).toBe(
-      "Resolve clear repeat violations earlier. Keep senior judgment for what’s new or contested.",
+      "Resolve clear, repeated violations sooner, so senior judgment stays focused on what’s genuinely new or contested.",
     );
     expect(
       page.querySelector("#workload-title")?.textContent?.replace(/\s+/g, " ").trim(),

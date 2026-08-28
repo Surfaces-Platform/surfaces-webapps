@@ -61,7 +61,7 @@ Validation blocks a missing or reordered required section, a return of the delet
 
 ## Acceptance criteria
 
-- The hero says `Make every release decision reusable.` and `Resolve clear repeat violations earlier. Keep senior judgment for what’s new or contested.`
+- The hero says `Make every release decision reusable.` and `Resolve clear, repeated violations sooner, so senior judgment stays focused on what’s genuinely new or contested.`
 - The hero mechanism card and its internal `Product hypothesis` label are absent; the slab image remains full-bleed.
 - The audience eyebrow and all `mailto:` links are absent.
 - The page contains only the hero, workload, and guidance contract sections, in that order.
