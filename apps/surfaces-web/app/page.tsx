@@ -33,21 +33,17 @@ function extractInnerMarkup(tagName: string, marker: string) {
 
 const markup = {
   hero: extractInnerMarkup("section", 'class="hero"'),
-  example: extractInnerMarkup("section", 'id="example"'),
-  problem: extractInnerMarkup("section", 'class="problem-section"'),
+  workload: extractInnerMarkup("section", 'id="workload"'),
   productDirection: extractInnerMarkup("section", 'id="product-direction"'),
-  trust: extractInnerMarkup("section", 'class="trust-section"'),
-  proof: extractInnerMarkup("section", 'id="proof"'),
-  designPartner: extractInnerMarkup("section", 'id="design-partner"'),
 } as const;
 
 const websiteSchema = {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  name: "Surfaces Platform",
+  name: "Surfaces",
   url: "https://surfaces.systems/",
   description:
-    "Surfaces helps design-system and platform teams compare AI-generated interface directions, test them in product context, and decide what to ship.",
+    "Surfaces is exploring how decisions about agent-produced UI changes can become reusable guidance, so clear repeat violations can be resolved before senior review.",
 };
 
 export default function Home() {
@@ -68,16 +64,11 @@ export default function Home() {
         />
 
         <section
-          id="example"
-          className="example-section"
-          aria-labelledby="example-title"
-          data-contract-section="landing.demos"
-          dangerouslySetInnerHTML={{ __html: markup.example }}
-        />
-
-        <section
+          id="workload"
           className="problem-section"
-          dangerouslySetInnerHTML={{ __html: markup.problem }}
+          aria-labelledby="workload-title"
+          data-contract-section="landing.workload"
+          dangerouslySetInnerHTML={{ __html: markup.workload }}
         />
 
         <section
@@ -88,26 +79,6 @@ export default function Home() {
           dangerouslySetInnerHTML={{ __html: markup.productDirection }}
         />
 
-        <section
-          className="trust-section"
-          aria-labelledby="trust-title"
-          dangerouslySetInnerHTML={{ __html: markup.trust }}
-        />
-
-        <section
-          id="proof"
-          className="proof-section shell"
-          aria-labelledby="proof-title"
-          dangerouslySetInnerHTML={{ __html: markup.proof }}
-        />
-
-        <section
-          id="design-partner"
-          className="partner-section"
-          aria-labelledby="design-partner-title"
-          data-contract-section="landing.actions"
-          dangerouslySetInnerHTML={{ __html: markup.designPartner }}
-        />
       </main>
 
       <footer className="site-footer">
@@ -115,7 +86,7 @@ export default function Home() {
           <Link
             className="brand footer-brand"
             href="/"
-            aria-label="Surfaces Platform home"
+            aria-label="Surfaces home"
           >
             <svg
               className="brand-mark brand-mark-reversed"
@@ -131,8 +102,8 @@ export default function Home() {
             </svg>
             <span>Surfaces</span>
           </Link>
-          <p>AI-native interface experimentation.</p>
-          <p>© {new Date().getFullYear()} Surfaces Platform</p>
+          <p>Release decisions that become reusable guidance.</p>
+          <p>© {new Date().getFullYear()} Surfaces</p>
         </div>
       </footer>
 

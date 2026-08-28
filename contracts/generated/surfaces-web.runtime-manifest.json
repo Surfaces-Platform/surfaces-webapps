@@ -11,7 +11,7 @@
   "summary": {
     "checklist": [
       {
-        "detail": "Runtime must keep sections: landing.actions, landing.demos, landing.guidance, landing.hero.",
+        "detail": "Runtime must keep sections: landing.guidance, landing.hero, landing.workload.",
         "id": "required-sections",
         "label": "Preserve required sections"
       },
@@ -29,10 +29,9 @@
     "contextIds": [],
     "mutationMode": "content-only",
     "requiredSectionIds": [
-      "landing.actions",
-      "landing.demos",
       "landing.guidance",
-      "landing.hero"
+      "landing.hero",
+      "landing.workload"
     ],
     "strictCategories": [
       "layout",
@@ -40,7 +39,7 @@
       "structure",
       "visual"
     ],
-    "text": "preserve required sections landing.actions, landing.demos, landing.guidance, landing.hero; stay within content-only mutation scope; treat layout, runtime, structure, visual as strict runtime categories."
+    "text": "preserve required sections landing.guidance, landing.hero, landing.workload; stay within content-only mutation scope; treat layout, runtime, structure, visual as strict runtime categories."
   },
   "governance": {
     "approvals": [],
@@ -69,9 +68,8 @@
         {
           "children": [
             "landing.hero",
-            "landing.demos",
-            "landing.guidance",
-            "landing.actions"
+            "landing.workload",
+            "landing.guidance"
           ],
           "description": "Root group for Surfaces Web.",
           "id": "surfaces-web.root",
@@ -87,12 +85,12 @@
           "sectionId": "landing.hero"
         },
         {
-          "description": "Links to generation-time, CI/CD, and adaptive runtime enforcement demos.",
-          "id": "landing.demos",
-          "intent": "enforcement-demos",
+          "description": "Shows the recurring work created when a release decision does not become reusable guidance.",
+          "id": "landing.workload",
+          "intent": "recurring-review-work",
           "kind": "section",
-          "label": "enforcement-demos",
-          "sectionId": "landing.demos"
+          "label": "recurring-review-work",
+          "sectionId": "landing.workload"
         },
         {
           "description": "Supplemental copy guiding users to next actions.",
@@ -101,14 +99,6 @@
           "kind": "section",
           "label": "supporting-guidance",
           "sectionId": "landing.guidance"
-        },
-        {
-          "description": "Primary calls-to-action for the surface.",
-          "id": "landing.actions",
-          "intent": "primary-actions",
-          "kind": "section",
-          "label": "primary-actions",
-          "sectionId": "landing.actions"
         }
       ],
       "rootNodeId": "surfaces-web.root",
@@ -138,14 +128,13 @@
         "policy": "strict",
         "requireTopLevelSections": [
           "landing.hero",
-          "landing.guidance",
-          "landing.actions"
+          "landing.workload",
+          "landing.guidance"
         ],
         "sectionOrder": [
           "landing.hero",
-          "landing.demos",
-          "landing.guidance",
-          "landing.actions"
+          "landing.workload",
+          "landing.guidance"
         ]
       },
       "maxContentWidth": 1120,
@@ -202,7 +191,7 @@
       "allowedComponents": [],
       "allowedSections": [
         "landing.hero",
-        "landing.demos",
+        "landing.workload",
         "landing.guidance",
         "landing.actions",
         "landing.whydesktop",
@@ -210,10 +199,9 @@
         "landing.next"
       ],
       "requiredSections": [
-        "landing.actions",
-        "landing.demos",
         "landing.guidance",
-        "landing.hero"
+        "landing.hero",
+        "landing.workload"
       ]
     },
     "visual": {

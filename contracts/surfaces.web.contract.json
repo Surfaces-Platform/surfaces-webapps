@@ -254,9 +254,9 @@
       "intent": "primary-intro"
     },
     {
-      "description": "Links to generation-time, CI/CD, and adaptive runtime enforcement demos.",
-      "id": "landing.demos",
-      "intent": "enforcement-demos"
+      "description": "Shows the recurring work created when a release decision does not become reusable guidance.",
+      "id": "landing.workload",
+      "intent": "recurring-review-work"
     },
     {
       "description": "Supplemental copy guiding users to next actions.",
@@ -462,14 +462,13 @@
           "policy": "strict",
           "requireTopLevelSections": [
             "landing.hero",
-            "landing.guidance",
-            "landing.actions"
+            "landing.workload",
+            "landing.guidance"
           ],
           "sectionOrder": [
             "landing.hero",
-            "landing.demos",
-            "landing.guidance",
-            "landing.actions"
+            "landing.workload",
+            "landing.guidance"
           ]
         },
         "maxContentWidth": 1120
@@ -483,9 +482,8 @@
       },
       "requiredSections": [
         "landing.hero",
-        "landing.demos",
-        "landing.guidance",
-        "landing.actions"
+        "landing.workload",
+        "landing.guidance"
       ],
       "type": "web"
     },

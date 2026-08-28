@@ -9,33 +9,33 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://surfaces.systems"),
-  title: "Decide Which AI-Generated Interface Should Ship | Surfaces Platform",
+  title: "Make Every Release Decision Reusable | Surfaces",
   description:
-    "Compare AI-generated interface directions, test selected variants in product context, and use outcomes to decide what should move forward.",
+    "Surfaces is exploring how decisions about agent-produced UI changes can become reusable guidance, so clear repeat violations can be resolved before senior review.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
     type: "website",
-    siteName: "Surfaces Platform",
-    title: "AI can generate options. Surfaces helps your team decide what to ship.",
+    siteName: "Surfaces",
+    title: "Make every release decision reusable.",
     description:
-      "Compare AI-generated interface directions, test selected variants in product context, and use outcomes to decide what should move forward.",
+      "Turn decisions about agent-produced UI changes into guidance that can resolve clear repeat violations before senior review.",
     url: "/",
     images: [
       {
         url: "/assets/surfaces-platform-og.png",
         width: 1280,
         height: 720,
-        alt: "Surfaces Platform",
+        alt: "Surfaces",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "AI can generate options. Surfaces helps your team decide what to ship.",
+    title: "Make every release decision reusable.",
     description:
-      "Compare AI-generated interface directions, test selected variants in product context, and use outcomes to decide what should move forward.",
+      "Turn decisions about agent-produced UI changes into guidance that can resolve clear repeat violations before senior review.",
     images: ["/assets/surfaces-platform-og.png"],
   },
 };

@@ -259,6 +259,7 @@ body.menu-open {
   align-items: center;
   justify-content: center;
   gap: 10px;
+  padding-inline: 12px;
   border: 1px solid var(--sp-color-mist);
   border-radius: var(--jk-radius-control);
   background: none;
@@ -643,6 +644,10 @@ body.menu-open {
   text-align: left;
 }
 
+.surfaces-homepage .loop-break:last-child {
+  border-right: 0;
+}
+
 .surfaces-homepage .loop-break span {
   position: relative;
   width: 56px;
@@ -815,6 +820,18 @@ body.menu-open {
 .surfaces-homepage .cycle-return strong {
   color: var(--sp-ui-fg);
   font-weight: var(--jk-font-weight-medium);
+}
+
+.surfaces-homepage .loop-note {
+  max-width: 760px;
+  margin: 24px 0 0;
+  color: var(--sp-ui-fg-muted);
+  font-size: var(--jk-font-size-label);
+  line-height: var(--jk-line-height-default);
+}
+
+.surfaces-homepage .loop-note + .loop-note {
+  margin-top: 8px;
 }
 
 .surfaces-homepage .example-section {

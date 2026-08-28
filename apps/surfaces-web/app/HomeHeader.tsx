@@ -5,9 +5,6 @@ import { Icon } from "@surfaces/ui/components/Icon";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-const reviewHref =
-  "mailto:hello@surfaces.systems?subject=Request%20a%20workflow%20review&body=Generated%20workflow%20or%20screen%3A%0ADecision%20your%20team%20needs%20to%20make%3A%0AProduct%20rules%20or%20design-system%20source%3A";
-
 export default function HomeHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -50,7 +47,7 @@ export default function HomeHeader() {
   return (
     <header className="site-header">
       <div className="shell header-inner">
-        <Link className="brand" href="/" aria-label="Surfaces Platform home">
+        <Link className="brand" href="/" aria-label="Surfaces home">
           <svg className="brand-mark" viewBox="0 0 64 64" aria-hidden="true">
             <polygon points="14,14 50,6 50,19 14,27" />
             <polygon points="10,29 50,29 50,40 10,40" />
@@ -84,17 +81,11 @@ export default function HomeHeader() {
           aria-label="Primary navigation"
           data-open={menuOpen}
         >
-          <a href="#example" onClick={closeMenu}>
-            See the example
+          <a href="#workload" onClick={closeMenu}>
+            The workload
           </a>
           <a href="#product-direction" onClick={closeMenu}>
-            Product direction
-          </a>
-          <a href="https://judgmentkit.ai/" onClick={closeMenu}>
-            JudgmentKit.ai
-          </a>
-          <a className="nav-action" href={reviewHref} onClick={closeMenu}>
-            Request a workflow review
+            How it works
           </a>
         </nav>
       </div>
