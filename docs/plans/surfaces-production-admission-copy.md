@@ -4,7 +4,7 @@
 
 Reduce the production surfaces.systems homepage to one customer-facing story: release decisions should become reusable guidance, so a clear repeat violation does not consume the same senior review twice.
 
-Keep the current visual system, slab asset, header behavior, responsive rules, and light/dark themes. Retain only the hero, recurring workload, and five-step guidance loop. Remove the illustrative model, boundary grid, public evidence scorecard, research funnel, audience eyebrow, and every email CTA. The only control-level style changes are the approved mobile-menu padding and the small text treatment needed beneath the guidance loop.
+Keep the current visual system, slab asset, header behavior, responsive rules, and light/dark themes. Retain only the hero, recurring workload, and five-step guidance loop. Remove the illustrative model, boundary grid, public evidence scorecard, research funnel, audience eyebrow, every email CTA, and the hero mechanism card. Keep the slab image full-bleed. Delete the card-only overlay styles and reserved responsive spacing instead of replacing the card.
 
 Customer value has not been demonstrated. The internal research gate remains separate from the public page.
 
@@ -25,8 +25,8 @@ Surfaces remains above the agent work loop. The page does not position it as the
 
 The `surfaces-web` homepage requires three ordered sections:
 
-- `landing.hero` — the intended customer outcome and the supporting Advance, Hold, and Reject mechanism.
-- `landing.workload` — context hunting, re-explaining a settled decision, chasing rework, and the root cause that the decision never became reusable guidance.
+- `landing.hero` — the intended customer outcome, one product CTA, and the full-bleed slab visual. Advance, Hold, and Reject remain supporting mechanism language in the guidance loop's `Decide` step.
+- `landing.workload` — context hunting, re-explaining a settled decision, and chasing rework.
 - `landing.guidance` — assemble context, decide, propose guidance, confirm changes, and reuse accepted guidance.
 
 Shared section definitions used by other surfaces remain generic. The new `landing.workload` section is specific to the Surfaces homepage contract.
@@ -62,9 +62,10 @@ Validation blocks a missing or reordered required section, a return of the delet
 ## Acceptance criteria
 
 - The hero says `Make every release decision reusable.` and `Resolve clear repeat violations earlier. Keep senior judgment for what’s new or contested.`
+- The hero mechanism card and its internal `Product hypothesis` label are absent; the slab image remains full-bleed.
 - The audience eyebrow and all `mailto:` links are absent.
 - The page contains only the hero, workload, and guidance contract sections, in that order.
-- The workload names `Context hunting`, `Re-explaining the decision`, and `Chasing rework`, followed by `The decision never became reusable guidance` as the root cause.
+- The workload contains only the observable burdens: `Context hunting`, `Re-explaining the decision`, and `Chasing rework`.
 - The five-step loop remains `Assemble context`, `Decide`, `Propose guidance`, `Confirm changes`, and `Reuse`.
 - The page states that Surfaces directs what happens next while agents execute in the tools the team already uses.
 - The page retains one concise early-product-hypothesis line without exposing the internal evidence gate.
@@ -79,11 +80,13 @@ Validation blocks a missing or reordered required section, a return of the delet
 - Risk: The management boundary reads as if Surfaces performs implementation. Mitigation: state the directing/executing split in one plain sentence.
 - Risk: Internal strategy and evidence operations leak back into public copy. Mitigation: assert their absence in the focused homepage test.
 - Risk: Removing sections becomes an accidental redesign. Mitigation: preserve the existing component styles and assets, then compare desktop, mobile, breakpoint, and theme renders.
+- Risk: Removing the hero card leaves card-clearance space behind. Mitigation: delete only the card-specific overlay rules and responsive padding overrides, then verify the hero-to-workload transition at affected breakpoints.
 - Risk: Production serves an unverified rebuild. Mitigation: capture the previous deployment, verify a READY preview for the exact Git SHA, and promote that same deployment.
 
 ## Implementation and release outline
 
 - Reconcile the existing uncommitted homepage draft instead of discarding it.
+- Remove the hero mechanism card, card-only styles, and card-reserved responsive spacing without replacing the element.
 - Delete the obsolete public sections, links, extraction keys, and assertions.
 - Align the source contract and regenerate derived contract/runtime artifacts through repository commands.
 - Run focused tests, contract checks, lint, type-check, production build, and rendered QA.

@@ -62,9 +62,7 @@ describe("surfaces.systems home page", () => {
       "Re-explaining the decision",
       "Chasing rework",
     ]);
-    expect(page.querySelector(".loop-break")?.textContent?.replace(/\s+/g, " ").trim()).toBe(
-      "The decision never became reusable guidance",
-    );
+    expect(page.querySelector(".loop-break")).toBeNull();
     expect(html).toContain("Each decision should make the next clear repeat easier to resolve.");
     expect(
       Array.from(page.querySelectorAll(".cycle-card h3"), (heading) => heading.textContent?.trim()),
@@ -96,8 +94,10 @@ describe("surfaces.systems home page", () => {
     const { page } = renderHomeDocument();
 
     expect(page.querySelectorAll(".hero-visual")).toHaveLength(1);
-    expect(page.querySelectorAll(".hero-proof-list > div")).toHaveLength(3);
-    expect(page.querySelectorAll(".broken-loop > li")).toHaveLength(4);
+    expect(page.querySelector(".hero-visual figcaption")).toBeNull();
+    expect(page.querySelector(".hero-proof-label")).toBeNull();
+    expect(page.querySelector(".hero-proof-list")).toBeNull();
+    expect(page.querySelectorAll(".broken-loop > li")).toHaveLength(3);
     expect(page.querySelectorAll(".cycle-card")).toHaveLength(5);
     expect(page.querySelectorAll(".example-section")).toHaveLength(0);
     expect(page.querySelectorAll(".experiment-board")).toHaveLength(0);
@@ -105,7 +105,7 @@ describe("surfaces.systems home page", () => {
     expect(page.querySelectorAll(".proof-section")).toHaveLength(0);
     expect(page.querySelectorAll(".partner-section")).toHaveLength(0);
     expect(sha256(homepageCss)).toBe(
-      "dbc5856886c6de8e8e1be0c430a7437581056b89478545c65d5e512b57e8656d",
+      "3d22d674dc5350896d8da634a4f34996b4ea2743b3a6fb470ed933d3513109db",
     );
     expect(sha256(slabAsset)).toBe(
       "8901f5ad73c5a96aeb10647e98fc9e9f6151bf55152911e948e3be0343e3a64f",
@@ -160,16 +160,16 @@ describe("surfaces.systems home page", () => {
     expect(html).not.toContain("Request a workflow review");
   });
 
-  it("shows three recurring burdens before the highlighted root cause", () => {
+  it("shows only the three observable recurring burdens", () => {
     const { page } = renderHomeDocument();
 
+    expect(page.querySelectorAll(".broken-loop > .loop-fragment")).toHaveLength(3);
     expect(
-      page.querySelector(
-        ".broken-loop > .loop-fragment:nth-child(3) + .loop-break:last-child",
-      ),
+      page.querySelector(".broken-loop > .loop-fragment:nth-child(3):last-child"),
     ).not.toBeNull();
+    expect(page.querySelector(".loop-break")).toBeNull();
     expect(homepageCss).toMatch(
-      /\.surfaces-homepage \.loop-break:last-child\s*\{\s*border-right:\s*0;\s*\}/,
+      /grid-template-columns:\s*repeat\(3, minmax\(0, 1fr\)\)/,
     );
   });
 
@@ -180,7 +180,9 @@ describe("surfaces.systems home page", () => {
       "AI can generate options. Surfaces helps your team decide what to ship.",
       "For design-system and frontend-platform owners",
       "Illustrative decision model",
+      "Product hypothesis</span>",
       "Product hypothesis · not customer evidence",
+      "The decision never became reusable guidance",
       "Evidence status",
       "Qualified customer evidence",
       "0 of 4",
