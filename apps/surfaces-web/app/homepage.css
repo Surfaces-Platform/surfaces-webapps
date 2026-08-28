@@ -474,8 +474,10 @@ body.menu-open {
     linear-gradient(
       90deg,
       var(--sp-color-ink) 0%,
-      rgba(11, 13, 14, 0.98) 62%,
-      rgba(11, 13, 14, 0.08) 100%
+      rgba(11, 13, 14, 0.92) 28%,
+      rgba(11, 13, 14, 0.66) 48%,
+      rgba(11, 13, 14, 0.24) 70%,
+      rgba(11, 13, 14, 0.04) 100%
     );
   content: "";
   pointer-events: none;
