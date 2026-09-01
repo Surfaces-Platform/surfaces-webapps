@@ -37,11 +37,11 @@ export const designSystemBasePath = "/design-system";
 export const assetBasePath = `${designSystemBasePath}`;
 
 export const currentReference = {
-  version: "Version 1.0",
-  updated: "June 16, 2026",
+  version: "Version 0.2",
+  updated: "July 5, 2026",
   owner: "Product Systems",
-  evidence: "Contrast, state, focus, and responsive checks",
-  scope: "Identity, foundations, tokens, components, patterns, resources",
+  evidence: "Simple Slab assets, token values, review-copy checks, and responsive checks",
+  scope: "Simple Slab identity, public-page tokens, generated-screen review patterns, resources",
 } as const;
 
 export const navItems: NavItem[] = [
@@ -49,37 +49,37 @@ export const navItems: NavItem[] = [
     slug: "overview",
     label: "Overview",
     href: designSystemBasePath,
-    summary: "System status, quick links, and primary downloads.",
+    summary: "Current Simple Slab source, proof reference, and downloads.",
   },
   {
     slug: "identity",
     label: "Identity",
     href: `${designSystemBasePath}/identity`,
-    summary: "Wordmark, compact mark, lockups, sizing, clearspace, and misuse.",
+    summary: "Simple Slab mark, lockups, sizing, clearspace, and misuse.",
   },
   {
     slug: "foundations",
     label: "Foundations",
     href: `${designSystemBasePath}/foundations`,
-    summary: "Grayscale color, type, spacing, rules, captions, and voice.",
+    summary: "Active colors, type, spacing, rules, captions, and voice.",
   },
   {
     slug: "tokens",
     label: "Tokens",
     href: `${designSystemBasePath}/tokens`,
-    summary: "Brand primitives, product semantics, CSS variables, and modes.",
+    summary: "Brand primitives, public-page roles, CSS variables, and review signals.",
   },
   {
     slug: "components",
     label: "Components",
     href: `${designSystemBasePath}/components`,
-    summary: "Buttons, inputs, tags, alerts, tables, focus, and disabled states.",
+    summary: "Buttons, media cards, tags, focus, and review-friendly states.",
   },
   {
     slug: "patterns",
     label: "Patterns",
     href: `${designSystemBasePath}/patterns`,
-    summary: "Release Record, Evidence Table, Approval Path, and Control Surface.",
+    summary: "Generated-screen comparison, visible rationale, owner, and next step.",
   },
   {
     slug: "resources",
@@ -91,7 +91,7 @@ export const navItems: NavItem[] = [
     slug: "governance",
     label: "Governance",
     href: `${designSystemBasePath}/governance`,
-    summary: "Ownership, update cadence, accessibility evidence, and boundaries.",
+    summary: "Ownership, update cadence, proof scope, and public boundaries.",
   },
   {
     slug: "changelog",
@@ -104,10 +104,10 @@ export const navItems: NavItem[] = [
 export const pages: Record<ReferenceSlug, ReferencePage> = {
   overview: {
     slug: "overview",
-    label: "Reference / Version 1.0",
+    label: "Reference / Version 0.2",
     title: "Surfaces Design System",
     description:
-      "Identity, product tokens, patterns, resources, and implementation guidance for building with Surfaces.",
+      "Simple Slab identity, public-page tokens, and proof-oriented patterns for reviewable generated UI.",
     meta: [
       `Owner / ${currentReference.owner}`,
       `Updated / ${currentReference.updated}`,
@@ -117,47 +117,47 @@ export const pages: Record<ReferenceSlug, ReferencePage> = {
   identity: {
     slug: "identity",
     label: "Identity",
-    title: "Wordmark first, compact mark second.",
+    title: "Use the Simple Slab mark exactly as drawn.",
     description:
-      "The Surfaces wordmark is the primary identity. The compact mark supports app icons, favicons, dense chrome, avatars, and partner placements where the wordmark will not hold.",
-    meta: ["Minimum lockup / 128 px", "Small mark / 16-24 px", "Compact mark / 32 px+"],
+      "The active mark is three slabs: a top wedge, a middle plane, and a lower wedge. Do not redraw it, round it, add dots, or turn Proof Cyan into mark geometry.",
+    meta: ["Master viewBox / 0 0 64 64", "Small mark / 16-24 px", "Radius / do not smooth geometry"],
   },
   foundations: {
     slug: "foundations",
     label: "Foundations",
-    title: "Quiet structure for evidence-led product work.",
+    title: "Quiet structure for generated-screen review.",
     description:
-      "Foundations are deliberately sparse: grayscale color, precise type, durable spacing, thin rules, metadata captions, and concrete voice.",
-    meta: ["Color / grayscale", "Type / system sans", "Rules / 1 px"],
+      "Foundations stay sparse: Simple Slab color, fixed type, durable spacing, thin rules, concise captions, and concrete voice.",
+    meta: ["Color / Simple Slab", "Type / Geist, Inter, Arial", "Rules / 1 px"],
   },
   tokens: {
     slug: "tokens",
     label: "Tokens",
-    title: "Brand primitives and product semantics stay separate.",
+    title: "Brand primitives and review signals stay separate.",
     description:
-      "Use brand tokens for identity and grayscale expression. Use product semantic tokens for interface text, surfaces, borders, focus, actions, validation, and status.",
-    meta: ["Brand JSON", "Product JSON", "CSS variables"],
+      "Use Ink, Ivory, Nickel, Rule, Paper, Muted, and Subtle for the visual system. Use Proof Cyan only for small proof and focus signals.",
+    meta: ["Brand JSON", "Public-page JSON", "CSS variables"],
   },
   components: {
     slug: "components",
     label: "Components",
-    title: "Common components use stable semantic behavior.",
+    title: "Common pieces keep review context readable.",
     description:
-      "Documented examples cover buttons, inputs, tags, alerts, tables, focus states, disabled states, validation, and semantic status.",
-    meta: ["Button", "Input", "Tag", "Alert", "Table"],
+      "Documented examples cover buttons, media cards, tags, focus states, and compact review summaries.",
+    meta: ["Button", "Media card", "Tag", "Focus", "Question row"],
   },
   patterns: {
     slug: "patterns",
     label: "Patterns",
-    title: "Reusable modules for release evidence and approval.",
+    title: "Reusable patterns for screens that look ready before they are.",
     description:
-      "Patterns make product work inspectable through release records, evidence tables, approval paths, control surfaces, and resource cards.",
-    meta: ["Release Record", "Evidence Table", "Approval Path"],
+      "Patterns keep source, behavior, owner, rationale, and next step beside generated work before it moves into handoff.",
+    meta: ["Generated screen", "Visible rationale", "Review context"],
   },
   resources: {
     slug: "resources",
     label: "Resources",
-    title: "Active assets and implementation files.",
+    title: "Active assets and resource files.",
     description:
       "Download the active Surfaces identity assets, token files, and versioned brand kit. Use these files as provided.",
     meta: ["SVG", "CSS", "JSON", "ZIP"],
@@ -165,9 +165,9 @@ export const pages: Record<ReferenceSlug, ReferencePage> = {
   governance: {
     slug: "governance",
     label: "Governance",
-    title: "Keep public guidance, assets, and tokens aligned.",
+    title: "Keep guidance, assets, and claims aligned.",
     description:
-      "Governance defines ownership, change cadence, required checks, accessibility evidence, and the boundary for material published outside Surfaces.",
+      "Governance defines ownership, change cadence, required checks, proof scope, and the boundary for public Surfaces material.",
     meta: [`Owner / ${currentReference.owner}`, "Review / monthly", currentReference.version],
   },
   changelog: {
@@ -181,41 +181,41 @@ export const pages: Record<ReferenceSlug, ReferencePage> = {
 };
 
 export const grayscale = [
-  { name: "Ink", value: "#0D0D0D", fg: "#FFFFFF" },
-  { name: "Graphite", value: "#242424", fg: "#FFFFFF" },
-  { name: "Steel", value: "#575757", fg: "#FFFFFF" },
-  { name: "Ash", value: "#767676", fg: "#FFFFFF" },
-  { name: "Line", value: "#B8B8B2", fg: "#0D0D0D" },
-  { name: "Plane", value: "#D6D6D0", fg: "#0D0D0D" },
-  { name: "Mist", value: "#EFEFEC", fg: "#0D0D0D" },
-  { name: "Paper", value: "#F7F7F4", fg: "#0D0D0D" },
+  { name: "Ink", value: "#0B0D0E", fg: "#FFFFFF" },
+  { name: "Ivory", value: "#F7F6F2", fg: "#0B0D0E" },
+  { name: "Nickel", value: "#8B9096", fg: "#0B0D0E" },
+  { name: "Rule", value: "#DAD7CF", fg: "#0B0D0E" },
+  { name: "Paper", value: "#FFFFFF", fg: "#0B0D0E" },
+  { name: "Muted text", value: "#3C4145", fg: "#FFFFFF" },
+  { name: "Subtle text", value: "#555B60", fg: "#FFFFFF" },
+  { name: "Proof cyan", value: "#00A7C8", fg: "#0B0D0E" },
 ] as const;
 
 export const brandTokens = [
-  ["--sp-color-ink", "#0D0D0D", "Primary text and identity"],
-  ["--sp-color-paper", "#F7F7F4", "Page background"],
-  ["--sp-color-plane", "#D6D6D0", "Structural surfaces"],
-  ["--sp-color-line", "#B8B8B2", "Rules and dividers"],
-  ["--sp-color-steel", "#575757", "Captions and metadata"],
-  ["--sp-font-sans", "Inter, SF Pro, Arial", "Interface and reference text"],
-  ["--sp-radius-sm", "4px", "Controls and small cards"],
-  ["--sp-space-6", "24px", "Primary spacing unit"],
+  ["--sp-color-ink", "#0B0D0E", "Primary text and identity"],
+  ["--sp-color-ivory", "#F7F6F2", "Warm page canvas"],
+  ["--sp-color-nickel", "#8B9096", "Lower slab and secondary neutral"],
+  ["--sp-color-rule", "#DAD7CF", "Rules and dividers"],
+  ["--sp-color-paper", "#FFFFFF", "Raised surface"],
+  ["--sp-color-proof", "#00A7C8", "Small proof or focus signal only"],
+  ["--sp-font-sans", "Geist, Inter, Arial", "Interface and reference text"],
+  ["--sp-radius-8", "8px", "Maximum standard radius"],
 ] as const;
 
 export const productTokens = [
-  ["Action", "--sp-ui-action-bg", "Primary commands"],
+  ["Action", "--sp-ui-action", "Primary commands"],
   ["Focus", "--sp-ui-focus-ring", "Keyboard focus"],
-  ["Success", "--sp-ui-success-bg", "Approved or verified state"],
-  ["Warning", "--sp-ui-warning-bg", "Needs review state"],
-  ["Danger", "--sp-ui-danger-bg", "Blocked or destructive state"],
-  ["Info", "--sp-ui-info-bg", "Informational state"],
+  ["Proof accent", "--sp-ui-focus-accent", "Small proof or active signal"],
+  ["Surface", "--sp-ui-surface", "Raised public-page surface"],
+  ["Border", "--sp-ui-border", "Rules and dividers"],
+  ["Muted text", "--sp-ui-fg-secondary", "Supporting copy"],
 ] as const;
 
 export const resources: ResourceItem[] = [
   {
     title: "Surfaces brand kit",
-    kind: "ZIP / Version 1.0",
-    href: `${assetBasePath}/brand-kit/surfaces-brand-kit-v1.0.zip`,
+    kind: "ZIP / Version 0.2",
+    href: `${assetBasePath}/brand-kit/surfaces-brand-kit-v0.2.zip`,
     note: "Complete handoff package for approved identity assets and token files.",
     preview: "reverse",
   },
@@ -227,7 +227,7 @@ export const resources: ResourceItem[] = [
     preview: "wordmark",
   },
   {
-    title: "Compact mark",
+    title: "Simple Slab mark",
     kind: "SVG / Constrained use",
     href: `${assetBasePath}/logo/surfaces-mark.svg`,
     note: "Use for favicons, app icons, avatars, and dense chrome.",
@@ -244,7 +244,7 @@ export const resources: ResourceItem[] = [
     title: "Small mark",
     kind: "SVG / 16-24 px",
     href: `${assetBasePath}/logo/surfaces-mark-small.svg`,
-    note: "Use for favicon, 16 px, and 24 px placements where the compact mark loses clarity.",
+    note: "Use for favicon, 16 px, and 24 px placements where the full lockup loses clarity.",
     preview: "mark",
   },
   {
@@ -291,99 +291,93 @@ export const resources: ResourceItem[] = [
   },
   {
     title: "CSS tokens",
-    kind: "CSS / Variables and classes",
+    kind: "CSS / Variables",
     href: `${assetBasePath}/tokens/surfaces.css`,
-    note: "Use for CSS variables, state classes, and component examples.",
+    note: "Use for Simple Slab color roles, focus, button, and proof-media variables.",
     preview: "file",
   },
   {
     title: "Brand tokens",
     kind: "JSON / Brand primitives",
     href: `${assetBasePath}/tokens/surfaces.tokens.json`,
-    note: "Use for grayscale brand primitives and expression aliases.",
+    note: "Use for active Simple Slab primitives, radius, and type references.",
     preview: "file",
   },
   {
     title: "Product tokens",
-    kind: "JSON / Product semantics",
+    kind: "JSON / Public-page roles",
     href: `${assetBasePath}/tokens/surfaces.product.tokens.json`,
-    note: "Use for interface text, surfaces, states, focus, and validation.",
+    note: "Use for public-page surfaces, text, borders, action, focus, and proof signal roles.",
     preview: "file",
   },
 ];
 
 export const releaseRecordRows = [
-  ["Record", "Claims Assistant / Release 014"],
-  ["Owner", "Claims Experience"],
-  ["Evaluation set", "claims-intake-v7 / 420 cases"],
-  ["Boundary", "No policy advice without source confirmation"],
-  ["Fallback", "Human review within service queue"],
-  ["Approval", "Approved for limited release"],
-  ["Rollout", "12% of authenticated claims sessions"],
+  ["Screen", "Generated renewal handoff"],
+  ["Owner", "Design Systems"],
+  ["Source", "Renewal policy and product terms"],
+  ["Behavior", "Keep state, evidence, and next step visible"],
+  ["Question", "Which customer term survives here?"],
+  ["Next step", "Revise the screen before sharing"],
 ] as const;
 
 export const evidenceRows = [
-  ["Behavior", "Source confirmation before recommendation", "412 / 420 pass", "Approved"],
-  ["Boundary", "No unsupported coverage claim", "420 / 420 pass", "Approved"],
-  ["Fallback", "Escalate after missing evidence", "418 / 420 pass", "Review"],
-  ["Audit", "Owner and timestamp present", "420 / 420 pass", "Approved"],
+  ["Source", "Which pattern, term, or brand choice belongs here?", "Visible", "Review"],
+  ["Behavior", "What must stay true for loading, errors, focus, and state?", "Visible", "Review"],
+  ["Owner", "Who can resolve the open question before the work moves?", "Visible", "Review"],
+  ["Next", "What changes before the screen is shared?", "Visible", "Review"],
 ] as const;
 
 export const approvalSteps = [
-  "Compose intent",
-  "Evaluate behavior",
-  "Review evidence",
-  "Approve release",
-  "Ship with owner",
+  "Generate screen",
+  "Attach rationale",
+  "Name owner",
+  "Review before sharing",
+  "Carry decision forward",
 ] as const;
 
 export const componentExamples = [
   {
     title: "Button",
-    note: "Use the primary button for one principal command per surface.",
-    code: '<button class="sp-button sp-button-primary">Approve release</button>',
+    note: "Use the primary button for one principal command on the page.",
   },
   {
-    title: "Input",
-    note: "Labels remain visible; helper copy and validation text are explicit.",
-    code: '<label>Evaluation set <input class="sp-input" value="claims-intake-v7"></label>',
+    title: "Media card",
+    note: "Pair a generated-screen image with the point a designer should inspect.",
   },
   {
     title: "Tag",
     note: "Tags represent state or metadata, not decoration.",
-    code: '<span class="sp-tag sp-tag-success">Approved</span>',
   },
   {
-    title: "Alert",
-    note: "Alerts name the state and the next action.",
-    code: '<div class="sp-alert sp-alert-warning">Fallback evidence needs review.</div>',
+    title: "Question row",
+    note: "Rows should name source, behavior, owner, or next step in plain language.",
   },
   {
-    title: "Table",
-    note: "Tables carry evidence, ownership, and status.",
-    code: '<table class="sp-table">...</table>',
+    title: "Focus",
+    note: "Focus uses Ink for contrast. Proof Cyan may support it, but cannot be the only cue.",
   },
 ] as const;
 
 export const governanceRows = [
   ["Owner", "Product Systems owns identity guidance, resource packaging, token documentation, and release notes."],
-  ["Updates", "Visible guidance, downloadable assets, token files, and release notes ship together."],
-  ["Cadence", "Review monthly or whenever identity assets, token semantics, or public patterns change."],
+  ["Updates", "Visible guidance, downloadable assets, token files, and release notes move together."],
+  ["Cadence", "Review when identity assets, token semantics, or public-page patterns change."],
   ["Support", "Use Product Systems as the contact owner for public reference questions and change requests."],
 ] as const;
 
 export const accessibilityRows = [
-  ["Text pairs", "Checked", "Light and dark text contrast pairs meet AA targets."],
-  ["Controls", "Checked", "Buttons, inputs, disabled states, and focus rings are covered."],
-  ["Semantic states", "Checked", "Success, warning, danger, info, and neutral states are covered."],
-  ["Layout", "Review each release", "Pages are checked at desktop and 390 px mobile widths."],
+  ["Text pairs", "Review target", "Primary page text pairs target WCAG 2.2 AA."],
+  ["Controls", "Review target", "Buttons and focus rings use contrast-safe Ink boundaries."],
+  ["Proof signal", "Bounded use", "Proof Cyan appears with text or structure and never as the only cue."],
+  ["Layout", "Review target", "Pages should be checked at desktop and 390 px mobile widths before promotion."],
 ] as const;
 
 export const changelogItems = [
-  "Public reference overview with identity, foundations, tokens, components, patterns, resources, and governance.",
-  "Dedicated pages for the public reference set.",
-  "Versioned brand kit and direct asset downloads.",
-  "Accessibility evidence summary and product token coverage.",
+  "Updated public reference to the active Simple Slab identity system.",
+  "Replaced retired mark assets with the three-slab geometry.",
+  "Aligned public token files with Ink, Ivory, Nickel, Rule, Paper, Muted, Subtle, and Proof Cyan.",
+  "Refocused examples around generated-screen review context from the 12B landing page.",
 ] as const;
 
 export function getPage(slug: string): ReferencePage | undefined {

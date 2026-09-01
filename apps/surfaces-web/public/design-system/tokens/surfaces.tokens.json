@@ -1,258 +1,115 @@
 {
   "$schema": "https://design-tokens.github.io/community-group/format/",
   "metadata": {
-    "name": "Surfaces Platform Brand Tokens",
-    "purpose": "Grayscale brand primitives and editorial expression tokens. Product state colors live in surfaces.product.tokens.json.",
-    "mode": "Grayscale brand, semantic product color"
+    "name": "Surfaces Simple Slab Brand Tokens",
+    "version": "0.2.0",
+    "purpose": "Active Simple Slab brand primitives and public-page expression tokens.",
+    "source": "Surfaces Simple Slab brand package"
   },
   "brand": {
     "name": {
       "$type": "string",
-      "$value": "Surfaces Platform"
+      "$value": "Surfaces"
     },
     "position": {
       "$type": "string",
-      "$value": "Governed product-surface infrastructure for AI-native workflows."
+      "$value": "Design control for generated UI."
     },
-    "principles": {
-      "quiet": {
-        "$type": "string",
-        "$value": "The identity should feel composed before it feels clever."
-      },
-      "evident": {
-        "$type": "string",
-        "$value": "Product proof is used sparingly and precisely."
-      },
-      "durable": {
-        "$type": "string",
-        "$value": "Every asset must work in grayscale, one-color, product UI, docs, and print."
-      }
+    "activeMark": {
+      "$type": "string",
+      "$value": "Simple Slab"
     }
   },
   "color": {
-    "primitive": {
-      "black": {
-        "$type": "color",
-        "$value": "#000000"
-      },
+    "brand": {
       "ink": {
         "$type": "color",
-        "$value": "#0D0D0D"
+        "$value": "#0B0D0E"
       },
-      "graphite": {
+      "ivory": {
         "$type": "color",
-        "$value": "#242424"
+        "$value": "#F7F6F2"
       },
-      "charcoal": {
+      "nickel": {
         "$type": "color",
-        "$value": "#3A3A37"
+        "$value": "#8B9096"
       },
-      "steel": {
+      "rule": {
         "$type": "color",
-        "$value": "#575757"
-      },
-      "ash": {
-        "$type": "color",
-        "$value": "#767676"
-      },
-      "line": {
-        "$type": "color",
-        "$value": "#B8B8B2"
-      },
-      "plane": {
-        "$type": "color",
-        "$value": "#D6D6D0"
-      },
-      "mist": {
-        "$type": "color",
-        "$value": "#EFEFEC"
-      },
+        "$value": "#DAD7CF"
+      }
+    },
+    "surface": {
       "paper": {
-        "$type": "color",
-        "$value": "#F7F7F4"
-      },
-      "white": {
         "$type": "color",
         "$value": "#FFFFFF"
       }
     },
-    "alias": {
-      "background": {
+    "text": {
+      "muted": {
         "$type": "color",
-        "$value": "{color.primitive.paper}"
+        "$value": "#3C4145"
       },
-      "foreground": {
+      "subtle": {
         "$type": "color",
-        "$value": "{color.primitive.ink}"
-      },
-      "foregroundMuted": {
-        "$type": "color",
-        "$value": "{color.primitive.steel}"
-      },
-      "rule": {
-        "$type": "color",
-        "$value": "{color.primitive.line}"
-      },
-      "reverseForeground": {
-        "$type": "color",
-        "$value": "{color.primitive.paper}"
-      },
-      "reverseBackground": {
-        "$type": "color",
-        "$value": "{color.primitive.ink}"
+        "$value": "#555B60"
       }
     },
-    "expression": {
-      "signature": {
-        "$type": "color",
-        "$value": "{color.primitive.ink}"
-      },
-      "signatureMuted": {
-        "$type": "color",
-        "$value": "{color.primitive.steel}"
-      },
-      "rule": {
-        "$type": "color",
-        "$value": "{color.primitive.line}"
-      },
-      "caption": {
-        "$type": "color",
-        "$value": "{color.primitive.steel}"
-      },
+    "signal": {
       "proof": {
         "$type": "color",
-        "$value": "{color.primitive.white}"
-      },
-      "index": {
+        "$value": "#00A7C8",
+        "$description": "Small proof/evidence signal only. Never use as a mark edge, rail, tick, slab color, glow, or full-page theme."
+      }
+    },
+    "appIcon": {
+      "gradientStart": {
         "$type": "color",
-        "$value": "{color.primitive.ash}"
+        "$value": "#24282B"
       },
-      "surface": {
+      "gradientEnd": {
         "$type": "color",
-        "$value": "{color.primitive.mist}"
-      }
-    }
-  },
-  "expression": {
-    "signature": {
-      "rule": {
-        "$type": "string",
-        "$value": "Use the signature mark as a quiet secondary symbol; the wordmark is primary."
-      }
-    },
-    "rule": {
-      "stroke": {
-        "$type": "dimension",
-        "$value": "1px"
-      },
-      "heavyStroke": {
-        "$type": "dimension",
-        "$value": "2px"
-      }
-    },
-    "caption": {
-      "fontSize": {
-        "$type": "dimension",
-        "$value": "12px"
-      },
-      "lineHeight": {
-        "$type": "dimension",
-        "$value": "16px"
-      },
-      "weight": {
-        "$type": "fontWeight",
-        "$value": 650
-      }
-    },
-    "proof": {
-      "rule": {
-        "$type": "string",
-        "$value": "Use product proof as an editorial crop, not as dashboard decoration."
-      }
-    },
-    "surface": {
-      "rule": {
-        "$type": "string",
-        "$value": "Use quiet surfaces, rules, and captions to structure brand applications."
+        "$value": "#050606"
       }
     }
   },
   "radius": {
-    "xs": {
+    "0": {
       "$type": "dimension",
-      "$value": "4px"
-    },
-    "sm": {
-      "$type": "dimension",
-      "$value": "6px"
-    },
-    "md": {
-      "$type": "dimension",
-      "$value": "8px"
-    },
-    "lg": {
-      "$type": "dimension",
-      "$value": "12px"
-    }
-  },
-  "space": {
-    "1": {
-      "$type": "dimension",
-      "$value": "4px"
+      "$value": "0px"
     },
     "2": {
       "$type": "dimension",
-      "$value": "8px"
-    },
-    "3": {
-      "$type": "dimension",
-      "$value": "12px"
+      "$value": "2px"
     },
     "4": {
       "$type": "dimension",
-      "$value": "16px"
+      "$value": "4px"
     },
     "6": {
       "$type": "dimension",
-      "$value": "24px"
+      "$value": "6px"
     },
     "8": {
       "$type": "dimension",
-      "$value": "32px"
-    },
-    "12": {
-      "$type": "dimension",
-      "$value": "48px"
-    },
-    "16": {
-      "$type": "dimension",
-      "$value": "64px"
+      "$value": "8px",
+      "$description": "Maximum standard radius."
     }
   },
   "typography": {
     "family": {
       "sans": {
         "$type": "fontFamily",
-        "$value": "Inter, SF Pro Display, Helvetica Neue, Arial, sans-serif"
+        "$value": "Geist, Inter, Arial, sans-serif"
       },
       "mono": {
         "$type": "fontFamily",
-        "$value": "SFMono-Regular, ui-monospace, Menlo, Monaco, Consolas, monospace"
+        "$value": "Geist Mono, SFMono-Regular, Consolas, monospace"
       }
     },
-    "weight": {
-      "regular": {
-        "$type": "fontWeight",
-        "$value": 400
-      },
-      "medium": {
-        "$type": "fontWeight",
-        "$value": 500
-      },
-      "semibold": {
-        "$type": "fontWeight",
-        "$value": 650
-      }
+    "letterSpacing": {
+      "$type": "dimension",
+      "$value": "0px"
     }
   }
 }

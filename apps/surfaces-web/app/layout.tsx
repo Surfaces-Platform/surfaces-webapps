@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
@@ -8,8 +8,43 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Surfaces Platform - Canonical source of interface truth",
-  description: "Surfaces is the system layer that defines, enforces, and operates interface contracts across modern software and AI systems.",
+  metadataBase: new URL("https://surfaces.systems"),
+  title: "Make Every Release Decision Reusable | Surfaces",
+  description:
+    "Surfaces is exploring how decisions about agent-produced UI changes can become reusable guidance, so clear repeat violations can be resolved before senior review.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    siteName: "Surfaces",
+    title: "Make every release decision reusable.",
+    description:
+      "Turn decisions about agent-produced UI changes into guidance that can resolve clear repeat violations before senior review.",
+    url: "/",
+    images: [
+      {
+        url: "/assets/surfaces-platform-og.png",
+        width: 1280,
+        height: 720,
+        alt: "Surfaces",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Make every release decision reusable.",
+    description:
+      "Turn decisions about agent-produced UI changes into guidance that can resolve clear repeat violations before senior review.",
+    images: ["/assets/surfaces-platform-og.png"],
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#F7F6F2" },
+    { media: "(prefers-color-scheme: dark)", color: "#0B0D0E" },
+  ],
 };
 
 export default function RootLayout({
@@ -19,12 +54,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${inter.variable} antialiased font-sans`}
-        style={{ fontFamily: 'var(--font-inter), Inter, sans-serif' }}
-      >
-        {children}
-      </body>
+      <body className={`${inter.variable} antialiased font-sans`}>{children}</body>
     </html>
   );
 }

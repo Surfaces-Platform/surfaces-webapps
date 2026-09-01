@@ -45,7 +45,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
       
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -68,6 +68,15 @@ jobs:
       
       - name: Platform behavior e2e smoke test
         run: pnpm test:platform-e2e
+
+      - name: Type-check surfaces web
+        run: pnpm --filter surfaces-web type-check
+
+      - name: Test surfaces web
+        run: pnpm --filter surfaces-web test
+
+      - name: Build surfaces web
+        run: pnpm --filter surfaces-web build
       
       - name: Show CLI provenance
         run: pnpm cli:where:ci
@@ -149,7 +158,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -199,7 +208,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

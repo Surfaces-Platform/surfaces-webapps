@@ -84,9 +84,11 @@ function ReferenceTopbar() {
         <span>Surfaces</span>
       </Link>
       <nav className={styles.toplinks} aria-label="Quick navigation">
-        <Link href="/design-system/identity">Identity</Link>
-        <Link href="/design-system/tokens">Tokens</Link>
-        <Link href="/design-system/resources">Resources</Link>
+        {navItems.map((item) => (
+          <Link key={item.slug} href={item.href}>
+            {item.label}
+          </Link>
+        ))}
       </nav>
     </header>
   );
@@ -240,23 +242,23 @@ function OverviewSections() {
   return (
     <>
       <section className={`${styles.section} ${styles.trustBand}`} aria-labelledby="status-title">
-        <SectionHead index="00" kicker="Reference Contract" title="Stable source material for identity, product UI, and external builder handoff." titleId="status-title" />
+        <SectionHead index="00" kicker="Current Reference" title="Stable source material for the Simple Slab identity and generated-screen review." titleId="status-title" />
         <dl className={styles.statusGrid}>
           <div>
             <dt>Owner</dt>
             <dd>{currentReference.owner}</dd>
           </div>
           <div>
-            <dt>Evidence date</dt>
+            <dt>Review date</dt>
             <dd>{currentReference.updated}</dd>
           </div>
           <div>
-            <dt>Accessibility scope</dt>
-            <dd>Token contrast, controls, states, focus</dd>
+            <dt>Proof scope</dt>
+            <dd>Assets, tokens, review copy, responsive layout</dd>
           </div>
           <div>
             <dt>Resource scope</dt>
-            <dd>Active SVGs, favicon, app icon, CSS, JSON</dd>
+            <dd>Simple Slab SVGs, favicon, app icon, CSS, JSON</dd>
           </div>
         </dl>
       </section>
@@ -264,8 +266,8 @@ function OverviewSections() {
         <SectionHead
           index="01"
           kicker="Overview"
-          title="Start with the source of truth, then move into the details."
-          description="Dedicated pages carry implementation details for identity, foundations, product tokens, interface components, patterns, resources, and governance."
+          title="Start with the active identity, then make review context visible."
+          description="Dedicated pages cover the Simple Slab mark, public-page tokens, review components, generated-screen patterns, resources, and governance."
           titleId="start-title"
         />
         <div className={styles.indexGrid}>
@@ -290,7 +292,7 @@ function IdentitySections() {
     <>
       <IdentityPreview index="01" />
       <section className={styles.section} aria-labelledby="small-title">
-        <SectionHead index="02" kicker="Small Use" title="Small marks must stay simple and optically centered." titleId="small-title" />
+        <SectionHead index="02" kicker="Small Use" title="Small marks keep the same three-slab geometry." titleId="small-title" />
         <div className={styles.specimenGrid} role="list" aria-label="Small mark sizes">
           <span role="listitem">
             <img src={logo.favicon} width="16" height="16" alt="" />
@@ -302,7 +304,7 @@ function IdentitySections() {
           </span>
           <span role="listitem">
             <img src={logo.mark} width="32" height="32" alt="" />
-            32 px compact mark
+            32 px mark
           </span>
           <span className={styles.darkSpecimen} role="listitem">
             <img src={logo.markSmallReverse} width="24" height="24" alt="" />
@@ -315,13 +317,13 @@ function IdentitySections() {
         </div>
       </section>
       <section className={styles.section} aria-labelledby="misuse-title">
-        <SectionHead index="03" kicker="Misuse" title="Do not make the identity louder than the system." titleId="misuse-title" />
+        <SectionHead index="03" kicker="Misuse" title="Do not make the identity louder than the decision." titleId="misuse-title" />
         <div className={styles.misuseGrid}>
           {[
-            ["Color", "Do not recolor the mark with campaign, product-state, or decorative colors.", styles.tinted],
+            ["Color", "Do not recolor the mark with campaign, state, proof, or decorative colors.", styles.tinted],
             ["Effects", "Do not add shadows, glow, extrusion, texture, or dimensional styling.", styles.shadowed],
-            ["Geometry", "Do not stretch, rotate, outline, crop, or redraw the wordmark or compact mark.", styles.stretched],
-            ["Placement", "Do not use the compact mark as wallpaper, decoration, or an interface control.", styles.outlined],
+            ["Geometry", "Do not stretch, rotate, outline, crop, or redraw the mark.", styles.stretched],
+            ["Placement", "Do not use the mark as wallpaper, decoration, or a control.", styles.outlined],
           ].map(([title, note, className]) => (
             <article className={styles.misuseExample} key={title}>
               <div className={`${styles.misuseStage} ${className}`}>
@@ -342,20 +344,20 @@ function FoundationsSections() {
     <>
       <FoundationsPreview index="01" />
       <section className={styles.section} aria-labelledby="type-title">
-        <SectionHead index="02" kicker="Type And Space" title="Use precision, not personality, to create hierarchy." titleId="type-title" />
+        <SectionHead index="02" kicker="Type And Space" title="Use precision, not decoration, to create hierarchy." titleId="type-title" />
         <div className={`${styles.grid} ${styles.three}`}>
-          <InfoCard title="Typeface" text="Use the system sans stack for product and editorial surfaces. Use mono for captions, indexes, versions, and status metadata." code="Inter, SF Pro, Arial" />
+          <InfoCard title="Typeface" text="Use the sans stack for public pages and review surfaces. Use mono for captions, indexes, versions, and status metadata." code="Geist, Inter, Arial" />
           <InfoCard title="Spacing" text="Build from 4, 8, 12, 16, 24, 32, 48, and 64 px spacing values. Keep dense product evidence aligned to the same scale." />
           <InfoCard title="Rules" text="Use 1 px rules for structure and 2 px rules only when a reference specimen needs stronger separation." />
         </div>
       </section>
       <section className={styles.section} aria-labelledby="voice-title">
-        <SectionHead index="03" kicker="Voice" title="Use operational language that can be checked." titleId="voice-title" />
+        <SectionHead index="03" kicker="Voice" title="Use language a designer can act on." titleId="voice-title" />
         <div className={styles.specGrid}>
-          <InfoCard title="Prefer" text="Compose, evaluate, review, approve, inspect, ship, rollback." />
-          <InfoCard title="Avoid" text="Vague intelligence claims, magic language, hype, and ornamental metaphors." />
-          <InfoCard title="Evidence" text="Name the record, owner, evaluation set, policy boundary, approval state, and rollout scope." />
-          <InfoCard title="Tone" text="Quiet, direct, factual, and specific. Let product evidence carry weight." />
+          <InfoCard title="Prefer" text="Review, revise, decide, share, name, inspect, carry forward." />
+          <InfoCard title="Avoid" text="Magic language, broad AI claims, implementation jargon, and decorative metaphors." />
+          <InfoCard title="Rationale" text="Name the source, behavior, owner, open question, and next step." />
+          <InfoCard title="Tone" text="Quiet, direct, factual, and specific. Let the work stay readable." />
         </div>
       </section>
     </>
@@ -366,21 +368,21 @@ function TokenSections() {
   return (
     <>
       <section className={styles.section} aria-labelledby="install-title">
-        <SectionHead index="01" kicker="Use" title="Import the CSS file, then apply semantic classes where they match the component." titleId="install-title" />
-        <article className={styles.card}>
-          <h3>CSS import</h3>
-          <pre className={styles.code}><code>{'<link rel="stylesheet" href="/design-system/tokens/surfaces.css">'}</code></pre>
-          <pre className={styles.code}><code>{'<button class="sp-button sp-button-primary" type="button">Approve release</button>\n<span class="sp-tag sp-tag-success">Verified</span>'}</code></pre>
-        </article>
+        <SectionHead index="01" kicker="Use" title="Start from the roles the public page needs." titleId="install-title" />
+        <div className={`${styles.grid} ${styles.three}`}>
+          <InfoCard title="Primary action" text="One visible request-access action can use Ink when it is the main path forward." />
+          <InfoCard title="Proof media" text="Generated-screen examples stay on white or soft neutral surfaces so the work remains easy to inspect." />
+          <InfoCard title="Review signal" text="Proof Cyan is reserved for focus, selection, and meaningful review emphasis." />
+        </div>
       </section>
       <section className={styles.section} aria-labelledby="brand-title">
-        <SectionHead index="02" kicker="Brand Tokens" title="Grayscale primitives support identity, editorial surfaces, rules, and captions." titleId="brand-title" />
+        <SectionHead index="02" kicker="Brand Tokens" title="Simple Slab primitives support identity, surfaces, rules, and captions." titleId="brand-title" />
         <TokenTable rows={brandTokens} />
       </section>
       <section className={styles.section} aria-labelledby="product-title">
-        <SectionHead index="03" kicker="Product Tokens" title="Semantic product color appears only when it carries meaning." titleId="product-title" />
+        <SectionHead index="03" kicker="Page Tokens" title="Proof color appears only when it carries meaning." titleId="product-title" />
         <TokenTable rows={productTokens} />
-        <StateExamples />
+        <ReviewRoleExamples />
       </section>
     </>
   );
@@ -390,19 +392,18 @@ function ComponentSections() {
   return (
     <>
       <section className={styles.section} aria-labelledby="component-title">
-        <SectionHead index="01" kicker="Component Coverage" title="Examples cover expected interaction states and product semantics." titleId="component-title" />
+        <SectionHead index="01" kicker="Component Coverage" title="Examples cover the pieces this public page actually uses." titleId="component-title" />
         <div className={`${styles.grid} ${styles.two}`}>
           {componentExamples.map((item) => (
             <article className={styles.card} key={item.title}>
               <h3>{item.title}</h3>
               <p>{item.note}</p>
-              <pre className={styles.code}><code>{item.code}</code></pre>
             </article>
           ))}
         </div>
       </section>
       <section className={styles.section} aria-labelledby="state-title">
-        <SectionHead index="02" kicker="States" title="Focus, disabled, validation, and status must remain explicit." titleId="state-title" />
+        <SectionHead index="02" kicker="States" title="Focus, disabled, and review states must remain explicit." titleId="state-title" />
         <ComponentSpecimen />
       </section>
     </>
@@ -414,7 +415,7 @@ function PatternSections() {
     <>
       <PatternPreview index="01" />
       <section className={styles.section} aria-labelledby="approval-title">
-        <SectionHead index="02" kicker="Approval Path" title="The pattern names the action and the accountable owner at each step." titleId="approval-title" />
+        <SectionHead index="02" kicker="Review Path" title="The pattern names the action and the accountable owner at each step." titleId="approval-title" />
         <ol className={styles.approvalPath}>
           {approvalSteps.map((step, index) => (
             <li key={step}>
@@ -425,12 +426,12 @@ function PatternSections() {
         </ol>
       </section>
       <section className={styles.section} aria-labelledby="control-title">
-        <SectionHead index="03" kicker="Control Surface" title="Control modules keep policy, audit, security, and ownership visible." titleId="control-title" />
+        <SectionHead index="03" kicker="Visible Context" title="Review modules keep the decision beside the generated screen." titleId="control-title" />
         <div className={styles.specGrid}>
-          <InfoCard title="Policy boundary" text="State what the product must not do and when fallback is required." />
-          <InfoCard title="Audit trail" text="Show evidence source, approver, timestamp, and release scope." />
-          <InfoCard title="Ownership" text="Name the team, reviewer, and release owner." />
-          <InfoCard title="Readiness" text="Indicate pass, review, or blocked states with semantic tokens." />
+          <InfoCard title="Source" text="State which pattern, term, policy, or brand choice the generated work should follow." />
+          <InfoCard title="Behavior" text="Show what must stay true for loading, errors, accessibility, and state." />
+          <InfoCard title="Ownership" text="Name who can resolve the open question before the work is treated as ready." />
+          <InfoCard title="Next step" text="Make the revision or review path visible before the screen moves." />
         </div>
       </section>
     </>
@@ -446,7 +447,7 @@ function ResourceSections() {
         <ResourceGrid items={resources} />
       </section>
       <section className={styles.section} aria-labelledby="files-title">
-        <SectionHead index="03" kicker="Implementation Files" title="Use token files directly in product and documentation work." titleId="files-title" />
+        <SectionHead index="03" kicker="Files" title="Use token files directly in product and documentation work." titleId="files-title" />
         <table className={styles.table}>
           <thead>
             <tr><th>File</th><th>Type</th><th>Use</th></tr>
@@ -470,7 +471,7 @@ function GovernanceSections() {
   return (
     <>
       <section className={styles.section} aria-labelledby="source-title">
-        <SectionHead index="01" kicker="Source Of Truth" title="The public reference is authoritative for outside use." titleId="source-title" />
+        <SectionHead index="01" kicker="Source" title="The public reference mirrors the active brand package." titleId="source-title" />
         <div className={styles.specGrid}>
           {governanceRows.map(([title, text]) => (
             <InfoCard key={title} title={title} text={text} />
@@ -478,7 +479,7 @@ function GovernanceSections() {
         </div>
       </section>
       <section className={styles.section} aria-labelledby="access-title">
-        <SectionHead index="02" kicker="Accessibility Evidence" title="The current evidence covers token contrast, controls, states, validation, and focus." titleId="access-title" />
+        <SectionHead index="02" kicker="Accessibility" title="Current accessibility targets cover text pairs, controls, proof signals, and layout." titleId="access-title" />
         <table className={styles.table}>
           <thead>
             <tr><th>Area</th><th>Status</th><th>Evidence</th></tr>
@@ -487,7 +488,7 @@ function GovernanceSections() {
             {accessibilityRows.map(([area, status, evidence]) => (
               <tr key={area}>
                 <td>{area}</td>
-                <td><StatusTag tone={status === "Checked" ? "success" : "info"}>{status}</StatusTag></td>
+                <td><ReviewTag tone={status === "Bounded use" ? "proof" : "review"}>{status}</ReviewTag></td>
                 <td>{evidence}</td>
               </tr>
             ))}
@@ -522,8 +523,8 @@ function ChangelogSections() {
           <article className={styles.card}>
             <h3>Fixed</h3>
             <ul className={styles.list}>
-              <li>Scoped metadata for system status, owner, update date, and evidence coverage.</li>
-              <li>Explicit swatch foreground colors for readable grayscale samples.</li>
+              <li>Scoped metadata for system status, owner, update date, and review coverage.</li>
+              <li>Explicit swatch foreground colors for readable Simple Slab samples.</li>
               <li>Reduced-motion-safe page scrolling.</li>
               <li>Public resource boundary tightened.</li>
             </ul>
@@ -535,8 +536,8 @@ function ChangelogSections() {
         <table className={styles.table}>
           <thead><tr><th>Change class</th><th>Version change</th><th>Examples</th></tr></thead>
           <tbody>
-            <tr><td>Patch</td><td>1.0.x</td><td>Copy fixes, link repairs, documentation clarifications</td></tr>
-            <tr><td>Minor</td><td>1.x.0</td><td>New examples, new pages, additive token aliases</td></tr>
+            <tr><td>Patch</td><td>0.2.x</td><td>Copy fixes, link repairs, documentation clarifications</td></tr>
+            <tr><td>Minor</td><td>0.x.0</td><td>New examples, new pages, additive token aliases</td></tr>
             <tr><td>Major</td><td>x.0.0</td><td>Identity replacement, token semantic changes, removed asset URLs</td></tr>
           </tbody>
         </table>
@@ -545,7 +546,7 @@ function ChangelogSections() {
         <SectionHead index="03" kicker="Deprecation" title="Keep existing public URLs working whenever possible." titleId="deprecation-title" />
         <div className={styles.specGrid}>
           <InfoCard title="Asset URLs" text="Preserve active logo and token URLs. Add replacements before removing old references." />
-          <InfoCard title="Token names" text="Prefer aliases before removing or renaming product semantic tokens." />
+          <InfoCard title="Token names" text="Prefer aliases before removing or renaming public-page tokens." />
           <InfoCard title="Pages" text="Redirect retired pages to the closest current reference page." />
           <InfoCard title="Notice" text="Document removals or replacements in the next changelog entry." />
         </div>
@@ -561,7 +562,7 @@ function IdentityPreview({ index }: { index: string }) {
         index={index}
         kicker="Identity"
         title="Use the approved files without redrawing the identity."
-        description="Use the wordmark whenever space allows. Reserve the compact mark for constrained spaces."
+        description="Use the Simple Slab files as exported. Keep the three slab coordinates intact across mark, favicon, app icon, and lockups."
         titleId={`identity-title-${index}`}
       />
       <div className={`${styles.grid} ${styles.two} ${styles.identityGrid}`}>
@@ -572,7 +573,7 @@ function IdentityPreview({ index }: { index: string }) {
           <img src={logo.lockupReverse} alt="Surfaces reverse horizontal lockup" />
         </article>
         <InfoCard title="Minimum sizes" text="Use 16 px for favicon, 24 px for small mark, 128 px for horizontal lockup, and 96 px for stacked lockup." />
-        <InfoCard title="Clearspace" text="Keep at least one compact-mark width around lockups. In dense chrome, keep one-half mark width around the compact mark." />
+        <InfoCard title="Clearspace" text="Keep at least one mark width around lockups. In dense chrome, keep one-half mark width around the mark." />
       </div>
     </section>
   );
@@ -584,13 +585,13 @@ function FoundationsPreview({ index }: { index: string }) {
       <SectionHead
         index={index}
         kicker="Foundations"
-        title="A grayscale canon for release evidence, not decoration."
-        description="Brand surfaces stay monochrome. Product semantic color appears only when it communicates state, validation, focus, alert, selection, or data meaning."
+        title="A restrained palette for review, not decoration."
+        description="Brand surfaces use the Simple Slab palette. Proof Cyan appears only when it marks evidence, focus, or an active review signal."
         titleId={`foundations-title-${index}`}
       />
-      <div className={styles.swatchGrid} role="img" aria-label="Grayscale canon">
+      <div className={styles.swatchGrid} role="list" aria-label="Simple Slab palette">
         {grayscale.map((swatch) => (
-          <div key={swatch.name} style={{ background: swatch.value, color: swatch.fg } as CSSProperties}>
+          <div key={swatch.name} role="listitem" style={{ background: swatch.value, color: swatch.fg } as CSSProperties}>
             <span>{swatch.name}</span>
             <strong>{swatch.value}</strong>
           </div>
@@ -606,8 +607,8 @@ function PatternPreview({ index }: { index: string }) {
       <SectionHead
         index={index}
         kicker="Patterns"
-        title="Release evidence should be named, inspectable, and owned."
-        description="The core product pattern connects intent, behavior standards, evidence, approval, and rollout scope in one record."
+        title="Generated screens should carry their rationale."
+        description="The core pattern connects source, behavior, owner, open question, and next step before the work moves into handoff."
         titleId={`patterns-title-${index}`}
       />
       <div className={`${styles.grid} ${styles.two}`}>
@@ -685,37 +686,36 @@ function TokenTable({ rows }: { rows: readonly (readonly [string, string, string
   );
 }
 
-function StateExamples() {
+function ReviewRoleExamples() {
   return (
-    <div className={styles.stateExamples} aria-label="Product semantic state examples">
-      <StatusTag tone="success">Approved</StatusTag>
-      <StatusTag tone="warning">Review</StatusTag>
-      <StatusTag tone="danger">Blocked</StatusTag>
-      <StatusTag tone="info">Info</StatusTag>
+    <div className={styles.stateExamples} aria-label="Public page role examples">
+      <ReviewTag tone="visible">Visible source</ReviewTag>
+      <ReviewTag tone="review">Needs review</ReviewTag>
+      <ReviewTag tone="proof">Proof signal</ReviewTag>
     </div>
   );
 }
 
-function StatusTag({ tone, children }: { tone: "success" | "warning" | "danger" | "info"; children: ReactNode }) {
+function ReviewTag({ tone, children }: { tone: "visible" | "review" | "proof"; children: ReactNode }) {
   return <span className={`${styles.statusTag} ${styles[tone]}`}>{children}</span>;
 }
 
 function ComponentSpecimen() {
   return (
     <div className={styles.componentSpecimen}>
-      <button className={styles.primaryButton} type="button">Approve release</button>
-      <button className={styles.secondaryButton} type="button">View record</button>
+      <button className={styles.primaryButton} type="button">Request access</button>
+      <button className={styles.secondaryButton} type="button">See example</button>
       <button className={styles.disabledButton} type="button" disabled>Disabled</button>
       <label>
-        <span>Evaluation set</span>
-        <input defaultValue="claims-intake-v7" />
+        <span>Open question</span>
+        <input defaultValue="Which customer term survives here?" />
       </label>
-      <div className={styles.alertWarning}>Fallback evidence needs review before expansion.</div>
+      <div className={styles.alertWarning}>The screen needs review context before handoff.</div>
       <table className={styles.table}>
-        <thead><tr><th>State</th><th>Owner</th><th>Status</th></tr></thead>
+        <thead><tr><th>Question</th><th>Owner</th><th>Status</th></tr></thead>
         <tbody>
-          <tr><td>Approval</td><td>Claims Experience</td><td><StatusTag tone="success">Approved</StatusTag></td></tr>
-          <tr><td>Fallback</td><td>Policy Review</td><td><StatusTag tone="warning">Review</StatusTag></td></tr>
+          <tr><td>Source</td><td>Design Systems</td><td><ReviewTag tone="visible">Visible</ReviewTag></td></tr>
+          <tr><td>Owner</td><td>Product Design</td><td><ReviewTag tone="review">Review</ReviewTag></td></tr>
         </tbody>
       </table>
     </div>
@@ -726,8 +726,8 @@ function ReleaseRecord() {
   return (
     <article className={styles.releaseRecord}>
       <div className={styles.recordTop}>
-        <span>Release Record</span>
-        <strong>Claims Assistant / Release 014</strong>
+        <span>Review Record</span>
+        <strong>Generated renewal handoff</strong>
       </div>
       <dl>
         {releaseRecordRows.map(([term, value]) => (
@@ -752,7 +752,7 @@ function EvidenceTable() {
             <tr key={check}>
               <td>{check}</td>
               <td>{result}</td>
-              <td><StatusTag tone={status === "Approved" ? "success" : "warning"}>{status}</StatusTag></td>
+              <td><ReviewTag tone="review">{status}</ReviewTag></td>
             </tr>
           ))}
         </tbody>
@@ -782,22 +782,22 @@ function ResourcePreviewStage({ item }: { item: ResourceItem }) {
   }
 
   if (item.preview === "social") {
-    return <span className={`${styles.resourcePreview} ${styles.socialPreview}`}><img src={logo.social} alt="" /></span>;
+    return <span className={`${styles.resourcePreview} ${styles.socialPreview}`}><img src={logo.social} alt="" loading="eager" decoding="async" /></span>;
   }
 
   if (item.preview === "app") {
-    return <span className={`${styles.resourcePreview} ${styles.iconPreview}`}><img src={logo.appIcon} alt="" /></span>;
+    return <span className={`${styles.resourcePreview} ${styles.iconPreview}`}><img src={logo.appIcon} alt="" loading="eager" decoding="async" /></span>;
   }
 
   if (item.preview === "reverse") {
-    return <span className={`${styles.resourcePreview} ${styles.dark} ${item.href.endsWith(".zip") ? styles.lockupPreview : styles.iconPreview}`}><img src={item.href.endsWith(".zip") ? logo.lockupReverse : item.href} alt="" /></span>;
+    return <span className={`${styles.resourcePreview} ${styles.dark} ${item.href.endsWith(".zip") ? styles.lockupPreview : styles.iconPreview}`}><img src={item.href.endsWith(".zip") ? logo.lockupReverse : item.href} alt="" loading="eager" decoding="async" /></span>;
   }
 
   if (item.preview === "mark") {
-    return <span className={`${styles.resourcePreview} ${styles.iconPreview}`}><img src={item.href} alt="" /></span>;
+    return <span className={`${styles.resourcePreview} ${styles.iconPreview}`}><img src={item.href} alt="" loading="eager" decoding="async" /></span>;
   }
 
-  return <span className={styles.resourcePreview}><img src={item.href} alt="" /></span>;
+  return <span className={styles.resourcePreview}><img src={item.href} alt="" loading="eager" decoding="async" /></span>;
 }
 
 export const referencePages = pages;

@@ -433,6 +433,9 @@ importers:
 
   apps/surfaces-web:
     dependencies:
+      '@heroicons/react':
+        specifier: ^2.2.0
+        version: 2.2.0(react@19.2.3)
       '@surfaces/platform-auth':
         specifier: workspace:*
         version: link:../../packages/platform-auth

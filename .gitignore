@@ -13,3 +13,6 @@ scratch/secrets/
 artifacts/
 apps/surfaceops-desktop/.desktop-runtime/
 apps/surfaceops-desktop/dist/
+
+.playwright-cli/
+output/playwright/

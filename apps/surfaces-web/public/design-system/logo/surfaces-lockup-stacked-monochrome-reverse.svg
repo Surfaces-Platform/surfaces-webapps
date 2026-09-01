@@ -1,8 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" role="img" aria-labelledby="surfaces-lockup-stacked-monochrome-reverse-title surfaces-lockup-stacked-monochrome-reverse-desc">
-  <title id="surfaces-lockup-stacked-monochrome-reverse-title">Surfaces monochrome reverse stacked lockup</title>
-  <desc id="surfaces-lockup-stacked-monochrome-reverse-desc">One-color Surfaces stacked lockup for dark backgrounds.</desc>
-  <g transform="translate(148 14)">
-    <path fill="#F7F7F4" fill-rule="evenodd" clip-rule="evenodd" d="M16 8H48C50.209 8 52 9.791 52 12V52C52 54.209 50.209 56 48 56H16C13.791 56 12 54.209 12 52V12C12 9.791 13.791 8 16 8ZM20 16H44V25H20V16ZM20 28H36V37H20V28ZM28 40H44V49H28V40Z"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="520" viewBox="0 0 720 520" role="img" aria-labelledby="title desc">
+  <title id="title">Surfaces Simple Slab stacked lockup reversed</title>
+  <desc id="desc">Centered Surfaces lockup with the Simple Slab mark for dark backgrounds.</desc>
+  <g transform="translate(216 72) scale(4.5)" shape-rendering="geometricPrecision">
+    <polygon points="14,14 50,6 50,19 14,27" fill="#F7F6F2"/>
+    <polygon points="10,29 50,29 50,40 10,40" fill="#F7F6F2"/>
+    <polygon points="14,43 50,51 50,58 14,50" fill="#F7F6F2"/>
   </g>
-  <text x="180" y="132" fill="#F7F7F4" text-anchor="middle" font-family="Inter, SF Pro Display, Helvetica Neue, Arial, sans-serif" font-size="54" font-weight="620">Surfaces</text>
+  <text x="360" y="432" text-anchor="middle" fill="#F7F6F2" font-family="Geist, Inter, Arial, sans-serif" font-size="96" font-weight="780" letter-spacing="0">Surfaces</text>
 </svg>

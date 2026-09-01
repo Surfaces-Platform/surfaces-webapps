@@ -262,27 +262,27 @@ export default function Navigation({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Color tokens - matching specification exactly
+  // Color tokens from the active Simple Slab system.
   const colors = {
     light: {
       background: 'rgba(255, 255, 255, 0.98)',
-      text: '#171717',
-      textMuted: '#525252',
-      border: '#E5E5E5',
+      text: '#0B0D0E',
+      textMuted: '#555B60',
+      border: '#DAD7CF',
       menuBg: '#FFFFFF',
-      menuBorder: '#E5E5E5',
-      menuActive: '#F5F5F5',
-      menuHover: '#FAFAFA'
+      menuBorder: '#DAD7CF',
+      menuActive: '#F7F6F2',
+      menuHover: '#F7F6F2'
     },
     dark: {
-      background: 'rgba(23, 23, 23, 0.98)',
-      text: '#FFFFFF',
-      textMuted: '#A3A3A3',
-      border: '#262626',
-      menuBg: '#171717',
-      menuBorder: '#525252',
-      menuActive: '#262626',
-      menuHover: '#1F1F1F'
+      background: 'rgba(11, 13, 14, 0.98)',
+      text: '#F7F6F2',
+      textMuted: '#8B9096',
+      border: '#3C4145',
+      menuBg: '#0B0D0E',
+      menuBorder: '#555B60',
+      menuActive: '#3C4145',
+      menuHover: '#3C4145'
     }
   };
 
@@ -293,33 +293,33 @@ export default function Navigation({
     {
       id: 'surfaces',
       name: 'surfaces.systems',
-      descriptor: 'Canonical source of interface truth'
+      descriptor: 'Product decisions for generated UI'
     },
     {
       id: 'surfaceops',
       name: 'surfaceops.ai',
-      descriptor: 'Operational enforcement and monitoring'
+      descriptor: 'Review operations for product teams'
     },
     {
       id: 'interfacectl',
       name: 'interfacectl.com',
-      descriptor: 'Executable interface control'
+      descriptor: 'Interface checks for engineering teams'
     },
     {
       id: 'surfaces-dev',
       name: 'surfaces.dev',
-      descriptor: 'Developer documentation and reference'
+      descriptor: 'Reference material for builders'
     },
     {
       id: 'judgmentkit',
       name: 'judgmentkit.ai',
-      descriptor: 'Embedded MCP judgment for live design decisions'
+      descriptor: 'Guided review for unclear decisions'
     }
   ];
 
   // System identifier display name
   const identifiers: Record<NavigationSurfaceId, string> = {
-    surfaces: 'Surfaces',
+    surfaces: 'Surfaces Platform',
     surfaceops: 'surfaceops',
     interfacectl: 'interfacectl',
     'surfaces-dev': 'surfaces.dev',
@@ -363,13 +363,33 @@ export default function Navigation({
           <a
             href="/"
             style={{
-              fontSize: '14px',
-              fontWeight: 600,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: currentSurface === 'surfaces' ? '10px' : undefined,
+              minHeight: '44px',
+              fontSize: currentSurface === 'surfaces' ? '15px' : '14px',
+              fontWeight: currentSurface === 'surfaces' ? 750 : 600,
               color: activeTheme.text,
               textDecoration: 'none',
               fontFamily: usesMonoFont ? 'JetBrains Mono, monospace' : 'Inter, sans-serif'
             }}
           >
+            {currentSurface === 'surfaces' ? (
+              <svg
+                width="34"
+                height="34"
+                viewBox="0 0 64 64"
+                aria-hidden="true"
+                focusable="false"
+                style={{ display: 'block', flex: '0 0 auto' }}
+              >
+                <g shapeRendering="geometricPrecision">
+                  <polygon points="14,14 50,6 50,19 14,27" fill={activeTheme.text} />
+                  <polygon points="10,29 50,29 50,40 10,40" fill={activeTheme.text} />
+                  <polygon points="14,43 50,51 50,58 14,50" fill={theme === 'dark' ? '#DAD7CF' : '#8B9096'} />
+                </g>
+              </svg>
+            ) : null}
             {identifiers[currentSurface]}
           </a>
 
@@ -415,6 +435,8 @@ export default function Navigation({
           <div style={{ position: 'relative' }}>
             <button
               onClick={() => setSystemMenuOpen(!systemMenuOpen)}
+              aria-expanded={systemMenuOpen}
+              aria-haspopup="menu"
               style={{
                 fontSize: '14px',
                 fontWeight: 400,
@@ -505,12 +527,12 @@ export default function Navigation({
                             padding: '12px',
                             textDecoration: 'none',
                             borderRadius: '4px',
-                            backgroundColor: isCurrent ? (theme === 'light' ? '#F5F5F5' : '#262626') : 'transparent',
+                            backgroundColor: isCurrent ? activeTheme.menuActive : 'transparent',
                             transition: 'background-color 0.12s linear'
                           }}
                           onMouseEnter={(e) => {
                             if (!isCurrent) {
-                              e.currentTarget.style.backgroundColor = theme === 'light' ? '#FAFAFA' : '#1F1F1F';
+                              e.currentTarget.style.backgroundColor = activeTheme.menuHover;
                             }
                           }}
                           onMouseLeave={(e) => {
