@@ -21,6 +21,17 @@ const homepageContentSource = readFileSync(
   "utf8",
 );
 const layoutSource = readFileSync(resolve(process.cwd(), "app/layout.tsx"), "utf8");
+const emailSubject = "A recent interface release decision";
+const emailBody = [
+  "Hi Mike,",
+  "",
+  "I’d like to compare notes on:",
+  "",
+  "[ ] AI UX when interfaces can act or decide",
+  "[ ] What Human Above The Loop should look like in practice",
+  "[ ] Something else:",
+].join("\n");
+const emailHref = `mailto:mike@surfaces.systems?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
 
 function sha256(value: string | Buffer) {
   return createHash("sha256").update(value).digest("hex");
@@ -118,7 +129,7 @@ describe("surfaces.systems home page", () => {
     );
   });
 
-  it("uses one product action and no service-style contact funnel", () => {
+  it("pairs the hero actions and links to JudgmentKit MCP after How it works", () => {
     const { page, html } = renderHomeDocument();
     const primaryNav = page.querySelector(
       'header nav[aria-label="Primary navigation"]',
@@ -133,20 +144,72 @@ describe("surfaces.systems home page", () => {
     expect(navLinks.map((link) => link.getAttribute("href"))).toEqual([
       "#workload",
       "#product-direction",
+      "https://judgmentkit.ai/",
     ]);
     expect(navLinks.map((link) => link.textContent?.trim())).toEqual([
       "The workload",
       "How it works",
+      "JudgmentKit MCP",
     ]);
 
     const heroActions = Array.from(page.querySelectorAll(".hero .action-row a"));
-    expect(heroActions.map((link) => link.getAttribute("href"))).toEqual(["#product-direction"]);
+    expect(heroActions.map((link) => link.getAttribute("href"))).toEqual([
+      "#product-direction",
+      emailHref,
+    ]);
     expect(
       heroActions.map((link) => link.textContent?.replace(/\s+/g, " ").trim()),
-    ).toEqual(["See how it works"]);
-    expect(page.querySelectorAll('a[href^="mailto:"]')).toHaveLength(0);
+    ).toEqual(["See how it works", "Share a recent release decision"]);
+
+    const emailLinks = Array.from(page.querySelectorAll('a[href^="mailto:"]'));
+    const emailLink = emailLinks[0];
+    const hypothesisNote = Array.from(
+      page.querySelectorAll("#product-direction .loop-note"),
+    ).find(
+      (note) => note.textContent?.replace(/\s+/g, " ").trim() ===
+        "Surfaces is an early product hypothesis. We’re testing it with recent interface release decisions.",
+    );
+    const heroActionRow = page.querySelector(".hero .action-row");
+    const judgmentKitLink = navLinks[2];
+    const mailto = new URL(emailLink?.getAttribute("href") ?? "");
+
+    expect(emailLinks).toHaveLength(1);
+    expect(emailLink?.textContent?.replace(/\s+/g, " ").trim()).toBe(
+      "Share a recent release decision",
+    );
+    expect(emailLink?.getAttribute("aria-label")).toBe(
+      "Share a recent release decision by email with Mike",
+    );
+    expect(emailLink?.matches(".button.button-secondary")).toBe(true);
+    expect(emailLink?.getAttribute("href")).toBe(emailHref);
+    expect(homepageContentSource).toContain(emailHref.replace("&body=", "&amp;body="));
+    expect(mailto.protocol).toBe("mailto:");
+    expect(mailto.pathname).toBe("mike@surfaces.systems");
+    expect(mailto.searchParams.get("subject")).toBe(emailSubject);
+    expect(mailto.searchParams.get("body")).toBe(emailBody);
+    expect(mailto.searchParams.get("body")).not.toContain("A little context:");
+    expect(heroActions[1]).toBe(emailLink);
+    expect(heroActionRow?.lastElementChild).toBe(emailLink);
+    expect(emailLink?.closest(".hero-copy")).not.toBeNull();
+    expect(emailLink?.closest("header")).toBeNull();
+    expect(hypothesisNote?.nextElementSibling).toBeNull();
+    expect(page.querySelector("#product-direction .loop-action-row")).toBeNull();
+    expect(page.querySelector("#product-direction")?.nextElementSibling).toBeNull();
+    expect(page.querySelector("main")?.nextElementSibling?.classList.contains("site-footer")).toBe(
+      true,
+    );
+    expect(homepageCss).toMatch(
+      /@media \(max-width: 620px\)[\s\S]*?\.surfaces-homepage \.button \{\s*width: 100%;\s*\}/,
+    );
     expect(page.querySelectorAll(".nav-action")).toHaveLength(0);
-    expect(page.querySelectorAll('a[href^="http"]')).toHaveLength(0);
+    expect(page.querySelectorAll('a[href^="http"]')).toHaveLength(1);
+    expect(judgmentKitLink?.closest("header")).not.toBeNull();
+    expect(judgmentKitLink?.getAttribute("target")).toBeNull();
+    expect(judgmentKitLink?.getAttribute("rel")).toBeNull();
+    expect(judgmentKitLink?.querySelector("svg")).toBeNull();
+    expect(homepageContentSource).toContain(
+      '<a href="https://judgmentkit.ai/">JudgmentKit MCP</a>',
+    );
     expect(page.querySelectorAll('header [aria-haspopup="menu"]')).toHaveLength(0);
     expect(page.querySelectorAll('header [role="menu"]')).toHaveLength(0);
     expect(page.querySelectorAll('header [role="menuitem"]')).toHaveLength(0);
@@ -197,7 +260,6 @@ describe("surfaces.systems home page", () => {
       "admission boundary",
       "governance harness",
       "Decision record",
-      "mailto:",
     ]) {
       expect(html).not.toContain(retiredCopy);
     }
@@ -218,7 +280,6 @@ describe("surfaces.systems home page", () => {
     for (const internalCopy of [
       "Qualified customer evidence",
       "0 of 4",
-      "mailto:",
       "above the agent work loop",
       "release admission",
       "Request a workflow review",

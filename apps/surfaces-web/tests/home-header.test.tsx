@@ -76,4 +76,35 @@ describe("homepage header", () => {
     expect(button?.getAttribute("aria-expanded")).toBe("false");
     expect(document.body.classList.contains("menu-open")).toBe(false);
   });
+
+  it("places JudgmentKit MCP after How it works and closes the mobile menu", async () => {
+    const button = container.querySelector<HTMLButtonElement>(".menu-button");
+    const navigation = container.querySelector<HTMLElement>("#site-navigation");
+    const links = Array.from(navigation?.querySelectorAll("a") ?? []);
+    const judgmentKitLink = links[2];
+
+    expect(links.map((link) => link.textContent?.trim())).toEqual([
+      "The workload",
+      "How it works",
+      "JudgmentKit MCP",
+    ]);
+    expect(judgmentKitLink?.getAttribute("href")).toBe("https://judgmentkit.ai/");
+    expect(judgmentKitLink?.getAttribute("target")).toBeNull();
+    expect(judgmentKitLink?.getAttribute("rel")).toBeNull();
+
+    await act(async () => {
+      button?.click();
+    });
+
+    judgmentKitLink?.addEventListener("click", (event) => event.preventDefault(), {
+      once: true,
+    });
+    await act(async () => {
+      judgmentKitLink?.click();
+    });
+
+    expect(button?.getAttribute("aria-expanded")).toBe("false");
+    expect(navigation?.dataset.open).toBe("false");
+    expect(document.body.classList.contains("menu-open")).toBe(false);
+  });
 });
