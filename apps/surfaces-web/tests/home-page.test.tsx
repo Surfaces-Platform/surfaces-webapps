@@ -63,6 +63,9 @@ describe("surfaces.systems home page", () => {
     expect(homepageCss).toMatch(
       /\.surfaces-homepage \.hero \.eyebrow\s*\{[^}]*text-transform:\s*uppercase;/,
     );
+    expect(homepageCss).toMatch(
+      /\.surfaces-homepage \.hero \.eyebrow\s*\{[^}]*color:\s*var\(--sp-ui-proof\);/,
+    );
     const heroLead = page.querySelector(".hero-lead")?.textContent?.replace(/\s+/g, " ").trim();
     expect(heroLead).toBe(
       "Resolve clear, repeated violations sooner, so senior judgment stays focused on what’s genuinely new or contested.",
@@ -122,7 +125,7 @@ describe("surfaces.systems home page", () => {
     expect(page.querySelectorAll(".proof-section")).toHaveLength(0);
     expect(page.querySelectorAll(".partner-section")).toHaveLength(0);
     expect(sha256(homepageCss)).toBe(
-      "4fd18e97df94e6653389348d79c3a17dc31cdb9b65c1b7cadb7d423daf8d7b14",
+      "70c885f588356f49e19204fe47a268c58364b971d4b26c067c4eabd5359b927c",
     );
     expect(sha256(slabAsset)).toBe(
       "8901f5ad73c5a96aeb10647e98fc9e9f6151bf55152911e948e3be0343e3a64f",
