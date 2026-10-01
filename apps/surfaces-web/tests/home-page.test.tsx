@@ -58,7 +58,7 @@ describe("surfaces.systems home page", () => {
     );
     expect(
       page.querySelector(".hero-copy > .eyebrow")?.textContent?.replace(/\s+/g, " ").trim(),
-    ).toBe("For teams reviewing agent-produced interfaces");
+    ).toBe("For teams turning UI review into reusable guidance");
     expect(page.querySelector(".hero-copy > .eyebrow + h1")?.id).toBe("hero-title");
     expect(homepageCss).toMatch(
       /\.surfaces-homepage \.hero \.eyebrow\s*\{[^}]*text-transform:\s*uppercase;/,
