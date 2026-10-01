@@ -56,7 +56,10 @@ describe("surfaces.systems home page", () => {
     expect(page.querySelector("h1")?.textContent?.replace(/\s+/g, " ").trim()).toBe(
       "Make every release decision reusable.",
     );
-    expect(page.querySelector(".eyebrow")).toBeNull();
+    expect(
+      page.querySelector(".hero-copy > .eyebrow")?.textContent?.replace(/\s+/g, " ").trim(),
+    ).toBe("For design system and platform teams");
+    expect(page.querySelector(".hero-copy > .eyebrow + h1")?.id).toBe("hero-title");
     const heroLead = page.querySelector(".hero-lead")?.textContent?.replace(/\s+/g, " ").trim();
     expect(heroLead).toBe(
       "Resolve clear, repeated violations sooner, so senior judgment stays focused on what’s genuinely new or contested.",

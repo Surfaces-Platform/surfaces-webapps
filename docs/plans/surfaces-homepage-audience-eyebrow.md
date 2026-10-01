@@ -1,0 +1,64 @@
+# Feature Plan
+
+## Summary
+
+Add one audience eyebrow above the surfaces.systems homepage headline: `For design system and platform teams`. The line answers who Surfaces is made for without changing the existing release-decision story, calls to action, or visual system.
+
+This plan supersedes only the prior homepage criterion that required the audience eyebrow to be absent.
+
+## Strategy alignment
+
+The eyebrow names the teams responsible for turning interface-release decisions into reusable guidance. The existing headline and supporting copy continue to explain the decision filter: clear repeat violations can be resolved from accepted guidance, while new or contested cases reach senior review.
+
+## Contract impact
+
+### 1. Contract definition
+
+The `landing.hero` contract gains exactly one audience eyebrow immediately before the primary heading. Its text is `For design system and platform teams`.
+
+The hero headline, supporting copy, actions, visual, and section order remain unchanged.
+
+### 2. Enforcement timing
+
+`CI/CD time` applies. The focused homepage test checks the eyebrow's exact text and its placement directly before the `h1`.
+
+No `Generation time` or `Runtime (edge)` behavior changes.
+
+### 3. Violation handling
+
+A missing, duplicated, renamed, or misplaced eyebrow is blocked by the homepage test before release.
+
+## Surface impact
+
+- `surfaces.systems`: clarifies the intended audience in the hero.
+- `surfaceops.ai`: unchanged.
+- `interfacectl`: unchanged.
+
+## Non-goals
+
+- No headline, supporting-copy, navigation, metadata, or call-to-action changes.
+- No new visual tokens, components, assets, or responsive behavior.
+- No product-evidence or customer-outcome claims.
+- No deployment or production promotion in this change.
+
+## Acceptance criteria
+
+1. The hero displays `For design system and platform teams` above the headline.
+2. The eyebrow appears exactly once.
+3. The eyebrow is the direct sibling immediately before the hero `h1`.
+4. The existing eyebrow style is reused without CSS changes.
+5. The headline, supporting copy, calls to action, and section order remain unchanged.
+6. The focused homepage test passes.
+7. Desktop and mobile browser checks show no clipping, overlap, or horizontal overflow.
+
+## Risks and drift checks
+
+1. Risk: The audience line expands into unsupported positioning or customer proof. Mitigation: keep the eyebrow to the audience name only.
+2. Risk: The new line competes with the headline. Mitigation: reuse the existing muted eyebrow style and verify both desktop and mobile layouts.
+3. Risk: The change drifts into design tooling or orchestration language. Mitigation: name the teams without adding process, tool, or workflow claims.
+
+## Implementation outline
+
+1. Add the eyebrow to the static homepage source.
+2. Replace the no-eyebrow assertion with exact copy and placement checks.
+3. Run the focused homepage test, type check, and responsive browser verification.
