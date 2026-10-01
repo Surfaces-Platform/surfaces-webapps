@@ -414,7 +414,9 @@ body.menu-open {
 }
 
 .surfaces-homepage .hero .eyebrow {
-  color: var(--sp-ui-proof);
+  padding-left: 10px;
+  border-left: 2px solid var(--sp-ui-proof);
+  color: var(--sp-color-mist);
   text-transform: uppercase;
 }
 
