@@ -58,8 +58,11 @@ describe("surfaces.systems home page", () => {
     );
     expect(
       page.querySelector(".hero-copy > .eyebrow")?.textContent?.replace(/\s+/g, " ").trim(),
-    ).toBe("For design system and platform teams");
+    ).toBe("For teams reviewing agent-produced interfaces");
     expect(page.querySelector(".hero-copy > .eyebrow + h1")?.id).toBe("hero-title");
+    expect(homepageCss).toMatch(
+      /\.surfaces-homepage \.hero \.eyebrow\s*\{[^}]*text-transform:\s*uppercase;/,
+    );
     const heroLead = page.querySelector(".hero-lead")?.textContent?.replace(/\s+/g, " ").trim();
     expect(heroLead).toBe(
       "Resolve clear, repeated violations sooner, so senior judgment stays focused on what’s genuinely new or contested.",
@@ -119,7 +122,7 @@ describe("surfaces.systems home page", () => {
     expect(page.querySelectorAll(".proof-section")).toHaveLength(0);
     expect(page.querySelectorAll(".partner-section")).toHaveLength(0);
     expect(sha256(homepageCss)).toBe(
-      "3d22d674dc5350896d8da634a4f34996b4ea2743b3a6fb470ed933d3513109db",
+      "4fd18e97df94e6653389348d79c3a17dc31cdb9b65c1b7cadb7d423daf8d7b14",
     );
     expect(sha256(slabAsset)).toBe(
       "8901f5ad73c5a96aeb10647e98fc9e9f6151bf55152911e948e3be0343e3a64f",

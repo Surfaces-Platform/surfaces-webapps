@@ -2,19 +2,19 @@
 
 ## Summary
 
-Add one audience eyebrow above the surfaces.systems homepage headline: `For design system and platform teams`. The line answers who Surfaces is made for without changing the existing release-decision story, calls to action, or visual system.
+Add one audience eyebrow above the surfaces.systems homepage headline: `For teams reviewing agent-produced interfaces`. The line answers who Surfaces is made for without changing the existing release-decision story or calls to action. It uses the existing eyebrow style with its text rendered in uppercase.
 
 This plan supersedes only the prior homepage criterion that required the audience eyebrow to be absent.
 
 ## Strategy alignment
 
-The eyebrow names the teams responsible for turning interface-release decisions into reusable guidance. The existing headline and supporting copy continue to explain the decision filter: clear repeat violations can be resolved from accepted guidance, while new or contested cases reach senior review.
+The eyebrow names teams through the work they are doing: reviewing agent-produced interfaces. The existing headline and supporting copy continue to explain the decision filter: clear repeat violations can be resolved from accepted guidance, while new or contested cases reach senior review.
 
 ## Contract impact
 
 ### 1. Contract definition
 
-The `landing.hero` contract gains exactly one audience eyebrow immediately before the primary heading. Its text is `For design system and platform teams`.
+The `landing.hero` contract gains exactly one audience eyebrow immediately before the primary heading. Its text is `For teams reviewing agent-produced interfaces`, and the hero eyebrow is visually transformed to uppercase.
 
 The hero headline, supporting copy, actions, visual, and section order remain unchanged.
 
@@ -37,23 +37,23 @@ A missing, duplicated, renamed, or misplaced eyebrow is blocked by the homepage 
 ## Non-goals
 
 - No headline, supporting-copy, navigation, metadata, or call-to-action changes.
-- No new visual tokens, components, assets, or responsive behavior.
+- No new visual tokens, components, assets, or responsive behavior beyond the uppercase eyebrow treatment.
 - No product-evidence or customer-outcome claims.
 - No deployment or production promotion in this change.
 
 ## Acceptance criteria
 
-1. The hero displays `For design system and platform teams` above the headline.
+1. The hero contains `For teams reviewing agent-produced interfaces` above the headline.
 2. The eyebrow appears exactly once.
 3. The eyebrow is the direct sibling immediately before the hero `h1`.
-4. The existing eyebrow style is reused without CSS changes.
+4. The existing eyebrow style is reused and renders the text in uppercase.
 5. The headline, supporting copy, calls to action, and section order remain unchanged.
 6. The focused homepage test passes.
 7. Desktop and mobile browser checks show no clipping, overlap, or horizontal overflow.
 
 ## Risks and drift checks
 
-1. Risk: The audience line expands into unsupported positioning or customer proof. Mitigation: keep the eyebrow to the audience name only.
+1. Risk: The audience line expands into unsupported positioning or customer proof. Mitigation: describe the team's review responsibility without adding an outcome claim.
 2. Risk: The new line competes with the headline. Mitigation: reuse the existing muted eyebrow style and verify both desktop and mobile layouts.
 3. Risk: The change drifts into design tooling or orchestration language. Mitigation: name the teams without adding process, tool, or workflow claims.
 
