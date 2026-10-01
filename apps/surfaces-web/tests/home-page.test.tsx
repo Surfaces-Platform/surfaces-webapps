@@ -56,7 +56,19 @@ describe("surfaces.systems home page", () => {
     expect(page.querySelector("h1")?.textContent?.replace(/\s+/g, " ").trim()).toBe(
       "Make every release decision reusable.",
     );
-    expect(page.querySelector(".eyebrow")).toBeNull();
+    expect(
+      page.querySelector(".hero-copy > .eyebrow")?.textContent?.replace(/\s+/g, " ").trim(),
+    ).toBe("For teams turning UI review into reusable guidance");
+    expect(page.querySelector(".hero-copy > .eyebrow + h1")?.id).toBe("hero-title");
+    expect(homepageCss).toMatch(
+      /\.surfaces-homepage \.hero \.eyebrow\s*\{[^}]*text-transform:\s*uppercase;/,
+    );
+    expect(homepageCss).toMatch(
+      /\.surfaces-homepage \.hero \.eyebrow\s*\{[^}]*color:\s*var\(--sp-color-mist\);/,
+    );
+    expect(homepageCss).toMatch(
+      /\.surfaces-homepage \.hero \.eyebrow\s*\{[^}]*border-left:\s*2px solid var\(--sp-ui-proof\);/,
+    );
     const heroLead = page.querySelector(".hero-lead")?.textContent?.replace(/\s+/g, " ").trim();
     expect(heroLead).toBe(
       "Resolve clear, repeated violations sooner, so senior judgment stays focused on what’s genuinely new or contested.",
@@ -116,7 +128,7 @@ describe("surfaces.systems home page", () => {
     expect(page.querySelectorAll(".proof-section")).toHaveLength(0);
     expect(page.querySelectorAll(".partner-section")).toHaveLength(0);
     expect(sha256(homepageCss)).toBe(
-      "3d22d674dc5350896d8da634a4f34996b4ea2743b3a6fb470ed933d3513109db",
+      "e9dbeaa0af92eea58ac948ba67eacc9ac8eb96537c474507e2cc25651735a671",
     );
     expect(sha256(slabAsset)).toBe(
       "8901f5ad73c5a96aeb10647e98fc9e9f6151bf55152911e948e3be0343e3a64f",
