@@ -200,22 +200,15 @@ body.menu-open {
   display: inline-flex;
   min-height: 44px;
   align-items: center;
-  gap: 10px;
   color: var(--sp-color-mist);
-  font-size: var(--jk-font-size-body-large);
-  font-weight: var(--jk-font-weight-semibold);
-  line-height: var(--jk-line-height-tight);
   text-decoration: none;
 }
 
-.surfaces-homepage .brand-mark {
-  width: 32px;
-  height: 32px;
-  fill: var(--sp-color-mist);
-}
-
-.surfaces-homepage .brand-mark-muted {
-  fill: var(--sp-color-ash);
+.surfaces-homepage .brand-lockup {
+  display: block;
+  width: 172px;
+  height: 40px;
+  flex-shrink: 0;
 }
 
 .surfaces-homepage .site-navigation {
@@ -1199,10 +1192,6 @@ body.menu-open {
 
 .surfaces-homepage .footer-brand {
   color: var(--sp-color-mist);
-}
-
-.surfaces-homepage .brand-mark-reversed {
-  fill: var(--sp-color-mist);
 }
 
 .surfaces-homepage .footer-inner p {

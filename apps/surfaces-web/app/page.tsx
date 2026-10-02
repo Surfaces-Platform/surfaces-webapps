@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import Link from "next/link";
 import HomeHeader from "./HomeHeader";
+import HomeBrand from "./HomeBrand";
 import "./homepage.css";
 
 const appRoot = process.cwd().endsWith(path.join("apps", "surfaces-web"))
@@ -88,19 +89,7 @@ export default function Home() {
             href="/"
             aria-label="Surfaces home"
           >
-            <svg
-              className="brand-mark brand-mark-reversed"
-              viewBox="0 0 64 64"
-              aria-hidden="true"
-            >
-              <polygon points="14,14 50,6 50,19 14,27" />
-              <polygon points="10,29 50,29 50,40 10,40" />
-              <polygon
-                className="brand-mark-muted"
-                points="14,43 50,51 50,58 14,50"
-              />
-            </svg>
-            <span>Surfaces</span>
+            <HomeBrand />
           </Link>
           <p>Release decisions that become reusable guidance.</p>
           <p>© {new Date().getFullYear()} Surfaces</p>
