@@ -1,0 +1,331 @@
+/* src/styles.css */
+:root {
+  color-scheme: only light;
+  --ink:#0f2530;
+  --muted:#4f6470;
+  --line:#d5e0e5;
+  --bg:#f3f7f8;
+  --card:#fff;
+  --sea:#0b6e8a;
+  --sea-fill:#d8edf3;
+  --high:#0b5f78;
+  --low:#8a5a12;
+  --now:#c2410c;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  line-height: 1.4;
+}
+.app {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 20px 16px 32px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr;
+}
+h1 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+p {
+  margin: 0;
+}
+.meta {
+  color: var(--muted);
+  font-size: .9rem;
+}
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+}
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  align-items: end;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.field {
+  display: grid;
+  gap: 6px;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.field > span,
+.field legend {
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 0;
+}
+.field legend {
+  margin-bottom: 6px;
+}
+select {
+  font: inherit;
+  font-size: 1rem;
+  min-height: 44px;
+  min-width: 230px;
+  padding: 8px 36px 8px 12px;
+  border: 1px solid #9fb3bd;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+}
+.seg {
+  display: inline-flex;
+  border: 1px solid #9fb3bd;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.seg button {
+  font: inherit;
+  font-size: 1rem;
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 0;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+}
+.seg button + button {
+  border-left: 1px solid #9fb3bd;
+}
+.seg button[aria-pressed=true] {
+  background: var(--sea);
+  color: #fff;
+  font-weight: 600;
+}
+select:focus-visible,
+.seg button:focus-visible,
+summary:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 2px;
+}
+.now-card,
+.next-card,
+.chart-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+}
+.eyebrow {
+  font-size: .9rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+.reading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  margin: 6px 0 4px;
+}
+.big {
+  font-size: 3.4rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.big small {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.trend {
+  font-size: 1.35rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+.trend.up {
+  background: #dff3ea;
+  color: #0d6b45;
+}
+.trend.down {
+  background: #fdeedd;
+  color: #8a4b0b;
+}
+.hint {
+  color: var(--muted);
+}
+.next {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.next-card {
+  border-top: 4px solid var(--high);
+}
+.next-card.low {
+  border-top-color: var(--low);
+}
+.next-card .label {
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.next-card .when {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 2px 0;
+}
+.next-card .sub {
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+.chart-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2px 12px;
+  margin-bottom: 6px;
+}
+.chart {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.chart .grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.chart .tick {
+  font-size: 13px;
+  fill: var(--muted);
+}
+.chart .tick.dim {
+  font-size: 11px;
+}
+.chart .axis-title {
+  font-size: 13px;
+  font-weight: 600;
+  fill: var(--muted);
+}
+.chart .area {
+  fill: var(--sea-fill);
+}
+.chart .line {
+  fill: none;
+  stroke: var(--sea);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+.chart .now {
+  stroke: var(--now);
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+}
+.chart .now-label {
+  font-size: 13px;
+  font-weight: 700;
+  fill: var(--now);
+}
+.chart .now-dot {
+  fill: var(--now);
+  stroke: #fff;
+  stroke-width: 2;
+}
+.chart .ev text {
+  font-size: 13px;
+  font-weight: 600;
+}
+.chart .ev.high circle {
+  fill: var(--high);
+}
+.chart .ev.high text {
+  fill: var(--high);
+}
+.chart .ev.low circle {
+  fill: var(--low);
+}
+.chart .ev.low text {
+  fill: var(--low);
+}
+.table {
+  margin-top: 8px;
+}
+summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--sea);
+  min-height: 32px;
+  padding: 4px 0;
+}
+table {
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+  margin-top: 6px;
+  font-size: .92rem;
+}
+th,
+td {
+  text-align: left;
+  padding: 3px 16px 3px 0;
+  border-bottom: 1px solid var(--line);
+}
+tr.cur td {
+  font-weight: 700;
+  color: var(--now);
+}
+@media (min-width: 860px) {
+  .app {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    padding-top: 28px;
+  }
+  .top,
+  .controls,
+  .chart-card {
+    grid-column: 1/-1;
+  }
+}
+@media (max-width: 420px) {
+  .controls {
+    display: grid;
+  }
+  select {
+    min-width: 0;
+    width: 100%;
+  }
+  .seg {
+    display: flex;
+  }
+  .seg button {
+    flex: 1;
+  }
+  .big {
+    font-size: 3rem;
+  }
+  .next-card .when {
+    font-size: 1.25rem;
+  }
+}
+:root {
+  color-scheme: only light !important;
+}

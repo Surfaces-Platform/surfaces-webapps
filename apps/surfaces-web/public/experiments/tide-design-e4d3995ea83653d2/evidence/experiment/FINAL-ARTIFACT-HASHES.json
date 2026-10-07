@@ -1,0 +1,81 @@
+{
+  "source_and_build_sha256": {
+    "gpt-d": {
+      "src/App.jsx": "54e19e15896a090b01b087d6c74e28ceeec254bb0b0f83ee6e65300559c0f8c6",
+      "src/main.jsx": "bff7940aa0d526751cacd8f05d24891ee890a2f74f653fb3128ead4638a256d9",
+      "src/styles.css": "902adc84bd9a6ac5737f6c30cd7da74ddfe07af520840c5a3a2d794ef26cf515",
+      "dist/app.css": "277eccf7380b15448723284a4b4531acf126f34e23b08f9ee595a0962288340a",
+      "dist/app.js": "b86c5b737dda61eeae03dac467a611f5462c8d43627a2b288d1bd7802e41467e",
+      "dist/data.js": "6e8804d88335cdf2ad2a968b61edfd53b9f4792102f482459fa9500d9d741d5f",
+      "dist/index.html": "ffcccccd82e1a0d7e0d72259eac6a4d382bd6aca3703eb7622562da7fd75e65f"
+    },
+    "opus-d": {
+      "src/App.jsx": "95c34b2a638d8878becc5f25e8af3f7bc89da95e91a292040aba9c3676f55a3f",
+      "src/main.jsx": "bff7940aa0d526751cacd8f05d24891ee890a2f74f653fb3128ead4638a256d9",
+      "src/styles.css": "9fa81c7209b870f7d4aa987a8abd7e66bb6dd50f43e72b40de120a97d01c2418",
+      "dist/app.css": "268847bd0c4bb2c4770d364a18d0e0ed53bbed948722b738b31540b204a2bdab",
+      "dist/app.js": "07b97a6120f27359ce8cbfb16f6701deaa6ba193e998bfaa0c48559ae7d9dbf7",
+      "dist/data.js": "6e8804d88335cdf2ad2a968b61edfd53b9f4792102f482459fa9500d9d741d5f",
+      "dist/index.html": "ffcccccd82e1a0d7e0d72259eac6a4d382bd6aca3703eb7622562da7fd75e65f"
+    },
+    "gpt-a": {
+      "src/App.jsx": "90e8ef9970f016d60e6a35e3c60e69c53699a33cf522e947cf475a8295e51e31",
+      "src/main.jsx": "bff7940aa0d526751cacd8f05d24891ee890a2f74f653fb3128ead4638a256d9",
+      "src/styles.css": "54d03f2ed731b5d210184e23c6ea42de6c8f7d73813bbefcef1866c8851e0e02",
+      "src/tokens.css": "2fb5acf0fe5fa504d1f5ce9712202faa1d9c7eafc5109fe94ffd07b7a77c964c",
+      "dist/app.css": "f0250653cf816b6fd3f461c1f3776413968c0ad12181b612a0368e5f20ef8d89",
+      "dist/app.js": "e1aa0df230bc3ad548c6556e98e6a520ade4a9c9b4725a42cff6bf90e9b6b063",
+      "dist/data.js": "6e8804d88335cdf2ad2a968b61edfd53b9f4792102f482459fa9500d9d741d5f",
+      "dist/index.html": "ffcccccd82e1a0d7e0d72259eac6a4d382bd6aca3703eb7622562da7fd75e65f"
+    },
+    "opus-a": {
+      "src/App.jsx": "267ee160d7e9fe3d70265f6c49572a648019c19dcb43c3d4f97d8102694da46f",
+      "src/TideChart.jsx": "59e8248086cd65e38bd98469181a42041f3930a90cb822dbe1eebf415b71f635",
+      "src/jk-tokens.css": "fe6d13b4959c5a333dd714114e28505f1b6978a0d70dbddaf4191f6e02c21a7b",
+      "src/main.jsx": "0918a9dd031d41e7902aa0d95c9440cddf3ad9bd7ce5d334bc92dea105722be3",
+      "src/styles.css": "02880dd92a14475205fedc8c21b82b12e3cde1a7da4e90d49d7753bd2e1e53e3",
+      "src/tide.js": "cf59433665313af591d3b5695fee75c8fae4a218f0470fb841f8d55c70786b7c",
+      "dist/app.css": "531a83daf2f2149d070c013b0cedc7327b6f9a7845d74f50089e19a36cfc3cba",
+      "dist/app.js": "6ea24730c7e456238f15f1ed4e61aca0b4ff86227485c9417f37f19c3b16aacd",
+      "dist/data.js": "6e8804d88335cdf2ad2a968b61edfd53b9f4792102f482459fa9500d9d741d5f",
+      "dist/index.html": "849616db4567776e47f52c424939830aef0040d65b4f7e19688f55c2ac6bd2ab"
+    },
+    "gpt-c": {
+      "src/App.jsx": "63b691e756cd557798f4a639f9a865e3db2ecc04c0d883ad3a68c3c10e860b75",
+      "src/main.jsx": "bff7940aa0d526751cacd8f05d24891ee890a2f74f653fb3128ead4638a256d9",
+      "src/styles.css": "913077d2b413a349a853cf32a11df9a497eafdc4766b4e88c89ff47808980b4c",
+      "dist/app.css": "9b34bd22f5705c21fffa38dceb303199df5d897e51c5b86ee04f578876303ddb",
+      "dist/app.js": "27312b2edd508d825a6f84bfc38db23cdb67ad5248819f68b3b82fa2ee954011",
+      "dist/data.js": "6e8804d88335cdf2ad2a968b61edfd53b9f4792102f482459fa9500d9d741d5f",
+      "dist/index.html": "ffcccccd82e1a0d7e0d72259eac6a4d382bd6aca3703eb7622562da7fd75e65f"
+    },
+    "opus-c": {
+      "src/App.jsx": "41fcb7ad55ba0b07adc49472b03ec4de0181f906b3f480246613890119cb3759",
+      "src/main.jsx": "bff7940aa0d526751cacd8f05d24891ee890a2f74f653fb3128ead4638a256d9",
+      "src/styles.css": "3148ea4098941e193c7cdca9f7de40676b72339fa31cc48b5f33c554afab5840",
+      "dist/app.css": "d6dc5fd344103aed5bab35da5adbbfd1d938100066ea93e77480ec1aa4778378",
+      "dist/app.js": "2940dc73b55747509666004a31c8dfe4939180ff585ee68a4300babfd88200cf",
+      "dist/data.js": "6e8804d88335cdf2ad2a968b61edfd53b9f4792102f482459fa9500d9d741d5f",
+      "dist/index.html": "ffcccccd82e1a0d7e0d72259eac6a4d382bd6aca3703eb7622562da7fd75e65f"
+    },
+    "gpt-b": {
+      "src/App.jsx": "0c9aaa7f08ba0d714e98b57cf9033110938521898d88b1399ba06880f4a0ce37",
+      "src/main.jsx": "bff7940aa0d526751cacd8f05d24891ee890a2f74f653fb3128ead4638a256d9",
+      "src/styles.css": "63c097dbe944810d0c5b0f26cb6d6bbf6a7e6127e118d9dd7e4b9d8527213e7e",
+      "dist/app.css": "eae92654fa6b2f63f895958d6529e4a7fc8956e0d876d1860824e7c1f478de5f",
+      "dist/app.js": "22aa9f097d4e0bc07e2df0b4afaaba2a5364241f130eb8725c39bcd6e0cd0b74",
+      "dist/data.js": "6e8804d88335cdf2ad2a968b61edfd53b9f4792102f482459fa9500d9d741d5f",
+      "dist/index.html": "ffcccccd82e1a0d7e0d72259eac6a4d382bd6aca3703eb7622562da7fd75e65f"
+    },
+    "opus-b": {
+      "src/App.jsx": "d1687073c7b337d1b77f9d4bd40a4fc3354f68184e7b737e1f1d3d99e761a28f",
+      "src/main.jsx": "bff7940aa0d526751cacd8f05d24891ee890a2f74f653fb3128ead4638a256d9",
+      "src/styles.css": "23ebfbf782c399e18923c036c4a81266e04ecd555f790f23d5767793badb825e",
+      "dist/app.css": "2e0ff72dfd6d71df149ee866db04fcf947a7b993d5ce0418ee59dde59e283af8",
+      "dist/app.js": "eaa6935111f945b3817321602a3a608c32bff3d891aeedd4c388359dc07e6ac6",
+      "dist/data.js": "6e8804d88335cdf2ad2a968b61edfd53b9f4792102f482459fa9500d9d741d5f",
+      "dist/index.html": "f00fdd84e7b707ae7c74e7069357a619e9b2f6513cbaf13152c1e4dd6d09d818"
+    }
+  },
+  "data_sha256": "6e8804d88335cdf2ad2a968b61edfd53b9f4792102f482459fa9500d9d741d5f"
+}

@@ -1,0 +1,125 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Claude Opus 5.5 / Impeccable run record</title><style>:root{color-scheme:only light}body{font:17px/1.6 system-ui;max-width:1050px;margin:32px auto;padding:0 20px;color:#152432;background:#fff}h1{font-size:30px}h2{font-size:24px;margin-top:32px}a{color:#1259a3}table{border-collapse:collapse;width:100%;font-size:15px}td,th{padding:10px;border:1px solid #d6dde3;text-align:left;vertical-align:top}pre{overflow:auto;background:#f3f5f7;padding:16px}code{font-size:.92em}img{max-width:100%}@media(max-width:700px){table{display:block;overflow:auto}}</style><meta name="robots" content="noindex, nofollow, noarchive"></head><body><nav><a href="../../report.html">Full report</a> · <a href="RUN.md">Raw run record</a></nav><p>Status: complete</p>
+<p>The parent's final QA hold has been repaired. In a tab loaded at desktop size and then resized to mobile, the chart kept its 1120px width and the page overflowed. The fix is one CSS declaration. A fresh finish-reviewer pass scored the repair <strong>ship</strong>, with no regressions (<code>.impeccable/finish/verdict-3.md</code>). A fresh documenter synced DESIGN.md and design.json. Build, <code>npm run check</code>, the 112-check matrix, and a new 112-transition resize matrix all pass. See "Resize repair" below. The pre-fix source, dist, docs, RUN.md and receipts are kept unchanged in <code>evidence/before-resize-fix/</code> (MD5SUMS).</p>
+<p>Everything below "Resize repair" is the earlier record. It describes the bytes before the fix, which were shipped under verdict-2.</p>
+<p>The app is built and documented, and every data check passes. A fresh finish-reviewer verdict pass returned <strong>ship</strong> (<code>.impeccable/finish/verdict-2.md</code>). The documenter has synced DESIGN.md and <code>.impeccable/design.json</code> to the final source. The final detector run returned <code>[]</code>.</p>
+<p>History: the first session stopped at its $3 cap with Status: partial, while the latest verdict was still <strong>fix</strong>. This continuation session did the remaining work; see "Continuation" below. All earlier receipts are kept unchanged.</p>
+<h2>Resize repair (third session, parent final technical QA)</h2>
+<ul>
+<li><strong>Inputs:</strong> RUN.md, the receipts and RESPONSIVE-RESIZE-REPAIR.md. The parent's <code>evidence/parent/resizing-before.png</code> and <code>.json</code> were <strong>not present</strong> in this directory; only <code>ship-RUN-before-resize-fix.md</code> was there. I reproduced the finding myself instead.</li>
+<li><strong>Reproduction:</strong> <code>evidence/resize/resize-qa.cjs before</code> on the old dist. It runs 112 same-tab transitions: 14 locations × 2 days × {desktop→mobile, mobile→desktop} × {file://, HTTP}, keeping the selection.</li>
+<li>Result: 56 failures. Every desktop→mobile case gives scrollWidth=1136, with <code>.now</code>, <code>.chart</code> and the SVG all at 1120px. This matches the parent's numbers.</li>
+<li>Saved as <code>evidence/resize/resize-before.json</code> and <code>before-desktop-to-mobile.png</code>.</li>
+<li><strong>Root cause:</strong> <code>.sheet</code> is a grid with an implicit <code>auto</code> track. The SVG's explicit <code>width</code> (set from ResizeObserver) became the grid item's minimum content width. The track therefore could not shrink, the observed frame never got narrower, and ResizeObserver never reported a smaller width.</li>
+<li><strong>Fix (the only source change):</strong> <code>src/styles.css</code> <code>.sheet { grid-template-columns: minmax(0, 1fr); }</code>, with a one-line comment.</li>
+<li>No JS change, and no clip, hide or overflow rule.</li>
+<li>The reviewer confirmed <code>dist/app.js</code> and <code>dist/index.html</code> are byte-identical to the pre-fix copies. <code>dist/app.css</code> differs only by that declaration.</li>
+<li>craft-floor was re-read immediately before the edit.</li>
+<li><strong>QA after the fix:</strong></li>
+<li><code>npm run build</code> passes.</li>
+<li>Resize matrix (<code>evidence/resize/resize-after.json</code>): 112/112 pass, console errors []. Each case checks no overflow, SVG width = chart width, the desktop SVG growing back to 1120, selection kept, height, event count and the noon marker.</li>
+<li>Crescent City, Oct 7, desktop→mobile: scrollWidth 390, chart and SVG 358px, narrow 5-tick axis, 260px height.</li>
+<li>Back to desktop: 1120px.</li>
+<li>Interaction after each transition (<code>evidence/resize/resized-interaction.json</code>):<ul>
+<li>Keyboard: → gives 1:00 p.m. · 2.99 m, End gives 12:00 midnight, Oct 8 · 2.07 m, Home and Esc work.</li>
+<li>Pointer scrub: mobile 2:00 p.m. · 3.65 m, desktop 3:00 p.m. · 3.90 m, the same as the initial-load matrix.</li>
+<li>Event labels render, and the select caret is present.</li>
+</ul>
+</li>
+<li>Final matrix rerun (<code>evidence/qa/qa-matrix.json</code>): 112 checks, 0 failures, errors [], requests <code>/</code>, <code>/app.css</code>, <code>/data.js</code>, <code>/app.js</code>.</li>
+<li><code>npm run check</code>: errors [], no overflow at either viewport.</li>
+<li>Screenshots were recaptured, and I inspected before and after for desktop→mobile, the full page for mobile→desktop, and the desktop scrub.</li>
+<li><strong>Resource calls:</strong></li>
+<li><code>./impeccable detect --json src/App.jsx src/styles.css dist/index.html</code> → <code>[]</code> (resource-log/11).</li>
+<li>Same command after the docs sync → <code>[]</code> (resource-log/12).</li>
+<li>No seed draw, reroll, interview or other resource was used.</li>
+<li><strong>Finish reviewer:</strong> a fresh <code>impeccable-finish-reviewer</code> (agent a05799a22ead4167b, model <code>opus</code> = claude-opus-5-5, medium effort requested in the prompt, given only this run's packet plus an appended "Resize-repair packet" section).</li>
+<li>Repair: <strong>resolved</strong>. Regressions: none. Disposition <strong>ship</strong>.</li>
+<li>Receipt: <code>.impeccable/finish/verdict-3.md</code>.</li>
+<li>Its scope: the narrow repair plus a regression check, building on verdict-2. It was not a new full-surface review.</li>
+<li>review.md, verdict.md and verdict-2.md were confirmed byte-identical to the snapshot.</li>
+<li><strong>Documenter:</strong> a fresh <code>impeccable-documenter</code> (agent af9c24ce6da77a93e, <code>opus</code>, medium).</li>
+<li>Added "The Fluid Sheet Rule" and a paragraph on the chart's narrow form (switches below a measured 560px) to DESIGN.md Layout.</li>
+<li>Added a <code>chart-narrow</code> breakpoint, the rule, and detector provenance to <code>.impeccable/design.json</code>; the JSON parses.</li>
+<li>Remaining drift: <code>--ultra-soft</code> is declared but unused, as already recorded.</li>
+<li><strong>Final hashes (md5):</strong></li>
+<li>Source: src/App.jsx d33ddc0dcb49f4b9249aafe70db5d049 (unchanged), src/styles.css 8662911db223657f9931c933848ac01c (was d395ba35dc43ee5c3784896fe16aabd1), index.html c80af3f80a8df8b2dc7aad5ac91beb93.</li>
+<li>Dist: app.css 8650a46f4de35aaa88fc8adb3ad150c2 (was 889e221a692746d6bae0d24f1f8bc8ab), app.js 6b80a129597e810df0659ca9786b153d, data.js 18ec8e3bba4296b136276ed5d9b28ef2 (= public/data.js).</li>
+<li>Docs: DESIGN.md b93c19127b5038367cf10eb6d57c4d71, design.json 2f70ae00dc69811668cc1ac507772bed.</li>
+<li>Receipts: verdict-3.md 02a65de49508ce06de7f2168b158a6ad.</li>
+<li><strong>Limitations:</strong></li>
+<li>The resize tests use Playwright <code>setViewportSize</code> in headless Chrome. They approximate dragging a real window, not an OS-level drag.</li>
+<li>Sizes between the two viewports were only tested through the layout rules, not checked individually.</li>
+<li>The parent's own screenshot and JSON were unavailable for comparison.</li>
+<li><strong>Cost:</strong> this session used about $1.2 of its $3 cap, including both agent calls. The 6000-token soft target was again exceeded.</li>
+</ul>
+<h2>Outcome</h2>
+<ul>
+<li>Built: <code>src/App.jsx</code>, <code>src/styles.css</code> → <code>dist/</code> (index.html, app.js, app.css, unchanged data.js). <code>npm run build</code> and <code>npm run check</code> pass: no errors, no overflow at 1280x800 or 390x844.</li>
+<li>Design: location (native select, 14 locations), day (2-option segmented radio). Shows the noon height (m), rising/falling, next high and low (time, height, hours from noon), and a 24-hour SVG chart. The chart y-scale is computed from the selected samples, and you can scrub it by pointer or keyboard. Light only; no demo banners.</li>
+</ul>
+<h2>Resource calls (exact outputs kept in <code>resource-log/</code>)</h2>
+<ol>
+<li><code>./impeccable context</code> → NO_PRODUCT_MD, PRODUCT_INIT_REQUIRED, MANUAL_DETECTOR_REQUIRED, BUILD_PATH_DEFAULT: code, no image generation. (01)</li>
+<li><code>./impeccable concept-seed --help</code>: this was an <strong>accidental</strong> call. The flag was not recognized and the tool ran an unscoped surface roll, key aaa47392. I did not use its result. (02 rerun)</li>
+<li><code>./impeccable concept-seed --scope direction --mode operate</code> → key <strong>b3a33188</strong>, ASSIGNED INDEX <strong>7</strong>, six catalog challengers. (03)</li>
+<li><code>surface-brief read src/App.jsx</code> → exit 2, no output (no brief existed yet). <code>surface-brief write</code> → <code>.impeccable/surfaces/src-app-jsx.md</code>. I re-read it and confirmed all six contract blocks and the seed key. (04–06; rewritten for fix 2 in 08)</li>
+<li><code>./impeccable detect --json src/App.jsx src/styles.css dist/index.html</code> → <code>[]</code>. (07)</li>
+<li><code>./impeccable detect --json src/App.jsx src/styles.css dist/index.html</code> (continuation, before re-review) → two <strong>advisory</strong> <code>design-system-font-size</code> findings, styles.css:242/247, wordmark 32px/28px. These sizes were described in the DESIGN.md prose but missing from its frontmatter ramp. (09)</li>
+<li>Same detect after the documenter sync → <code>[]</code>. (10)</li>
+<li>No telemetry ping: no user choice was made, and IMPECCABLE_NO_TELEMETRY is set. No <code>build-phase</code> calls, since those apply only to comp-led builds. No <code>embed-prompt --scan</code>, because no rasters ship.</li>
+</ol>
+<h2>Process</h2>
+<ul>
+<li><strong>Init:</strong> PRODUCT.md was written from USER_ANSWER.txt (Mike's real earlier answer, "Proceed as inferred"). No new interview was run or invented. No AskUserQuestion tool was available. Live mode was not configured, since this is a static prototype.</li>
+<li><strong>Candidates:</strong> seven were persisted before the draw in <code>.impeccable/candidates.md</code>. Candidate 7, the 1960s surf-contest screenprint poster, was assigned.</li>
+<li><strong>Challenger verdicts (on audience fit and product clarity):</strong></li>
+<li>Split-flap concourse: competitive (clarity).</li>
+<li>Orienteering map, ticket wallet, Japanese high-density, streaming wall, centre-rail setting: declined.</li>
+<li>Each declined challenger's discipline was added to the direction as a named line under RAISES in the contract.</li>
+<li>My own pick (not presented): candidate 1, the tide booklet.</li>
+<li><strong>Direction round:</strong> no decision page was served. Mike delegated design decisions, so the assigned direction was built. That is not recorded as a user approval.</li>
+<li><strong>Build path:</strong> code-led, the recorded default; no image generation was available. craft-floor was read immediately before the UI edits.</li>
+<li><strong>Agents:</strong> <code>impeccable-finish-reviewer</code>, run twice (full review, then a fresh verdict pass, because no continuation tool was available), and <code>impeccable-documenter</code>. Each ran on the <code>opus</code> model alias (claude-opus-5-5), with medium effort requested in the prompt, using only this run's packet.</li>
+</ul>
+<h2>Finish review</h2>
+<ul>
+<li><strong>Full review:</strong> disposition <strong>fix</strong>, five material fixes (<code>.impeccable/finish/review.md</code>). All five were applied in one batch, then the app was rebuilt and recaptured.</li>
+<li><strong>Verdict pass:</strong> all five fixes scored <strong>resolved</strong>. Disposition <strong>fix</strong>: one regression remains (event labels hard to read on the dimmed fill while scrubbing), plus an unidentified console 404 (<code>.impeccable/finish/verdict.md</code>, text written verbatim by me).</li>
+<li><strong>After the verdict (first session):</strong> I changed scrubbing low labels to ink text with a white halo. That session ended before the reviewer could score it.</li>
+<li><strong>Verdict pass 2 (continuation, fresh <code>impeccable-finish-reviewer</code>, agent a13c99d4298ef8470, model <code>opus</code> = claude-opus-5-5, medium effort):</strong> the scrub labels and the console 404 both scored <strong>resolved</strong>, with no regressions. Disposition <strong>ship</strong>. The reviewer wrote the receipt to <code>.impeccable/finish/verdict-2.md</code>. Its stated scope: the two open items on top of the five earlier fixes, not a fresh full-surface hunt.</li>
+<li><strong>Documenter (first session):</strong> wrote <code>DESIGN.md</code> and <code>.impeccable/design.json</code>. Drift it reported: unused <code>--ultra-soft</code>, hard-coded <code>#fff</code>, and the appended scrub rule.</li>
+</ul>
+<h2>Continuation (this session)</h2>
+<ul>
+<li><strong>Rebuild and recapture:</strong> rebuilt from the current source and recaptured every screenshot. New scrub captures: Half Moon Bay and Crescent City, at desktop and mobile. Before each hover the chart is scrolled into view, so the mobile captures show the plot. I inspected the captures myself, and the reviewer inspected them independently.</li>
+<li><strong>Label contrast:</strong> measured from computed styles in the scrub state. Low labels are ink rgb(21,20,26) on a white halo, 18.31:1. High labels are ink on a stock halo, 17.98:1. A label next to the cursor hides on purpose, and the readout carries its value.</li>
+<li><strong>Console 404, request identity proven:</strong> the QA server logged every path requested. The only path with no file in dist was <code>/favicon.ico</code>, the browser's automatic favicon request. Fix: <code>index.html</code> now has <code>&lt;link rel="icon" href="data:,"&gt;</code>. After that, the requests are <code>/</code>, <code>/app.css</code>, <code>/data.js</code>, <code>/app.js</code>, and console errors are <code>[]</code>.</li>
+<li><strong>Documenter (fresh <code>impeccable-documenter</code>, agent a648fb495d060de8a, <code>opus</code>, medium):</strong> synced DESIGN.md and design.json.</li>
+<li>Added: the wordmark-stack (32px) and wordmark-narrow (28px) ramp steps, a direction step (28px), and "The Label Follows Its Ground Rule".</li>
+<li>Recorded reviewer decisions.</li>
+<li>Corrected the sidecar's chart-title size to 22px.</li>
+<li>Drift still in the source: <code>--ultra-soft</code> is declared but unused (recorded as reserved), and literal <code>#fff</code> appears six times (recorded).</li>
+<li>The documenter's own detector rerun was console-only. My saved rerun is resource-log/10.</li>
+</ul>
+<h2>QA</h2>
+<ul>
+<li><code>evidence/qa/qa-matrix.cjs</code> → <code>qa-matrix.json</code> (final rerun after the docs sync): 112 checks (14 locations × 2 days × 2 viewports × file:// and HTTP), 0 failures, console errors <code>[]</code>. It also records server request paths and scrub-label contrast. Each check covers: initial state, height, trend, next high/low times and heights, the chart scale containing the data, event count, the noon marker, and overflow.</li>
+<li>Dataset unchanged: md5 of public/data.js = dist/data.js = 18ec8e3bba4296b136276ed5d9b28ef2. <code>npm run check</code>: no errors, no overflow.</li>
+<li>Screenshots: <code>evidence/qa/*-crescent-city-scrub.png</code> (new), <code>.impeccable/review/{desktop,mobile}.png</code>, <code>evidence/qa/*-scrub.png</code>, <code>*-crescent-city-*.png</code>, and <code>evidence/browser/</code> (from check).</li>
+<li>Two self-inspection rounds, then the reviewer rounds.</li>
+</ul>
+<h2>Assumptions</h2>
+<ul>
+<li><strong>Clock:</strong> the readings are the supplied values at noon. "In N h" is the next event hour minus 12.</li>
+<li><strong>Hour 24:</strong> shown as 12:00 midnight, with the next day's date where needed.</li>
+<li><strong>Chart floor:</strong> it steps down to −0.5 m when a trough would otherwise leave no room for its label.</li>
+<li><strong>"Tides" wordmark:</strong> product-free, no brand was invented.</li>
+</ul>
+<h2>Limitations</h2>
+<ul>
+<li><strong>Scope of the ship verdict:</strong> the final verdict pass scored only the open items. The one full-surface review happened in the first round.</li>
+<li><strong>QA engine:</strong> all QA ran in Chrome headless on macOS. No other browsers or OS fallbacks were tested.</li>
+<li><strong>System display font:</strong> Avenir Next Condensed/Futura. The brief's system-fonts rule overrides craft-floor's self-hosted-face rule. Non-Apple fallbacks were not visually checked.</li>
+<li><strong>QUALITY BAR images:</strong> catalog boards were not fetched (remote images). Challengers were judged from text.</li>
+<li><strong>Token target:</strong> the 6000-token soft target was far exceeded, because the required resource references, reviews and documentation are large.</li>
+</ul></body></html>

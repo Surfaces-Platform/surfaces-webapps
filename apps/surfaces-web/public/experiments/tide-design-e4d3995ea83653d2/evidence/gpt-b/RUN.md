@@ -1,0 +1,36 @@
+# GPT-B isolated tide run
+GPT-6.1 Sol Medium, Impeccable only. Empty React 19/esbuild starter; all work in this local run directory. No prior/sibling designs, memory, other design resources, git, deployment or external messages used. Common supplied shell/browser infrastructure used.
+
+## Preparation and resource calls
+- Read BRIEF.txt, TECHNICAL.txt, POLICY.txt, USER_ANSWER.txt, resource/impeccable/SKILL.md.
+- `./impeccable context --target src/App.jsx` once. Returned NO_PRODUCT_MD, PRODUCT_INIT_REQUIRED, no visual implementation, MANUAL_DETECTOR_REQUIRED, confirmed code build-path, SUBAGENT_AUTHORIZATION. No rerun.
+- Read assigned init/new-work/operate references. Persisted PRODUCT.md from the real “Proceed as inferred” answer, with no fabricated interview answer.
+- Persisted seven own viable candidates in evidence/candidates.md before running the actual draw.
+- `./impeccable concept-seed --scope direction --mode operate` → seed a2585d16, assigned index 5. Full actual output: evidence/concept-seed.txt. Six challenger fusions, two-axis verdicts and named raises: evidence/direction-receipt.json. Choice is delegated; no decision-board click claimed. No catalog world chosen. Code-first and system fonts explicitly fixed by supplied constraints.
+- `./impeccable concept-seed --kind assigned --from a2585d16 --scope direction --mode operate` → evidence/choice-ping.txt. Telemetry disabled by supplied launcher.
+- `./impeccable surface-brief read src/App.jsx`, then `write src/App.jsx evidence/surface-body.md src/styles.css`, then read again. Receipts in evidence/surface-{before,write,after}.txt. Six contract blocks and actual seed present before edits.
+- Read craft-floor immediately before writing the UI.
+- `./impeccable detect --json src/App.jsx src/styles.css` once → `[]`, saved evidence/detector.json.
+
+## Implementation and verification
+Fixture public/data.js unchanged. Location/day updates noon height and trend, chronologically ordered next low/high, all 25 chart points, event markers, dynamic range, heading and accessible chart description. Native select and standard day buttons. No animations, network data dependencies, raster assets, demo banner or dark mode.
+
+`npm run build` passes. `npm run check` passes: no runtime errors; desktop 1280×800 and mobile 390×844 have no horizontal overflow. File screenshots copied to .impeccable/review/desktop.png and mobile.png and both actual images inspected. Desktop is a full-page 1280×816 capture; mobile is full-page 390×934, so vertical scrolling exists on mobile.
+
+`node verify.cjs` passes 86 checks: all 28 station/day combinations by file and local HTTP validate exact noon/trend/next extrema, every plotted point, range containment and no overflow; 28 mobile combinations validate no overflow; keyboard Tab focuses a day button with visible solid outline by both protocols. Output evidence/data-qa.json. All checks have no runtime errors.
+
+## Finish gates
+Fresh prescribed finish reviewer spawn initially failed with `agent thread limit reached`. Parent notified; ready packet includes only own source/product/direction/craft-floor and inspected screenshots. No inherited or in-thread self-review substituted. Final dispositions and documentation recorded here when the fresh finish roles complete.
+
+## Limits and assumptions
+Supplied fixture, selected-day noon clock, Pacific time, metres; no live data or safety claims. All assets local, system sans typography explicitly required. No imagery needed for this Operate data surface. Standard controls provide inherent native interaction states; loading/error states are unreachable for the bundled fixture.
+Soft 6000 processed-token target exceeded: required preparation references, actual draw, receipt contracts and finish evidence consumed more; exact processed-token measurement unavailable to this agent. Gates retained rather than omitted.
+
+## Completed independent finish
+Fresh reviewer spawned successfully after the competing active run completed. Own-only packet, GPT-6.1 Sol Medium, fork_turns none. Actual five-section return: evidence/finish-review.md, disposition fix. One Medium finding: mobile desktop-shaped SVG compressed the plot. Reloaded craft-floor, applied that single fix in one batch: mobile-specific viewBox and coordinates use chart height while retaining noon registration and all ticks. Rebuilt and recaptured both viewport files, and inspected both actual images. No second detector. Reviewer continuation scored the single fix resolved; evidence/finish-verdict.md, disposition ship at the scored-fix scope. Fresh documenter spawned independently with own-only product/source/direction references.
+
+Final parity QA expanded `verify.cjs` to exact data, all 25 plotted points, scale containment, current/trend/next high/low and nooverflow at both desktop/mobile over file and HTTP: 112 selection checks plus 4 keyboard/focus checks = 116 passing checks, no errors. evidence/data-qa.json is the final receipt.
+
+Documentation completed: DESIGN.md and .impeccable/design.json schemaVersion 2, with actual token/component records; evidence/documenter.md records fresh GPT-6.1 Sol Medium documenter source reconciliation and assertions. Documenter made no UI edits. It unexpectedly reused evidence/finish-review.md for its own scoped documentation receipt; that receipt was preserved as evidence/documentation-finish-receipt.md, and the actual initial reviewer five-section return was restored verbatim from the agent's delivered message. evidence/finish-verdict.md retains the actual reviewer continuation. No role was replaced or broad pass invented.
+
+Final captures: desktop1280×816 and mobile390×944 full page, captured in1280×800/390×844 viewports. Vertical scrolling intentional; no horizontal overflow. Final source/build hashes: App.jsx0c9aaa7f08ba0d714e98b57cf9033110938521898d88b1399ba06880f4a0ce37; styles.css63c097dbe944810d0c5b0f26cb6d6bbf6a7e6127e118d9dd7e4b9d8527213e7e; dist/app.js22aa9f097d4e0bc07e2df0b4afaaba2a5364241f130eb8725c39bcd6e0cd0b74. Fixture source/shipping hash both6e8804d88335cdf2ad2a968b61edfd53b9f4792102f482459fa9500d9d741d5f. Durable deliverable: dist/index.html.
