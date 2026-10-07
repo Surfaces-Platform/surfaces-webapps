@@ -80,6 +80,9 @@ export default function HomeHeader() {
           <a href="#product-direction" onClick={closeMenu}>
             How it works
           </a>
+          <a href="https://handbooks.surfaces.systems/" onClick={closeMenu}>
+            Handbooks
+          </a>
           <a href="https://judgmentkit.ai/" onClick={closeMenu}>
             JudgmentKit MCP
           </a>
