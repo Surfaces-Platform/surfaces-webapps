@@ -1,0 +1,253 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Full fourteen-location tide experiment report</title><style>:root{color-scheme:only light}body{font:17px/1.6 system-ui;max-width:1100px;margin:32px auto;padding:0 20px;color:#152432;background:#fff}h1{font-size:30px;line-height:1.2}h2{font-size:24px;margin-top:36px}a{color:#1259a3}nav{margin-bottom:24px}table{border-collapse:collapse;width:100%;font-size:15px}th,td{padding:12px;border:1px solid #d6dde3;text-align:left;vertical-align:top}thead{background:#f3f5f7}li{margin-bottom:8px}code{font-size:.92em}@media(max-width:700px){table{display:block;overflow:auto}body{font-size:16px;padding:0 16px}}</style><meta name="robots" content="noindex, nofollow, noarchive"></head><body><nav><a href="index.html">Back to gallery</a> · <a href="EXPERIMENT-RESULTS.md">Download Markdown report</a></nav><main><h1>Full tide prototype experiment report — 14 locations</h1>
+<p>Eight prototypes were generated independently from empty starters, with the same ordinary product request and supplied 14-location fixture. All eight final artifacts pass technical admission. Both JudgmentKit conditions have actual accepted implementation receipts. Both Impeccable conditions have a ship verdict and synchronized design documentation. The gallery embeds every app and pairs GPT and Claude by resource.</p>
+<p>This is an exploratory comparison with one generation per model/resource condition, followed by required repairs. It is <strong>not a low-token benchmark</strong>: every condition exceeded its approximately 6,000 processed-token soft target. Medium effort is a configuration label for each vendor; it does not establish equal compute.</p>
+<h2>Eight final conditions</h2>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Reasoning</th>
+<th>Design resource</th>
+<th>Final outcome</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPT-6.1 Sol</td>
+<td>Medium</td>
+<td>No design resource</td>
+<td>Complete; 112 cases pass</td>
+<td><a href="evidence/gpt-d/run.html">Run</a> · <a href="evidence/gpt-d/evidence/functional.json">QA</a></td>
+</tr>
+<tr>
+<td>Claude Opus 5.5</td>
+<td>Medium</td>
+<td>No design resource</td>
+<td>Complete; 112 cases pass</td>
+<td><a href="evidence/opus-d/run.html">Run</a> · <a href="evidence/opus-d/evidence/parent/matrix.json">QA</a></td>
+</tr>
+<tr>
+<td>GPT-6.1 Sol</td>
+<td>Medium</td>
+<td>JudgmentKit</td>
+<td>Complete; 112 cases pass; accepted by actual local review</td>
+<td><a href="evidence/gpt-a/run.html">Run</a> · <a href="evidence/gpt-a/evidence/full-qa.json">QA</a> · <a href="evidence/gpt-a/evidence/17-review-3.json">Final gate</a></td>
+</tr>
+<tr>
+<td>Claude Opus 5.5</td>
+<td>Medium</td>
+<td>JudgmentKit</td>
+<td>Complete; 112 cases pass; accepted by actual local review</td>
+<td><a href="evidence/opus-a/run.html">Run</a> · <a href="evidence/opus-a/evidence/qa-full.json">QA</a> · <a href="evidence/opus-a/repair-cycle-2/jk3/R2-impl-review.json">Final gate</a></td>
+</tr>
+<tr>
+<td>GPT-6.1 Sol</td>
+<td>Medium</td>
+<td>NN/g UX</td>
+<td>Complete; 112 cases pass</td>
+<td><a href="evidence/gpt-c/run.html">Run</a> · <a href="evidence/gpt-c/evidence/functional-qa.json">QA</a></td>
+</tr>
+<tr>
+<td>Claude Opus 5.5</td>
+<td>Medium</td>
+<td>NN/g UX</td>
+<td>Complete; 112 cases pass</td>
+<td><a href="evidence/opus-c/run.html">Run</a> · <a href="evidence/opus-c/evidence/parent/matrix.json">QA</a></td>
+</tr>
+<tr>
+<td>GPT-6.1 Sol</td>
+<td>Medium</td>
+<td>Impeccable</td>
+<td>Complete; 112 cases pass; ship verdict and design docs</td>
+<td><a href="evidence/gpt-b/run.html">Run</a> · <a href="evidence/gpt-b/evidence/data-qa.json">QA</a> · <a href="evidence/gpt-b/evidence/finish-verdict.md">Final gate</a></td>
+</tr>
+<tr>
+<td>Claude Opus 5.5</td>
+<td>Medium</td>
+<td>Impeccable</td>
+<td>Complete; 112 cases pass; ship verdict and design docs</td>
+<td><a href="evidence/opus-b/run.html">Run</a> · <a href="evidence/opus-b/evidence/qa/qa-matrix.json">QA</a> · <a href="evidence/opus-b/.impeccable/finish/verdict-3.md">Final gate</a></td>
+</tr>
+</tbody>
+</table>
+<p>GPT Impeccable's final receipt counts 116 checks: the 112 selection cases plus four keyboard/focus checks. Claude baseline and NN/g initially tested 56 combinations; independent parent scripts expanded each to all 112, including both transport/viewport cross-pairs. The original receipts remain preserved.</p>
+<h2>Shared product request and scope</h2>
+<p>Every run received this exact brief:</p>
+<blockquote>
+<p>Build a simple responsive tide app. Let me choose a coastal location and day, see the tide height and whether it is rising or falling, the next high and low tides, and a readable 24-hour tide chart. Use the supplied data.</p>
+</blockquote>
+<p>The request was not enhanced separately for a resource. Identical <a href="evidence/experiment/TECHNICAL.txt">technical constraints</a>, <a href="evidence/experiment/POLICY.txt">runner policy</a>, <a href="evidence/experiment/USER_ANSWER.txt">persistent user answer</a> and fixture accompanied it. The user had already answered <strong>“Proceed as inferred”</strong>: a person checking tides for a general coastal outing, with no activity prioritized and delegated visual decisions. That real answer was reused; no new interview answer or user concept approval was invented.</p>
+<p>Compared with the earlier two-location trial, the common technical input now requires all 14 locations. Existing approved presentation constraints remain: light only, no system theme switching, no demo-data banners, local/system fonts, no live API, metres, Pacific time, and selected-day noon readings. Requirements for each resource's workflow were separate from the product brief and confined to that resource.</p>
+<h2>Locations and fixture</h2>
+<p>Half Moon Bay and Monterey are retained. The 12 additions are <strong>San Francisco, Santa Cruz, Sausalito, Point Reyes, Bodega Bay, Fort Bragg, Crescent City, Morro Bay, Avila Beach, Santa Barbara, Los Angeles and San Diego</strong>.</p>
+<p>Both dates are October 6 and 7, 2026. Each location/date has 25 hourly samples from hour 0 through 24, a noon height and direction, the next high and low after noon, and four events. Original Half Moon Bay/Monterey records match the earlier fixture exactly. The additions are deterministic synthetic prototype fixtures derived from varied mean/amplitude/phase; they are not real tide predictions. This qualification is recorded here while the apps follow the requested removal of banners.</p>
+<p>Every source and shipping fixture has SHA-256:</p>
+<p><code>6e8804d88335cdf2ad2a968b61edfd53b9f4792102f482459fa9500d9d741d5f</code></p>
+<p><a href="evidence/experiment/dataset-provenance.json">Dataset provenance</a> records the derivation. Crescent City on October 7 exercises a 3.90 m peak, a 0.24 m low, and a rising noon reading of 2.07 m. Other additions exercise changing ranges, rising/falling directions and midnight rollover. The fixture's supplied direction is displayed as supplied, including Point Reyes's noon-low “Rising” case.</p>
+<h2>Isolation and execution parameters</h2>
+<p>The four GPT generators were fresh desktop agents with no inherited conversation, configured <strong>gpt-6.1-sol / medium</strong>. The four Claude generators were fresh CLI sessions configured <strong>claude-opus-5-5 / medium</strong>, with no fallback. Each read only its own empty React 19.2.6/esbuild 0.28.1 starter, shared inputs and assigned resource. No old app design/source or sibling output was supplied. Read-only package/browser infrastructure was shared.</p>
+<p>Claude used strict per-run MCP configuration, disabled slash commands, no session persistence, no Chrome integration, cleared setting sources/hooks, disabled global project memory, and an unchanged default system prompt plus an isolation appendix. Baseline used file/shell tools and common verification infrastructure with no design skill, MCP, plugin or role agent. JudgmentKit used only its assigned local server; NN/g only its local corpus server. Impeccable alone had its prescribed finish-reviewer and documenter roles.</p>
+<p>Claude's per-session CLI cap remained $3. Own-run continuations completed blocked/partial workflows rather than silently increasing that cap or importing sibling context. GPT retained its configured effort across its continuation. Parent orchestration, admission audit and gallery integration could inspect all outputs after generation; they were not fed back as competing design examples.</p>
+<p><a href="evidence/experiment/GPT-PUBLIC-RUNTIME-METADATA.json">Runtime metadata</a> verifies actual GPT turn configurations and public tool names. <a href="evidence/experiment/CLAUDE-PUBLIC-USAGE.json">Claude public usage</a> records every CLI invocation's reported model, usage and tool counts. These are sanitized metadata, not model reasoning transcripts. Different desktop/CLI harnesses, context overhead, continuation counts and vendor effort semantics remain comparison limits.</p>
+<h2>Latest Impeccable and independent directions</h2>
+<p>The official latest releases checked for this run were <strong>skill 4.5.0</strong> and <strong>engine 0.1.11</strong>. The skill release was published October 2, 2026. Both resource trees match the exact appropriate official adapter bytes: GPT <code>.agents/skills/impeccable</code>, Claude <code>.claude/skills/impeccable</code>. The official universal ZIP digest is <code>a6877c158ec90c63560728553d2e737081afa8a79b86c507fa8d15a81fffd475</code>; the engine digest is <code>7427918d6e75507401a1b7b691eefe58a7c01a2fc63b712016ffc5a0ac1c05e6</code>. <a href="evidence/experiment/IMPECCABLE-RELEASE-PROOF.json">Release proof</a> ties these to <a href="https://github.com/pbakaus/impeccable/releases">official releases</a>.</p>
+<p>Both used the code build path, with no raster generation, and persisted seven own candidates before the actual assigned draw:</p>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Used seed</th>
+<th>Assigned candidate</th>
+<th>Resulting direction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPT Impeccable</td>
+<td>a2585d16</td>
+<td>5</td>
+<td>Community swimming schedule; mint, white and blue</td>
+</tr>
+<tr>
+<td>Claude Impeccable</td>
+<td>b3a33188</td>
+<td>7</td>
+<td>1960s surf-contest screenprint poster; yellow and ultramarine</td>
+</tr>
+</tbody>
+</table>
+<p>They were deliberately independent draws, so their different appearance does not isolate a model effect. Candidate order was verified from actual public execution records and files. <a href="evidence/gpt-b/evidence/launch-provenance.json">GPT role/draw provenance</a> proves fresh reviewer/documenter launches with exact model and medium configuration.</p>
+<p>Claude accidentally invoked <code>concept-seed --help</code> twice; the CLI treated it as two unscoped draws, <strong>aaa47392 and ee5848f7</strong>. Both were ignored, preserved and counted in the audit. The used assigned direction was not replaced. Challenger/reference judgments used returned text; the catalog image boards were not fetched, which limits the completeness of that part of the workflow. No delegated direction was represented as a user click or concept approval.</p>
+<p>GPT's initial finish reviewer found one mobile chart compression issue. Its continuation scored that repair resolved and returned ship; a separate fresh documenter completed the design records. The documenter mistakenly reused the first review filename; its receipt was kept separately and the actual initial reviewer text restored verbatim from the public delivered message.</p>
+<p>Claude's initial full review found five issues. Later verdict roles scored those fixes and a scrub-label contrast regression and favicon 404; ship covered the scored fixes rather than a new exhaustive surface hunt. Final parent loaded-window QA then found a desktop-to-mobile chart-width regression. The same model/effort/resource repaired it and obtained a renewed scoped ship verdict and documentation sync; the old ship artifact and proof remain preserved. The final gate above applies to the repaired bytes.</p>
+<p>Claude finish roles were configured with medium effort and the main exact model. Actual calls used the <code>opus</code> alias. <a href="https://code.claude.com/docs/en/sub-agents">Claude's subagent documentation</a> establishes that this alias resolves to the main session's exact model when the family matches and supports the role effort field. No environment override was present. The public aggregate usage reported only claude-opus-5-5; separate per-role token/compute telemetry is unavailable.</p>
+<h2>JudgmentKit: actual gates and repairs</h2>
+<p>Both conditions used the same canonical <strong>0.8.0 unreleased renderer candidate</strong> and existing locally patched stdio review policy <strong>1.1.1</strong>. Neither the hosted public service nor the renderer/validator source was changed during this regeneration. Acceptance therefore means <strong>actual local patched-MCP acceptance</strong>, not hosted-public acceptance.</p>
+<p>The first activity review incorrectly classified the whole persistent answer paragraph as an authoritative safety boundary, combining unrelated sentences. A protocol repair split the exact answer into sentence spans with stable source references, still classified as provided artifacts. Concatenation equals every original byte; the product brief and technical input stayed unchanged. Fresh complete inferred activity reviews then returned ready. Earlier stopped receipts remain preserved. <a href="evidence/gpt-a/evidence/context-equality.json">GPT context equality proof</a> records the lossless attribution.</p>
+<p>GPT used three actual implementation reviews. Early failures included wrapper selectors for native selects and incomplete evidence. The final manifest targets the native location/day SELECT elements while declaring canonical indicator parts. Review 3 accepted; its trusted runtime receipt covers eight samples across two documents, with no findings or invalid reasons.</p>
+<p>Claude's original cycle used three actual reviews, all failed. A separate recorded repair cycle reconsidered the low-confidence workbench recommendation as a read-only dashboard, with fresh workflow/handoff/frontend gates. The returned implementation contract remained byte-identical. Existing summary, next extremes, chart, detailed measurements and filters were mapped; no invented handoff action or new product feature was added. The tool labels this <code>user_selected</code>, but the agent selected it under delegated decisions; Mike did not explicitly select that surface.</p>
+<p>Cycle 2 R1 accepted. Parent browser QA then measured a real mobile Noon/High label overlap of 17.37 × 9.20 px. The accepted R1 bytes were archived. A narrow chart-label repair reserved a label band, anchored edge ticks, moved low labels clear of the hour row and added a canvas halo. Measurements changed from collisions in 56/56 chart states to <strong>0/56</strong>, with no out-of-chart labels and at least 7.83 px noon-label clearance. The changed bytes received actual R2 acceptance. <a href="evidence/opus-a/evidence/parent/mobile-label-overlap-before.json">Before proof</a> and <a href="evidence/opus-a/evidence/chart-labels/after.json">final label measurements</a> are preserved.</p>
+<p>There were <strong>five actual Claude implementation reviews</strong>: old cycle 3, new cycle 2. The wrapper automatically increments its counter, and the agent also manually incremented before R2. The final receipt therefore says attempt 3 and cycle 2's counter reads 3, despite only R1/R2 being submitted. This overcount is retained; no counter was lowered or third review invented.</p>
+<p>Final trusted Claude caret review covers four samples across two documents with no findings. Both JudgmentKit apps use the canonical 48 px trailing slot, 16 px indicator/insets and 44 px control height; all selection cases check geometry. Both receipts carry a non-blocking warning that browser-painted native option text is not measured. This warning does not excuse an unmeasured caret. Accepted-artifact status is a bounded contract/reviewer result and did not prevent the later chart defect.</p>
+<h2>NN/g and baseline resource evidence</h2>
+<p>GPT NN/g performed searches plus section/article retrieval for hierarchy and selection patterns. Claude NN/g searched/retrieved chart axes, scale honesty, glanceable typography and dropdown guidance. Their own run records distinguish corpus claims from design inferences, including the 14-option native select and two visible day choices. They did not receive an Impeccable style or JudgmentKit contract.</p>
+<p><a href="evidence/gpt-c/resource-identities.json">GPT returned resource identities</a> and <a href="evidence/opus-c/resource-identities.json">Claude returned identities</a> preserve requests, source IDs and hashes where available. Permissioned article bodies remain in the local run evidence rather than this served report. Both baselines have zero design resource calls, verified by public runtime/tool metadata.</p>
+<h2>Verification and practical limits</h2>
+<p>Each final run covers <strong>14 locations × 2 days × 2 viewports × 2 loading modes = 112 selection cases</strong>: desktop 1280×800 and mobile 390×844, direct file and localhost HTTP. The matrices check displayed fixture values, direction, next extreme times/heights, range containment, selected identity, overflow and runtime errors. The four GPT checks and the parent Claude NN/g check compare every plotted point; the other Claude checks focus on range containment and events. The audit records this uneven chart-coordinate assertion strength rather than treating all custom tests as identical.</p>
+<p>Independent source-to-build reproduction matched shipping JS/CSS bytes. Parent browser checks exercised new locations, the tallest/rising Crescent City case, native baseline keyboard selection, rendered select geometry, and loaded desktop→mobile→desktop behavior. Light-only styles remain under a dark system preference, and no demo-data banners are present. Final evidence: <a href="evidence/experiment/ADMISSION-AUDIT.md">admission audit</a>, <a href="evidence/experiment/FINAL-ARTIFACT-HASHES.json">source/build hashes</a>, <a href="evidence/experiment/parent-browser-checks.json">parent browser checks</a>, and <a href="evidence/experiment/loaded-resize-checks.json">loaded resize checks</a>.</p>
+<p>Custom DOM/contrast tests and Chromium captures do not constitute a full WCAG audit, screen-reader study or user study. Keyboard, state and accessibility coverage varies by condition and is recorded in each run. Mobile pages scroll vertically. Dynamic axes vary by selection; the prototypes provide fixed supplied dates and noon readings rather than live tide predictions.</p>
+<h2>Token and cost record</h2>
+<p>The soft approximately 6,000 processed-token target was exceeded in all eight conditions. Required resource preparation, acceptance/finish cycles, QA and repairs were completed rather than omitted to claim a low-token result. Agent RUN records originally said exact usage was unavailable locally; parent subsequently extracted public runtime counters.</p>
+<p>GPT values below are cumulative request counters for each thread. Input includes cached input; the cache column is a subset. Do not add cached input a second time, infer billing, or treat cumulative repeated context as unique prompt words. No cross-thread deduplicated total or GPT cost is asserted.</p>
+<table>
+<thead>
+<tr>
+<th>GPT thread</th>
+<th style="text-align: right;">Input including cache</th>
+<th style="text-align: right;">Cached input</th>
+<th style="text-align: right;">Output</th>
+<th style="text-align: right;">Reported total</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gpt_b/impeccable_documenter</td>
+<td style="text-align: right;">409,435</td>
+<td style="text-align: right;">384,128</td>
+<td style="text-align: right;">6,571</td>
+<td style="text-align: right;">416,006</td>
+</tr>
+<tr>
+<td>gpt_b</td>
+<td style="text-align: right;">3,479,129</td>
+<td style="text-align: right;">3,420,288</td>
+<td style="text-align: right;">12,879</td>
+<td style="text-align: right;">3,492,008</td>
+</tr>
+<tr>
+<td>gpt_d</td>
+<td style="text-align: right;">828,852</td>
+<td style="text-align: right;">797,568</td>
+<td style="text-align: right;">9,304</td>
+<td style="text-align: right;">838,156</td>
+</tr>
+<tr>
+<td>gpt_c</td>
+<td style="text-align: right;">1,145,991</td>
+<td style="text-align: right;">1,105,280</td>
+<td style="text-align: right;">9,606</td>
+<td style="text-align: right;">1,155,597</td>
+</tr>
+<tr>
+<td>gpt_a</td>
+<td style="text-align: right;">4,134,570</td>
+<td style="text-align: right;">4,046,080</td>
+<td style="text-align: right;">17,226</td>
+<td style="text-align: right;">4,151,796</td>
+</tr>
+<tr>
+<td>gpt_b/impeccable_finish_reviewer</td>
+<td style="text-align: right;">404,657</td>
+<td style="text-align: right;">386,048</td>
+<td style="text-align: right;">2,194</td>
+<td style="text-align: right;">406,851</td>
+</tr>
+</tbody>
+</table>
+<p>Claude CLI values sum the public session counters within each condition. Cache creation/read columns are separate from the CLI input column. Every continuation is included; parent administrative audit/gallery usage is separate. Token columns follow each CLI result’s reported usage object; separate finish-role usage is unavailable, so role-token inclusion is not independently asserted. These vendor counters are not normalized to GPT's semantics.</p>
+<table>
+<thead>
+<tr>
+<th>Claude condition</th>
+<th style="text-align: right;">Sessions</th>
+<th style="text-align: right;">Input</th>
+<th style="text-align: right;">Cache creation</th>
+<th style="text-align: right;">Cache read</th>
+<th style="text-align: right;">Output</th>
+<th style="text-align: right;">CLI list-rate estimate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>opus-d</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">26</td>
+<td style="text-align: right;">27,561</td>
+<td style="text-align: right;">254,214</td>
+<td style="text-align: right;">12,719</td>
+<td style="text-align: right;">$0.525815</td>
+</tr>
+<tr>
+<td>opus-a</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">356</td>
+<td style="text-align: right;">408,783</td>
+<td style="text-align: right;">11,659,238</td>
+<td style="text-align: right;">148,708</td>
+<td style="text-align: right;">$8.577696</td>
+</tr>
+<tr>
+<td>opus-c</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">36</td>
+<td style="text-align: right;">63,030</td>
+<td style="text-align: right;">673,349</td>
+<td style="text-align: right;">22,200</td>
+<td style="text-align: right;">$1.083054</td>
+</tr>
+<tr>
+<td>opus-b</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">140</td>
+<td style="text-align: right;">191,895</td>
+<td style="text-align: right;">3,015,589</td>
+<td style="text-align: right;">68,357</td>
+<td style="text-align: right;">$5.606778</td>
+</tr>
+</tbody>
+</table>
+<p>Total Claude CLI reported estimate: <strong>$15.793343</strong>. This is a list-rate estimate, not the account's actual bill. <a href="evidence/experiment/CLAUDE-PUBLIC-USAGE.json">Sanitized per-session usage</a> includes failed/stopped and successful continuations; the $3 limit was per session, not a total-condition budget.</p>
+<h2>What this comparison supports</h2>
+<p>The eight artifacts are inspectable evidence of these specific configured workflows on this brief and fixture. They can support discussion of visible usability, craft, workflow burden and defects. They cannot establish that a skill helps/hurts frontier models generally, that one model is better, or that the resource caused the observed style. One trial per cell, independent Impeccable directions, different harnesses, unequal iteration counts and exceeded token targets limit causal and statistical conclusions.</p>
+<p>This publication includes the eight 14-location prototypes, the full experiment report, and its linked evidence. Earlier experiments and original execution records remain in local storage.</p><p>Local runtime paths, transcript pointers, session identifiers and local corpus permission identifiers are omitted from the published evidence copies; original records remain unchanged in local storage.</p></main></body></html>

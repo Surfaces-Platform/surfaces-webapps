@@ -1,0 +1,200 @@
+{
+  "method": "Only session metadata, turn configs, public tool names and token-count events; no reasoning or prompt text retained",
+  "threads": [
+    {
+      "agent_path": "/root/regen14_gpt_b/impeccable_documenter",
+      "turn_configurations": [
+        {
+          "timestamp": "2026-10-07T20:34:55.444Z",
+          "model": "gpt-6.1-sol",
+          "effort": "medium"
+        }
+      ],
+      "public_tool_call_counts": {
+        "exec": 6,
+        "send_message": 1
+      },
+      "public_nested_tool_call_counts": {
+        "exec_command": 6
+      },
+      "last_usage_counter": {
+        "timestamp": "2026-10-07T20:37:49.562Z",
+        "reported_total_token_usage": {
+          "input_tokens": 409435,
+          "cached_input_tokens": 384128,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 6571,
+          "reasoning_output_tokens": 310,
+          "total_tokens": 416006
+        },
+        "semantics": "Runtime cumulative request counters for this thread; cache included. Reasoning tokens may be a subset; no inferred billing cost or cross-thread aggregate."
+      }
+    },
+    {
+      "agent_path": "/root/regen14_gpt_b",
+      "turn_configurations": [
+        {
+          "timestamp": "2026-10-07T20:17:00.804Z",
+          "model": "gpt-6.1-sol",
+          "effort": "medium"
+        }
+      ],
+      "public_tool_call_counts": {
+        "exec": 16,
+        "spawn_agent": 3,
+        "send_message": 8,
+        "wait_agent": 13,
+        "list_agents": 1,
+        "followup_task": 2
+      },
+      "public_nested_tool_call_counts": {
+        "exec_command": 16,
+        "view_image": 3
+      },
+      "last_usage_counter": {
+        "timestamp": "2026-10-07T20:38:33.726Z",
+        "reported_total_token_usage": {
+          "input_tokens": 3479129,
+          "cached_input_tokens": 3420288,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 12879,
+          "reasoning_output_tokens": 913,
+          "total_tokens": 3492008
+        },
+        "semantics": "Runtime cumulative request counters for this thread; cache included. Reasoning tokens may be a subset; no inferred billing cost or cross-thread aggregate."
+      }
+    },
+    {
+      "agent_path": "/root/regen14_gpt_d",
+      "turn_configurations": [
+        {
+          "timestamp": "2026-10-07T20:10:03.994Z",
+          "model": "gpt-6.1-sol",
+          "effort": "medium"
+        }
+      ],
+      "public_tool_call_counts": {
+        "exec": 14
+      },
+      "public_nested_tool_call_counts": {
+        "exec_command": 11,
+        "view_image": 3
+      },
+      "last_usage_counter": {
+        "timestamp": "2026-10-07T20:14:07.526Z",
+        "reported_total_token_usage": {
+          "input_tokens": 828852,
+          "cached_input_tokens": 797568,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 9304,
+          "reasoning_output_tokens": 1302,
+          "total_tokens": 838156
+        },
+        "semantics": "Runtime cumulative request counters for this thread; cache included. Reasoning tokens may be a subset; no inferred billing cost or cross-thread aggregate."
+      }
+    },
+    {
+      "agent_path": "/root/regen14_gpt_c",
+      "turn_configurations": [
+        {
+          "timestamp": "2026-10-07T20:14:30.809Z",
+          "model": "gpt-6.1-sol",
+          "effort": "medium"
+        }
+      ],
+      "public_tool_call_counts": {
+        "exec": 18
+      },
+      "public_nested_tool_call_counts": {
+        "exec_command": 15,
+        "mcp__nngroup_ux__nngroup_search": 1,
+        "mcp__nngroup_ux__nngroup_get_section": 2,
+        "mcp__nngroup_ux__nngroup_get_article": 1,
+        "view_image": 3
+      },
+      "last_usage_counter": {
+        "timestamp": "2026-10-07T20:18:53.618Z",
+        "reported_total_token_usage": {
+          "input_tokens": 1145991,
+          "cached_input_tokens": 1105280,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 9606,
+          "reasoning_output_tokens": 822,
+          "total_tokens": 1155597
+        },
+        "semantics": "Runtime cumulative request counters for this thread; cache included. Reasoning tokens may be a subset; no inferred billing cost or cross-thread aggregate."
+      }
+    },
+    {
+      "agent_path": "/root/regen14_gpt_a",
+      "turn_configurations": [
+        {
+          "timestamp": "2026-10-07T20:14:46.843Z",
+          "model": "gpt-6.1-sol",
+          "effort": "medium"
+        },
+        {
+          "timestamp": "2026-10-07T20:19:21.231Z",
+          "model": "gpt-6.1-sol",
+          "effort": "medium"
+        }
+      ],
+      "public_tool_call_counts": {
+        "exec": 46,
+        "send_message": 4,
+        "wait_agent": 1
+      },
+      "public_nested_tool_call_counts": {
+        "exec_command": 50,
+        "request_permissions": 2,
+        "view_image": 3
+      },
+      "last_usage_counter": {
+        "timestamp": "2026-10-07T20:32:02.500Z",
+        "reported_total_token_usage": {
+          "input_tokens": 4134570,
+          "cached_input_tokens": 4046080,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 17226,
+          "reasoning_output_tokens": 1182,
+          "total_tokens": 4151796
+        },
+        "semantics": "Runtime cumulative request counters for this thread; cache included. Reasoning tokens may be a subset; no inferred billing cost or cross-thread aggregate."
+      }
+    },
+    {
+      "agent_path": "/root/regen14_gpt_b/impeccable_finish_reviewer",
+      "turn_configurations": [
+        {
+          "timestamp": "2026-10-07T20:32:23.505Z",
+          "model": "gpt-6.1-sol",
+          "effort": "medium"
+        },
+        {
+          "timestamp": "2026-10-07T20:34:26.483Z",
+          "model": "gpt-6.1-sol",
+          "effort": "medium"
+        }
+      ],
+      "public_tool_call_counts": {
+        "exec": 6
+      },
+      "public_nested_tool_call_counts": {
+        "exec_command": 5,
+        "view_image": 2
+      },
+      "last_usage_counter": {
+        "timestamp": "2026-10-07T20:34:45.755Z",
+        "reported_total_token_usage": {
+          "input_tokens": 404657,
+          "cached_input_tokens": 386048,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 2194,
+          "reasoning_output_tokens": 197,
+          "total_tokens": 406851
+        },
+        "semantics": "Runtime cumulative request counters for this thread; cache included. Reasoning tokens may be a subset; no inferred billing cost or cross-thread aggregate."
+      }
+    }
+  ]
+}

@@ -1,0 +1,319 @@
+{
+  "method": "Permissioned article text omitted; only call requests and returned identity/hash/URL/title/author/score fields are served",
+  "calls": [
+    {
+      "tool": "nngroup_search",
+      "request": {
+        "query": "line chart axis labels readability",
+        "mode": "keyword",
+        "limit": 6
+      },
+      "returned_identities": [
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:clutter-charts:s4:axes:4a0348dd4487"
+        },
+        {
+          "field": "title",
+          "value": "Clutter-Free: One of the 3 Cs for Better Charts"
+        },
+        {
+          "field": "score",
+          "value": 24.64899795
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:choosing-chart-types:s10:scatterplot:9bbaa9a728fc"
+        },
+        {
+          "field": "title",
+          "value": "Choosing Chart Types: Consider Context"
+        },
+        {
+          "field": "score",
+          "value": 21.90810695
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:pareto-principle:s3:how-to-create-a-pareto-chart:1ba98dc657aa"
+        },
+        {
+          "field": "title",
+          "value": "Prioritize Quantitative Data with the Pareto Principle"
+        },
+        {
+          "field": "score",
+          "value": 19.5745298
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:ai-data-prototype-testing:s18:6-don-t-delegate-critical-thinking:01047bff5b91"
+        },
+        {
+          "field": "title",
+          "value": "Leverage AI for Mock Tables and Charts When Testing Prototypes"
+        },
+        {
+          "field": "score",
+          "value": 19.40888428
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dashboards-preattentive:s4:linear-vs-area-based-graphs:a466e325a264"
+        },
+        {
+          "field": "title",
+          "value": "Dashboards: Making Charts and Graphs Easier to Understand"
+        },
+        {
+          "field": "score",
+          "value": 18.8445951
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:designing-effective-infographics:s3:informational-honesty:76c291ed6779"
+        },
+        {
+          "field": "title",
+          "value": "Designing Effective Infographics"
+        },
+        {
+          "field": "score",
+          "value": 17.39090802
+        }
+      ]
+    },
+    {
+      "tool": "nngroup_search",
+      "request": {
+        "query": "dropdown menu long list options",
+        "mode": "keyword",
+        "limit": 6
+      },
+      "returned_identities": [
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dropdown-list:s10:too-many-options:021503116739"
+        },
+        {
+          "field": "title",
+          "value": "Does Your Form Really Need a Dropdown List?"
+        },
+        {
+          "field": "score",
+          "value": 27.8383552
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:drop-down-menus:s3:guidelines-for-dropdown-design:b328390b995c"
+        },
+        {
+          "field": "title",
+          "value": "Dropdowns: Design Guidelines"
+        },
+        {
+          "field": "score",
+          "value": 24.97437662
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:split-buttons:s5:other-tips-for-effective-split-buttons:ec853dde648b"
+        },
+        {
+          "field": "title",
+          "value": "Split Buttons: Definition"
+        },
+        {
+          "field": "score",
+          "value": 21.96675723
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:3-click-rule:s4:practices-better-than-counting-clicks:44e4130273a3"
+        },
+        {
+          "field": "title",
+          "value": "The 3-Click Rule for Navigation Is False"
+        },
+        {
+          "field": "score",
+          "value": 16.44924448
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:mega-menus-gone-wrong:s3:alphabetize-for-scannability-columns-not-rows:f5c48423c676"
+        },
+        {
+          "field": "title",
+          "value": "Mega Menus Gone Wrong"
+        },
+        {
+          "field": "score",
+          "value": 15.65784376
+        }
+      ]
+    },
+    {
+      "tool": "nngroup_search",
+      "request": {
+        "query": "dashboard glanceable key information",
+        "mode": "keyword",
+        "limit": 6
+      },
+      "returned_identities": [
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:glanceable-fonts:s4:applying-these-findings-to-your-designs:32e96dd18f74"
+        },
+        {
+          "field": "title",
+          "value": "Typography for Glanceable Reading: Bigger Is Better"
+        },
+        {
+          "field": "score",
+          "value": 15.72394161
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:distracted-driving-ux:s7:glanceable-typography:1b004a40b720"
+        },
+        {
+          "field": "title",
+          "value": "Distracted Driving: UX\u2019s Responsibility to Do No Harm"
+        },
+        {
+          "field": "score",
+          "value": 13.64955182
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dark-mode:s3:normal-vision-users:682b181a942c"
+        },
+        {
+          "field": "title",
+          "value": "Dark Mode vs. Light Mode: Which Is Better?"
+        },
+        {
+          "field": "score",
+          "value": 12.85683774
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:tesla-big-touchscreen:s0:summary:1d67d4ee8766"
+        },
+        {
+          "field": "title",
+          "value": "Tesla\u2019s Touchscreen UI: A Case Study of Car-Dashboard User Interface"
+        },
+        {
+          "field": "score",
+          "value": 11.88926057
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dashboards-preattentive:s5:circular-and-area-based-graphs-are-difficult-to-interpret-quickly-or-accurately:54eb1b36c01f"
+        },
+        {
+          "field": "title",
+          "value": "Dashboards: Making Charts and Graphs Easier to Understand"
+        },
+        {
+          "field": "score",
+          "value": 11.64914783
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:treemaps:s2:key-uses-of-treemaps:9189fc5cde4c"
+        },
+        {
+          "field": "title",
+          "value": "Treemaps: Data Visualization of Complex Hierarchies"
+        },
+        {
+          "field": "score",
+          "value": 11.58529682
+        }
+      ]
+    },
+    {
+      "tool": "nngroup_get_section",
+      "request": {
+        "sectionId": "nngroup:article:clutter-charts:s4:axes:4a0348dd4487"
+      },
+      "returned_identities": [
+        {
+          "field": "documentId",
+          "value": "nngroup:article:clutter-charts"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/clutter-charts/"
+        }
+      ]
+    },
+    {
+      "tool": "nngroup_get_section",
+      "request": {
+        "sectionId": "nngroup:article:dropdown-list:s10:too-many-options:021503116739"
+      },
+      "returned_identities": [
+        {
+          "field": "documentId",
+          "value": "nngroup:article:dropdown-list"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/dropdown-list/"
+        }
+      ]
+    },
+    {
+      "tool": "nngroup_get_section",
+      "request": {
+        "sectionId": "nngroup:article:designing-effective-infographics:s3:informational-honesty:76c291ed6779"
+      },
+      "returned_identities": [
+        {
+          "field": "documentId",
+          "value": "nngroup:article:designing-effective-infographics"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/designing-effective-infographics/"
+        }
+      ]
+    },
+    {
+      "tool": "nngroup_get_section",
+      "request": {
+        "sectionId": "nngroup:article:glanceable-fonts:s4:applying-these-findings-to-your-designs:32e96dd18f74"
+      },
+      "returned_identities": [
+        {
+          "field": "documentId",
+          "value": "nngroup:article:glanceable-fonts"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/glanceable-fonts/"
+        }
+      ]
+    },
+    {
+      "tool": "nngroup_get_section",
+      "request": {
+        "sectionId": "nngroup:article:dashboards-preattentive:s4:linear-vs-area-based-graphs:a466e325a264"
+      },
+      "returned_identities": [
+        {
+          "field": "documentId",
+          "value": "nngroup:article:dashboards-preattentive"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/dashboards-preattentive/"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,131 @@
+{
+  "failures": [],
+  "checked": 112,
+  "errors": [],
+  "desktopScrub": "3:00 p.m. · 0.50 m",
+  "desktopScrubLabels": [
+    {
+      "text": "L 0.50",
+      "fill": "rgb(21, 20, 26)",
+      "stroke": "rgb(255, 255, 255)",
+      "strokeW": "4px",
+      "opacity": "1",
+      "visible": true,
+      "haloContrast": 18.31
+    },
+    {
+      "text": "H 2.30",
+      "fill": "rgb(21, 20, 26)",
+      "stroke": "rgb(253, 253, 251)",
+      "strokeW": "4px",
+      "opacity": "1",
+      "visible": true,
+      "haloContrast": 17.98
+    },
+    {
+      "text": "H 2.30",
+      "fill": "rgb(21, 20, 26)",
+      "stroke": "rgb(253, 253, 251)",
+      "strokeW": "4px",
+      "opacity": "1",
+      "visible": true,
+      "haloContrast": 17.98
+    }
+  ],
+  "desktopCrescentScrub": "3:00 p.m. · 3.90 m",
+  "desktopCrescentScrubLabels": [
+    {
+      "text": "H 3.90",
+      "fill": "rgb(21, 20, 26)",
+      "stroke": "rgb(253, 253, 251)",
+      "strokeW": "4px",
+      "opacity": "1",
+      "visible": true,
+      "haloContrast": 17.98
+    },
+    {
+      "text": "L 0.24",
+      "fill": "rgb(21, 20, 26)",
+      "stroke": "rgb(255, 255, 255)",
+      "strokeW": "4px",
+      "opacity": "1",
+      "visible": true,
+      "haloContrast": 18.31
+    },
+    {
+      "text": "L 0.24",
+      "fill": "rgb(21, 20, 26)",
+      "stroke": "rgb(255, 255, 255)",
+      "strokeW": "4px",
+      "opacity": "1",
+      "visible": true,
+      "haloContrast": 18.31
+    }
+  ],
+  "mobileScrub": "2:00 p.m. · 0.62 m",
+  "mobileScrubLabels": [
+    {
+      "text": "L 0.50",
+      "fill": "rgb(21, 20, 26)",
+      "stroke": "rgb(255, 255, 255)",
+      "strokeW": "4px",
+      "opacity": "1",
+      "visible": true,
+      "haloContrast": 18.31
+    },
+    {
+      "text": "H 2.30",
+      "fill": "rgb(21, 20, 26)",
+      "stroke": "rgb(253, 253, 251)",
+      "strokeW": "4px",
+      "opacity": "1",
+      "visible": true,
+      "haloContrast": 17.98
+    },
+    {
+      "text": "H 2.30",
+      "fill": "rgb(21, 20, 26)",
+      "stroke": "rgb(253, 253, 251)",
+      "strokeW": "4px",
+      "opacity": "1",
+      "visible": true,
+      "haloContrast": 17.98
+    }
+  ],
+  "mobileCrescentScrub": "2:00 p.m. · 3.65 m",
+  "mobileCrescentScrubLabels": [
+    {
+      "text": "H 3.90",
+      "fill": "rgb(21, 20, 26)",
+      "stroke": "rgb(253, 253, 251)",
+      "strokeW": "4px",
+      "opacity": "1",
+      "visible": true,
+      "haloContrast": 17.98
+    },
+    {
+      "text": "L 0.24",
+      "fill": "rgb(21, 20, 26)",
+      "stroke": "rgb(255, 255, 255)",
+      "strokeW": "4px",
+      "opacity": "1",
+      "visible": true,
+      "haloContrast": 18.31
+    },
+    {
+      "text": "L 0.24",
+      "fill": "rgb(21, 20, 26)",
+      "stroke": "rgb(255, 255, 255)",
+      "strokeW": "4px",
+      "opacity": "1",
+      "visible": true,
+      "haloContrast": 18.31
+    }
+  ],
+  "serverRequests": [
+    "/",
+    "/app.css",
+    "/data.js",
+    "/app.js"
+  ]
+}

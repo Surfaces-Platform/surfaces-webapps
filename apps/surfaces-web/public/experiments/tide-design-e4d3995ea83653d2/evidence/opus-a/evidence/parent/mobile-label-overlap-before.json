@@ -1,0 +1,35 @@
+{
+  "run": "opus-a",
+  "station": "crescent-city",
+  "date": "2026-10-07",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "source": "Parent read-only rendered SVG bounding boxes",
+  "labels": [
+    {
+      "text": "Noon",
+      "rect": [
+        191.3046875,
+        753.875,
+        33.390625,
+        15
+      ]
+    },
+    {
+      "text": "High 3.90 m",
+      "rect": [
+        207.32421875,
+        759.6749877929688,
+        68.8515625,
+        14
+      ]
+    }
+  ],
+  "intersection": {
+    "width": 17.37109375,
+    "height": 9.20001220703125
+  },
+  "requirement": "Readable24-hour tide chart"
+}

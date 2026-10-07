@@ -1,0 +1,115 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Claude Opus 5.5 / NN/g UX run record</title><style>:root{color-scheme:only light}body{font:17px/1.6 system-ui;max-width:1050px;margin:32px auto;padding:0 20px;color:#152432;background:#fff}h1{font-size:30px}h2{font-size:24px;margin-top:32px}a{color:#1259a3}table{border-collapse:collapse;width:100%;font-size:15px}td,th{padding:10px;border:1px solid #d6dde3;text-align:left;vertical-align:top}pre{overflow:auto;background:#f3f5f7;padding:16px}code{font-size:.92em}img{max-width:100%}@media(max-width:700px){table{display:block;overflow:auto}}</style><meta name="robots" content="noindex, nofollow, noarchive"></head><body><nav><a href="../../report.html">Full report</a> · <a href="RUN.md">Raw run record</a></nav><p>Status: complete</p>
+<h1>Tide prototype — run opus-c (NN/g UX resource)</h1>
+<h2>Outcome</h2>
+<ul>
+<li>One-screen responsive tide app in <code>src/App.jsx</code> + <code>src/styles.css</code>, built to <code>dist/</code> (<code>index.html</code>, <code>app.js</code>, <code>app.css</code>, unchanged <code>data.js</code>).</li>
+<li>Controls: location <code>&lt;select&gt;</code> (14 stations, alphabetical) and a two-button day toggle (Tue Oct 6 / Wed Oct 7). Initial: Half Moon Bay, 2026-10-06.</li>
+<li>Readings: noon height in large type with a Rising/Falling pill; next high and next low cards (time, height, hours from noon), sorted by which comes first; 24-hour SVG line chart with a labelled metre axis, 3-hour time ticks (6-hour ticks on narrow screens), a noon marker, and value labels on each high and low; a collapsible table of hourly heights.</li>
+<li>Units, timezone and clock are stated in the header ("Heights in metres (m) · Times in Pacific Daylight Time (PDT)"), in the reading line ("as of 12:00 PM (noon) PDT"), and in the chart subtitle.</li>
+<li>All values come straight from <code>public/data.js</code> (currentHeight, trend, nextHigh, nextLow, events, samples). Nothing is calculated except the chart scale and time formatting.</li>
+<li>Light mode only. No demo banner. No live APIs and no web fonts.</li>
+</ul>
+<h2>Resource calls (query-nngroup-ux skill + local nngroup-ux MCP, keyword mode only)</h2>
+<p>The exact requests and the returned identities, scores and hashes are in <code>evidence/resource/calls.json</code>. Concepts I translated the request into: chart readability and scale (axes and labels), choosing from a 14-item location list, and reading the key reading at a glance.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Call</th>
+<th>Request</th>
+<th>Outcome</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>nngroup_search</td>
+<td><code>line chart axis labels readability</code> (keyword, limit 6)</td>
+<td>6 results. Direct: clutter-charts/Axes, infographics/Informational Honesty. Supporting: dashboards-preattentive/Linear vs. Area-Based. The rest were incidental.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>nngroup_search</td>
+<td><code>dropdown menu long list options</code> (keyword, limit 6)</td>
+<td>5 results. Direct: dropdown-list/Too Many Options.</td>
+</tr>
+<tr>
+<td>3</td>
+<td>nngroup_search</td>
+<td><code>dashboard glanceable key information</code> (keyword, limit 6)</td>
+<td>6 results. Direct: glanceable-fonts/Applying These Findings.</td>
+</tr>
+<tr>
+<td>4</td>
+<td>nngroup_get_section</td>
+<td><code>nngroup:article:clutter-charts:s4:axes:4a0348dd4487</code></td>
+<td>ok, hash 4a0348dd…fdd8c8</td>
+</tr>
+<tr>
+<td>5</td>
+<td>nngroup_get_section</td>
+<td><code>nngroup:article:dropdown-list:s10:too-many-options:021503116739</code></td>
+<td>ok, hash 02150311…2ea5bc</td>
+</tr>
+<tr>
+<td>6</td>
+<td>nngroup_get_section</td>
+<td><code>nngroup:article:designing-effective-infographics:s3:informational-honesty:76c291ed6779</code></td>
+<td>ok, hash 76c291ed…87131f</td>
+</tr>
+<tr>
+<td>7</td>
+<td>nngroup_get_section</td>
+<td><code>nngroup:article:glanceable-fonts:s4:applying-these-findings-to-your-designs:32e96dd18f74</code></td>
+<td>ok, hash 32e96dd1…c1e31e1a9</td>
+</tr>
+<tr>
+<td>8</td>
+<td>nngroup_get_section</td>
+<td><code>nngroup:article:dashboards-preattentive:s4:linear-vs-area-based-graphs:a466e325a264</code></td>
+<td>ok, hash a466e325…5309e4</td>
+</tr>
+</tbody>
+</table>
+<p>I made no nngroup_get_article calls because no outline or relationship between sections affected a decision. Search is lexical, not semantic.</p>
+<h2>Evidence applied (corpus claim → my decision)</h2>
+<ul>
+<li><strong>Corpus:</strong> Data labels make exact values easy to read. Axes and grid lines are worth keeping when the general magnitude matters. (Kate Moran, "Clutter-Free: One of the 3 Cs for Better Charts", https://www.nngroup.com/articles/clutter-charts/, section "Axes".)
+  <strong>Inference/decision:</strong> Keep light grid lines and a metre y-axis so the overall tide shape and range are readable. Add exact value labels only on highs and lows, which are the values people look for.</li>
+<li><strong>Corpus:</strong> Scale charts to show the range of values accurately. A zero baseline is natural in many cases, but you don't have to force it when another logical baseline exists. (Lexie Kane, "Designing Effective Infographics", https://www.nngroup.com/articles/designing-effective-infographics/, section "Informational Honesty".)
+  <strong>Decision:</strong> The y-axis starts at 0 m, which is the fixture's natural baseline because every height is positive. The top is the selected day's maximum plus at least 0.2 m, rounded up to 0.5 m. The scale changes with each selection and always contains the data.</li>
+<li><strong>Corpus:</strong> 2D position, as used in line graphs, is a preattentive attribute and supports quick comparisons. (Page Laubheimer, "Dashboards: Making Charts and Graphs Easier to Understand", https://www.nngroup.com/articles/dashboards-preattentive/, section "Linear vs. Area-Based Graphs".)
+  <strong>Decision:</strong> Use a line chart. The light fill under the line is decorative, and values are read from the line's position.</li>
+<li><strong>Corpus:</strong> Dropdowns become a problem above roughly 15 options. In that case a filterable combobox helps. (Huei-Hsin Wang, "Does Your Form Really Need a Dropdown List?", https://www.nngroup.com/articles/dropdown-list/, section "Too Many Options".)
+  <strong>Inference/decision:</strong> At 14 locations the list is under that threshold, so I used a native <code>&lt;select&gt;</code>, sorted alphabetically to make scanning easier (my inference). With only two dates, a visible two-button toggle replaces a second dropdown (my inference).</li>
+<li><strong>Corpus:</strong> Use larger font sizes for glanceable information, and avoid condensed or thin type for people who are distracted. (Page Laubheimer, "Typography for Glanceable Reading: Bigger Is Better", https://www.nngroup.com/articles/glanceable-fonts/, section "Applying These Findings to Your Designs".)
+  <strong>Decision:</strong> The current height is about 3.4rem bold system UI type. The trend and next-tide times are bold and 1.25–1.5rem. Someone checking tides on the way to the coast may be distracted (my inference about context).</li>
+<li>None of these sources is specific to tides or to accessibility. They support general chart, form and typography principles only.</li>
+</ul>
+<h2>QA</h2>
+<ul>
+<li><code>npm run build</code>: passed. <code>npm run check</code>: <code>{"errors":[],"viewports":[{"viewport":"desktop","overflow":false},{"viewport":"mobile","overflow":false}]}</code>. Screenshots are in <code>evidence/browser/</code>.</li>
+<li><code>evidence/qa/sweep.cjs</code> checked all 14 locations × 2 days = 28 combinations in each of two passes, for 56 checks total:</li>
+<li>Desktop 1280×800 over local HTTP (127.0.0.1:8765).</li>
+<li>Mobile 390×844 over <code>file://</code>.</li>
+</ul>
+<p>For each combination it confirmed that the station name, noon height, trend, next-high and next-low heights match the data; that the chart line stays inside the SVG viewBox; and that every high/low height appears in the chart's accessible label. It also checked the initial selection, horizontal overflow, page errors and failed requests. Result: <code>{"checked":56,"fails":0,"errors":[]}</code> (<code>evidence/qa/sweep.json</code>). The Point Reyes, Oct 7 screenshots for both passes are in <code>evidence/qa/</code>.
+- Visual review of the screenshots found two problems, both fixed:
+  - Mobile chart labels were too small because the SVG scaled down. Fix: the chart now uses a narrower drawing at ≤560px.
+  - A low-tide label at noon collided with the noon marker. Fix: that label is now offset.</p>
+<h2>Assumptions</h2>
+<ul>
+<li>Product scope comes from USER_ANSWER.txt ("Proceed as inferred"): someone checking tides for a coastal outing, with no particular activity prioritized. No safety claims and no accounts.</li>
+<li>"Pacific time" on Oct 6–7, 2026 is PDT (UTC−7). Daylight saving time ends Nov 1, 2026.</li>
+<li>Fixture hour 24 is midnight starting the next day. It is shown as, for example, "12:00 AM, Thu, Oct 8".</li>
+<li>The data's <code>trend</code> and <code>nextHigh</code>/<code>nextLow</code> are shown exactly as supplied. For example, Point Reyes on Oct 7 is "Rising" at a 0.44 m low at noon. I did not re-derive them.</li>
+<li>The tidal datum isn't specified in the data, so no datum is claimed. The <code>demo: true</code> flag is not shown, per the no-banner instruction.</li>
+</ul>
+<h2>Limitations</h2>
+<ul>
+<li>The chart connects hourly samples with straight segments, so peaks between samples are not interpolated.</li>
+<li>This run is condition c, so no finish-role agents were used (they are available only in condition b). No new human question came up, and there is no QUESTION.md.</li>
+<li>The resource log keeps exact requests plus returned identities, hashes and scores. It does not store the full verbatim search excerpts or section texts; the section content is paraphrased above.</li>
+<li>Processed tokens went well over the soft target of 6,000. The data inspection, eight MCP replies (about 15k tokens) and screenshot review account for most of that.</li>
+<li>The QA was automated plus screenshot review. No assistive-technology or real-user testing was done.</li>
+</ul></body></html>

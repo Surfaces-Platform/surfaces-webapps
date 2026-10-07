@@ -1,0 +1,30 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Claude Opus 5.5 / No design resource run record</title><style>:root{color-scheme:only light}body{font:17px/1.6 system-ui;max-width:1050px;margin:32px auto;padding:0 20px;color:#152432;background:#fff}h1{font-size:30px}h2{font-size:24px;margin-top:32px}a{color:#1259a3}table{border-collapse:collapse;width:100%;font-size:15px}td,th{padding:10px;border:1px solid #d6dde3;text-align:left;vertical-align:top}pre{overflow:auto;background:#f3f5f7;padding:16px}code{font-size:.92em}img{max-width:100%}@media(max-width:700px){table{display:block;overflow:auto}}</style><meta name="robots" content="noindex, nofollow, noarchive"></head><body><nav><a href="../../report.html">Full report</a> · <a href="RUN.md">Raw run record</a></nav><p>Status: complete</p>
+<h1>Tide prototype — run opus-d (baseline, resource: none)</h1>
+<h2>Outcome</h2>
+<p>Single-screen responsive React 19 tide app built from the fresh starter and unchanged <code>public/data.js</code> (14 locations × 2 dates).
+- Controls: location <code>&lt;select&gt;</code> (14 stations) and a two-button day toggle (Tue Oct 6 / Wed Oct 7). Initial selection: Half Moon Bay, 2026-10-06.
+- Reading card: station, full date and "at 12:00 PM PT" clock, current height (m), Rising/Falling (arrow + word + colour), next high and next low (time PT + height), ordered by which comes first.
+- 24-hour chart (inline SVG): smooth curve through all 25 hourly samples (0–24 h), metre gridlines, labelled hour axis, H/L event markers with heights, dashed noon marker with current height. Y scale is computed per selection (0 to rounded-up max with headroom, 0.5 m or 1 m steps) so it always contains the data. Mobile uses a narrower chart geometry so labels stay legible. Event list under the chart; SVG has a text <code>aria-label</code> summary.
+- Light mode only (<code>color-scheme: only light</code>, no dark media rules); system fonts; no banners/notices; no network calls.
+- Files changed: <code>src/App.jsx</code>, <code>src/styles.css</code>. Added QA script <code>evidence/sweep.cjs</code>. Starter build/check/data unchanged.</p>
+<h2>Resource calls</h2>
+<p>None. Baseline condition: no skills, MCP servers (mcp.json empty), plugins, agents, or design resources used. Only file/shell tools and the supplied Playwright/Chrome check infrastructure.</p>
+<h2>QA</h2>
+<ul>
+<li><code>npm run build</code> — success. <code>npm run check</code> — <code>{"errors":[],"viewports":[{"viewport":"desktop","overflow":false},{"viewport":"mobile","overflow":false}]}</code>; screenshots in <code>evidence/browser/desktop.png</code>, <code>mobile.png</code>; output in <code>qa.json</code>.</li>
+<li><code>node evidence/sweep.cjs</code> — all 28 location/day combinations at desktop 1280×800 over <strong>local HTTP</strong> and mobile 390×844 over <strong>file://</strong> (56 checks): initial-state check, displayed station/height/trend/next-high/next-low time+height match data, curve inside gridline range, no horizontal overflow, no page errors. Final result: <code>{"combos":56,"fails":[],"errs":[]}</code> (<code>evidence/sweep.json</code>).</li>
+<li>Issues found and fixed during QA: (1) Fort Bragg (max 3.2 m) curve rose above the top gridline — tick rounding fixed; (2) near-zero low labels (Crescent City 0.24 m) collided with the time axis — labels now lifted above the dot with a white halo; (3) mobile chart text was too small and "m" overlapped the top tick — added narrow chart geometry and repositioned unit label.</li>
+<li>Visual review of desktop and mobile screenshots (Half Moon Bay Oct 6; Crescent City Oct 7).</li>
+</ul>
+<h2>Assumptions</h2>
+<ul>
+<li>Readings shown are the supplied <code>currentHeight</code>, <code>trend</code>, <code>nextHigh</code>, <code>nextLow</code>, <code>events</code> values, not recomputed; chart uses the supplied hourly samples (curve smoothing between samples is visual only).</li>
+<li>"Next" high/low as supplied may fall at hour 24; shown as "12:00 AM (next day)".</li>
+<li>Persistent user answer ("Proceed as inferred"): general coastal-outing user, no activity prioritized, no safety claims, no extra brand/accessibility standard. No new human question needed; no QUESTION.md written.</li>
+</ul>
+<h2>Limitations</h2>
+<ul>
+<li>Prototype only: two fixed dates, fixed noon clock, fixture data (not for navigation or safety).</li>
+<li>Chart interaction is static (no hover/scrub readout).</li>
+<li>Soft target of ~6000 processed tokens was exceeded (reading inputs, building, three QA iterations with screenshots); recorded as an overrun.</li>
+</ul></body></html>
