@@ -91,7 +91,8 @@ describe("homepage header", () => {
       "JudgmentKit MCP",
     ]);
     expect(handbooksLink?.getAttribute("href")).toBe("https://handbooks.surfaces.systems/");
-    expect(handbooksLink?.getAttribute("target")).toBeNull();
+    expect(handbooksLink?.getAttribute("target")).toBe("_blank");
+    expect(handbooksLink?.getAttribute("rel")).toBe("noopener noreferrer");
     expect(judgmentKitLink?.getAttribute("href")).toBe("https://judgmentkit.ai/");
     expect(judgmentKitLink?.getAttribute("target")).toBeNull();
     expect(judgmentKitLink?.getAttribute("rel")).toBeNull();
