@@ -1,0 +1,446 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Claude Opus 5.5 / JudgmentKit run record</title><style>:root{color-scheme:only light}body{font:17px/1.6 system-ui;max-width:1050px;margin:32px auto;padding:0 20px;color:#152432;background:#fff}h1{font-size:30px}h2{font-size:24px;margin-top:32px}a{color:#1259a3}table{border-collapse:collapse;width:100%;font-size:15px}td,th{padding:10px;border:1px solid #d6dde3;text-align:left;vertical-align:top}pre{overflow:auto;background:#f3f5f7;padding:16px}code{font-size:.92em}img{max-width:100%}@media(max-width:700px){table{display:block;overflow:auto}}</style><meta name="robots" content="noindex, nofollow, noarchive"></head><body><nav><a href="../../report.html">Full report</a> · <a href="RUN.md">Raw run record</a></nav><p>Status: complete</p>
+<p>The parent's mobile chart-label overlap is repaired. The repaired bytes were accepted by a new actual review, <strong>repair-cycle-2 R2</strong> (<code>repair-cycle-2/jk3/R2-impl-review.json</code>). That review ran on the patched <strong>LOCAL stdio MCP</strong>; it is not a hosted-public review. R1's acceptance covers only the earlier bytes, which are preserved unchanged.</p>
+<h2>Parent QA repair: chart label layout (repair-cycle-2, R2)</h2>
+<p><strong>Defect (parent QA):</strong> Crescent City, 2026-10-07, 390×844. The "Noon" SVG label (rect 191.30, 753.875, 33.39×15) intersected "High 3.90 m" (rect 207.32, 759.675, 68.85×14) by 17.37×9.20 px. Proof is kept in <code>evidence/parent/</code>.</p>
+<p><strong>Before-state preserved:</strong> <code>repair-cycle-2/snapshot-R1-accepted-before-label-fix/</code> holds the accepted R1 src, dist, evidence, tools and R1 receipts, with <code>SNAPSHOT.sha256</code> (49 files):
+- TideChart.jsx 610efc23…
+- dist/app.js b3df01f6…
+- R1 structured 7a9fb8d1…</p>
+<p>The R1 receipts in <code>jk3/</code> are untouched and not relabelled.</p>
+<h3>Baseline label measurement</h3>
+<p><code>tools/chart-labels.cjs</code> measured every rendered SVG text box (via getBoundingClientRect) for 14 × 2 × desktop/mobile on the pre-fix dist. Results are in <code>evidence/chart-labels/before.json</code> and <code>before-shots/</code>. Text/text overlaps appeared in <strong>56/56</strong> chart states; text fell outside the chart in 28/56. Related collisions found in the same batch:
+- Noon × High at mobile (7 states, including the parent case)
+- y-axis "0.0" × hour label "00:00" (all 56)
+- "m" unit × top tick (mobile, 28)
+- Low labels × hour labels near the scale floor (11)
+- the last "00:00" hour label overflowing the right edge on mobile (28)</p>
+<h3>Fix (only <code>src/TideChart.jsx</code> plus one rule in <code>src/styles.css</code>; no renderer or validator edits)</h3>
+<ul>
+<li><strong>Top band:</strong> a reserved band (PAD.top 28→46) holds the "Noon" guide label and the "m" unit at y=16. High labels can no longer rise into it. The dashed noon guide starts just below the Noon label.</li>
+<li><strong>Hour labels:</strong> the 00:00 label is start-anchored and the 24:00 label end-anchored, so they clear the y-axis labels and stay inside the chart. PAD.bottom is 40→44, and "Pacific time" sits at H−4.</li>
+<li><strong>Low labels:</strong> a Low label sits below its point unless it would reach the hour-label row; then it sits above the point. The event-label clamp went from 34 to 38 px.</li>
+<li><strong>Halo:</strong> event labels get a canvas-colour stroke halo (<code>paint-order: stroke</code>, <code>--jk-color-canvas</code>), so the dashed guide and tide line do not cut through the text. Fill colours are unchanged.</li>
+<li><strong>Unchanged:</strong> data, units (m), Pacific timezone, the noon marker and point, the chart's role=img title/desc, and the table. No feature was added.</li>
+</ul>
+<h3>Measured after the fix (<code>evidence/chart-labels/after.json</code>, <code>after-shots/</code>)</h3>
+<ul>
+<li>Text/text overlaps: <strong>0/56</strong>. Text outside the chart: <strong>0/56</strong>.</li>
+<li>The minimum clearance between "Noon" and any other label is 7.83 px.</li>
+<li>Crescent City 2026-10-07, mobile: Noon at y 751.33–767.33; both High 3.90 m labels at y 776.58–791.58.</li>
+<li>Screenshots were reviewed for Crescent City 2026-10-07 at desktop and mobile. The dashed guide still crosses event-label boxes in 34 states, but the halo masks it, and the text read clearly in the screenshots.</li>
+</ul>
+<h3>QA rerun (repair-cycle-2)</h3>
+<ul>
+<li><strong>Build and check:</strong> <code>npm run build</code> ok. <code>npm run check</code>: 0 errors, no overflow at both viewports.</li>
+<li><strong><code>node tools/qa.cjs</code>:</strong> exit 0. The script now also asserts the chart-label rule in each case (no text intersections, all text inside the chart, Noon label and guide present).</li>
+<li><strong>112/112</strong> selection/data cases, <strong>112/112</strong> caret geometry and <strong>112/112</strong> chart-label cases.</li>
+<li>0 failures, 0 page or console errors.</li>
+<li>States, loading/error, keyboard, forced-colours, reduced-motion and focus checks all reran and passed.</li>
+<li><strong>Rendered accessibility:</strong></li>
+<li>minimum text contrast 5.8 (68/64 nodes)</li>
+<li>chart text 22 desktop / 18 mobile nodes, minimum 5.8</li>
+<li>the chart's role=img name and desc are unchanged</li>
+<li><strong>Manifest preflight:</strong> rerun, exit 0. The selectors resolve at 1280 and 390 px.</li>
+<li><strong>Data:</strong> <code>dist/data.js</code> = <code>public/data.js</code> = sha256 <code>6e8804d88335cdf2ad2a968b61edfd53b9f4792102f482459fa9500d9d741d5f</code>, unchanged.</li>
+</ul>
+<h3>R2 implementation review (cycle 2, actual review 2 of 3)</h3>
+<p><strong>Inputs:</strong> the args came from <code>jk3/make-r2.cjs</code>, a copy of <code>make-r1.cjs</code> with the output path and the chart-label QA facts added. They use the same bound <code>active-contract.json</code> (d12a0579…), the same <code>jk3/36-frontend.json</code> (both verified byte-equal in JSON to R1's), surface_type dashboard_monitor, and fresh code, rendered_html (b91d071d…) and manifest. The call went through <code>node ./jk_local_call.mjs review_ui_implementation_candidate</code>; request, raw, structured and transport are all saved.</p>
+<p><strong>Result:</strong>
+- implementation_review_status <strong>passed</strong>
+- candidate_artifact_status <strong>accepted_artifact</strong>
+- design_system_acceptance_status <strong>passed</strong>
+- next_agent_action <strong>accept</strong>
+- 14 checks pass and visual_composition is <code>pass_with_warning</code></p>
+<p>The visual_composition result is a <strong>trusted</strong> receipt (trusted_evidence_present true, policy 1.1.1). It covers 4 samples (location and day × desktop and mobile) across 2 documents, with 0 findings and 0 invalid reasons. Its only warning is the non-blocking <code>browser_owned_value_text_unmeasured</code>. The caret (indicator geometry and insets) was measured by the runtime.</p>
+<p><strong>Counter note:</strong> the wrapper increments <code>review-count.json</code> itself. I wrongly bumped it from 1 to 2 by hand before the call, so the wrapper recorded this submission as attempt 3. The receipt shows <code>current_attempt 3</code>, and <code>repair-cycle-2/review-count.json</code> = <code>{"count":3}</code>. Only <strong>two</strong> actual reviews were submitted in cycle 2 (R1, R2). The counter was left at 3, not lowered, so no further cycle-2 review is possible through the wrapper. R3 was not needed. Cycle 1 is unchanged: root <code>review-count.json</code> = 3, reviews 21–23 failed. Total actual implementation reviews in the run: 5.</p>
+<h3>Final hashes (<code>repair-cycle-2/FINAL-HASHES-R2.sha256</code>), synchronized to root src/dist/evidence/tools</h3>
+<ul>
+<li>dist/index.html 849616db… ; dist/app.js 6ea24730c7e4… ; dist/app.css 531a83daf2f2… ; dist/data.js 6e8804d8…</li>
+<li>src/TideChart.jsx 59e82480… ; src/styles.css 02880dd9… ; other src files unchanged</li>
+<li>evidence/rendered.html b91d071df4a3efb67ddea1f5fc530c46d247179eea751d47f61c03b75acb477e ; qa-full.json 3e5586d8…</li>
+<li>R2 structured e3896144fd792bd262c5bb65fdfa4df9661d628f5ee62f09c3bf33abbd6e02b0 ; raw e18cb3a4… ; request ee504e07… ; transport e917b83a… ; args e25c825a…</li>
+</ul>
+<p>Root <code>evidence/parent/</code> (the parent's proof) is kept. The pins are unchanged: Claude Opus 5.5, medium effort, the same local MCP, renderer 0.8.0 and policy 1.1.1. Limitations as below; native select option text remains browser-painted and unmeasured.</p>
+<hr />
+<h1>Prior record (R1 acceptance; superseded for final bytes by R2 above)</h1>
+<p>Parent final browser QA found a visible mobile chart-label overlap. Actual repair-cycle2 R1 remains accepted for its original bytes, preserved in the receipts. Final gallery delivery awaits focused source repair and fresh acceptance.</p>
+<h2>Repair cycle 2: accepted on its review 1 of 3</h2>
+<p>A separate <strong>repair-cycle-2</strong> (<code>repair-cycle-2/</code>, receipts in <code>repair-cycle-2/jk3/</code>) produced an <strong>accepted_artifact</strong>. The result came from the patched <strong>LOCAL stdio MCP</strong>; it is not a hosted-public review.</p>
+<p>Review <code>jk3/R1-impl-review.json</code> returned:
+- implementation_review_status <strong>passed</strong>
+- candidate_artifact_status <strong>accepted_artifact</strong>
+- design_system_acceptance_status <strong>passed</strong>
+- next_agent_action <strong>accept</strong></p>
+<p>All 15 checks pass. visual_composition is <code>pass_with_warning</code>:
+- It is a <strong>trusted</strong> runtime receipt: receipt_outcome <code>pass_with_warning</code>, 4 declared samples (location and day × desktop and mobile), 2 documents, 0 findings, 0 invalid reasons.
+- The only warning is the non-blocking <code>browser_owned_value_text_unmeasured</code>: native option text is painted by the browser.</p>
+<p><strong>The original cycle 1 is unchanged and still failed:</strong>
+- reviews 1–3/3 all failed
+- root <code>review-count.json</code> stays <code>{"count":3}</code>
+- receipts stay in <code>jk2/21–23</code>
+- the stopped source, dist and evidence are kept in <code>stopped-cycle1-snapshot/</code>
+- <code>QUESTION.md</code> is kept as written</p>
+<p>Cycle 2 has its own counter, <code>repair-cycle-2/review-count.json</code> = <code>{"count":1}</code>. Totals across the run: <strong>4 implementation reviews</strong>, 3 in cycle 1 and 1 in cycle 2 (each cycle max 3). Pins unchanged: Claude Opus 5.5, medium effort, $3 session cap, same local MCP, backend, canonical renderer 0.8.0 and policy 1.1.1.</p>
+<p>Authorization: Mike's standing instruction (FINAL-ACCEPTANCE-CYCLE.md) to fix rejected controls until accepted. No new product feature was added and no user-approved product change is claimed. The QUESTION.md "handoff action" question was not answered by Mike. It became moot because the read-only surface was re-reviewed as dashboard_monitor, and no handoff action or Copy reading was invented.</p>
+<h3>Cycle-2 setup</h3>
+<ul>
+<li><strong>What was copied:</strong> only this run's own infrastructure: src, tools, public, public-runtime, vendor, build files, jk_local_call.mjs, jk2/context_items.json.</li>
+<li><strong>node_modules:</strong> symlinked to the run's existing node_modules (the same preexisting infrastructure link as before).</li>
+<li><strong>Isolation:</strong> no sibling or prior experiment was read.</li>
+</ul>
+<h3>Cycle-2 resource calls (each with request, raw, structured and transport saved in <code>repair-cycle-2/jk3/</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Tool</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>30</td>
+<td>recommend_surface_types (brief + jk2/11 activity review)</td>
+<td>ready; <strong>workbench, low confidence</strong>, every surface score 0; blocked only content_report. dashboard_monitor is not blocked</td>
+</tr>
+<tr>
+<td>31</td>
+<td>review_ui_workflow_candidate (surface_type dashboard_monitor + surface_review 30)</td>
+<td>ready_for_review, but the tool kept surface_type <strong>workbench</strong> from the surface_review</td>
+</tr>
+<tr>
+<td>32</td>
+<td>review_ui_workflow_candidate (surface_type dashboard_monitor, without surface_review)</td>
+<td><strong>ready_for_review</strong>, surface_type <strong>dashboard_monitor</strong>, guidance confidence <code>user_selected</code>, 0 targeted questions</td>
+</tr>
+<tr>
+<td>33</td>
+<td>review_cognitive_dimensions_candidate</td>
+<td>ready_for_review → continue_to_handoff_or_implementation</td>
+</tr>
+<tr>
+<td>34</td>
+<td>create_ui_implementation_contract (dashboard_monitor)</td>
+<td><strong>ready</strong> (fresh call; returned contract is byte-identical to cycle 1's; bound to <code>repair-cycle-2/active-contract.json</code>)</td>
+</tr>
+<tr>
+<td>35</td>
+<td>create_ui_generation_handoff</td>
+<td><strong>ready_for_generation</strong></td>
+</tr>
+<tr>
+<td>36</td>
+<td>create_frontend_generation_context</td>
+<td><strong>ready_for_frontend_implementation</strong>, surface dashboard_monitor, no surface profile selected</td>
+</tr>
+<tr>
+<td>37</td>
+<td>create_frontend_implementation_skill_context</td>
+<td><strong>ready</strong></td>
+</tr>
+<tr>
+<td>R1</td>
+<td>review_ui_implementation_candidate (1/3)</td>
+<td><strong>passed / accepted_artifact / design system passed / accept</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Surface decision (assumption, made visible):
+- The tool's recommendation was low confidence and no surface scored above zero.
+- dashboard_monitor ("track status, trends") matches the approved activity: a read-only check with place/day selection, a noon summary and direction signal, the next extremes, a trend chart and detailed measurements.
+- I selected dashboard_monitor through the tool's surface_type input, and the workflow review returned ready. The label <code>user_selected</code> is the tool's term. In fact the agent chose the surface, under Mike's instruction to reconsider it.</p>
+<p>The dashboard pattern mapping is truthful to the existing UI. Every region and control already existed; nothing was added.
+- <strong>status summary:</strong> the noon panel
+- <strong>exceptions:</strong> next high/low extremes, plus the loading / unavailable / no-readings notice
+- <strong>trend:</strong> the 24 h chart
+- <strong>follow-up path / drill in:</strong> the detailed measurements table region, keyboard-focusable after Day
+- <strong>filter:</strong> the location select
+- <strong>time range:</strong> the day select</p>
+<h3>What changed versus the cycle-1 candidate</h3>
+<ul>
+<li><strong>Feature source:</strong> unchanged. <code>src/*</code> hashes are identical to cycle 1: App.jsx 267ee160…, styles.css 2675ce30…, jk-tokens.css fe6d13b4…, and so on. dist was rebuilt; only bundler path comments in app.js/app.css differ.</li>
+<li><strong>Manifest select selectors:</strong> <code>selector</code>, <code>sample_selector</code>, <code>root_selector</code> and <code>value_selector</code> = <code>#location</code> / <code>#day</code>, the native <code>&lt;select&gt;</code> itself. Indicator parts are <code>#id + .jk-select-field__indicator-slot</code> and <code>… &gt; .jk-select-field__indicator</code>. <code>tools/manifest-preflight.cjs</code> (<code>evidence/manifest-preflight.json</code>) showed each resolves to exactly one element at 1280 and 390 px: SELECT 44 px high, slot 48×44, indicator 16×16.</li>
+<li><strong>Accessibility evidence:</strong></li>
+<li>Every pass item declares <code>source: browser_rendered</code> and the tool.</li>
+<li>Success descriptions are worded positively and backed by real QA values.</li>
+<li>automated_checks lists the 5 checks run and passed, with measured contrast. The minimum text ratio is 5.8 on 68 desktop and 64 mobile nodes.</li>
+<li>visual_background_contrast has <code>measurement_source: browser_rendered_computed_style</code> and <code>computed_from_rendered_output: true</code>. It measured 22 desktop and 18 mobile chart text nodes, minimum ratio 5.8, fills rgb(97,97,92) and rgb(23,23,23) on background rgb(248,247,242).</li>
+<li>The tide line measures 6.62:1 against the actual chart background (7.1:1 against white).</li>
+<li>The not_applicable items keep real rationales.</li>
+<li>The error-state text quoted in status_messages is real UI copy.</li>
+<li><strong>Typography provenance:</strong> declared truthfully. The size, line and density aliases come from the workbench.operational-v1 profile that this run received in jk2/19. Context 36 selects no profile.</li>
+<li><strong>Review call:</strong> used surface_type dashboard_monitor with no stale workbench surface_review.</li>
+</ul>
+<h3>QA (<code>repair-cycle-2/tools/qa.cjs</code>, exit 0; <code>evidence/qa-full.json</code>, <code>evidence/qa-run.log</code>)</h3>
+<ul>
+<li><strong>Selection cases:</strong> <strong>112/112</strong> = 14 locations × 2 dates × desktop 1280×800 / mobile 390×844 × file:// / local HTTP (28 per viewport-protocol).</li>
+<li>Each case checks: noon height and trend; next high and low time and height; place/day label; hour-24 rollover to the next day; chart scale containing all heights; table row count; no page or region overflow.</li>
+<li>Caret geometry on both selects in every case: inset 16, slot 48 flush, indicator 16 centred, gap 16.</li>
+<li>Result: 0 failures, 0 page or console errors.</li>
+<li><strong>States:</strong> loading (data.js held over HTTP), network error (data.js aborted), missing-data error and empty fixtures, at both viewports.</li>
+<li><strong>Accessibility states:</strong> keyboard and focus order, focus-visible, forced colors, reduced motion, focus not obscured.</li>
+<li>No third-party scanner such as axe was used.</li>
+<li><strong>Data:</strong> <code>public/data.js</code> = <code>dist/data.js</code> = sha256 <code>6e8804d88335cdf2ad2a968b61edfd53b9f4792102f482459fa9500d9d741d5f</code> (exact).</li>
+<li>The raw BRIEF, TECHNICAL, POLICY and USER_ANSWER files were not edited.</li>
+</ul>
+<h3>Synchronized to the run root</h3>
+<ul>
+<li>The accepted <code>src/</code>, <code>dist/</code> and <code>evidence/</code> and the updated <code>tools/qa.cjs</code> / <code>tools/manifest-preflight.cjs</code> were copied to the root. Root <code>tools/gen-tokens.cjs</code> keeps its root-relative path.</li>
+<li>Final hashes are in <code>repair-cycle-2/FINAL-HASHES.sha256</code>:</li>
+<li>dist/index.html 849616db…</li>
+<li>dist/app.js b3df01f6…</li>
+<li>dist/app.css 7ee1fc01…</li>
+<li>dist/data.js 6e8804d8…</li>
+<li>evidence/rendered.html c9ef67f6…</li>
+<li>R1 review structured 7a9fb8d1…, raw b9dc9ba4…, args 4936a5ea…</li>
+<li>active contract d12a0579…</li>
+</ul>
+<h3>Limitations</h3>
+<ul>
+<li>Acceptance comes from the local stdio MCP, not a hosted review.</li>
+<li>Native option text is painted by the browser and is not measured; this is the receipt's own warning.</li>
+<li>Typography/density aliases come from the cycle-1 workbench profile packet, because the dashboard context supplies no profile.</li>
+</ul>
+<hr />
+<h1>Earlier record (cycle 1, stopped — preserved verbatim below; its "Status: blocked" applied to cycle 1)</h1>
+<h2>Continuation 2 (this session): repair, reviews 2/3 and 3/3. Still blocked.</h2>
+<p>All three implementation reviews are now used: <code>review-count.json</code> = 3, and autofix_loop is <code>stopped</code> with 0 remaining. Review 3 returned <strong>failed / not_an_artifact / design_system failed / next_agent_action stop_for_human</strong>. There is <strong>no accepted artifact</strong>, and dist is an unaccepted candidate. Open questions are in QUESTION.md.</p>
+<h3>Source repairs (real behaviour)</h3>
+<ul>
+<li><strong>Real loading state.</strong> <code>index.html</code> now loads <code>data.js</code> with <code>async</code> (id <code>tide-data</code>), and its inline onload/onerror set <code>window.__tideDataStatus</code>. <code>useTideTable()</code> in <code>src/App.jsx</code> shows the loading state until the script settles, then shows ready or error:</li>
+<li>panels show <code>data-jk-state=loading</code> with aria-busy</li>
+<li>the table shows loading</li>
+<li>a StatusMessage with role=status is shown</li>
+<li>selects are disabled, with a linked reason</li>
+<li><strong>Grid-area names.</strong> BEM <code>--</code> modifiers were renamed to single hyphens (<code>region-choose</code>, <code>trend-rising</code>, …). The only custom properties left are <code>--jk-</code> tokens.</li>
+<li>The supplied dataset is unchanged: <code>public/data.js</code> = <code>dist/data.js</code> = sha256 <code>6e8804d8…</code>.</li>
+</ul>
+<h3>QA: <code>node tools/qa.cjs</code>, exit 0</h3>
+<p>Results are in <code>evidence/qa-full.json</code>; the log is <code>evidence/qa-run.log</code>.
+- <strong>Display and chart checks:</strong> 56/56 samples pass (14 locations × 2 days × desktop 1280×800 and mobile 390×844). Each sample checks:
+  - noon height and trend
+  - next high and low (time and height)
+  - place/day label
+  - hour-24 rollover
+  - chart scale contains the data
+  - row count
+  - no overflow
+- <strong>Caret geometry:</strong> 56/56 samples pass, measured on both selects in every sample:
+  - value inset 16 px
+  - slot 48 px, flush to the control end
+  - indicator 16 px, centre delta 0 px, contained in the control
+  - value-to-indicator gap 16 px
+  - checked against the calibration <code>field_value_trailing_indicator_slot</code>
+- <strong>Loading</strong> (data.js held by a Playwright route over local HTTP): loading at both viewports, then ready after release.
+- <strong>Network error</strong> (data.js aborted): panels show error, status role=alert, selects disabled.
+- <strong>Existing fixtures:</strong> the missing-data error and empty fixtures still pass.
+- <strong>Reduced motion:</strong> the only animation is the renderer spinner <code>jk-component-spin</code>, and none is left under reduce.
+- <strong>Forced colors:</strong> the focused select keeps a solid 2 px outline.
+- <strong>Focus:</strong> the focused control is never obscured.
+- <strong>Other checks:</strong> 0 contrast failures and 0 page errors.
+- <strong>Selectors:</strong> before review 3, I confirmed that the manifest selectors resolve in rendered_html at 1280 and 390 px.
+- <strong>Scanner:</strong> no third-party scanner such as axe was used.</p>
+<h3>Review calls (jk2/, full request/raw/structured/transport saved; same context_items attribution)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>args builder</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>22</td>
+<td><code>jk2/make22.cjs</code> (from <code>jk2/mk22.py</code>)</td>
+<td>failed / not_an_artifact / repair_and_resubmit. <strong>Now pass:</strong> raw_controls, state_coverage, component_contracts, design_system_provenance. <strong>Still fail:</strong> accessibility automated_checks ("reports a failure"); pattern_contracts missing <code>handoff action</code>; visual_composition <code>sample_selector_missing</code> / <code>sample_root_missing</code></td>
+</tr>
+<tr>
+<td>23</td>
+<td><code>jk2/make23.cjs</code></td>
+<td>failed / not_an_artifact / <strong>stop_for_human</strong>. Detailed findings below</td>
+</tr>
+</tbody>
+</table>
+<p>Review 23 passed every check except these three:
+1. <strong>accessibility_evidence</strong>
+   - automated_checks "reports a failure". The submitted evidence was a pass with zero violations; the reviewer gave no further reason.
+   - visual_background_contrast: "Visual-background contrast evidence must be browser-rendered or computed from rendered output". My evidence did come from computed styles in the browser, but it did not say so in a form the checker recognised.
+2. <strong>pattern_contracts:</strong> missing expected control <code>handoff action</code>. The app genuinely has none (read-only workflow), so I did not invent one. This needs a human decision (QUESTION.md).
+3. <strong>visual_composition</strong> (trusted receipt, policy 1.1.1): fail <code>select_control_missing</code> / <code>declared_select_root_not_control</code>.
+   - The manifest <code>selector</code> pointed to the <code>.jk-select-field__control</code> wrapper; it must be the select control itself (<code>#location</code> / <code>#day</code>).
+   - The root now resolves (the review-2 selector problem is fixed). The 4 auto-discovered native-select samples gave only the non-blocking warning <code>browser_owned_value_text_unmeasured</code>.</p>
+<p>The fix for finding 3 and likely fixes for finding 1 are known, but no review remains. I did not apply them unreviewed.</p>
+<h3>Final hashes (sha256)</h3>
+<ul>
+<li>src/App.jsx 267ee160… ; src/TideChart.jsx 610efc23… ; src/tide.js cf594336… ; src/main.jsx 0918a9dd… ; src/styles.css 2675ce30… ; src/jk-tokens.css fe6d13b4…</li>
+<li>dist/index.html 849616db… ; dist/app.js 15859ce8… ; dist/app.css 582433bd… ; dist/data.js 6e8804d8… (= public/data.js)</li>
+<li>evidence/rendered.html 2ed429a3d2317b78765a0d872e6266488be2dcce46a2d088fe651a02fbfa3749</li>
+</ul>
+<h3>Earlier record (previous sessions) follows</h3>
+<h1>Tide prototype run (opus-a): JudgmentKit, patched LOCAL stdio MCP</h1>
+<p>All JudgmentKit results came from the patched <strong>local</strong> stdio MCP via <code>node ./jk_local_call.mjs</code>. None of this is a hosted-public review.</p>
+<h2>Outcome</h2>
+<ul>
+<li><strong>Activity, workflow, contract, handoff, and frontend gates now pass.</strong> This continuation only changed how USER_ANSWER.txt is attributed.</li>
+<li><strong>Code is built and passes local QA.</strong> It is in <code>src/</code> and <code>dist/</code>.</li>
+<li><strong>The implementation acceptance gate has NOT passed.</strong> Review 1 of 3 returned:</li>
+<li><code>implementation_review_status: failed</code></li>
+<li><code>candidate_artifact_status: not_an_artifact</code></li>
+<li><code>design_system_acceptance_status: failed</code></li>
+<li><code>next_agent_action: repair_and_resubmit</code></li>
+</ul>
+<p>Under the skill, a failed candidate is not an accepted artifact. The dist build is an <strong>unaccepted candidate</strong>: it must not be treated as delivered until a later review passes. I stopped and did not use reviews 2 and 3. The remaining USD budget (about $0.48) was not enough for a reliable repair, rerender, and resubmit cycle. Two reviews remain (review-count.json = 1).</p>
+<h2>History</h2>
+<ul>
+<li><strong>First session</strong> (receipts preserved in <code>jk/</code>):</li>
+<li>tools/list</li>
+<li>baseline review: <code>needs_source_context</code></li>
+<li>candidate review: <code>needs_source_context</code>, stop</li>
+<li><strong>Cause of that stop:</strong> the whole USER_ANSWER paragraph was one context item. The reviewer misclassified it as a protected safety boundary needing an <code>authoritative_source</code>. QUESTION.md is now marked superseded.</li>
+</ul>
+<h2>Continuation: lossless sentence attribution</h2>
+<p><code>jk2/make-context.cjs</code> splits USER_ANSWER.txt into 6 sentence spans:
+- Each span keeps its trailing whitespace; the last keeps the final newline.
+- Kind stays <code>user_answer</code>.
+- ids are <code>mike-persistent-answer-s1</code> … <code>s6</code>; source_ref is <code>USER_ANSWER.txt#sentence-N</code>.</p>
+<p>TECHNICAL.txt stays as one exact <code>provided_artifact</code>. Nothing is marked <code>authoritative_source</code>.</p>
+<p>Proof is in <code>jk2/lossless-proof.json</code>:
+- 732 = 732 bytes
+- <code>byte_equal: true</code>
+- the joined spans and USER_ANSWER.txt have the same sha256 (<code>b885b1de…</code>)
+- <code>technical_exact: true</code></p>
+<p>The same <code>jk2/context_items.json</code> was passed to every downstream call.</p>
+<h2>Resource calls (jk2/)</h2>
+<p>Each call saved <code>X.request.json</code>, <code>X.raw.json</code>, the structured <code>X</code>, and <code>X.transport.json</code>.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Tool</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10</td>
+<td>create_activity_model_review</td>
+<td>needs_source_context (deterministic baseline); readiness <strong>ask</strong>, no blocking ambiguity, no protected-boundary claim</td>
+</tr>
+<tr>
+<td>11</td>
+<td>review_activity_model_candidate</td>
+<td><strong>ready_for_review</strong>; readiness <strong>proceed</strong>, <code>allowed_with_visible_assumptions</code></td>
+</tr>
+<tr>
+<td>12</td>
+<td>recommend_surface_types</td>
+<td>ready; <strong>workbench</strong> (low confidence); content_report blocked</td>
+</tr>
+<tr>
+<td>13</td>
+<td>recommend_ui_workflow_profiles</td>
+<td>operator-review-ui not recommended; none applied</td>
+</tr>
+<tr>
+<td>14</td>
+<td>review_ui_workflow_candidate</td>
+<td>needs_source_context: <code>surface_sections</code> missing</td>
+</tr>
+<tr>
+<td>15</td>
+<td>review_ui_workflow_candidate</td>
+<td><strong>ready_for_review</strong>; same workflow, surface_set restructured into name/purpose/sections/controls</td>
+</tr>
+<tr>
+<td>16</td>
+<td>review_cognitive_dimensions_candidate</td>
+<td>ready_for_review → continue_to_handoff_or_implementation</td>
+</tr>
+<tr>
+<td>17</td>
+<td>create_ui_implementation_contract</td>
+<td><strong>ready</strong>; bound to active-contract.json; default JudgmentKit design system</td>
+</tr>
+<tr>
+<td>18</td>
+<td>create_ui_generation_handoff</td>
+<td><strong>ready_for_generation</strong></td>
+</tr>
+<tr>
+<td>19</td>
+<td>create_frontend_generation_context</td>
+<td><strong>ready_for_frontend_implementation</strong>; profile judgmentkit.workbench.operational-v1</td>
+</tr>
+<tr>
+<td>20</td>
+<td>create_frontend_implementation_skill_context</td>
+<td><strong>ready</strong></td>
+</tr>
+<tr>
+<td>21</td>
+<td>review_ui_implementation_candidate (1/3)</td>
+<td><strong>failed / not_an_artifact / repair_and_resubmit</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Call 11 used the same host-inferred candidate as <code>jk/02</code>. Only the source_refs were remapped to sentence ids. The stale protected-boundary claim and its assumption were dropped, because the new baseline no longer produced them. A plain "no safety claims" scope assumption was added.</p>
+<h3>Review 21 checks</h3>
+<ul>
+<li><strong>Pass:</strong> approved_primitives, static_enforcement, browser_qa, modal_actions, action_boundaries, data_visibility, visual_tokens, local_component_authority.</li>
+<li>
+<p><strong>Fail</strong>, with the repair required for each:
+  1. <strong>raw_controls:</strong> it detected <code>select</code>/<code>input</code>/<code>textarea</code> in the submitted code. The feature JSX uses only <code>SelectField</code>. The detection most likely comes from words like <code>select</code> in the code text, so it needs investigation, not assumption.
+  2. <strong>state_coverage / component_contracts:</strong> the <code>loading</code> state is required for panel, table, and status_message. The supplied data is synchronous, and my <code>not_applicable</code> rationale was not accepted.
+  3. <strong>accessibility_evidence:</strong> items need explicit pass/verified or not_applicable status fields. Conditional items also apply: visual_background, non_text, forced_colors, focus_not_obscured, reduced_motion, forms, status_messages, media_alternatives, semantic_fallbacks.
+  4. <strong>design_system_provenance:</strong> missing these proof fields:</p>
+<ul>
+<li>visual_token_source</li>
+<li>typography_source</li>
+<li>icon_asset_source</li>
+<li>renderer_component_source</li>
+<li>import_package_boundary</li>
+<li>source_export_proof</li>
+</ul>
+<p>It also flagged local grid-area names (<code>--select</code> etc.) as visual tokens.
+  5. <strong>pattern_contracts:</strong> <code>missing_regions</code> lists all four workbench regions. The regions need exact names, and the expected controls (filter or sort, decision action, handoff action) were declared not applicable. Those actions are not genuine in a read-only tide check.
+  6. <strong>visual_composition:</strong> a trusted runtime receipt was attached, but its outcome was <strong>fail</strong>: <code>sample_selector_missing</code> at the mobile/second-document samples. My manifest used <code>:has()</code> selectors and extra fields. It also warned <code>browser_owned_value_text_unmeasured</code> (non-blocking).</p>
+</li>
+</ul>
+<h2>Implementation (unaccepted candidate)</h2>
+<p><strong>Code:</strong>
+- <code>src/App.jsx</code>, <code>src/TideChart.jsx</code>, <code>src/tide.js</code>, <code>src/main.jsx</code>, <code>src/styles.css</code>
+- <code>src/jk-tokens.css</code>, generated verbatim by <code>tools/gen-tokens.cjs</code> from the contract's light token set and the profile aliases
+- JudgmentKit renderer imports: <code>SelectField</code>, <code>Panel</code>, <code>Table</code>, <code>StatusMessage</code> from <code>judgmentkit/react</code> (the vendored canonical copy, runtime 0.8.0)</p>
+<p><strong>Layout and content:</strong>
+- One workspace. Desktop has a left column (Place and day; At 12:00 noon PT; Next tides after noon) and a right column (24-hour tide chart plus a high/low table). Mobile is a single column.
+- Units, timezone, and the noon clock are stated in the header and in each reading.
+- An event at hour 24 is shown as "00:00 PT, <next day>".
+- The chart scale always contains the day's data (0.5 m or 1 m grid, starting at 0).
+- Light only; no banners.</p>
+<h2>QA (local; not acceptance)</h2>
+<ul>
+<li><code>npm run build</code> passes. <code>npm run check</code> reports 0 errors and no overflow at 1280×800 and 390×844.</li>
+<li><code>tools/qa.cjs</code> (results in <code>evidence/qa-full.json</code>, screenshots in <code>evidence/browser/</code>):</li>
+<li>all 14×2 selections at both viewports match the supplied noon height, trend, next high/low, and labels</li>
+<li>the chart scale contains the data, there is no overflow, and table rows match events: 56 checks, 0 failures</li>
+<li>file:// and local HTTP both load on the initial selection</li>
+<li>keyboard: Tab goes location → day, <code>:focus-visible</code> is true, ArrowDown changes the selection</li>
+<li>no text below 4.5:1 found by the computed-style check</li>
+<li>forced dark preference produces identical colours</li>
+<li>error state (data missing) and empty state (one day removed from a test copy) both render with no overflow</li>
+<li>One HTTP console 404 was filtered: no page resource returned 404, so it is most likely the browser favicon request.</li>
+<li>No axe or other third-party automated scanner was available. The contrast and label checks are custom.</li>
+</ul>
+<h2>Assumptions</h2>
+<ul>
+<li>Workbench was chosen per the surface guidance (low confidence).</li>
+<li>The product is read-only; the outing decision stays with the person.</li>
+<li>The supplied <code>trend</code> and <code>next*</code> values are displayed as given. For example, Point Reyes on 2026-10-07 shows 0.44 m and rising, with the next low at 24:00.</li>
+</ul>
+<h2>Limitations</h2>
+<ul>
+<li><strong>No accepted artifact.</strong> The design-system acceptance gate failed, and dist must not be treated as delivered.</li>
+<li><strong>Next step:</strong> repair against <code>jk2/21-impl-review.json</code> repair_instructions, rerender, and resubmit (reviews 2/3 and 3/3 remain).</li>
+<li><strong>Token target overrun:</strong> the soft target of about 6,000 processed tokens was greatly exceeded.</li>
+</ul></body></html>

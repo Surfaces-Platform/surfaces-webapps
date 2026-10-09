@@ -1,0 +1,1629 @@
+{
+  "cases": [
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "hmb",
+      "date": "2026-10-06",
+      "current": 1.4,
+      "trend": "falling",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "hmb",
+      "date": "2026-10-07",
+      "current": 1.5,
+      "trend": "falling",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "monterey",
+      "date": "2026-10-06",
+      "current": 1.1,
+      "trend": "falling",
+      "scale": [
+        0,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "monterey",
+      "date": "2026-10-07",
+      "current": 1.2,
+      "trend": "falling",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "sf",
+      "date": "2026-10-06",
+      "current": 0.5,
+      "trend": "falling",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "sf",
+      "date": "2026-10-07",
+      "current": 1.52,
+      "trend": "rising",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "santa-cruz",
+      "date": "2026-10-06",
+      "current": 0.8,
+      "trend": "falling",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "santa-cruz",
+      "date": "2026-10-07",
+      "current": 0.85,
+      "trend": "rising",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "sausalito",
+      "date": "2026-10-06",
+      "current": 1.55,
+      "trend": "falling",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "sausalito",
+      "date": "2026-10-07",
+      "current": 0.68,
+      "trend": "rising",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "point-reyes",
+      "date": "2026-10-06",
+      "current": 2.27,
+      "trend": "falling",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "point-reyes",
+      "date": "2026-10-07",
+      "current": 0.44,
+      "trend": "rising",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "bodega-bay",
+      "date": "2026-10-06",
+      "current": 1.03,
+      "trend": "falling",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "bodega-bay",
+      "date": "2026-10-07",
+      "current": 1.08,
+      "trend": "rising",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "fort-bragg",
+      "date": "2026-10-06",
+      "current": 1.75,
+      "trend": "falling",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "fort-bragg",
+      "date": "2026-10-07",
+      "current": 0.62,
+      "trend": "rising",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "crescent-city",
+      "date": "2026-10-06",
+      "current": 0.44,
+      "trend": "falling",
+      "scale": [
+        0,
+        4
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "crescent-city",
+      "date": "2026-10-07",
+      "current": 2.07,
+      "trend": "rising",
+      "scale": [
+        0,
+        4.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "morro-bay",
+      "date": "2026-10-06",
+      "current": 1.78,
+      "trend": "falling",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "morro-bay",
+      "date": "2026-10-07",
+      "current": 0.39,
+      "trend": "rising",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "avila-beach",
+      "date": "2026-10-06",
+      "current": 0.8,
+      "trend": "falling",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "avila-beach",
+      "date": "2026-10-07",
+      "current": 0.85,
+      "trend": "rising",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "santa-barbara",
+      "date": "2026-10-06",
+      "current": 1.4,
+      "trend": "falling",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "santa-barbara",
+      "date": "2026-10-07",
+      "current": 0.58,
+      "trend": "rising",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "los-angeles",
+      "date": "2026-10-06",
+      "current": 2.05,
+      "trend": "falling",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "los-angeles",
+      "date": "2026-10-07",
+      "current": 0.44,
+      "trend": "rising",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "san-diego",
+      "date": "2026-10-06",
+      "current": 0.61,
+      "trend": "falling",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "san-diego",
+      "date": "2026-10-07",
+      "current": 1.72,
+      "trend": "rising",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "hmb",
+      "date": "2026-10-06",
+      "current": 1.4,
+      "trend": "falling",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "hmb",
+      "date": "2026-10-07",
+      "current": 1.5,
+      "trend": "falling",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "monterey",
+      "date": "2026-10-06",
+      "current": 1.1,
+      "trend": "falling",
+      "scale": [
+        0,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "monterey",
+      "date": "2026-10-07",
+      "current": 1.2,
+      "trend": "falling",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "sf",
+      "date": "2026-10-06",
+      "current": 0.5,
+      "trend": "falling",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "sf",
+      "date": "2026-10-07",
+      "current": 1.52,
+      "trend": "rising",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "santa-cruz",
+      "date": "2026-10-06",
+      "current": 0.8,
+      "trend": "falling",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "santa-cruz",
+      "date": "2026-10-07",
+      "current": 0.85,
+      "trend": "rising",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "sausalito",
+      "date": "2026-10-06",
+      "current": 1.55,
+      "trend": "falling",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "sausalito",
+      "date": "2026-10-07",
+      "current": 0.68,
+      "trend": "rising",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "point-reyes",
+      "date": "2026-10-06",
+      "current": 2.27,
+      "trend": "falling",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "point-reyes",
+      "date": "2026-10-07",
+      "current": 0.44,
+      "trend": "rising",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "bodega-bay",
+      "date": "2026-10-06",
+      "current": 1.03,
+      "trend": "falling",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "bodega-bay",
+      "date": "2026-10-07",
+      "current": 1.08,
+      "trend": "rising",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "fort-bragg",
+      "date": "2026-10-06",
+      "current": 1.75,
+      "trend": "falling",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "fort-bragg",
+      "date": "2026-10-07",
+      "current": 0.62,
+      "trend": "rising",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "crescent-city",
+      "date": "2026-10-06",
+      "current": 0.44,
+      "trend": "falling",
+      "scale": [
+        0,
+        4
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "crescent-city",
+      "date": "2026-10-07",
+      "current": 2.07,
+      "trend": "rising",
+      "scale": [
+        0,
+        4.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "morro-bay",
+      "date": "2026-10-06",
+      "current": 1.78,
+      "trend": "falling",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "morro-bay",
+      "date": "2026-10-07",
+      "current": 0.39,
+      "trend": "rising",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "avila-beach",
+      "date": "2026-10-06",
+      "current": 0.8,
+      "trend": "falling",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "avila-beach",
+      "date": "2026-10-07",
+      "current": 0.85,
+      "trend": "rising",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "santa-barbara",
+      "date": "2026-10-06",
+      "current": 1.4,
+      "trend": "falling",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "santa-barbara",
+      "date": "2026-10-07",
+      "current": 0.58,
+      "trend": "rising",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "los-angeles",
+      "date": "2026-10-06",
+      "current": 2.05,
+      "trend": "falling",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "los-angeles",
+      "date": "2026-10-07",
+      "current": 0.44,
+      "trend": "rising",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "san-diego",
+      "date": "2026-10-06",
+      "current": 0.61,
+      "trend": "falling",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "san-diego",
+      "date": "2026-10-07",
+      "current": 1.72,
+      "trend": "rising",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "hmb",
+      "date": "2026-10-06",
+      "current": 1.4,
+      "trend": "falling",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "hmb",
+      "date": "2026-10-07",
+      "current": 1.5,
+      "trend": "falling",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "monterey",
+      "date": "2026-10-06",
+      "current": 1.1,
+      "trend": "falling",
+      "scale": [
+        0,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "monterey",
+      "date": "2026-10-07",
+      "current": 1.2,
+      "trend": "falling",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "sf",
+      "date": "2026-10-06",
+      "current": 0.5,
+      "trend": "falling",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "sf",
+      "date": "2026-10-07",
+      "current": 1.52,
+      "trend": "rising",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "santa-cruz",
+      "date": "2026-10-06",
+      "current": 0.8,
+      "trend": "falling",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "santa-cruz",
+      "date": "2026-10-07",
+      "current": 0.85,
+      "trend": "rising",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "sausalito",
+      "date": "2026-10-06",
+      "current": 1.55,
+      "trend": "falling",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "sausalito",
+      "date": "2026-10-07",
+      "current": 0.68,
+      "trend": "rising",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "point-reyes",
+      "date": "2026-10-06",
+      "current": 2.27,
+      "trend": "falling",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "point-reyes",
+      "date": "2026-10-07",
+      "current": 0.44,
+      "trend": "rising",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "bodega-bay",
+      "date": "2026-10-06",
+      "current": 1.03,
+      "trend": "falling",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "bodega-bay",
+      "date": "2026-10-07",
+      "current": 1.08,
+      "trend": "rising",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "fort-bragg",
+      "date": "2026-10-06",
+      "current": 1.75,
+      "trend": "falling",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "fort-bragg",
+      "date": "2026-10-07",
+      "current": 0.62,
+      "trend": "rising",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "crescent-city",
+      "date": "2026-10-06",
+      "current": 0.44,
+      "trend": "falling",
+      "scale": [
+        0,
+        4
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "crescent-city",
+      "date": "2026-10-07",
+      "current": 2.07,
+      "trend": "rising",
+      "scale": [
+        0,
+        4.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "morro-bay",
+      "date": "2026-10-06",
+      "current": 1.78,
+      "trend": "falling",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "morro-bay",
+      "date": "2026-10-07",
+      "current": 0.39,
+      "trend": "rising",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "avila-beach",
+      "date": "2026-10-06",
+      "current": 0.8,
+      "trend": "falling",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "avila-beach",
+      "date": "2026-10-07",
+      "current": 0.85,
+      "trend": "rising",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "santa-barbara",
+      "date": "2026-10-06",
+      "current": 1.4,
+      "trend": "falling",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "santa-barbara",
+      "date": "2026-10-07",
+      "current": 0.58,
+      "trend": "rising",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "los-angeles",
+      "date": "2026-10-06",
+      "current": 2.05,
+      "trend": "falling",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "los-angeles",
+      "date": "2026-10-07",
+      "current": 0.44,
+      "trend": "rising",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "san-diego",
+      "date": "2026-10-06",
+      "current": 0.61,
+      "trend": "falling",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "san-diego",
+      "date": "2026-10-07",
+      "current": 1.72,
+      "trend": "rising",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "hmb",
+      "date": "2026-10-06",
+      "current": 1.4,
+      "trend": "falling",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "hmb",
+      "date": "2026-10-07",
+      "current": 1.5,
+      "trend": "falling",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "monterey",
+      "date": "2026-10-06",
+      "current": 1.1,
+      "trend": "falling",
+      "scale": [
+        0,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "monterey",
+      "date": "2026-10-07",
+      "current": 1.2,
+      "trend": "falling",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "sf",
+      "date": "2026-10-06",
+      "current": 0.5,
+      "trend": "falling",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "sf",
+      "date": "2026-10-07",
+      "current": 1.52,
+      "trend": "rising",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "santa-cruz",
+      "date": "2026-10-06",
+      "current": 0.8,
+      "trend": "falling",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "santa-cruz",
+      "date": "2026-10-07",
+      "current": 0.85,
+      "trend": "rising",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "sausalito",
+      "date": "2026-10-06",
+      "current": 1.55,
+      "trend": "falling",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "sausalito",
+      "date": "2026-10-07",
+      "current": 0.68,
+      "trend": "rising",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "point-reyes",
+      "date": "2026-10-06",
+      "current": 2.27,
+      "trend": "falling",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "point-reyes",
+      "date": "2026-10-07",
+      "current": 0.44,
+      "trend": "rising",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "bodega-bay",
+      "date": "2026-10-06",
+      "current": 1.03,
+      "trend": "falling",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "bodega-bay",
+      "date": "2026-10-07",
+      "current": 1.08,
+      "trend": "rising",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "fort-bragg",
+      "date": "2026-10-06",
+      "current": 1.75,
+      "trend": "falling",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "fort-bragg",
+      "date": "2026-10-07",
+      "current": 0.62,
+      "trend": "rising",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "crescent-city",
+      "date": "2026-10-06",
+      "current": 0.44,
+      "trend": "falling",
+      "scale": [
+        0,
+        4
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "crescent-city",
+      "date": "2026-10-07",
+      "current": 2.07,
+      "trend": "rising",
+      "scale": [
+        0,
+        4.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "morro-bay",
+      "date": "2026-10-06",
+      "current": 1.78,
+      "trend": "falling",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "morro-bay",
+      "date": "2026-10-07",
+      "current": 0.39,
+      "trend": "rising",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "avila-beach",
+      "date": "2026-10-06",
+      "current": 0.8,
+      "trend": "falling",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "avila-beach",
+      "date": "2026-10-07",
+      "current": 0.85,
+      "trend": "rising",
+      "scale": [
+        0,
+        2.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "santa-barbara",
+      "date": "2026-10-06",
+      "current": 1.4,
+      "trend": "falling",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "santa-barbara",
+      "date": "2026-10-07",
+      "current": 0.58,
+      "trend": "rising",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "los-angeles",
+      "date": "2026-10-06",
+      "current": 2.05,
+      "trend": "falling",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "los-angeles",
+      "date": "2026-10-07",
+      "current": 0.44,
+      "trend": "rising",
+      "scale": [
+        0,
+        3
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "san-diego",
+      "date": "2026-10-06",
+      "current": 0.61,
+      "trend": "falling",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "san-diego",
+      "date": "2026-10-07",
+      "current": 1.72,
+      "trend": "rising",
+      "scale": [
+        0,
+        3.5
+      ],
+      "passed": true
+    }
+  ],
+  "layouts": [
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "documentHeight": 800,
+      "overflow": false
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "documentHeight": 1088,
+      "overflow": false
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "documentHeight": 800,
+      "overflow": false
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "documentHeight": 1088,
+      "overflow": false
+    }
+  ],
+  "focus": [
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "tag": "A",
+      "id": "",
+      "text": "Tide",
+      "outline": "solid"
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "tag": "SELECT",
+      "id": "location",
+      "text": "Half Moon BayMontereySan FranciscoSanta CruzSausalitoPoint ReyesBodega BayFort BraggCrescent CityMorro BayAvila BeachSanta BarbaraLos AngelesSan Diego",
+      "outline": "solid"
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "tag": "SELECT",
+      "id": "day",
+      "text": "Oct 6Oct 7",
+      "outline": "solid"
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "tag": "SUMMARY",
+      "id": "",
+      "text": "View hourly heights",
+      "outline": "solid"
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "tag": "A",
+      "id": "",
+      "text": "Tide",
+      "outline": "solid"
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "tag": "SELECT",
+      "id": "location",
+      "text": "Half Moon BayMontereySan FranciscoSanta CruzSausalitoPoint ReyesBodega BayFort BraggCrescent CityMorro BayAvila BeachSanta BarbaraLos AngelesSan Diego",
+      "outline": "solid"
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "tag": "SELECT",
+      "id": "day",
+      "text": "Oct 6Oct 7",
+      "outline": "solid"
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "tag": "SUMMARY",
+      "id": "",
+      "text": "View hourly heights",
+      "outline": "solid"
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "tag": "A",
+      "id": "",
+      "text": "Tide",
+      "outline": "solid"
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "tag": "SELECT",
+      "id": "location",
+      "text": "Half Moon BayMontereySan FranciscoSanta CruzSausalitoPoint ReyesBodega BayFort BraggCrescent CityMorro BayAvila BeachSanta BarbaraLos AngelesSan Diego",
+      "outline": "solid"
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "tag": "SELECT",
+      "id": "day",
+      "text": "Oct 6Oct 7",
+      "outline": "solid"
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "tag": "SUMMARY",
+      "id": "",
+      "text": "View hourly heights",
+      "outline": "solid"
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "tag": "A",
+      "id": "",
+      "text": "Tide",
+      "outline": "solid"
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "tag": "SELECT",
+      "id": "location",
+      "text": "Half Moon BayMontereySan FranciscoSanta CruzSausalitoPoint ReyesBodega BayFort BraggCrescent CityMorro BayAvila BeachSanta BarbaraLos AngelesSan Diego",
+      "outline": "solid"
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "tag": "SELECT",
+      "id": "day",
+      "text": "Oct 6Oct 7",
+      "outline": "solid"
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "tag": "SUMMARY",
+      "id": "",
+      "text": "View hourly heights",
+      "outline": "solid"
+    }
+  ],
+  "errors": [],
+  "requests": [
+    "/",
+    "/app.css",
+    "/data.js",
+    "/app.js",
+    "/favicon.ico",
+    "/",
+    "/app.css",
+    "/data.js",
+    "/app.js"
+  ],
+  "passed": true
+}

@@ -1,0 +1,465 @@
+{
+  "method": "Permissioned article text omitted; only call requests and returned identity/hash/URL/title/author/score fields are served",
+  "calls": [
+    {
+      "tool": "search0",
+      "request": {
+        "mode": "keyword",
+        "query": "visual hierarchy scanning information",
+        "limit": 4
+      },
+      "returned_identities": [
+        {
+          "field": "documentId",
+          "value": "nngroup:article:list-entries"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:list-entries:s3:1-prioritize-list-entry-attributes-to-create-an-information-hierarchy:3061bc680609"
+        },
+        {
+          "field": "title",
+          "value": "The Anatomy of a List Entry"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/list-entries/"
+        },
+        {
+          "field": "score",
+          "value": 18.54281356
+        },
+        {
+          "field": "title",
+          "value": "The Anatomy of a List Entry"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/list-entries/"
+        },
+        {
+          "field": "documentId",
+          "value": "nngroup:article:top-intranet-design-mistakes"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:top-intranet-design-mistakes:s4:3-poor-visual-layout:97a4ce376afb"
+        },
+        {
+          "field": "title",
+          "value": "The Top Enduring Intranet-Design Mistakes: 7 Deadly Sins"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/top-intranet-design-mistakes/"
+        },
+        {
+          "field": "score",
+          "value": 13.8917832
+        },
+        {
+          "field": "title",
+          "value": "The Top Enduring Intranet-Design Mistakes: 7 Deadly Sins"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/top-intranet-design-mistakes/"
+        },
+        {
+          "field": "documentId",
+          "value": "nngroup:article:why-does-a-design-look-good-part2"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:why-does-a-design-look-good-part2:s4:example-3-monochromatic-color-palette-and-symmetrical-imagery:535647dc3704"
+        },
+        {
+          "field": "title",
+          "value": "The Anatomy of a Good Design: An Analysis of 4 Sites"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/why-does-a-design-look-good-part2/"
+        },
+        {
+          "field": "score",
+          "value": 13.42017144
+        },
+        {
+          "field": "title",
+          "value": "The Anatomy of a Good Design: An Analysis of 4 Sites"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/why-does-a-design-look-good-part2/"
+        },
+        {
+          "field": "documentId",
+          "value": "nngroup:article:homepage-design-principles"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:homepage-design-principles:s7:principle-4-prompt-actions-and-navigations:f87f736b8b54"
+        },
+        {
+          "field": "title",
+          "value": "Homepage Design: 5 Fundamental Principles"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/homepage-design-principles/"
+        },
+        {
+          "field": "score",
+          "value": 11.14994264
+        },
+        {
+          "field": "title",
+          "value": "Homepage Design: 5 Fundamental Principles"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/homepage-design-principles/"
+        }
+      ]
+    },
+    {
+      "tool": "search1",
+      "request": {
+        "mode": "keyword",
+        "query": "dropdown selection many options",
+        "limit": 4
+      },
+      "returned_identities": [
+        {
+          "field": "documentId",
+          "value": "nngroup:article:listbox-dropdown"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:listbox-dropdown:s12:article:55873ddfbb8e"
+        },
+        {
+          "field": "title",
+          "value": "Listboxes vs. Dropdown Lists"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/listbox-dropdown/"
+        },
+        {
+          "field": "score",
+          "value": 24.03375625
+        },
+        {
+          "field": "title",
+          "value": "Listboxes vs. Dropdown Lists"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/listbox-dropdown/"
+        },
+        {
+          "field": "documentId",
+          "value": "nngroup:article:dropdown-list"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dropdown-list:s10:too-many-options:021503116739"
+        },
+        {
+          "field": "title",
+          "value": "Does Your Form Really Need a Dropdown List?"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/dropdown-list/"
+        },
+        {
+          "field": "score",
+          "value": 22.00304183
+        },
+        {
+          "field": "title",
+          "value": "Does Your Form Really Need a Dropdown List?"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/dropdown-list/"
+        },
+        {
+          "field": "documentId",
+          "value": "nngroup:article:drop-down-menus"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:drop-down-menus:s1:article:c62f2bfabf13"
+        },
+        {
+          "field": "title",
+          "value": "Dropdowns: Design Guidelines"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/drop-down-menus/"
+        },
+        {
+          "field": "score",
+          "value": 19.70843792
+        },
+        {
+          "field": "title",
+          "value": "Dropdowns: Design Guidelines"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/drop-down-menus/"
+        },
+        {
+          "field": "documentId",
+          "value": "nngroup:article:products-with-multiple-variants"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:products-with-multiple-variants:s3:multiple-listings-for-multiple-products:757c607f9b17"
+        },
+        {
+          "field": "title",
+          "value": "Design Guidelines for Selling Products with Multiple Variants"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/products-with-multiple-variants/"
+        },
+        {
+          "field": "score",
+          "value": 15.25295772
+        },
+        {
+          "field": "title",
+          "value": "Design Guidelines for Selling Products with Multiple Variants"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/products-with-multiple-variants/"
+        }
+      ]
+    },
+    {
+      "tool": "section0",
+      "request": {
+        "sectionId": "nngroup:article:top-intranet-design-mistakes:s4:3-poor-visual-layout:97a4ce376afb"
+      },
+      "returned_identities": [
+        {
+          "field": "documentId",
+          "value": "nngroup:article:top-intranet-design-mistakes"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:top-intranet-design-mistakes:s4:3-poor-visual-layout:97a4ce376afb"
+        },
+        {
+          "field": "title",
+          "value": "The Top Enduring Intranet-Design Mistakes: 7 Deadly Sins"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/top-intranet-design-mistakes/"
+        },
+        {
+          "field": "score",
+          "value": 0
+        },
+        {
+          "field": "title",
+          "value": "The Top Enduring Intranet-Design Mistakes: 7 Deadly Sins"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/top-intranet-design-mistakes/"
+        }
+      ]
+    },
+    {
+      "tool": "section1",
+      "request": {
+        "sectionId": "nngroup:article:dropdown-list:s10:too-many-options:021503116739"
+      },
+      "returned_identities": [
+        {
+          "field": "documentId",
+          "value": "nngroup:article:dropdown-list"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dropdown-list:s10:too-many-options:021503116739"
+        },
+        {
+          "field": "title",
+          "value": "Does Your Form Really Need a Dropdown List?"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/dropdown-list/"
+        },
+        {
+          "field": "score",
+          "value": 0
+        },
+        {
+          "field": "title",
+          "value": "Does Your Form Really Need a Dropdown List?"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/dropdown-list/"
+        }
+      ]
+    },
+    {
+      "tool": "article",
+      "request": {
+        "documentId": "nngroup:article:dropdown-list"
+      },
+      "returned_identities": [
+        {
+          "field": "documentId",
+          "value": "nngroup:article:dropdown-list"
+        },
+        {
+          "field": "title",
+          "value": "Does Your Form Really Need a Dropdown List?"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/dropdown-list/"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dropdown-list:s0:summary:2fdba6dc5926"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dropdown-list:s1:article:6c071c2feb6b"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dropdown-list:s2:definition:2ed40a092a55"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dropdown-list:s3:the-appeal-of-dropdown-lists:a3cf2965bbad"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dropdown-list:s4:the-hidden-costs-of-dropdown-lists:cfa3fa004fb0"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dropdown-list:s5:low-discoverability:0047211038f7"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dropdown-list:s6:high-interaction-cost:0725f0109cc9"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dropdown-list:s7:accessibility-barriers:a0532931fe3a"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dropdown-list:s8:illusion-of-clean-data:37aa6e009645"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dropdown-list:s9:too-few-options:00a008312589"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dropdown-list:s10:too-many-options:021503116739"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dropdown-list:s11:highly-familiar-or-predictable-data:41de1bf85a47"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dropdown-list:s12:users-need-to-make-a-visual-comparison:aa0ea3250553"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dropdown-list:s13:when-dropdowns-still-make-sense:2b3ee138ed48"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dropdown-list:s14:a-moderate-number-of-options-roughly-5-10:d36c0d7b7dbb"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dropdown-list:s15:the-field-is-secondary-to-the-main-task:c930743f4f29"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dropdown-list:s16:the-field-is-part-of-a-whole:a3eeafe220a7"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dropdown-list:s17:example-1-language-selector:fdff8df31555"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dropdown-list:s18:example-2-skip-logic-setting:e27f25ed8fdb"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dropdown-list:s19:conclusion:6b41d4fb2a4b"
+        },
+        {
+          "field": "title",
+          "value": "Does Your Form Really Need a Dropdown List?"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/dropdown-list/"
+        }
+      ]
+    },
+    {
+      "tool": "section2",
+      "request": {
+        "sectionId": "nngroup:article:dropdown-list:s9:too-few-options:00a008312589"
+      },
+      "returned_identities": [
+        {
+          "field": "documentId",
+          "value": "nngroup:article:dropdown-list"
+        },
+        {
+          "field": "sectionId",
+          "value": "nngroup:article:dropdown-list:s9:too-few-options:00a008312589"
+        },
+        {
+          "field": "title",
+          "value": "Does Your Form Really Need a Dropdown List?"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/dropdown-list/"
+        },
+        {
+          "field": "score",
+          "value": 0
+        },
+        {
+          "field": "title",
+          "value": "Does Your Form Really Need a Dropdown List?"
+        },
+        {
+          "field": "canonicalUrl",
+          "value": "https://www.nngroup.com/articles/dropdown-list/"
+        }
+      ]
+    }
+  ]
+}

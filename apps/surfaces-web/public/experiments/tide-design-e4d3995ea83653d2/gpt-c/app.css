@@ -1,0 +1,415 @@
+/* src/styles.css */
+:root {
+  color-scheme: only light;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  color: #223b32;
+  background: #f5f6f1;
+  font-synthesis: none;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+main {
+  max-width: 1120px;
+  margin: auto;
+  padding: 28px 48px 32px;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 28px;
+  border-bottom: 1px solid #d8ded4;
+}
+.wordmark {
+  font-size: 25px;
+  font-weight: 650;
+  letter-spacing: -1px;
+}
+.wordmark span {
+  font-size: 36px;
+  color: #15736b;
+  margin-right: 8px;
+  vertical-align: -3px;
+}
+.header-note {
+  color: #607267;
+  font-size: 13px;
+}
+.selection {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 24px;
+  margin: 26px 0;
+}
+.location {
+  width: 330px;
+  max-width: 100%;
+}
+label,
+legend {
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: .02em;
+}
+select {
+  display: block;
+  width: 100%;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 550;
+  color: #223b32;
+  padding: 12px 35px 12px 14px;
+  margin-top: 8px;
+  background: #fff;
+  border: 1px solid #bbc9bd;
+  border-radius: 7px;
+  height: 48px;
+}
+fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+legend {
+  margin-bottom: 8px;
+}
+.dates {
+  display: flex;
+  gap: 5px;
+  background: #e8ede5;
+  border: 1px solid #dce4d8;
+  border-radius: 7px;
+  padding: 4px;
+}
+.dates label {
+  position: relative;
+  cursor: pointer;
+  padding: 10px 18px;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 500;
+  color: #54665a;
+}
+.dates label.selected {
+  background: #fff;
+  color: #244b3c;
+  box-shadow: 0 1px 3px #223b3215;
+}
+.dates input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.dates label:has(input:focus-visible) {
+  outline: 3px solid #15736b;
+  outline-offset: 2px;
+}
+select:focus-visible {
+  outline: 3px solid #15736b;
+  outline-offset: 3px;
+}
+.overview {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr 1fr;
+  background: #edf1e8;
+  border-radius: 10px;
+  padding: 25px 30px;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.eyebrow {
+  font-size: 12px;
+  font-weight: 550;
+  color: #536c5b;
+  margin: 0 0 10px;
+}
+.height {
+  font-size: 60px;
+  line-height: 1;
+  letter-spacing: -3px;
+  font-weight: 500;
+}
+.height span {
+  font-size: 23px;
+  letter-spacing: 0;
+  color: #64746a;
+}
+.trend {
+  font-size: 14px;
+  margin: 12px 0 0;
+  color: #15736b;
+  font-weight: 600;
+}
+.trend span {
+  font-size: 20px;
+  margin-right: 5px;
+}
+.next {
+  padding-left: 30px;
+  border-left: 1px solid #cfdacc;
+}
+.next .eyebrow {
+  display: flex;
+  gap: 18px;
+}
+.event-time {
+  font-size: 27px;
+  letter-spacing: -.7px;
+  font-weight: 500;
+}
+.next > p:last-child {
+  font-size: 14px;
+  margin: 9px 0 0;
+}
+.next > p:last-child span {
+  display: block;
+  font-size: 12px;
+  color: #6a7c6c;
+  margin-top: 6px;
+}
+.chart-card {
+  background: #fff;
+  border: 1px solid #dde4da;
+  border-radius: 10px;
+  padding: 24px 28px 16px;
+}
+.chart-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+}
+h1 {
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -.5px;
+  margin: 0;
+}
+.chart-heading p {
+  font-size: 13px;
+  color: #65766b;
+  margin: 6px 0 10px;
+}
+.unit {
+  font-size: 12px;
+  color: #65766b;
+  padding-top: 4px;
+}
+.plot {
+  width: 100%;
+  margin-top: 4px;
+  min-width: 0;
+}
+.plot text {
+  font:
+    12px -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  fill: #65766b;
+}
+.chart-foot {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #64746a;
+  gap: 12px;
+  padding-left: 42px;
+}
+.chart-foot i {
+  display: inline-block;
+  width: 17px;
+  height: 3px;
+  background: #15736b;
+  margin: 0 6px 3px 0;
+}
+.timeline {
+  margin-top: 24px;
+}
+h2 {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 13px;
+}
+.events {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+.event {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 18px;
+  border-left: 1px solid #d8ded4;
+  font-size: 12px;
+}
+.event:first-child {
+  border: 0;
+  padding-left: 0;
+}
+.event-kind {
+  color: #607267;
+}
+.event strong {
+  font-weight: 600;
+}
+.event > span:last-child {
+  color: #607267;
+}
+@media (max-width: 700px) {
+  main {
+    padding: 18px 20px 25px;
+  }
+  header {
+    padding-bottom: 15px;
+  }
+  .header-note {
+    font-size: 11px;
+  }
+  .selection {
+    display: block;
+    margin: 20px 0;
+  }
+  .location {
+    width: 100%;
+  }
+  fieldset {
+    margin-top: 16px;
+  }
+  .dates label {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+  }
+  .dates {
+    width: 100%;
+  }
+  .overview {
+    grid-template-columns: 1fr 1fr;
+    padding: 20px;
+    margin-bottom: 18px;
+    gap: 22px 12px;
+  }
+  .current {
+    grid-column: 1/-1;
+  }
+  .height {
+    font-size: 54px;
+  }
+  .next {
+    padding: 0;
+    border: 0;
+    border-top: 1px solid #cfdacc;
+    padding-top: 15px;
+  }
+  .event-time {
+    font-size: 23px;
+  }
+  .next .eyebrow {
+    gap: 8px;
+  }
+  .next > p:last-child span {
+    font-size: 11px;
+    line-height: 1.4;
+  }
+  .chart-card {
+    padding: 18px 12px 14px;
+  }
+  h1 {
+    font-size: 19px;
+  }
+  .unit {
+    font-size: 11px;
+  }
+  .chart-heading p {
+    font-size: 12px;
+  }
+  .chart-foot {
+    padding-left: 0;
+    font-size: 10px;
+  }
+  .timeline {
+    margin-top: 20px;
+  }
+  .events {
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 10px;
+  }
+  .event {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    padding: 0;
+    border: 0;
+  }
+  .event-kind {
+    grid-column: 1/-1;
+  }
+  .event strong {
+    font-size: 13px;
+  }
+}
+@media (min-width: 701px) {
+  main {
+    padding-top: 20px;
+  }
+  header {
+    padding-bottom: 20px;
+  }
+  .selection {
+    margin: 20px 0;
+  }
+  .overview {
+    padding: 20px 30px;
+  }
+  .chart-card {
+    padding-top: 20px;
+  }
+  .timeline {
+    margin-top: 18px;
+  }
+}
+@media (max-width: 700px) {
+  .selection {
+    margin: 16px 0;
+  }
+  .overview {
+    padding: 16px 20px;
+    gap: 14px 12px;
+  }
+  .height {
+    font-size: 48px;
+  }
+  .trend {
+    margin-top: 8px;
+  }
+  .next {
+    padding-top: 12px;
+  }
+  .chart-card {
+    padding-top: 15px;
+  }
+}
+.midnight {
+  font-size: 11px;
+  color: #607267;
+}
+@media (min-width: 701px) {
+  main {
+    padding-bottom: 20px;
+  }
+}
+:root {
+  color-scheme: only light !important;
+}

@@ -1,0 +1,825 @@
+{
+  "results": [
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "hmb",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "hmb",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "monterey",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "monterey",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "sf",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "sf",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "santa-cruz",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "santa-cruz",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "sausalito",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "sausalito",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "point-reyes",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "point-reyes",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "bodega-bay",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "bodega-bay",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "fort-bragg",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "fort-bragg",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "crescent-city",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "crescent-city",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "morro-bay",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "morro-bay",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "avila-beach",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "avila-beach",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "santa-barbara",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "santa-barbara",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "los-angeles",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "los-angeles",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "san-diego",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "station": "san-diego",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "desktop",
+      "keyboardFocus": {
+        "tag": "BUTTON",
+        "outline": "solid"
+      },
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "hmb",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "hmb",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "monterey",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "monterey",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "sf",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "sf",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "santa-cruz",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "santa-cruz",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "sausalito",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "sausalito",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "point-reyes",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "point-reyes",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "bodega-bay",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "bodega-bay",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "fort-bragg",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "fort-bragg",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "crescent-city",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "crescent-city",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "morro-bay",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "morro-bay",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "avila-beach",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "avila-beach",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "santa-barbara",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "santa-barbara",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "los-angeles",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "los-angeles",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "san-diego",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "station": "san-diego",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "file",
+      "viewport": "mobile",
+      "keyboardFocus": {
+        "tag": "BUTTON",
+        "outline": "solid"
+      },
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "hmb",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "hmb",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "monterey",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "monterey",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "sf",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "sf",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "santa-cruz",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "santa-cruz",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "sausalito",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "sausalito",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "point-reyes",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "point-reyes",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "bodega-bay",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "bodega-bay",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "fort-bragg",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "fort-bragg",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "crescent-city",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "crescent-city",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "morro-bay",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "morro-bay",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "avila-beach",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "avila-beach",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "santa-barbara",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "santa-barbara",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "los-angeles",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "los-angeles",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "san-diego",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "station": "san-diego",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "desktop",
+      "keyboardFocus": {
+        "tag": "BUTTON",
+        "outline": "solid"
+      },
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "hmb",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "hmb",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "monterey",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "monterey",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "sf",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "sf",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "santa-cruz",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "santa-cruz",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "sausalito",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "sausalito",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "point-reyes",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "point-reyes",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "bodega-bay",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "bodega-bay",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "fort-bragg",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "fort-bragg",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "crescent-city",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "crescent-city",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "morro-bay",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "morro-bay",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "avila-beach",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "avila-beach",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "santa-barbara",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "santa-barbara",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "los-angeles",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "los-angeles",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "san-diego",
+      "date": "2026-10-06",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "station": "san-diego",
+      "date": "2026-10-07",
+      "pass": true
+    },
+    {
+      "protocol": "http",
+      "viewport": "mobile",
+      "keyboardFocus": {
+        "tag": "BUTTON",
+        "outline": "solid"
+      },
+      "pass": true
+    }
+  ],
+  "errors": []
+}

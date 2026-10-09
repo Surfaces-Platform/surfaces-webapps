@@ -1,0 +1,30 @@
+{
+  "kind": "deterministic synthetic prototype fixture",
+  "retained_original_stations": [
+    "Half Moon Bay",
+    "Monterey"
+  ],
+  "added": [
+    "San Francisco",
+    "Santa Cruz",
+    "Sausalito",
+    "Point Reyes",
+    "Bodega Bay",
+    "Fort Bragg",
+    "Crescent City",
+    "Morro Bay",
+    "Avila Beach",
+    "Santa Barbara",
+    "Los Angeles",
+    "San Diego"
+  ],
+  "dates": [
+    "2026-10-06",
+    "2026-10-07"
+  ],
+  "timezone": "America/Los_Angeles",
+  "clockHour": 12,
+  "new_samples": "rounded cosine curve with per-station mean/amplitude/phase; outgoing noon trend; future extrema from the same samples",
+  "real_predictions": false,
+  "data_js_sha256": "6e8804d88335cdf2ad2a968b61edfd53b9f4792102f482459fa9500d9d741d5f"
+}

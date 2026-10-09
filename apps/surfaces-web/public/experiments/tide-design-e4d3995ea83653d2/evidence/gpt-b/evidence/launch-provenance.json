@@ -1,0 +1,103 @@
+{
+  "source": "Actual public tool metadata and runtime turn configurations extracted from saved Codex transcripts; no reasoning or encrypted prompt contents retained",
+  "events": [
+    {
+      "kind": "main_turn_config",
+      "timestamp": "2026-10-07T20:17:00.804Z",
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "kind": "candidate_persist_and_draw_program",
+      "timestamp": "2026-10-07T20:18:13.618Z",
+      "line": 40,
+      "command_sha256": "85b212eafe15160b63ff0a724dfece32aa0ff6437a7c0be03afbf36a6fb2a6da",
+      "candidate_write_offset": 1077,
+      "direction_draw_offset": 2775,
+      "order_verified": true
+    },
+    {
+      "kind": "role_spawn_request",
+      "timestamp": "2026-10-07T20:22:27.250Z",
+      "line": 72,
+      "args": {
+        "task_name": "impeccable_finish_reviewer",
+        "fork_turns": "none",
+        "model": "gpt-6.1-sol",
+        "reasoning_effort": "medium"
+      },
+      "public_result": "collab spawn failed: agent thread limit reached"
+    },
+    {
+      "kind": "role_spawn_request",
+      "timestamp": "2026-10-07T20:32:21.868Z",
+      "line": 180,
+      "args": {
+        "task_name": "impeccable_finish_reviewer",
+        "fork_turns": "none",
+        "model": "gpt-6.1-sol",
+        "reasoning_effort": "medium"
+      },
+      "public_result": "{\"task_name\":\"/root/regen14_gpt_b/impeccable_finish_reviewer\"}"
+    },
+    {
+      "kind": "role_spawn_request",
+      "timestamp": "2026-10-07T20:34:53.783Z",
+      "line": 230,
+      "args": {
+        "task_name": "impeccable_documenter",
+        "fork_turns": "none",
+        "model": "gpt-6.1-sol",
+        "reasoning_effort": "medium"
+      },
+      "public_result": "{\"task_name\":\"/root/regen14_gpt_b/impeccable_documenter\"}"
+    }
+  ],
+  "children": [
+    {
+      "session_meta": {
+        "agent_path": "/root/regen14_gpt_b/impeccable_finish_reviewer",
+        "source": {
+          "subagent": {
+            "thread_spawn": {
+              "depth": 2,
+              "agent_path": "/root/regen14_gpt_b/impeccable_finish_reviewer"
+            }
+          }
+        }
+      },
+      "turn_configurations": [
+        {
+          "model": "gpt-6.1-sol",
+          "effort": "medium",
+          "timestamp": "2026-10-07T20:32:23.505Z"
+        },
+        {
+          "model": "gpt-6.1-sol",
+          "effort": "medium",
+          "timestamp": "2026-10-07T20:34:26.483Z"
+        }
+      ]
+    },
+    {
+      "session_meta": {
+        "agent_path": "/root/regen14_gpt_b/impeccable_documenter",
+        "source": {
+          "subagent": {
+            "thread_spawn": {
+              "depth": 2,
+              "agent_path": "/root/regen14_gpt_b/impeccable_documenter"
+            }
+          }
+        }
+      },
+      "turn_configurations": [
+        {
+          "model": "gpt-6.1-sol",
+          "effort": "medium",
+          "timestamp": "2026-10-07T20:34:55.444Z"
+        }
+      ]
+    }
+  ]
+}

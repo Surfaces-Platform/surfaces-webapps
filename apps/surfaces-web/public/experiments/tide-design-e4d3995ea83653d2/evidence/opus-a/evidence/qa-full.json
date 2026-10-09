@@ -1,0 +1,6088 @@
+{
+  "combos": [
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "hmb",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.5,
+        2.3
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 22,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "hmb",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.55,
+        2.45
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 22,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "monterey",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        2
+      ],
+      "data": [
+        0.4,
+        1.8
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 21,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "monterey",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        2
+      ],
+      "data": [
+        0.45,
+        1.95
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 21,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "sf",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.35,
+        2.55
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 23,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "sf",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.39,
+        2.65
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 23,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "santa-cruz",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.35,
+        2.15
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 22,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "santa-cruz",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.39,
+        2.25
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 22,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "sausalito",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.5,
+        2.6
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 23,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "sausalito",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.54,
+        2.7
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 23,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "point-reyes",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.4,
+        2.9
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 23,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "point-reyes",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        4
+      ],
+      "data": [
+        0.44,
+        3
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 21,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "bodega-bay",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.45,
+        2.75
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 23,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "bodega-bay",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.49,
+        2.85
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 23,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "fort-bragg",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        4
+      ],
+      "data": [
+        0.4,
+        3.1
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 21,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "fort-bragg",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        4
+      ],
+      "data": [
+        0.44,
+        3.2
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 21,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "crescent-city",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        4
+      ],
+      "data": [
+        0.2,
+        3.8
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 21,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "crescent-city",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        4
+      ],
+      "data": [
+        0.24,
+        3.9
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 21,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "morro-bay",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.35,
+        2.25
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 22,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "morro-bay",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.39,
+        2.35
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 22,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "avila-beach",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.4,
+        2
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 22,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "avila-beach",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.44,
+        2.1
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 22,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "santa-barbara",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.4,
+        2.4
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 22,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "santa-barbara",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.44,
+        2.5
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 23,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "los-angeles",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.4,
+        2.6
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 23,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "los-angeles",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.44,
+        2.7
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 23,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "san-diego",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.45,
+        2.85
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 23,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "file",
+      "station": "san-diego",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.49,
+        2.95
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 23,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "hmb",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.5,
+        2.3
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 22,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "hmb",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.55,
+        2.45
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 22,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "monterey",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        2
+      ],
+      "data": [
+        0.4,
+        1.8
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 21,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "monterey",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        2
+      ],
+      "data": [
+        0.45,
+        1.95
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 21,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "sf",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.35,
+        2.55
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 23,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "sf",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.39,
+        2.65
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 23,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "santa-cruz",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.35,
+        2.15
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 22,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "santa-cruz",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.39,
+        2.25
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 22,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "sausalito",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.5,
+        2.6
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 23,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "sausalito",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.54,
+        2.7
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 23,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "point-reyes",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.4,
+        2.9
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 23,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "point-reyes",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        4
+      ],
+      "data": [
+        0.44,
+        3
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 21,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "bodega-bay",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.45,
+        2.75
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 23,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "bodega-bay",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.49,
+        2.85
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 23,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "fort-bragg",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        4
+      ],
+      "data": [
+        0.4,
+        3.1
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 21,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "fort-bragg",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        4
+      ],
+      "data": [
+        0.44,
+        3.2
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 21,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "crescent-city",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        4
+      ],
+      "data": [
+        0.2,
+        3.8
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 21,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "crescent-city",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        4
+      ],
+      "data": [
+        0.24,
+        3.9
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 21,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "morro-bay",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.35,
+        2.25
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 22,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "morro-bay",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.39,
+        2.35
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 22,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "avila-beach",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.4,
+        2
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 22,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "avila-beach",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.44,
+        2.1
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 22,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "santa-barbara",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.4,
+        2.4
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 22,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "santa-barbara",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.44,
+        2.5
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 23,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "los-angeles",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.4,
+        2.6
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 23,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "los-angeles",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.44,
+        2.7
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 23,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "san-diego",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.45,
+        2.85
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 23,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "desktop",
+      "mode": "http",
+      "station": "san-diego",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.49,
+        2.95
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 23,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "hmb",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.5,
+        2.3
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 18,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "hmb",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.55,
+        2.45
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 18,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "monterey",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        2
+      ],
+      "data": [
+        0.4,
+        1.8
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 17,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "monterey",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        2
+      ],
+      "data": [
+        0.45,
+        1.95
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 17,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "sf",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.35,
+        2.55
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 19,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "sf",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.39,
+        2.65
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 19,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "santa-cruz",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.35,
+        2.15
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 18,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "santa-cruz",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.39,
+        2.25
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 18,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "sausalito",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.5,
+        2.6
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 19,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "sausalito",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.54,
+        2.7
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 19,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "point-reyes",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.4,
+        2.9
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 19,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "point-reyes",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        4
+      ],
+      "data": [
+        0.44,
+        3
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 17,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "bodega-bay",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.45,
+        2.75
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 19,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "bodega-bay",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.49,
+        2.85
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 19,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "fort-bragg",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        4
+      ],
+      "data": [
+        0.4,
+        3.1
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 17,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "fort-bragg",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        4
+      ],
+      "data": [
+        0.44,
+        3.2
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 17,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "crescent-city",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        4
+      ],
+      "data": [
+        0.2,
+        3.8
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 17,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "crescent-city",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        4
+      ],
+      "data": [
+        0.24,
+        3.9
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 17,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "morro-bay",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.35,
+        2.25
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 18,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "morro-bay",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.39,
+        2.35
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 18,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "avila-beach",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.4,
+        2
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 18,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "avila-beach",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.44,
+        2.1
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 18,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "santa-barbara",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.4,
+        2.4
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 18,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "santa-barbara",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.44,
+        2.5
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 19,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "los-angeles",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.4,
+        2.6
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 19,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "los-angeles",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.44,
+        2.7
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 19,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "san-diego",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.45,
+        2.85
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 19,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "file",
+      "station": "san-diego",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.49,
+        2.95
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 19,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "hmb",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.5,
+        2.3
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 18,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "hmb",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.55,
+        2.45
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 18,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "monterey",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        2
+      ],
+      "data": [
+        0.4,
+        1.8
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 17,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "monterey",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        2
+      ],
+      "data": [
+        0.45,
+        1.95
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 17,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "sf",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.35,
+        2.55
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 19,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "sf",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.39,
+        2.65
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 19,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "santa-cruz",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.35,
+        2.15
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 18,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "santa-cruz",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.39,
+        2.25
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 18,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "sausalito",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.5,
+        2.6
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 19,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "sausalito",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.54,
+        2.7
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 19,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "point-reyes",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.4,
+        2.9
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 19,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "point-reyes",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        4
+      ],
+      "data": [
+        0.44,
+        3
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 17,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "bodega-bay",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.45,
+        2.75
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 19,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "bodega-bay",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.49,
+        2.85
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 19,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "fort-bragg",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        4
+      ],
+      "data": [
+        0.4,
+        3.1
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 17,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "fort-bragg",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        4
+      ],
+      "data": [
+        0.44,
+        3.2
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 17,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "crescent-city",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        4
+      ],
+      "data": [
+        0.2,
+        3.8
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 17,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "crescent-city",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        4
+      ],
+      "data": [
+        0.24,
+        3.9
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 17,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "morro-bay",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.35,
+        2.25
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 18,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "morro-bay",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.39,
+        2.35
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 18,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "avila-beach",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.4,
+        2
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 18,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "avila-beach",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.44,
+        2.1
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 18,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "santa-barbara",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        2.5
+      ],
+      "data": [
+        0.4,
+        2.4
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 18,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "santa-barbara",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.44,
+        2.5
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 19,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "los-angeles",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.4,
+        2.6
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 19,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "los-angeles",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.44,
+        2.7
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 19,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "san-diego",
+      "iso": "2026-10-06",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.45,
+        2.85
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 19,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    },
+    {
+      "vp": "mobile",
+      "mode": "http",
+      "station": "san-diego",
+      "iso": "2026-10-07",
+      "missing": [],
+      "scale": [
+        0,
+        3
+      ],
+      "data": [
+        0.49,
+        2.95
+      ],
+      "overflow": false,
+      "caret": [
+        {
+          "id": "location",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        },
+        {
+          "id": "day",
+          "value_start_inset": 16,
+          "slot_width": 48,
+          "indicator_inline_size": 16,
+          "slot_center_dx": 0,
+          "slot_center_dy": 0,
+          "slot_flush_end": 0,
+          "contained": true,
+          "value_indicator_gap": 16
+        }
+      ],
+      "caret_ok": true,
+      "chart_labels": {
+        "count": 19,
+        "hits": [],
+        "outside": [],
+        "noon_label": true,
+        "noon_line": true
+      },
+      "chart_labels_ok": true
+    }
+  ],
+  "checks": {
+    "desktop_keyboard": {
+      "first": {
+        "id": "location",
+        "fv": true,
+        "state": "ready",
+        "shadow": "rgba(36, 95, 115, 0.28) 0px 0px 0px 3px",
+        "outline": "solid"
+      },
+      "second": {
+        "id": "day",
+        "fv": true
+      },
+      "third": {
+        "tag": "BODY",
+        "cls": ""
+      },
+      "arrowDownOnLocation": {
+        "id": "location",
+        "loc": "hmb"
+      }
+    },
+    "desktop_a11y": {
+      "landmarks": {
+        "main": true,
+        "header": true,
+        "h1": 1,
+        "h2": [
+          "Place and day",
+          "At 12:00 noon PT",
+          "Next tides after noon",
+          "24-hour tide chart"
+        ]
+      },
+      "labels": [
+        {
+          "id": "location",
+          "label": "Coastal location"
+        },
+        {
+          "id": "day",
+          "label": "Day"
+        }
+      ],
+      "chart": {
+        "role": "img",
+        "name": "Half Moon Bay, Tue 6 Oct 2026 · height (m) by hour, Pacific time · noon marked",
+        "desc": "Tide height through Half Moon Bay, Tue 6 Oct 2026, 00:00 to 24:00 Pacific time. At noon the tide is 1.40 m and falling. Low 0.50 m at 03:00; High 2.30 m at 09:00; Low 0.50 m at 15:00; High 2.30 m at 21:00."
+      },
+      "lowContrast": [],
+      "contrast": {
+        "source": "browser_rendered_computed_style",
+        "text_nodes_measured": 68,
+        "min_ratio": 5.8,
+        "chart_text_nodes_measured": 22,
+        "chart_text_min_ratio": 5.8,
+        "chart_text_fill": [
+          "rgb(97, 97, 92)",
+          "rgb(23, 23, 23)"
+        ],
+        "chart_background": [
+          "rgb(248, 247, 242)"
+        ]
+      },
+      "lineContrast": 7.1,
+      "targets": [
+        44,
+        44
+      ],
+      "forbidden": []
+    },
+    "desktop_dark_preference": {
+      "light": {
+        "bg": "rgb(248, 247, 242)",
+        "panel": "rgb(248, 247, 242)",
+        "text": "rgb(23, 23, 23)",
+        "cs": "light only"
+      },
+      "dark": {
+        "bg": "rgb(248, 247, 242)",
+        "panel": "rgb(248, 247, 242)",
+        "text": "rgb(23, 23, 23)",
+        "cs": "light only"
+      }
+    },
+    "desktop_focus_not_obscured": {
+      "id": "location",
+      "inViewport": true,
+      "topmostIsFocused": true
+    },
+    "desktop_forced_colors": {
+      "id": "location",
+      "fv": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "borderStyle": "solid",
+      "chartLineStroke": "rgb(36, 95, 115)",
+      "textColor": "rgb(0, 0, 0)"
+    },
+    "rendered_html_sha256": "b91d071df4a3efb67ddea1f5fc530c46d247179eea751d47f61c03b75acb477e",
+    "desktop_http_initial": "hmb 2026-10-06",
+    "mobile_keyboard": {
+      "first": {
+        "id": "location",
+        "fv": true,
+        "state": "ready",
+        "shadow": "rgba(36, 95, 115, 0.28) 0px 0px 0px 3px",
+        "outline": "solid"
+      },
+      "second": {
+        "id": "day",
+        "fv": true
+      },
+      "third": {
+        "tag": "BODY",
+        "cls": ""
+      },
+      "arrowDownOnLocation": {
+        "id": "location",
+        "loc": "hmb"
+      }
+    },
+    "mobile_a11y": {
+      "landmarks": {
+        "main": true,
+        "header": true,
+        "h1": 1,
+        "h2": [
+          "Place and day",
+          "At 12:00 noon PT",
+          "Next tides after noon",
+          "24-hour tide chart"
+        ]
+      },
+      "labels": [
+        {
+          "id": "location",
+          "label": "Coastal location"
+        },
+        {
+          "id": "day",
+          "label": "Day"
+        }
+      ],
+      "chart": {
+        "role": "img",
+        "name": "Half Moon Bay, Tue 6 Oct 2026 · height (m) by hour, Pacific time · noon marked",
+        "desc": "Tide height through Half Moon Bay, Tue 6 Oct 2026, 00:00 to 24:00 Pacific time. At noon the tide is 1.40 m and falling. Low 0.50 m at 03:00; High 2.30 m at 09:00; Low 0.50 m at 15:00; High 2.30 m at 21:00."
+      },
+      "lowContrast": [],
+      "contrast": {
+        "source": "browser_rendered_computed_style",
+        "text_nodes_measured": 64,
+        "min_ratio": 5.8,
+        "chart_text_nodes_measured": 18,
+        "chart_text_min_ratio": 5.8,
+        "chart_text_fill": [
+          "rgb(97, 97, 92)",
+          "rgb(23, 23, 23)"
+        ],
+        "chart_background": [
+          "rgb(248, 247, 242)"
+        ]
+      },
+      "lineContrast": 7.1,
+      "targets": [
+        44,
+        44
+      ],
+      "forbidden": []
+    },
+    "mobile_dark_preference": {
+      "light": {
+        "bg": "rgb(248, 247, 242)",
+        "panel": "rgb(248, 247, 242)",
+        "text": "rgb(23, 23, 23)",
+        "cs": "light only"
+      },
+      "dark": {
+        "bg": "rgb(248, 247, 242)",
+        "panel": "rgb(248, 247, 242)",
+        "text": "rgb(23, 23, 23)",
+        "cs": "light only"
+      }
+    },
+    "mobile_focus_not_obscured": {
+      "id": "location",
+      "inViewport": true,
+      "topmostIsFocused": true
+    },
+    "mobile_forced_colors": {
+      "id": "location",
+      "fv": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "borderStyle": "solid",
+      "chartLineStroke": "rgb(36, 95, 115)",
+      "textColor": "rgb(0, 0, 0)"
+    },
+    "mobile_http_initial": "hmb 2026-10-06"
+  },
+  "states": {
+    "error_desktop": {
+      "text": "Place and day\nCoastal location\nSelect an option\nTide table not loaded, so places and days cannot be chosen.\nDay\nSelect an option\nTide table not loaded, so places and days cannot be chosen.\nError:\nThe tide table could not be loaded. Readings and the chart are unavailable.\nAt 12:00 noon PT\nNoon reading unavailable.\n\nTue 6 Oct 2026\n\nNext tides after noon\nNext tides unavailable.\n24-hour tide chart\nChart unavailable.\nHigh and low tides, Tue 6 Oct 2026\nTide\tTime (PT)\tHeight (m)\n\nHigh and low tides unavailable.",
+      "selects": [
+        {
+          "id": "location",
+          "disabled": true,
+          "state": "disabled",
+          "describedby": "location-disabled-reason"
+        },
+        {
+          "id": "day",
+          "disabled": true,
+          "state": "disabled",
+          "describedby": "day-disabled-reason"
+        }
+      ],
+      "panels": [
+        "ready",
+        "error",
+        "error",
+        "error"
+      ],
+      "table": "error",
+      "status": [
+        {
+          "role": "alert",
+          "state": "error"
+        }
+      ],
+      "overflow": false
+    },
+    "error_mobile": {
+      "text": "Place and day\nCoastal location\nSelect an option\nTide table not loaded, so places and days cannot be chosen.\nDay\nSelect an option\nTide table not loaded, so places and days cannot be chosen.\nError:\nThe tide table could not be loaded. Readings and the chart are unavailable.\nAt 12:00 noon PT\nNoon reading unavailable.\n\nTue 6 Oct 2026\n\nNext tides after noon\nNext tides unavailable.\n24-hour tide chart\nChart unavailable.\nHigh and low tides, Tue 6 Oct 2026\nTide\tTime (PT)\tHeight (m)\n\nHigh and low tides unavailable.",
+      "selects": [
+        {
+          "id": "location",
+          "disabled": true,
+          "state": "disabled",
+          "describedby": "location-disabled-reason"
+        },
+        {
+          "id": "day",
+          "disabled": true,
+          "state": "disabled",
+          "describedby": "day-disabled-reason"
+        }
+      ],
+      "panels": [
+        "ready",
+        "error",
+        "error",
+        "error"
+      ],
+      "table": "error",
+      "status": [
+        {
+          "role": "alert",
+          "state": "error"
+        }
+      ],
+      "overflow": false
+    },
+    "empty_desktop": {
+      "text": "Place and day\nCoastal location\nHalf Moon Bay\nMonterey\nSan Francisco\nSanta Cruz\nSausalito\nPoint Reyes\nBodega Bay\nFort Bragg\nCrescent City\nMorro Bay\nAvila Beach\nSanta Barbara\nLos Angeles\nSan Diego\nDay\nTue 6 Oct 2026\nWed 7 Oct 2026\nNo readings:\nNo tide readings are available for Half Moon Bay, Tue 6 Oct 2026. Choose another place or day.\nAt 12:00 noon PT\n\nHalf Moon Bay, Tue 6 Oct 2026\n\nNext tides after noon\n24-hour tide chart\nHigh and low tides, Half Moon Bay, Tue 6 Oct 2026\nTide\tTime (PT)\tHeight (m)\n\nNo high or low tides to show for this place and day.",
+      "selects": [
+        {
+          "id": "location",
+          "disabled": false,
+          "state": "ready",
+          "describedby": null
+        },
+        {
+          "id": "day",
+          "disabled": false,
+          "state": "ready",
+          "describedby": null
+        }
+      ],
+      "panels": [
+        "ready",
+        "ready",
+        "ready",
+        "ready"
+      ],
+      "table": "empty",
+      "status": [
+        {
+          "role": "status",
+          "state": "ready"
+        }
+      ],
+      "overflow": false
+    },
+    "empty_mobile": {
+      "text": "Place and day\nCoastal location\nHalf Moon Bay\nMonterey\nSan Francisco\nSanta Cruz\nSausalito\nPoint Reyes\nBodega Bay\nFort Bragg\nCrescent City\nMorro Bay\nAvila Beach\nSanta Barbara\nLos Angeles\nSan Diego\nDay\nTue 6 Oct 2026\nWed 7 Oct 2026\nNo readings:\nNo tide readings are available for Half Moon Bay, Tue 6 Oct 2026. Choose another place or day.\nAt 12:00 noon PT\n\nHalf Moon Bay, Tue 6 Oct 2026\n\nNext tides after noon\n24-hour tide chart\nHigh and low tides, Half Moon Bay, Tue 6 Oct 2026\nTide\tTime (PT)\tHeight (m)\n\nNo high or low tides to show for this place and day.",
+      "selects": [
+        {
+          "id": "location",
+          "disabled": false,
+          "state": "ready",
+          "describedby": null
+        },
+        {
+          "id": "day",
+          "disabled": false,
+          "state": "ready",
+          "describedby": null
+        }
+      ],
+      "panels": [
+        "ready",
+        "ready",
+        "ready",
+        "ready"
+      ],
+      "table": "empty",
+      "status": [
+        {
+          "role": "status",
+          "state": "ready"
+        }
+      ],
+      "overflow": false
+    },
+    "loading_desktop": {
+      "selects": [
+        {
+          "id": "location",
+          "disabled": true,
+          "state": "disabled",
+          "describedby": "location-disabled-reason"
+        },
+        {
+          "id": "day",
+          "disabled": true,
+          "state": "disabled",
+          "describedby": "day-disabled-reason"
+        }
+      ],
+      "panels": [
+        {
+          "state": "ready",
+          "busy": null
+        },
+        {
+          "state": "loading",
+          "busy": "true"
+        },
+        {
+          "state": "loading",
+          "busy": "true"
+        },
+        {
+          "state": "loading",
+          "busy": "true"
+        }
+      ],
+      "table": "loading",
+      "status": [
+        {
+          "role": "status",
+          "state": "loading",
+          "text": "Loading:\nLoading the tide table for 14 coastal places."
+        }
+      ],
+      "overflow": false,
+      "chart": false
+    },
+    "loading_motion_desktop": {
+      "default": [
+        "jk-component-spin"
+      ],
+      "reduced": []
+    },
+    "loading_then_ready_desktop": {
+      "selects": [
+        {
+          "id": "location",
+          "disabled": false,
+          "state": "ready",
+          "describedby": null
+        },
+        {
+          "id": "day",
+          "disabled": false,
+          "state": "ready",
+          "describedby": null
+        }
+      ],
+      "panels": [
+        {
+          "state": "ready",
+          "busy": null
+        },
+        {
+          "state": "ready",
+          "busy": null
+        },
+        {
+          "state": "ready",
+          "busy": null
+        },
+        {
+          "state": "ready",
+          "busy": null
+        }
+      ],
+      "table": "ready",
+      "status": [],
+      "overflow": false,
+      "chart": true
+    },
+    "network_error_desktop": {
+      "selects": [
+        {
+          "id": "location",
+          "disabled": true,
+          "state": "disabled",
+          "describedby": "location-disabled-reason"
+        },
+        {
+          "id": "day",
+          "disabled": true,
+          "state": "disabled",
+          "describedby": "day-disabled-reason"
+        }
+      ],
+      "panels": [
+        {
+          "state": "ready",
+          "busy": null
+        },
+        {
+          "state": "error",
+          "busy": null
+        },
+        {
+          "state": "error",
+          "busy": null
+        },
+        {
+          "state": "error",
+          "busy": null
+        }
+      ],
+      "table": "error",
+      "status": [
+        {
+          "role": "alert",
+          "state": "error",
+          "text": "Error:\nThe tide table could not be loaded. Readings and the chart are unavailable."
+        }
+      ],
+      "overflow": false,
+      "chart": false
+    },
+    "loading_mobile": {
+      "selects": [
+        {
+          "id": "location",
+          "disabled": true,
+          "state": "disabled",
+          "describedby": "location-disabled-reason"
+        },
+        {
+          "id": "day",
+          "disabled": true,
+          "state": "disabled",
+          "describedby": "day-disabled-reason"
+        }
+      ],
+      "panels": [
+        {
+          "state": "ready",
+          "busy": null
+        },
+        {
+          "state": "loading",
+          "busy": "true"
+        },
+        {
+          "state": "loading",
+          "busy": "true"
+        },
+        {
+          "state": "loading",
+          "busy": "true"
+        }
+      ],
+      "table": "loading",
+      "status": [
+        {
+          "role": "status",
+          "state": "loading",
+          "text": "Loading:\nLoading the tide table for 14 coastal places."
+        }
+      ],
+      "overflow": false,
+      "chart": false
+    },
+    "loading_motion_mobile": {
+      "default": [
+        "jk-component-spin"
+      ],
+      "reduced": []
+    },
+    "loading_then_ready_mobile": {
+      "selects": [
+        {
+          "id": "location",
+          "disabled": false,
+          "state": "ready",
+          "describedby": null
+        },
+        {
+          "id": "day",
+          "disabled": false,
+          "state": "ready",
+          "describedby": null
+        }
+      ],
+      "panels": [
+        {
+          "state": "ready",
+          "busy": null
+        },
+        {
+          "state": "ready",
+          "busy": null
+        },
+        {
+          "state": "ready",
+          "busy": null
+        },
+        {
+          "state": "ready",
+          "busy": null
+        }
+      ],
+      "table": "ready",
+      "status": [],
+      "overflow": false,
+      "chart": true
+    },
+    "network_error_mobile": {
+      "selects": [
+        {
+          "id": "location",
+          "disabled": true,
+          "state": "disabled",
+          "describedby": "location-disabled-reason"
+        },
+        {
+          "id": "day",
+          "disabled": true,
+          "state": "disabled",
+          "describedby": "day-disabled-reason"
+        }
+      ],
+      "panels": [
+        {
+          "state": "ready",
+          "busy": null
+        },
+        {
+          "state": "error",
+          "busy": null
+        },
+        {
+          "state": "error",
+          "busy": null
+        },
+        {
+          "state": "error",
+          "busy": null
+        }
+      ],
+      "table": "error",
+      "status": [
+        {
+          "role": "alert",
+          "state": "error",
+          "text": "Error:\nThe tide table could not be loaded. Readings and the chart are unavailable."
+        }
+      ],
+      "overflow": false,
+      "chart": false
+    }
+  },
+  "errors": [],
+  "failures": [],
+  "combo_count": 112,
+  "caret_combos_ok": 112,
+  "chart_label_combos_ok": 112
+}

@@ -1,0 +1,63 @@
+{
+  "method": "Independent parent browser spot checks; exhaustive condition QA recorded separately",
+  "checks": [
+    {
+      "run": "gpt-d",
+      "desktopCrescentCityOct7": true,
+      "keyboard": "ArrowDown opened native menu; ArrowDown+Enter changed Crescent City to Morro Bay",
+      "reading": "Crescent City 2.07m Rising, next high15:00 3.90m, next low21:00 0.24m, scale0\u20134.5m"
+    },
+    {
+      "run": "gpt-d",
+      "mobile": {
+        "bodyText": "Tide\nCalifornia coast\n\nA DAY BY THE WATER\n\nCrescent City\n\nWednesday, October 7, 2026\n\nLocation\nHalf Moon Bay\nMonterey\nSan Francisco\nSanta Cruz\nSausalito\nPoint Reyes\nBodega Bay\nFort Bragg\nCrescent City\nMorro Bay\nAvila Beach\nSanta Barbara\nLos Angeles\nSan Diego\nDay\nOct 6\nOct 7\n\nTide at noon\n\n2.07\nm\n\u2197\nRising\n\n\u2193Next low tide\n\n9:00 PM\n\n0.24 m\n\u00b7 in 9 hours\n\n\u2191Next high tide\n\n3:00 PM\n\n3.90 m\n\u00b7 in 3 hours\n\nThe tide through the day\nHeight (m) \u00b7 Pacific time\n0.0\n1.1\n2.3\n3.4\n4.5\nNoon\n12a\n6a\n12p\n6p\n12a\n\u2191 High\n3:00 AM\n3.90 m\n\u2193 Low\n9:00 AM\n0.24 m\n\u2191 High\n3:00 PM\n3.90 m\n\u2193 Low\n9:00 PM\n0.24 m\nView hourly heights\nReadings at 12:00 PM on the selected day. All times Pacific.",
+        "colorScheme": "light only",
+        "overflow": false
+      }
+    },
+    {
+      "run": "gpt-c",
+      "mobile": {
+        "bodyText": "\u2248 Tide\nA day by the coast\nCoastal location\nAvila Beach\nBodega Bay\nCrescent City\nFort Bragg\nHalf Moon Bay\nLos Angeles\nMonterey\nMorro Bay\nPoint Reyes\nSan Diego\nSan Francisco\nSanta Barbara\nSanta Cruz\nSausalito\nDay\nTue, Oct 6\nWed, Oct 7\n\nAt noon \u00b7 Pacific time\n\n2.07 m\n\n\u2197 Rising\n\nNext low tide\n\u2193\n\n9:00 PM\n\n0.24 m\n\u00b7 9 hours after noon\n\nNext high tide\n\u2191\n\n3:00 PM\n\n3.90 m\n\u00b7 3 hours after noon\n\nCrescent City\n\nWed, Oct 7, 2026 \u00b7 24-hour tide\n\nHeight (m)\n0.0\n1.1\n2.3\n3.4\n4.5\n12 AM\n6 AM\n12 PM\n6 PM\n12 AM\n Tide height\nNoon marked \u00b7 Pacific time\nTides through the day\n\u2191 High\n3:00 AM\n3.90 m\n\u2193 Low\n9:00 AM\n0.24 m\n\u2191 High\n3:00 PM\n3.90 m\n\u2193 Low\n9:00 PM\n0.24 m",
+        "colorScheme": "light only",
+        "overflow": false
+      }
+    },
+    {
+      "run": "gpt-c",
+      "desktopCrescentCityOct7": true,
+      "reading": "2.07m Rising; next high15:00 3.90m; next low21:00 0.24m; scale0\u20134.5m"
+    },
+    {
+      "run": "opus-c",
+      "desktopCrescentCityOct7": true,
+      "reading": "2.07m Rising; next high15:00 3.90m; next low21:00 0.24m; top labelled tick4.0m"
+    },
+    {
+      "run": "opus-c",
+      "mobile": {
+        "bodyText": "Tides\n\nHeights in metres (m) \u00b7 Times in Pacific Daylight Time (PDT)\n\nLocation\nAvila Beach\nBodega Bay\nCrescent City\nFort Bragg\nHalf Moon Bay\nLos Angeles\nMonterey\nMorro Bay\nPoint Reyes\nSan Diego\nSan Francisco\nSanta Barbara\nSanta Cruz\nSausalito\nDay\nTue, Oct 6\nWed, Oct 7\n\nCrescent City \u00b7 Wednesday, October 7, 2026 \u00b7 as of 12:00 PM (noon) PDT\n\n2.07 m\n\u2191 Rising\n\nWater level is going up toward the next high.\n\nNext high tide\n\n3:00 PM\n\n3.90 m \u00b7 in 3 h\n\nNext low tide\n\n9:00 PM\n\n0.24 m \u00b7 in 9 h\n\n24-hour tide\n\nWed, Oct 7, midnight to midnight PDT \u00b7 height in m\n\n0.0\n1.0\n2.0\n3.0\n4.0\nm\n12a\n6a\n12p\n6p\n12a\nnext day\nNoon\nH 3.90\nL 0.24\nH 3.90\nL 0.24\nHourly heights",
+        "colorScheme": "light only",
+        "overflow": false
+      }
+    },
+    {
+      "run": "opus-d",
+      "mobile": {
+        "bodyText": "Tides\n\nHeights in metres (m) \u00b7 Times in Pacific time (PT)\n\nLocation\nHalf Moon Bay\nMonterey\nSan Francisco\nSanta Cruz\nSausalito\nPoint Reyes\nBodega Bay\nFort Bragg\nCrescent City\nMorro Bay\nAvila Beach\nSanta Barbara\nLos Angeles\nSan Diego\nDay\nTue, Oct 6\nWed, Oct 7\n\nCrescent City \u00b7 Wednesday, October 7, 2026 \u00b7 at 12:00 PM PT\n\n2.07 m\n\n\u2191 Rising\n\nNEXT HIGH\n3:00 PM PT\n3.90 m\nNEXT LOW\n9:00 PM PT\n0.24 m\n24-hour tide \u00b7 Wed, Oct 7\n\nMidnight to midnight, Pacific time. Height in metres. Vertical line marks noon.\n\n0.0\n1.0\n2.0\n3.0\n4.0\n5.0\nm\n12a\n6a\n12p\n6p\n12a\n3.90\n0.24\n3.90\n0.24\nNoon \u00b7 2.07 m\nHigh 3:00 AM \u00b7 3.90 m\nLow 9:00 AM \u00b7 0.24 m\nHigh 3:00 PM \u00b7 3.90 m\nLow 9:00 PM \u00b7 0.24 m",
+        "colorScheme": "light only",
+        "overflow": false
+      }
+    },
+    {
+      "run": "opus-d",
+      "desktopCrescentCityOct7": true,
+      "reading": "2.07m Rising; next high15:00 3.90m; next low21:00 0.24m; scale0\u20135.0m"
+    }
+  ],
+  "final_supplement": {
+    "opus-a": "Parent real-browser mobile CrescentCityOct7 Noon/High collision absent after actual acceptedR2 repair; before/after proof retained in own evidence/parent",
+    "opus-b": "Parent real-browser loaded desktop->mobile->desktop preserves selections and chart width358/1120, no overflow after final scoped ship repair",
+    "all_eight_loaded_resize": "admin/loaded-resize-checks.json"
+  }
+}

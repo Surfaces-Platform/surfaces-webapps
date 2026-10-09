@@ -1,0 +1,13 @@
+{
+  "equal": true,
+  "original_bytes": 732,
+  "concatenated_bytes": 732,
+  "spans": [
+    "Mike previously answered “Proceed as inferred” for this exact tide-prototype product scope: a person checking tides for a coastal outing, no particular activity prioritized; one-screen prototype, no accounts/live data/safety claims; supplied technical constraints, no extra brand/accessibility standard. ",
+    "This persistent answer is authorized context, not a fabricated new interview or a visual-direction choice. ",
+    "Mike now asks to add 12 locations and regenerate all eight with the same model/effort/resource settings. ",
+    "His later presentation instructions supersede earlier demo-label instructions: no demo-data banners and light mode only. ",
+    "Design decisions remain delegated. ",
+    "No previous app design or sibling choices are supplied.\n"
+  ]
+}
