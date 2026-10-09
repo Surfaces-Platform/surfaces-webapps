@@ -1,6 +1,6 @@
 "use client";
 
-import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import { ArrowTopRightOnSquareIcon, Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { Icon } from "@surfaces/ui/components/Icon";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -82,11 +82,13 @@ export default function HomeHeader() {
           </a>
           <a
             href="https://handbooks.surfaces.systems/"
+            title="Opens in a new tab"
             target="_blank"
             rel="noopener noreferrer"
             onClick={closeMenu}
           >
             Handbooks
+            <Icon icon={ArrowTopRightOnSquareIcon} size={14} className="external-link-icon" />
           </a>
           <a href="https://judgmentkit.ai/" onClick={closeMenu}>
             JudgmentKit MCP

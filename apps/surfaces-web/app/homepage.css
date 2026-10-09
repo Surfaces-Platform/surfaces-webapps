@@ -228,6 +228,11 @@ body.menu-open {
   text-decoration: none;
 }
 
+.surfaces-homepage .site-navigation .external-link-icon {
+  margin-left: 6px;
+  flex: 0 0 auto;
+}
+
 .surfaces-homepage .site-navigation a:hover {
   color: var(--sp-color-mist);
 }

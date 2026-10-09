@@ -7,3 +7,5 @@ The header contract allows one resource destination without changing product beh
 Acceptance requires the correct link opening a new tab in both layouts while retaining the original site, isolation with noopener noreferrer, mobile closure after selection, Escape focus restoration, no header overflow, and preservation of existing destinations and branding. This is a bounded navigation change on surfaces.systems. It makes the existing guidance collection reachable without introducing a new product workflow, observability feature, or orchestration path.
 
 Validation: focused HomeHeader tests, Vercel preview build, and browser checks at desktop, mobile, and breakpoint widths. Production publication follows separate approval after preview review.
+
+Header links that open a new tab display an external-link icon and an Opens in a new tab tooltip in desktop and mobile layouts. Generation time adds the icon alongside the destination; CI/CD time checks icon presence and layout; Runtime (edge) serves the same static navigation. Missing indicators block acceptance.
