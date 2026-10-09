@@ -83,6 +83,9 @@ describe("homepage header", () => {
     const links = Array.from(navigation?.querySelectorAll("a") ?? []);
     const judgmentKitLink = links[3];
     const handbooksLink = links[2];
+    expect(handbooksLink.querySelector("svg.external-link-icon")).not.toBeNull();
+    expect(handbooksLink.getAttribute("title")).toBe("Opens in a new tab");
+    expect(judgmentKitLink.querySelector("svg")).toBeNull();
 
     expect(links.map((link) => link.textContent?.trim())).toEqual([
       "The workload",
