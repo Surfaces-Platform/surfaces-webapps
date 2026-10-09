@@ -156,11 +156,13 @@ describe("surfaces.systems home page", () => {
     expect(navLinks.map((link) => link.getAttribute("href"))).toEqual([
       "#workload",
       "#product-direction",
+      "https://handbooks.surfaces.systems/",
       "https://judgmentkit.ai/",
     ]);
     expect(navLinks.map((link) => link.textContent?.trim())).toEqual([
       "The workload",
       "How it works",
+      "Handbooks",
       "JudgmentKit MCP",
     ]);
 
@@ -182,7 +184,7 @@ describe("surfaces.systems home page", () => {
         "Surfaces is an early product hypothesis. We’re testing it with recent interface release decisions.",
     );
     const heroActionRow = page.querySelector(".hero .action-row");
-    const judgmentKitLink = navLinks[2];
+    const judgmentKitLink = navLinks.find((link) => link.getAttribute("href") === "https://judgmentkit.ai/");
     const mailto = new URL(emailLink?.getAttribute("href") ?? "");
 
     expect(emailLinks).toHaveLength(1);
@@ -214,7 +216,7 @@ describe("surfaces.systems home page", () => {
       /@media \(max-width: 620px\)[\s\S]*?\.surfaces-homepage \.button \{\s*width: 100%;\s*\}/,
     );
     expect(page.querySelectorAll(".nav-action")).toHaveLength(0);
-    expect(page.querySelectorAll('a[href^="http"]')).toHaveLength(1);
+    expect(page.querySelectorAll('a[href^="http"]')).toHaveLength(2);
     expect(judgmentKitLink?.closest("header")).not.toBeNull();
     expect(judgmentKitLink?.getAttribute("target")).toBeNull();
     expect(judgmentKitLink?.getAttribute("rel")).toBeNull();
