@@ -1,0 +1,74 @@
+{
+  "revision": "canonical-1d29168",
+  "canonicalBrandCommit": "1d29168a9d35bc4f45de857afd7b43ea404532f8",
+  "sources": {
+    "markLight": {
+      "path": "brand-source/mark-light.svg",
+      "sha256": "aba1d15a5dc3611ce05c79928db94796dafa7afeeeb8b3abea3867af7b7006df"
+    },
+    "markDark": {
+      "path": "brand-source/mark-dark.svg",
+      "sha256": "bbea2023d88049fcc9ae3f257bd9ee56a62dff828787322e88973bdc9101889b"
+    },
+    "markOneColor": {
+      "path": "brand-source/mark-one-color.svg",
+      "sha256": "e8205f70494d841c9174d181f7f29800c7cd98e82abd31ed0220448cde3eba80"
+    },
+    "lockupLight": {
+      "path": "public/design-system/logo/surfaces-lockup-horizontal.svg",
+      "sha256": "32354a8c79fd7a174098fdb05debec61df946149054993dd97e523e28bd68fa6"
+    },
+    "lockupDark": {
+      "path": "public/design-system/logo/surfaces-lockup-horizontal-reverse.svg",
+      "sha256": "8174df02add7d2509950fad5c1d6d11492be0538ad12cfa3222f3bc6efac4987"
+    },
+    "socialCopy": {
+      "path": "brand-source/design-system-social-copy.svg",
+      "sha256": "27621c623fae89ed518afca2549b57bd0313ccf18e466a3c7d644c4a3adc1df9"
+    }
+  },
+  "polygons": [
+    "14,14 50,6 50,19 14,27",
+    "10,29 50,29 50,40 10,40",
+    "14,43 50,51 50,58 14,50"
+  ],
+  "masterViewBox": "0 0 64 64",
+  "colors": {
+    "ink": "#0B0D0E",
+    "ivory": "#F7F6F2",
+    "nickel": "#8B9096"
+  },
+  "install": {
+    "viewBox": "0 0 64 64",
+    "markTransform": "translate(9.5 8) scale(0.75)",
+    "safeCircle": {
+      "center": [
+        32,
+        32
+      ],
+      "radius": 25.6
+    },
+    "opaque": true
+  },
+  "social": {
+    "dimensions": [
+      1200,
+      630
+    ],
+    "homeWholeLockupScale": 2.8,
+    "referenceWholeLockupScale": 1.9,
+    "copy": [
+      "Design system for",
+      "reviewable generated UI."
+    ],
+    "copyFont": {
+      "family": "Inter",
+      "weight": 760,
+      "opticalSize": 32,
+      "fontSize": 58,
+      "fontFileSha256": "0be2399ea925f1f83ff974764761da9860ec50742ed29a5d4c1ffd0c5c7ac3a8"
+    },
+    "logoPolicy": "Complete canonical Inter 780 lockup only; never retype the wordmark."
+  },
+  "pinnedTabException": "Safari mask-icon is a single-color plate, derived from the approved one-color master. All full-color exports retain Nickel."
+}

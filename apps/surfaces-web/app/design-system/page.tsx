@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ReferencePageView } from "./ReferenceShell";
-import { assetBasePath, designSystemOrigin, pages } from "./referenceContent";
+import { designSystemOrigin, pages } from "./referenceContent";
+import { designSystemSocialImage } from "@/lib/brand-metadata";
 
 export const metadata: Metadata = {
   title: "Surfaces Design System",
@@ -14,13 +15,13 @@ export const metadata: Metadata = {
     title: "Surfaces Design System",
     description: "Simple Slab identity, public-page tokens, and generated-screen review patterns.",
     url: `${designSystemOrigin}/design-system`,
-    images: [`${designSystemOrigin}${assetBasePath}/logo/surfaces-social-card.svg`],
+    images: [designSystemSocialImage],
   },
   twitter: {
     card: "summary_large_image",
     title: "Surfaces Design System",
     description: "Simple Slab identity, public-page tokens, and generated-screen review patterns.",
-    images: [`${designSystemOrigin}${assetBasePath}/logo/surfaces-social-card.svg`],
+    images: [designSystemSocialImage],
   },
 };
 

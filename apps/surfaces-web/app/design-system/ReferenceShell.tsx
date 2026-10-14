@@ -33,7 +33,7 @@ const logo = {
   lockup: `${assetBasePath}/logo/surfaces-lockup-horizontal.svg`,
   lockupReverse: `${assetBasePath}/logo/surfaces-lockup-horizontal-reverse.svg`,
   stacked: `${assetBasePath}/logo/surfaces-lockup-stacked.svg`,
-  social: `${assetBasePath}/logo/surfaces-social-card.svg`,
+  social: `${assetBasePath}/logo/surfaces-social-card.png`,
 };
 
 interface ReferencePageViewProps {

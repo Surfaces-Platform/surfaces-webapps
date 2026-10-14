@@ -12,10 +12,6 @@ const homepageCss = readFileSync(resolve(process.cwd(), "app/homepage.css"), "ut
 const slabAsset = readFileSync(
   resolve(process.cwd(), "public/assets/surfaces-slab-environment.webp"),
 );
-const openGraphAsset = readFileSync(
-  resolve(process.cwd(), "public/assets/surfaces-platform-og.png"),
-);
-const appIcon = readFileSync(resolve(process.cwd(), "app/icon.svg"));
 const homepageContentSource = readFileSync(
   resolve(process.cwd(), "app/homepage-content.html"),
   "utf8",
@@ -132,12 +128,6 @@ describe("surfaces.systems home page", () => {
     );
     expect(sha256(slabAsset)).toBe(
       "8901f5ad73c5a96aeb10647e98fc9e9f6151bf55152911e948e3be0343e3a64f",
-    );
-    expect(sha256(openGraphAsset)).toBe(
-      "8af4466090468bb17af25e313016b77ea56ffa7b9c1abb0c9a5e751a0d1ce56b",
-    );
-    expect(sha256(appIcon)).toBe(
-      "24f9543c8228d7955505f0a11928b4d29b89fd1f37c8080b301cbbd8be5bf8ca",
     );
   });
 

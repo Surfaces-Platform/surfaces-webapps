@@ -27,11 +27,17 @@ for layout, normal, reverse in [
     ]:
         (logo / f"surfaces-lockup-{layout}-{suffix}.svg").write_text(source)
 
-files = {path.name: path for path in sorted(logo.glob("*.svg"))}
+files = {path.name: path for path in sorted(logo.iterdir()) if path.suffix in {".svg", ".png"}}
 for name in ["surfaces.tokens.json", "surfaces.product.tokens.json", "surfaces.css"]:
     files[name] = public / "tokens" / name
 files["README.txt"] = public / "brand-kit/README.txt"
 files["surfaces-lockups.json"] = public / "surfaces-lockups.json"
+site_public = public.parent
+revision = "canonical-1d29168"
+for path in sorted((site_public / "brand" / revision).iterdir()):
+    files[f"site-brand/{path.name}"] = path
+for name in ["favicon.ico", "site.webmanifest"]:
+    files[f"site-brand/{name}"] = site_public / name
 
 archive = public / "brand-kit/surfaces-brand-kit-v0.2.zip"
 with ZipFile(archive, "w", compression=ZIP_DEFLATED, compresslevel=9) as kit:

@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ReferencePageView } from "../ReferenceShell";
 import {
-  assetBasePath,
   designSystemBasePath,
   designSystemOrigin,
   getPage,
   navItems,
 } from "../referenceContent";
+import { designSystemSocialImage } from "@/lib/brand-metadata";
 
 interface SectionPageProps {
   params: Promise<{
@@ -43,13 +43,13 @@ export async function generateMetadata({ params }: SectionPageProps): Promise<Me
       title,
       description: page.description,
       url,
-      images: [`${designSystemOrigin}${assetBasePath}/logo/surfaces-social-card.svg`],
+      images: [designSystemSocialImage],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description: page.description,
-      images: [`${designSystemOrigin}${assetBasePath}/logo/surfaces-social-card.svg`],
+      images: [designSystemSocialImage],
     },
   };
 }

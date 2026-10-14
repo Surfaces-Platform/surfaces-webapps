@@ -284,8 +284,8 @@ export const resources: ResourceItem[] = [
   },
   {
     title: "Social card",
-    kind: "SVG / Share image",
-    href: `${assetBasePath}/logo/surfaces-social-card.svg`,
+    kind: "PNG / Share image",
+    href: `${assetBasePath}/logo/surfaces-social-card.png`,
     note: "Use for public previews and shared links.",
     preview: "social",
   },

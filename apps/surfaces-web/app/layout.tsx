@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import { brandAssetBase, brandIcons, brandManifest, homeSocialImage } from "@/lib/brand-metadata";
 import "./globals.css";
 
 const inter = Inter({
@@ -9,6 +10,10 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://surfaces.systems"),
+  applicationName: "Surfaces",
+  appleWebApp: { capable: true, title: "Surfaces", statusBarStyle: "black-translucent" },
+  icons: brandIcons,
+  manifest: brandManifest,
   title: "Make Every Release Decision Reusable | Surfaces",
   description:
     "Surfaces is exploring how decisions about agent-produced UI changes can become reusable guidance, so clear repeat violations can be resolved before senior review.",
@@ -22,21 +27,14 @@ export const metadata: Metadata = {
     description:
       "Turn decisions about agent-produced UI changes into guidance that can resolve clear repeat violations before senior review.",
     url: "/",
-    images: [
-      {
-        url: "/assets/surfaces-platform-og.png",
-        width: 1280,
-        height: 720,
-        alt: "Surfaces",
-      },
-    ],
+    images: [homeSocialImage],
   },
   twitter: {
     card: "summary_large_image",
     title: "Make every release decision reusable.",
     description:
       "Turn decisions about agent-produced UI changes into guidance that can resolve clear repeat violations before senior review.",
-    images: ["/assets/surfaces-platform-og.png"],
+    images: [homeSocialImage],
   },
 };
 
@@ -54,6 +52,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="mask-icon" href={`${brandAssetBase}/pinned-tab.svg`} color="#0B0D0E" />
+      </head>
       <body className={`${inter.variable} antialiased font-sans`}>{children}</body>
     </html>
   );
