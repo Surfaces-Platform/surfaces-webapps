@@ -72,7 +72,7 @@ describe("canonical Surfaces lockups", () => {
     const expectedGlyphs = glyphs(read(primary[0][0]));
     expect(glyphs(read("surfaces-wordmark.svg"))).toEqual(expectedGlyphs);
     const social = read("surfaces-social-card.svg");
-    expect(glyphs(social)).toEqual(expectedGlyphs);
+    expect(glyphs(social.split('data-role="social-copy"')[0])).toEqual(expectedGlyphs);
     expect(social).not.toMatch(/<text\b[^>]*>Surfaces<\/text>/);
     expect(social).toContain('data-role="canonical-lockup" transform="translate(100 100) scale(1.9)"');
   });

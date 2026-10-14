@@ -1,0 +1,36 @@
+{
+  "id": "/",
+  "name": "Surfaces",
+  "short_name": "Surfaces",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0B0D0E",
+  "theme_color": "#0B0D0E",
+  "icons": [
+    {
+      "src": "/brand/canonical-1d29168/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/brand/canonical-1d29168/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/brand/canonical-1d29168/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/brand/canonical-1d29168/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

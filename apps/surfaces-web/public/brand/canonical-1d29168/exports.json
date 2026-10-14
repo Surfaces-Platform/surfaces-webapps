@@ -1,0 +1,181 @@
+{
+  "revision": "canonical-1d29168",
+  "canonicalBrandCommit": "1d29168a9d35bc4f45de857afd7b43ea404532f8",
+  "sources": {
+    "markLight": {
+      "path": "brand-source/mark-light.svg",
+      "sha256": "aba1d15a5dc3611ce05c79928db94796dafa7afeeeb8b3abea3867af7b7006df"
+    },
+    "markDark": {
+      "path": "brand-source/mark-dark.svg",
+      "sha256": "bbea2023d88049fcc9ae3f257bd9ee56a62dff828787322e88973bdc9101889b"
+    },
+    "markOneColor": {
+      "path": "brand-source/mark-one-color.svg",
+      "sha256": "e8205f70494d841c9174d181f7f29800c7cd98e82abd31ed0220448cde3eba80"
+    },
+    "lockupLight": {
+      "path": "public/design-system/logo/surfaces-lockup-horizontal.svg",
+      "sha256": "32354a8c79fd7a174098fdb05debec61df946149054993dd97e523e28bd68fa6"
+    },
+    "lockupDark": {
+      "path": "public/design-system/logo/surfaces-lockup-horizontal-reverse.svg",
+      "sha256": "8174df02add7d2509950fad5c1d6d11492be0538ad12cfa3222f3bc6efac4987"
+    },
+    "socialCopy": {
+      "path": "brand-source/design-system-social-copy.svg",
+      "sha256": "27621c623fae89ed518afca2549b57bd0313ccf18e466a3c7d644c4a3adc1df9"
+    }
+  },
+  "policy": "Pinned vector outlines, uniform whole-lockup scaling, no font fallback; PNG metadata stripped.",
+  "exports": {
+    "apple-touch-icon.png": {
+      "sha256": "fefc4923197e3d7aa53dd858cd4613b662004dc0e3cb435deac8d9afd68736c9",
+      "dimensions": [
+        180,
+        180
+      ]
+    },
+    "assets/surfaces-platform-og.png": {
+      "sha256": "04bef1742a52021646d0a92a4f0367688b5a3754228498d830439b7f94d4af92",
+      "dimensions": [
+        1200,
+        630
+      ]
+    },
+    "brand/canonical-1d29168/apple-touch-icon-180.png": {
+      "sha256": "fefc4923197e3d7aa53dd858cd4613b662004dc0e3cb435deac8d9afd68736c9",
+      "dimensions": [
+        180,
+        180
+      ]
+    },
+    "brand/canonical-1d29168/design-system-social.png": {
+      "sha256": "fc6e391f6f1242415845ddeae1ea6e20c8bed51c23cd38907e480c9953fed2a1",
+      "dimensions": [
+        1200,
+        630
+      ]
+    },
+    "brand/canonical-1d29168/favicon-dark-16.png": {
+      "sha256": "0679f23bf10d1706e1e0da452580954978207e683682924a6a3c4df99024f018",
+      "dimensions": [
+        16,
+        16
+      ]
+    },
+    "brand/canonical-1d29168/favicon-dark-32.png": {
+      "sha256": "71f14fd9f5a890a3442f0f6334a5770e030cd07cae41e033da32b2b05292f56e",
+      "dimensions": [
+        32,
+        32
+      ]
+    },
+    "brand/canonical-1d29168/favicon-dark-48.png": {
+      "sha256": "f0981759357a17051396a2fc6c94b0376bdd4c582cc0f938a109fb532991aa6a",
+      "dimensions": [
+        48,
+        48
+      ]
+    },
+    "brand/canonical-1d29168/favicon-dark.svg": {
+      "sha256": "8c43c1219c56fe24bb365745acc4e2aeff6139cfee8e87caf143daeaf7cb9c00"
+    },
+    "brand/canonical-1d29168/favicon-light-16.png": {
+      "sha256": "809fc5ffb1776273d08cee91e657cbaf38fb70e6c8b40756014a89d8c89be98c",
+      "dimensions": [
+        16,
+        16
+      ]
+    },
+    "brand/canonical-1d29168/favicon-light-32.png": {
+      "sha256": "1438bcfd36b405749695351a5084d2d6869ffb85b5838684d05e7e08ebeeb3b6",
+      "dimensions": [
+        32,
+        32
+      ]
+    },
+    "brand/canonical-1d29168/favicon-light-48.png": {
+      "sha256": "8598f76ca233550cd48a48dac6fecee2a252ef3ab5f84487fbc165c83204d1be",
+      "dimensions": [
+        48,
+        48
+      ]
+    },
+    "brand/canonical-1d29168/favicon-light.svg": {
+      "sha256": "d1df26204b13594d2a05266bac0f52a84f1e17765522257fc40687b438c6687a"
+    },
+    "brand/canonical-1d29168/icon-192.png": {
+      "sha256": "90ad95ae35b7a02ab289003328bd83fedf85b6ad23f286c03955ae0306777af0",
+      "dimensions": [
+        192,
+        192
+      ]
+    },
+    "brand/canonical-1d29168/icon-512.png": {
+      "sha256": "763ecb9fdb93bcbd2e1a857353c132762a260f4408028071fe09ea8263d37ad7",
+      "dimensions": [
+        512,
+        512
+      ]
+    },
+    "brand/canonical-1d29168/icon-maskable-192.png": {
+      "sha256": "90ad95ae35b7a02ab289003328bd83fedf85b6ad23f286c03955ae0306777af0",
+      "dimensions": [
+        192,
+        192
+      ]
+    },
+    "brand/canonical-1d29168/icon-maskable-512.png": {
+      "sha256": "763ecb9fdb93bcbd2e1a857353c132762a260f4408028071fe09ea8263d37ad7",
+      "dimensions": [
+        512,
+        512
+      ]
+    },
+    "brand/canonical-1d29168/install-icon.svg": {
+      "sha256": "35d06fa345a52c9140447daf1d1213795d63da4b12f64a877057d36fb65958c3"
+    },
+    "brand/canonical-1d29168/pinned-tab.svg": {
+      "sha256": "e8205f70494d841c9174d181f7f29800c7cd98e82abd31ed0220448cde3eba80"
+    },
+    "brand/canonical-1d29168/surfaces-social.png": {
+      "sha256": "04bef1742a52021646d0a92a4f0367688b5a3754228498d830439b7f94d4af92",
+      "dimensions": [
+        1200,
+        630
+      ]
+    },
+    "brand/canonical-1d29168/surfaces-social.svg": {
+      "sha256": "39c7d902bd58d4f1496926aa86cf8dfc71947172116f8c01a84db64ebc44705e"
+    },
+    "design-system/logo/app-icon.svg": {
+      "sha256": "35d06fa345a52c9140447daf1d1213795d63da4b12f64a877057d36fb65958c3"
+    },
+    "design-system/logo/surfaces-social-card.png": {
+      "sha256": "fc6e391f6f1242415845ddeae1ea6e20c8bed51c23cd38907e480c9953fed2a1",
+      "dimensions": [
+        1200,
+        630
+      ]
+    },
+    "design-system/logo/surfaces-social-card.svg": {
+      "sha256": "63a75f19d5a72372d18ed6b6239195eff9c610d20d78b94c8e5f0333907ffe1f"
+    },
+    "favicon-dark.svg": {
+      "sha256": "8c43c1219c56fe24bb365745acc4e2aeff6139cfee8e87caf143daeaf7cb9c00"
+    },
+    "favicon.ico": {
+      "sha256": "c3b6f606989fd4f127e3be296dfe9dc16c9a34ed6a1c39d6b28690a1f3d0a13e"
+    },
+    "favicon.svg": {
+      "sha256": "d1df26204b13594d2a05266bac0f52a84f1e17765522257fc40687b438c6687a"
+    },
+    "icon.svg": {
+      "sha256": "5b8317a8c6389b699e41a5c3ddf4762112db7e704764733248291825bbc6d6d6"
+    },
+    "site.webmanifest": {
+      "sha256": "2f159ec0a7252374668cfe7dd4db05b5044a94239c5a07701a9495bf172a0f19"
+    }
+  }
+}
