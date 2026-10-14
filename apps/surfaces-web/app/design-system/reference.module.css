@@ -71,15 +71,11 @@
   border-bottom: 1px solid var(--sp-color-plane);
 }
 
-.brandMark {
-  width: 31px;
-  height: 31px;
-  flex: 0 0 auto;
-}
-
-.brandWord {
-  width: 146px;
+.brandLockup {
+  width: 190px;
   height: auto;
+  aspect-ratio: 334.753341733 / 109;
+  flex: 0 0 auto;
 }
 
 .nav {
@@ -192,9 +188,9 @@
   font-weight: 650;
 }
 
-.topbrand img {
-  width: 28px;
-  height: 28px;
+.topbrand .brandLockup {
+  width: 172px;
+  height: auto;
 }
 
 .toplinks {
