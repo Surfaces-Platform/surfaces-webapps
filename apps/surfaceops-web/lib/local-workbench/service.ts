@@ -6,7 +6,12 @@ import net from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { SURFACEOPS_DESKTOP_SETUP_PATH } from "@surfaces/surfaceops-desktop-bridge";
-import type { BenchmarkCohortManifest } from "@/lib/generation-benchmarks";
+import type {
+  BenchmarkComparisonPair,
+  BenchmarkRunManifest,
+  BenchmarkSpecFixture,
+  BenchmarkSpecManifest,
+} from "@/lib/generation-benchmarks";
 import {
   loadInterfacectlUiAstTools,
   runInterfacectlCli,
@@ -76,6 +81,8 @@ const DEFAULT_LOCAL_LLM_MODEL = "openai/gpt-oss-120b";
 const UI_AST_SESSION_SCHEMA_VERSION = 3;
 const IMPLEMENTATION_GUIDANCE_STRATEGY = "json-primary";
 type ImplementationGuidanceStrategy = BenchmarkGuidanceStrategy;
+type BenchmarkPlatformTarget = "web" | "ios" | "android";
+type BenchmarkConsumerType = "web-browser" | "desktop-shell" | "ios-native" | "android-native";
 type ContractRunOutcome = "pass" | "warn" | "fail" | "unknown";
 
 interface CanonicalContractRunArtifact {
@@ -309,6 +316,7 @@ interface FrozenRuntimeGuidancePaths {
 }
 
 interface ReferenceTargetImplementationSessionResult {
+  status: "succeeded" | "failed";
   guidanceStrategy: ImplementationGuidanceStrategy;
   sessionId: string;
   sessionDir: string;
@@ -320,14 +328,10 @@ interface ReferenceTargetImplementationSessionResult {
   previewPath: string | null;
   touchedFiles: string[];
   noChanges: boolean;
-  validate: Record<string, unknown>;
+  validate: Record<string, unknown> | null;
   comparison: LocalWorkbenchComparison | null;
   remainingAcceptedSuggestions: LocalWorkbenchAcceptedSuggestion[];
-}
-
-interface BenchmarkComparisonPair {
-  baselineGuidanceStrategy: ImplementationGuidanceStrategy;
-  guidedGuidanceStrategy: ImplementationGuidanceStrategy;
+  errorMessage: string | null;
 }
 
 interface LocalLlmAgentBudgets {
@@ -339,6 +343,8 @@ interface LocalLlmAgentBudgets {
 export interface BenchmarkCohortResult {
   cohortId: string;
   benchmarkDir: string;
+  specPath: string;
+  runPath: string;
   manifestPath: string;
   reportPath: string | null;
   comparisonPaths: string[];
@@ -2340,6 +2346,7 @@ export function buildAssessmentPayload(
     boundary: "partial",
     visual: "partial",
     responsiveness: "partial",
+    platformFit: "partial",
     notes,
     touchedFiles,
     ...(heuristics ? { heuristics } : {}),
@@ -2925,6 +2932,16 @@ function buildLocalModelFingerprint(config: LocalLlmConfig): string {
   }));
 }
 
+function buildResolvedModelFingerprint(baseUrl: string, resolvedModelId: string | null): string | null {
+  if (!resolvedModelId) {
+    return null;
+  }
+  return sha256String(JSON.stringify({
+    baseUrl,
+    model: resolvedModelId,
+  }));
+}
+
 function normalizeBenchmarkStrategies(
   strategies: ImplementationGuidanceStrategy[] | undefined,
   defaultStrategies: ImplementationGuidanceStrategy[],
@@ -2932,25 +2949,70 @@ function normalizeBenchmarkStrategies(
   const source = strategies?.length ? strategies : defaultStrategies;
   const unique = [...new Set(source)];
   const allowed = unique.filter((entry): entry is ImplementationGuidanceStrategy =>
-    entry === "prompt-summary" || entry === "json-primary" || entry === "unguided",
+    entry === "prompt-summary" || entry === "baseline-primary" || entry === "json-primary" || entry === "unguided",
   );
 
   if (allowed.length !== unique.length) {
-    throw new Error("Benchmark cohorts only support prompt-summary, json-primary, and unguided.");
-  }
-  if (!allowed.includes("prompt-summary") || !allowed.includes("json-primary")) {
-    throw new Error("Benchmark cohorts must include prompt-summary and json-primary.");
+    throw new Error("Benchmark cohorts only support prompt-summary, baseline-primary, json-primary, and unguided.");
   }
   if (allowed.length < 2) {
     throw new Error("Benchmark cohorts require at least two guidance strategies.");
+  }
+  if (!allowed.includes("unguided")) {
+    throw new Error("Benchmark cohorts must include unguided as the no-contract control arm.");
+  }
+  if (!allowed.some((entry) => entry === "prompt-summary" || entry === "baseline-primary" || entry === "json-primary")) {
+    throw new Error("Benchmark cohorts must include at least one guided strategy.");
   }
 
   const ordered: ImplementationGuidanceStrategy[] = [];
   if (allowed.includes("unguided")) {
     ordered.push("unguided");
   }
-  ordered.push("prompt-summary", "json-primary");
+  if (allowed.includes("prompt-summary")) {
+    ordered.push("prompt-summary");
+  }
+  ordered.push("baseline-primary", "json-primary");
   return ordered.filter((entry, index, values) => allowed.includes(entry) && values.indexOf(entry) === index);
+}
+
+async function writeFailedBenchmarkSessionSummary(input: {
+  fixture: BenchmarkFixture;
+  sessionId: string;
+  sessionDir: string;
+  guidanceStrategy: ImplementationGuidanceStrategy;
+  errorMessage: string;
+}): Promise<void> {
+  const summaryPath = path.join(input.sessionDir, "summary.json");
+  const markdownPath = path.join(input.sessionDir, "summary.md");
+  await fsp.mkdir(input.sessionDir, { recursive: true });
+  await writeJsonFile(summaryPath, {
+    schemaVersion: 1,
+    sessionId: input.sessionId,
+    surfaceId: input.fixture.id,
+    guidanceStrategy: input.guidanceStrategy,
+    latestStatus: "block",
+    latestOutcome: "error",
+    errorMessage: input.errorMessage,
+    attempts: [],
+  });
+  await fsp.writeFile(
+    markdownPath,
+    [
+      "# Generation Session Summary",
+      "",
+      `Surface: ${input.fixture.id}`,
+      `Strategy: ${input.guidanceStrategy}`,
+      "Status: block",
+      "Outcome: error",
+      "",
+      "## Error",
+      "",
+      input.errorMessage,
+      "",
+    ].join("\n"),
+    "utf8",
+  );
 }
 
 function buildBenchmarkComparisonPairs(
@@ -2963,20 +3025,38 @@ function buildBenchmarkComparisonPairs(
       guidedGuidanceStrategy: normalized[1],
     }];
   }
-  return [
-    {
+  const pairs: BenchmarkComparisonPair[] = [];
+  if (normalized.includes("unguided") && normalized.includes("baseline-primary")) {
+    pairs.push({
       baselineGuidanceStrategy: "unguided",
-      guidedGuidanceStrategy: "prompt-summary",
-    },
-    {
+      guidedGuidanceStrategy: "baseline-primary",
+    });
+  }
+  if (normalized.includes("unguided") && normalized.includes("json-primary")) {
+    pairs.push({
       baselineGuidanceStrategy: "unguided",
       guidedGuidanceStrategy: "json-primary",
-    },
-    {
+    });
+  }
+  if (normalized.includes("baseline-primary") && normalized.includes("json-primary")) {
+    pairs.push({
+      baselineGuidanceStrategy: "baseline-primary",
+      guidedGuidanceStrategy: "json-primary",
+    });
+  }
+  if (normalized.includes("prompt-summary") && normalized.includes("json-primary")) {
+    pairs.push({
       baselineGuidanceStrategy: "prompt-summary",
       guidedGuidanceStrategy: "json-primary",
-    },
-  ];
+    });
+  }
+  if (normalized.includes("prompt-summary") && normalized.includes("baseline-primary")) {
+    pairs.push({
+      baselineGuidanceStrategy: "prompt-summary",
+      guidedGuidanceStrategy: "baseline-primary",
+    });
+  }
+  return pairs;
 }
 
 export function buildReferenceTargetBenchmarkComparisonPairs(
@@ -3020,6 +3100,102 @@ async function writeFrozenRuntimeGuidancePaths(
     acceptedSuggestionsPath,
     designerNotesPath,
   };
+}
+
+function defaultCapturePresetForConsumerType(consumerType: BenchmarkConsumerType): string {
+  switch (consumerType) {
+    case "desktop-shell":
+      return "desktop-shell";
+    case "ios-native":
+      return "ios-native";
+    case "android-native":
+      return "android-native";
+    case "web-browser":
+    default:
+      return "web-browser";
+  }
+}
+
+function defaultRequestedModelLabel(resolvedModelId: string | null): string | null {
+  if (!resolvedModelId) {
+    return null;
+  }
+  const trimmed = resolvedModelId.trim();
+  if (!trimmed) {
+    return null;
+  }
+  const segments = trimmed.split("/");
+  return segments[segments.length - 1] || trimmed;
+}
+
+function buildBenchmarkSpecFixture(input: {
+  fixture: BenchmarkFixture;
+  brief: { path: string; sha256: string };
+  comparisonPairs: BenchmarkComparisonPair[];
+  platformTarget: BenchmarkPlatformTarget;
+  consumerType: BenchmarkConsumerType;
+  capturePreset: string;
+  fixtureDir?: string;
+  effectiveAstPath?: string;
+  preparedInputPath?: string;
+  acceptedSuggestionsPath?: string;
+  designerNotesPath?: string;
+  baselineValidatePath?: string;
+}): BenchmarkSpecFixture {
+  return {
+    fixtureId: input.fixture.id,
+    surfaceId: input.fixture.id,
+    brief: input.brief,
+    platformTarget: input.platformTarget,
+    consumerType: input.consumerType,
+    capturePreset: input.capturePreset,
+    comparisonPairs: input.comparisonPairs.map((pair) => ({ ...pair })),
+    paths: {
+      ...(input.fixtureDir ? { fixtureDir: input.fixtureDir } : {}),
+      sourceContractPath: path.join(resolveWorkspaceRoot(), input.fixture.contractPath),
+      ...(input.fixture.astPath ? { sourceAstPath: path.join(resolveWorkspaceRoot(), input.fixture.astPath) } : {}),
+      ...(input.effectiveAstPath ? { effectiveAstPath: input.effectiveAstPath } : {}),
+      ...(input.fixtureDir ? { bundleRoot: path.join(input.fixtureDir, "bundle") } : {}),
+      ...(input.fixtureDir ? { compiledContractPath: path.join(input.fixtureDir, "bundle", "derived", "contract.normalized.json") } : {}),
+      ...(input.preparedInputPath ? { preparedInputPath: input.preparedInputPath } : {}),
+      ...(input.acceptedSuggestionsPath ? { acceptedSuggestionsPath: input.acceptedSuggestionsPath } : {}),
+      ...(input.designerNotesPath ? { designerNotesPath: input.designerNotesPath } : {}),
+      ...(input.baselineValidatePath ? { baselineValidatePath: input.baselineValidatePath } : {}),
+    },
+  };
+}
+
+async function initializeBenchmarkRunManifest(input: {
+  benchmarkDir: string;
+  specPath: string;
+  cohortId: string;
+  tool: "local-llm";
+  sourceRunPath?: string;
+  requestedModelLabel?: string;
+  resolvedModelId?: string | null;
+  baseUrl?: string | null;
+  fingerprint?: string | null;
+}): Promise<BenchmarkRunManifest> {
+  await runInterfacectlCli(
+    [
+      "replay-generation-benchmark",
+      "--spec",
+      input.specPath,
+      "--tool",
+      input.tool,
+      "--out-dir",
+      input.benchmarkDir,
+      "--cohort-id",
+      input.cohortId,
+      ...(input.sourceRunPath ? ["--source-run", input.sourceRunPath] : []),
+      ...(input.requestedModelLabel ? ["--requested-model-label", input.requestedModelLabel] : []),
+      ...(input.resolvedModelId ? ["--resolved-model-id", input.resolvedModelId] : []),
+      ...(input.baseUrl ? ["--base-url", input.baseUrl] : []),
+      ...(input.fingerprint ? ["--fingerprint", input.fingerprint] : []),
+    ],
+    { cwd: resolveWorkspaceRoot() },
+  );
+  return readJsonFile<BenchmarkRunManifest>(path.join(input.benchmarkDir, "run.json"));
 }
 
 async function initReferenceTargetGenerationSession(input: {
@@ -3169,13 +3345,15 @@ async function runReferenceTargetImplementationSession(input: {
   const agentInputPath = path.join(input.artifactBaseDir, "agent-input.txt");
   const explainabilityPath = path.join(input.artifactBaseDir, "explainability.json");
   const assessmentPath = path.join(input.artifactBaseDir, "attempt.assessment.json");
+  const sessionDir = path.join(input.sessionsRoot, input.fixture.id, input.sessionId);
+  const summaryPath = path.join(sessionDir, "summary.json");
   await fsp.mkdir(input.artifactBaseDir, { recursive: true });
 
   const sandboxRoot = await createSandbox(input.runId, input.sandboxLabel, {
     includeWorkingTree: true,
   });
   try {
-    const sessionDir = await initReferenceTargetGenerationSession({
+    await initReferenceTargetGenerationSession({
       fixture: input.fixture,
       bundleRoot: input.bundleRoot,
       sessionsRoot: input.sessionsRoot,
@@ -3208,6 +3386,7 @@ async function runReferenceTargetImplementationSession(input: {
       repoRoot: sandboxRoot,
       allowedRoots: [input.fixture.appPath],
       surfaceId: input.fixture.id,
+      authoringMode: input.fixture.authoringMode ?? "repair",
       guidanceHints: input.fixture.guidanceHints,
       guidanceStrategy: input.guidanceStrategy,
       guidanceHandoff,
@@ -3280,6 +3459,7 @@ async function runReferenceTargetImplementationSession(input: {
     );
 
     return {
+      status: "succeeded",
       guidanceStrategy: input.guidanceStrategy,
       sessionId: input.sessionId,
       sessionDir,
@@ -3287,13 +3467,48 @@ async function runReferenceTargetImplementationSession(input: {
       guidanceHandoffPath,
       agentInputPath,
       explainabilityPath,
-      summaryPath: path.join(sessionDir, "summary.json"),
+      summaryPath,
       previewPath: path.join(sessionDir, "attempts", `${RERUN_ATTEMPT}.preview.png`),
       touchedFiles: agentResult.touchedFiles,
       noChanges: agentResult.noChanges,
       validate,
       comparison,
       remainingAcceptedSuggestions,
+      errorMessage: null,
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    await writeFailedBenchmarkSessionSummary({
+      fixture: input.fixture,
+      sessionId: input.sessionId,
+      sessionDir,
+      guidanceStrategy: input.guidanceStrategy,
+      errorMessage: message,
+    }).catch(() => undefined);
+    if (!await fileExists(transcriptPath)) {
+      await writeJsonFile(transcriptPath, {
+        schemaVersion: 1,
+        errorMessage: message,
+        events: [],
+      }).catch(() => undefined);
+    }
+    return {
+      status: "failed",
+      guidanceStrategy: input.guidanceStrategy,
+      sessionId: input.sessionId,
+      sessionDir,
+      transcriptPath,
+      guidanceHandoffPath,
+      agentInputPath,
+      explainabilityPath,
+      summaryPath,
+      previewPath: null,
+      touchedFiles: [],
+      noChanges: true,
+      validate: null,
+      comparison: null,
+      remainingAcceptedSuggestions: input.runtimeGuidance.acceptedSuggestions,
+      errorMessage: message,
     };
   } finally {
     await removeSandbox(sandboxRoot).catch(() => undefined);
@@ -3705,20 +3920,118 @@ export async function runBenchmarkCohort(input: {
   strategies?: ImplementationGuidanceStrategy[];
   cohortId?: string;
   profilesByFixtureId?: Partial<Record<BenchmarkFixtureId, BenchmarkFixtureProfile>>;
+  benchmarkSpecPath?: string;
+  sourceRunPath?: string;
+  tool?: "local-llm";
+  requestedModelLabel?: string;
+  resolvedModelId?: string;
+  fingerprint?: string;
+  platformTarget?: BenchmarkPlatformTarget;
+  consumerType?: BenchmarkConsumerType;
+  capturePreset?: string;
 } = {}): Promise<BenchmarkCohortResult> {
-  const fixtureIds = normalizeBenchmarkFixtureIds(input.fixtureIds);
-  const defaultStrategies = getBenchmarkFixtureProfile(fixtureIds[0]!).defaultStrategies;
-  const guidanceStrategies = normalizeBenchmarkStrategies(input.strategies, defaultStrategies);
-  const comparisonPairs = buildBenchmarkComparisonPairs(guidanceStrategies);
   const cohortId = input.cohortId?.trim() || buildRunId();
   const workspaceRoot = resolveWorkspaceRoot();
   const benchmarkDir = path.join(workspaceRoot, "artifacts", "generation-benchmarks", cohortId);
   const reportDir = path.join(benchmarkDir, "report");
   const sessionsRoot = path.join(workspaceRoot, "artifacts", "generation-sessions");
-  const manifestPath = path.join(benchmarkDir, "manifest.json");
+  const specPath = input.benchmarkSpecPath?.trim()
+    ? path.resolve(input.benchmarkSpecPath)
+    : path.join(benchmarkDir, "spec.json");
+  const runPath = path.join(benchmarkDir, "run.json");
 
   await fsp.mkdir(benchmarkDir, { recursive: true });
-  const llm = resolveLocalLlmConfig();
+  const configuredLlm = resolveLocalLlmConfig();
+  const tool = input.tool ?? "local-llm";
+  if (tool !== "local-llm") {
+    throw new Error(`Unsupported benchmark tool: ${tool}`);
+  }
+  const resolvedModelId = input.resolvedModelId?.trim() || configuredLlm.model;
+  const requestedModelLabel = input.requestedModelLabel?.trim() || defaultRequestedModelLabel(resolvedModelId);
+  const llm: LocalLlmConfig = {
+    ...configuredLlm,
+    model: resolvedModelId,
+  };
+  const consumerType = input.consumerType ?? "web-browser";
+  const platformTarget = input.platformTarget ?? "web";
+  const capturePreset = input.capturePreset ?? defaultCapturePresetForConsumerType(consumerType);
+
+  let fixtureIds: BenchmarkFixtureId[];
+  let guidanceStrategies: ImplementationGuidanceStrategy[];
+  let comparisonPairs: BenchmarkComparisonPair[];
+  let spec: BenchmarkSpecManifest;
+  const fixtureProfiles = new Map<BenchmarkFixtureId, BenchmarkFixtureProfile>();
+
+  if (input.benchmarkSpecPath?.trim()) {
+    spec = await readJsonFile<BenchmarkSpecManifest>(specPath);
+    fixtureIds = normalizeBenchmarkFixtureIds(spec.fixtures.map((fixture) => fixture.fixtureId));
+    const defaultStrategies = getBenchmarkFixtureProfile(fixtureIds[0]!).defaultStrategies;
+    guidanceStrategies = normalizeBenchmarkStrategies(
+      spec.guidanceStrategies as ImplementationGuidanceStrategy[],
+      defaultStrategies,
+    );
+    comparisonPairs = spec.comparisonPairs as BenchmarkComparisonPair[];
+  } else {
+    fixtureIds = normalizeBenchmarkFixtureIds(input.fixtureIds);
+    const defaultStrategies: ImplementationGuidanceStrategy[] = ["unguided", ...getBenchmarkFixtureProfile(fixtureIds[0]!).defaultStrategies];
+    guidanceStrategies = normalizeBenchmarkStrategies(input.strategies, defaultStrategies);
+    comparisonPairs = buildBenchmarkComparisonPairs(guidanceStrategies);
+    const specFixtures: BenchmarkSpecFixture[] = [];
+    for (const fixtureId of fixtureIds) {
+      const fixture = getBenchmarkFixture(fixtureId);
+      const profile = input.profilesByFixtureId?.[fixtureId] ?? getBenchmarkFixtureProfile(fixtureId);
+      fixtureProfiles.set(fixtureId, profile);
+      const fixtureDir = path.join(benchmarkDir, "fixtures", fixture.id);
+      await fsp.mkdir(fixtureDir, { recursive: true });
+      const frozenBrief = await writeFrozenTextFile(
+        path.join(fixtureDir, "implementation-brief.md"),
+        profile.implementationBrief,
+      );
+      specFixtures.push(buildBenchmarkSpecFixture({
+        fixture,
+        brief: frozenBrief,
+        comparisonPairs,
+        platformTarget,
+        consumerType,
+        capturePreset,
+        fixtureDir,
+      }));
+    }
+    spec = {
+      schemaVersion: 1,
+      specId: "surfaceops-benchmark-suite/default",
+      generatedAt: new Date().toISOString(),
+      evaluationMode: "zero-shot",
+      attemptBudget: 1,
+      guidanceStrategies,
+      comparisonPairs,
+      suiteId: "surfaceops-benchmark-suite/default",
+      suiteName: "SurfaceOps Benchmark Fixture Suite",
+      fixtures: specFixtures,
+    };
+    await writeJsonFile(specPath, spec);
+  }
+
+  const inferredSourceRunPath = input.sourceRunPath?.trim()
+    ? path.resolve(input.sourceRunPath)
+    : input.benchmarkSpecPath?.trim()
+      ? (() => {
+          const sibling = path.join(path.dirname(specPath), "run.json");
+          return fs.existsSync(sibling) ? sibling : undefined;
+        })()
+      : undefined;
+  let runManifest = await initializeBenchmarkRunManifest({
+    benchmarkDir,
+    specPath,
+    cohortId,
+    tool,
+    sourceRunPath: inferredSourceRunPath,
+    requestedModelLabel: requestedModelLabel ?? undefined,
+    resolvedModelId,
+    baseUrl: llm.baseUrl,
+    fingerprint: input.fingerprint?.trim() || buildResolvedModelFingerprint(llm.baseUrl, resolvedModelId) || buildLocalModelFingerprint(llm),
+  });
+
   const benchmarkAgentBudgets: LocalLlmAgentBudgets = {
     maxTurns: 32,
     maxToolCalls: 64,
@@ -3726,24 +4039,29 @@ export async function runBenchmarkCohort(input: {
   };
   const comparisonPaths: string[] = [];
   const allSessionDirs: string[] = [];
-  const manifestFixtures: NonNullable<BenchmarkCohortManifest["fixtures"]> = [];
+  const runFixtures: BenchmarkRunManifest["fixtures"] = [];
 
   for (const fixtureId of fixtureIds) {
     const fixture = getBenchmarkFixture(fixtureId);
-    const profile = input.profilesByFixtureId?.[fixtureId] ?? getBenchmarkFixtureProfile(fixtureId);
+    const fixtureSpec = spec.fixtures.find((entry) => entry.fixtureId === fixtureId);
+    if (!fixtureSpec) {
+      throw new Error(`Benchmark spec is missing fixture ${fixtureId}.`);
+    }
+    const profile = fixtureProfiles.get(fixtureId)
+      ?? input.profilesByFixtureId?.[fixtureId]
+      ?? getBenchmarkFixtureProfile(fixtureId);
     const fixtureDir = path.join(benchmarkDir, "fixtures", fixture.id);
     const comparisonsDir = path.join(fixtureDir, "comparisons");
     const strategyArtifactsDir = path.join(fixtureDir, "strategies");
     const bundleRoot = path.join(fixtureDir, "bundle");
     const preparedPath = path.join(fixtureDir, "prepared-input.json");
     const effectiveAstPath = path.join(fixtureDir, "effective-ui-ast.json");
-    const briefPath = path.join(fixtureDir, "implementation-brief.md");
     const baselineSeedDir = path.join(fixtureDir, "baseline-seed");
 
     await fsp.mkdir(fixtureDir, { recursive: true });
     const effectiveAst = await loadFixtureUiAst(fixture);
     await writeJsonFile(effectiveAstPath, effectiveAst);
-    const frozenBrief = await writeFrozenTextFile(briefPath, profile.implementationBrief);
+    const frozenBrief = fixtureSpec.brief;
 
     await runInterfacectlCli(
       ["compile", "--ast", effectiveAstPath, "--out", bundleRoot],
@@ -3776,9 +4094,20 @@ export async function runBenchmarkCohort(input: {
       acceptedSuggestions,
       profile.designerNotes,
     );
+    const unguidedRuntimeGuidancePaths = await writeFrozenRuntimeGuidancePaths(
+      path.join(fixtureDir, "unguided-runtime-guidance"),
+      [],
+      [],
+    );
 
     const sessionResults: ReferenceTargetImplementationSessionResult[] = [];
     for (const guidanceStrategy of guidanceStrategies) {
+      const strategyRuntimeGuidance = guidanceStrategy === "unguided"
+        ? { acceptedSuggestions: [], designerNotes: [] }
+        : { acceptedSuggestions, designerNotes: profile.designerNotes };
+      const strategyRuntimeGuidancePaths = guidanceStrategy === "unguided"
+        ? unguidedRuntimeGuidancePaths
+        : runtimeGuidancePaths;
       sessionResults.push(await runReferenceTargetImplementationSession({
         fixture,
         llm,
@@ -3794,25 +4123,24 @@ export async function runBenchmarkCohort(input: {
         briefFile: frozenBrief.path,
         sessionId: `${cohortId}/${guidanceStrategy}`,
         sandboxLabel: `benchmark-${fixture.id}-${guidanceStrategy}`,
-        runtimeGuidancePaths,
-        runtimeGuidance: {
-          acceptedSuggestions,
-          designerNotes: profile.designerNotes,
-        },
+        runtimeGuidancePaths: strategyRuntimeGuidancePaths,
+        runtimeGuidance: strategyRuntimeGuidance,
         activeAstChanges: [],
         baselineValidate,
         agentBudgets: benchmarkAgentBudgets,
       }));
     }
 
-    const manifestComparisons: NonNullable<BenchmarkCohortManifest["fixtures"]>[number]["comparisons"] = [];
+    const manifestComparisons: BenchmarkRunManifest["fixtures"][number]["comparisons"] = [];
     for (const pair of comparisonPairs) {
-      const baseline = sessionResults.find((result) => result.guidanceStrategy === pair.baselineGuidanceStrategy);
-      const guided = sessionResults.find((result) => result.guidanceStrategy === pair.guidedGuidanceStrategy);
+      const baseline = sessionResults.find((result) =>
+        result.guidanceStrategy === pair.baselineGuidanceStrategy && result.status === "succeeded"
+      );
+      const guided = sessionResults.find((result) =>
+        result.guidanceStrategy === pair.guidedGuidanceStrategy && result.status === "succeeded"
+      );
       if (!baseline || !guided) {
-        throw new Error(
-          `Could not resolve benchmark sessions for ${fixture.id}: ${pair.baselineGuidanceStrategy} vs ${pair.guidedGuidanceStrategy}.`,
-        );
+        continue;
       }
       const comparisonResult = await runInterfacectlCli(
         [
@@ -3845,22 +4173,14 @@ export async function runBenchmarkCohort(input: {
     }
 
     allSessionDirs.push(...sessionResults.map((result) => result.sessionDir));
-    manifestFixtures.push({
-      fixtureId: fixture.id,
-      profileId: profile.profileId,
-      profileName: profile.profileName,
-      surfaceId: profile.surfaceId,
-      tool: profile.tool,
-      comparisonPairs: comparisonPairs.map((pair) => ({
-        baselineGuidanceStrategy: pair.baselineGuidanceStrategy,
-        guidedGuidanceStrategy: pair.guidedGuidanceStrategy,
-      })),
-      brief: {
-        path: frozenBrief.path,
-        sha256: frozenBrief.sha256,
-      },
+    runFixtures.push({
+      ...fixtureSpec,
       paths: {
         fixtureDir,
+        sourceContractPath: fixtureSpec.paths?.sourceContractPath,
+        sourceAstPath: fixtureSpec.paths?.sourceAstPath,
+        bundleRoot,
+        compiledContractPath: path.join(bundleRoot, "derived", "contract.normalized.json"),
         effectiveAstPath,
         preparedInputPath: preparedPath,
         acceptedSuggestionsPath: runtimeGuidancePaths.acceptedSuggestionsPath,
@@ -3882,11 +4202,24 @@ export async function runBenchmarkCohort(input: {
     });
   }
 
+  runManifest = {
+    ...runManifest,
+    guidanceStrategies,
+    comparisonPairs,
+    paths: {
+      ...runManifest.paths,
+      runPath,
+    },
+    fixtures: runFixtures,
+  };
+  await writeJsonFile(runPath, runManifest);
+
   const reportOutput = await runInterfacectlCli(
     [
       "summarize-generation-benchmark",
-      "--comparisons",
-      comparisonPaths.join(","),
+      "--run-path",
+      runPath,
+      ...(comparisonPaths.length > 0 ? ["--comparisons", comparisonPaths.join(",")] : []),
       "--out-dir",
       reportDir,
     ],
@@ -3899,32 +4232,12 @@ export async function runBenchmarkCohort(input: {
   const reportPath = reportPaths.jsonPath ?? path.join(reportDir, "benchmark-report.json");
   const reportMarkdownPath = reportPaths.markdownPath ?? path.join(reportDir, "benchmark-report.md");
 
-  const manifest = {
-    schemaVersion: 2,
-    cohortId,
-    generatedAt: new Date().toISOString(),
-    suiteId: "surfaceops-benchmark-suite/default",
-    suiteName: "SurfaceOps Benchmark Fixture Suite",
-    tool: "local-llm",
-    guidanceStrategies,
-    model: {
-      baseUrl: llm.baseUrl,
-      model: llm.model,
-      fingerprint: buildLocalModelFingerprint(llm),
-    },
-    paths: {
-      benchmarkDir,
-      reportJsonPath: reportPath,
-      reportMarkdownPath,
-    },
-    fixtures: manifestFixtures,
-  } satisfies BenchmarkCohortManifest;
-  await writeJsonFile(manifestPath, manifest);
-
   return {
     cohortId,
     benchmarkDir,
-    manifestPath,
+    specPath: runManifest.paths.specPath,
+    runPath,
+    manifestPath: runPath,
     reportPath,
     comparisonPaths,
     sessionDirs: allSessionDirs,

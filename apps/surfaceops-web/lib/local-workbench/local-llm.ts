@@ -54,7 +54,7 @@ type ToolName =
   | "apply_text_edits"
   | "finish";
 
-type GuidanceStrategy = "prompt-summary" | "json-primary" | "unguided";
+type GuidanceStrategy = "prompt-summary" | "baseline-primary" | "json-primary" | "unguided";
 type TextEditOperation =
   | {
     kind: "replace";
@@ -92,6 +92,7 @@ interface AgentOptions {
   repoRoot: string;
   allowedRoots: string[];
   surfaceId?: string;
+  authoringMode?: "repair" | "scratch";
   guidanceHints?: BenchmarkFixtureGuidanceHints | null;
   preparedPayload?: Record<string, unknown>;
   guidanceStrategy?: GuidanceStrategy;
@@ -272,6 +273,7 @@ async function searchAllowedFiles(repoRoot: string, allowedRoots: string[], patt
 
 function buildSystemPrompt(options: AgentOptions) {
   const guidanceStrategy = resolveGuidanceStrategy(options);
+  const authoringMode = options.authoringMode ?? "repair";
   const handoffSection = buildGuidanceSection(options, guidanceStrategy);
   const acceptedSuggestionSummary = buildAcceptedSuggestionSummary(options);
   const designerNoteSummary = buildDesignerNoteSummary(options.activeDesignerNotes ?? []);
@@ -283,12 +285,16 @@ function buildSystemPrompt(options: AgentOptions) {
     "Forbidden paths include contracts, docs, CI, SurfaceOps app code, and any file outside the allowed write roots.",
     "Before any apply_text_edits call, you must call read_file on that exact path in this session. Search results are not a substitute for reading file contents.",
     "If you are unsure which files exist, call list_allowed_files before attempting read_file.",
-    "Use apply_text_edits for small localized patches only. Do not rewrite full files.",
+    authoringMode === "scratch"
+      ? "This benchmark starts from a neutral scaffold. You may replace the contents of existing allowed files wholesale when needed to author the requested surface from scratch."
+      : "Use apply_text_edits for small localized patches only. Do not rewrite full files.",
     "If you need to inspect a file after editing it, call read_file again.",
     "Use tools instead of guessing file contents.",
     "Do not add or modify documentation.",
     "Do not create new files.",
-    "Make one focused implementation pass that resolves every active accepted suggestion you can address in the touched file set, then call finish.",
+    authoringMode === "scratch"
+      ? "Treat placeholder scaffold copy as disposable. Make one focused implementation pass that turns the allowed files into the requested surface, then call finish."
+      : "Make one focused implementation pass that resolves every active accepted suggestion you can address in the touched file set, then call finish.",
     "If no justified implementation change is needed, call finish with noChanges=true.",
     "After any successful apply_text_edits call, finish must use noChanges=false.",
     `Guidance strategy: ${guidanceStrategy}`,
@@ -422,12 +428,22 @@ function compactJsonPrimaryPromptContext(guidanceHandoff: Record<string, unknown
 
 function resolveGuidanceStrategy(options: AgentOptions): GuidanceStrategy {
   const explicit = options.guidanceStrategy;
-  if (explicit === "prompt-summary" || explicit === "json-primary" || explicit === "unguided") {
+  if (
+    explicit === "prompt-summary"
+    || explicit === "baseline-primary"
+    || explicit === "json-primary"
+    || explicit === "unguided"
+  ) {
     return explicit;
   }
   const handoff = asRecord(options.guidanceHandoff);
   const handoffStrategy = handoff.guidanceStrategy;
-  if (handoffStrategy === "prompt-summary" || handoffStrategy === "json-primary" || handoffStrategy === "unguided") {
+  if (
+    handoffStrategy === "prompt-summary"
+    || handoffStrategy === "baseline-primary"
+    || handoffStrategy === "json-primary"
+    || handoffStrategy === "unguided"
+  ) {
     return handoffStrategy;
   }
   return "prompt-summary";
@@ -455,6 +471,23 @@ function buildGuidanceSection(options: AgentOptions, guidanceStrategy: GuidanceS
         ? `Prepared UI AST guidance:\n${promptSummary.preparedGuidanceSummary}`
         : options.preparedPayload
           ? `Prepared UI AST guidance:\n${buildPreparedGuidanceSummary(options.preparedPayload)}`
+          : null,
+    ].filter(Boolean);
+    return sections.length > 0 ? sections.join("\n\n") : null;
+  }
+
+  if (guidanceStrategy === "baseline-primary" && options.guidanceHandoff) {
+    const baselinePrimary = asRecord(handoff.baselinePrimary);
+    const sections = [
+      typeof baselinePrimary.effectiveContractSummary === "string"
+        ? `Effective working UI AST:\n${baselinePrimary.effectiveContractSummary}`
+        : options.effectiveAstSummary
+          ? `Effective working UI AST:\n${options.effectiveAstSummary}`
+          : null,
+      typeof baselinePrimary.baselineContractSummary === "string"
+        ? `Baseline contract guidance:\n${baselinePrimary.baselineContractSummary}`
+        : options.preparedPayload
+          ? `Baseline contract guidance:\n${buildPreparedGuidanceSummary(options.preparedPayload)}`
           : null,
     ].filter(Boolean);
     return sections.length > 0 ? sections.join("\n\n") : null;
@@ -694,6 +727,167 @@ function formatTypeScriptDiagnostic(filePath: string, diagnostic: ts.Diagnostic)
   return `${message} (${filePath})`;
 }
 
+function scriptKindForPath(filePath: string): ts.ScriptKind {
+  const extension = path.extname(filePath).toLowerCase();
+  switch (extension) {
+    case ".tsx":
+      return ts.ScriptKind.TSX;
+    case ".jsx":
+      return ts.ScriptKind.JSX;
+    case ".js":
+      return ts.ScriptKind.JS;
+    default:
+      return ts.ScriptKind.TS;
+  }
+}
+
+function collectBindingNames(name: ts.BindingName, target: string[]): void {
+  if (ts.isIdentifier(name)) {
+    target.push(name.text);
+    return;
+  }
+  for (const element of name.elements) {
+    if (ts.isOmittedExpression(element)) {
+      continue;
+    }
+    collectBindingNames(element.name, target);
+  }
+}
+
+function formatNodeLocation(filePath: string, sourceFile: ts.SourceFile, node: ts.Node): string {
+  const position = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile));
+  return `${filePath}:${position.line + 1}:${position.character + 1}`;
+}
+
+function validateNoDuplicateLexicalDeclarations(filePath: string, content: string): void {
+  const sourceFile = ts.createSourceFile(
+    filePath,
+    content,
+    ts.ScriptTarget.ESNext,
+    true,
+    scriptKindForPath(filePath),
+  );
+
+  const registerName = (
+    scope: Map<string, ts.Node>,
+    name: string,
+    node: ts.Node,
+  ): void => {
+    const prior = scope.get(name);
+    if (prior) {
+      throw new LocalLlmAgentError(
+        `apply_text_edits validation failed for ${filePath}: Identifier '${name}' has already been declared (${formatNodeLocation(filePath, sourceFile, node)}; previous declaration at ${formatNodeLocation(filePath, sourceFile, prior)})`,
+      );
+    }
+    scope.set(name, node);
+  };
+
+  const registerBindingName = (scope: Map<string, ts.Node>, name: ts.BindingName): void => {
+    const identifiers: string[] = [];
+    collectBindingNames(name, identifiers);
+    for (const identifier of identifiers) {
+      registerName(scope, identifier, name);
+    }
+  };
+
+  const registerImportBindings = (scope: Map<string, ts.Node>, clause: ts.ImportClause): void => {
+    if (clause.name) {
+      registerName(scope, clause.name.text, clause.name);
+    }
+    if (!clause.namedBindings) {
+      return;
+    }
+    if (ts.isNamespaceImport(clause.namedBindings)) {
+      registerName(scope, clause.namedBindings.name.text, clause.namedBindings.name);
+      return;
+    }
+    for (const element of clause.namedBindings.elements) {
+      registerName(scope, element.name.text, element.name);
+    }
+  };
+
+  const visitStatements = (statements: readonly ts.Statement[], scope: Map<string, ts.Node>): void => {
+    for (const statement of statements) {
+      visitNode(statement, scope);
+    }
+  };
+
+  const visitFunctionLike = (node: ts.FunctionLikeDeclarationBase): void => {
+    const functionScope = new Map<string, ts.Node>();
+    for (const parameter of node.parameters) {
+      registerBindingName(functionScope, parameter.name);
+    }
+    if (node.body && ts.isBlock(node.body)) {
+      visitStatements(node.body.statements, functionScope);
+    }
+  };
+
+  const visitNode = (node: ts.Node, scope: Map<string, ts.Node>): void => {
+    if (ts.isImportDeclaration(node) && node.importClause) {
+      registerImportBindings(scope, node.importClause);
+      return;
+    }
+    if (ts.isVariableDeclarationList(node) && (node.flags & ts.NodeFlags.BlockScoped) !== 0) {
+      for (const declaration of node.declarations) {
+        registerBindingName(scope, declaration.name);
+      }
+    }
+    if (ts.isFunctionDeclaration(node) && node.name) {
+      registerName(scope, node.name.text, node.name);
+    }
+    if (ts.isClassDeclaration(node) && node.name) {
+      registerName(scope, node.name.text, node.name);
+    }
+    if (ts.isEnumDeclaration(node)) {
+      registerName(scope, node.name.text, node.name);
+    }
+    if (ts.isTypeAliasDeclaration(node)) {
+      registerName(scope, node.name.text, node.name);
+    }
+    if (ts.isInterfaceDeclaration(node)) {
+      registerName(scope, node.name.text, node.name);
+    }
+
+    if (ts.isSourceFile(node)) {
+      visitStatements(node.statements, scope);
+      return;
+    }
+    if (ts.isFunctionLike(node) && "body" in node) {
+      visitFunctionLike(node as ts.FunctionLikeDeclarationBase);
+      return;
+    }
+    if (ts.isBlock(node)) {
+      visitStatements(node.statements, new Map<string, ts.Node>());
+      return;
+    }
+    if (ts.isCaseBlock(node)) {
+      for (const clause of node.clauses) {
+        visitNode(clause, new Map<string, ts.Node>());
+      }
+      return;
+    }
+    if (ts.isCaseClause(node) || ts.isDefaultClause(node)) {
+      const clauseScope = new Map<string, ts.Node>();
+      for (const statement of node.statements) {
+        visitNode(statement, clauseScope);
+      }
+      return;
+    }
+    if (ts.isCatchClause(node)) {
+      const catchScope = new Map<string, ts.Node>();
+      if (node.variableDeclaration) {
+        registerBindingName(catchScope, node.variableDeclaration.name);
+      }
+      visitNode(node.block, catchScope);
+      return;
+    }
+
+    ts.forEachChild(node, (child) => visitNode(child, scope));
+  };
+
+  visitNode(sourceFile, new Map<string, ts.Node>());
+}
+
 function validateScriptContent(filePath: string, content: string): void {
   const result = ts.transpileModule(content, {
     fileName: filePath,
@@ -710,6 +904,7 @@ function validateScriptContent(filePath: string, content: string): void {
       `apply_text_edits validation failed for ${filePath}: ${formatTypeScriptDiagnostic(filePath, diagnostic)}`,
     );
   }
+  validateNoDuplicateLexicalDeclarations(filePath, content);
 }
 
 function validateJsonContent(filePath: string, content: string): void {

@@ -3,7 +3,99 @@ import path from "node:path";
 
 export type AttemptView = "first" | "latest";
 
-export interface BenchmarkCohortManifestFixture {
+export interface BenchmarkComparisonPair {
+  baselineGuidanceStrategy: string;
+  guidedGuidanceStrategy: string;
+}
+
+export interface BenchmarkSpecFixture {
+  fixtureId: string;
+  surfaceId: string;
+  brief: {
+    path: string;
+    sha256: string;
+  };
+  platformTarget: "web" | "ios" | "android";
+  consumerType: "web-browser" | "desktop-shell" | "ios-native" | "android-native";
+  capturePreset: string;
+  comparisonPairs: BenchmarkComparisonPair[];
+  paths?: {
+    fixtureDir?: string;
+    sourceContractPath?: string;
+    sourceAstPath?: string;
+    bundleRoot?: string;
+    compiledContractPath?: string;
+    effectiveAstPath?: string;
+    preparedInputPath?: string;
+    acceptedSuggestionsPath?: string;
+    designerNotesPath?: string;
+    baselineValidatePath?: string;
+  };
+}
+
+export interface BenchmarkSpecManifest {
+  schemaVersion: 1;
+  specId: string;
+  generatedAt: string;
+  evaluationMode: "zero-shot" | "iterative";
+  attemptBudget: number;
+  guidanceStrategies: string[];
+  comparisonPairs: BenchmarkComparisonPair[];
+  suiteId?: string;
+  suiteName?: string;
+  fixtures: BenchmarkSpecFixture[];
+}
+
+export interface BenchmarkRunManifestFixture extends BenchmarkSpecFixture {
+  sessions: Array<{
+    guidanceStrategy: string;
+    sessionId: string;
+    sessionDir: string;
+    transcriptPath: string;
+    guidanceHandoffPath: string;
+    agentInputPath: string;
+    explainabilityPath: string;
+    summaryPath: string;
+    previewPath: string | null;
+  }>;
+  comparisons: Array<{
+    baselineGuidanceStrategy: string;
+    guidedGuidanceStrategy: string;
+    comparisonDir: string;
+    comparisonPath: string;
+  }>;
+}
+
+export interface BenchmarkRunManifest {
+  schemaVersion: 1;
+  cohortId: string;
+  generatedAt: string;
+  evaluationMode: "zero-shot" | "iterative";
+  tool: string;
+  sourceSpecPath: string;
+  sourceRunPath: string | null;
+  attemptBudget: number;
+  guidanceStrategies: string[];
+  comparisonPairs: BenchmarkComparisonPair[];
+  suiteId?: string;
+  suiteName?: string;
+  model: {
+    requestedModelLabel: string | null;
+    resolvedModelId: string | null;
+    baseUrl: string | null;
+    fingerprint: string | null;
+  };
+  paths: {
+    benchmarkDir: string;
+    specPath: string;
+    runPath: string;
+    reportJsonPath: string | null;
+    reportMarkdownPath: string | null;
+  };
+  fixtures: BenchmarkRunManifestFixture[];
+}
+
+interface LegacyBenchmarkCohortManifestFixture {
   fixtureId: string;
   profileId: string;
   profileName: string;
@@ -19,6 +111,10 @@ export interface BenchmarkCohortManifestFixture {
   };
   paths: {
     fixtureDir: string;
+    sourceContractPath?: string;
+    sourceAstPath?: string;
+    bundleRoot?: string;
+    compiledContractPath?: string;
     effectiveAstPath: string;
     preparedInputPath: string;
     acceptedSuggestionsPath: string;
@@ -44,7 +140,7 @@ export interface BenchmarkCohortManifestFixture {
   }>;
 }
 
-export interface BenchmarkCohortManifest {
+interface LegacyBenchmarkCohortManifest {
   schemaVersion: 1 | 2;
   cohortId: string;
   generatedAt: string;
@@ -92,11 +188,28 @@ export interface BenchmarkCohortManifest {
     comparisonDir: string;
     comparisonPath: string;
   }>;
-  fixtures?: BenchmarkCohortManifestFixture[];
+  fixtures?: LegacyBenchmarkCohortManifestFixture[];
 }
+
+export type BenchmarkManifest = BenchmarkRunManifest | LegacyBenchmarkCohortManifest;
 
 interface BenchmarkReport {
   generatedAt: string;
+  run?: {
+    cohortId: string;
+    evaluationMode: "zero-shot" | "iterative";
+    tool: string;
+    sourceSpecPath: string;
+    sourceRunPath: string | null;
+    guidanceStrategies: string[];
+    attemptBudget: number;
+    model: {
+      requestedModelLabel: string | null;
+      resolvedModelId: string | null;
+      baseUrl: string | null;
+      fingerprint: string | null;
+    };
+  };
   comparisons: Array<{
     comparisonPath: string;
     surfaceId: string;
@@ -104,6 +217,9 @@ interface BenchmarkReport {
     meetsGoal: boolean;
     baselineGuidanceStrategy: string;
     guidedGuidanceStrategy: string;
+    platformTarget?: string;
+    consumerType?: string;
+    modelLabel?: string | null;
     guidedFewerFirstAttemptBlockingFindings: boolean;
     guidedReachedAcceptableNoLater: boolean;
     guidedRubricBetterDimensions: string[];
@@ -133,6 +249,29 @@ interface BenchmarkReport {
     rejectedSuggestionCount: number;
     proposedSuggestionCount: number;
   };
+  breakdowns?: {
+    byPlatformTarget: Record<string, {
+      comparisonCount: number;
+      surfaceCount: number;
+      surfacesMeetingGoal: number;
+      guidedFewerFirstAttemptBlockingFindings: number;
+      guidedReachedAcceptableNoLater: number;
+    }>;
+    byConsumerType: Record<string, {
+      comparisonCount: number;
+      surfaceCount: number;
+      surfacesMeetingGoal: number;
+      guidedFewerFirstAttemptBlockingFindings: number;
+      guidedReachedAcceptableNoLater: number;
+    }>;
+    byModelLabel: Record<string, {
+      comparisonCount: number;
+      surfaceCount: number;
+      surfacesMeetingGoal: number;
+      guidedFewerFirstAttemptBlockingFindings: number;
+      guidedReachedAcceptableNoLater: number;
+    }>;
+  };
 }
 
 interface PreviewRef {
@@ -150,6 +289,7 @@ interface Assessment {
   boundary: string;
   visual: string;
   responsiveness: string;
+  platformFit?: string;
   notes: string;
   touchedFiles?: string[];
   heuristics?: {
@@ -338,14 +478,18 @@ export interface BenchmarkListItem {
   reportPath: string;
   profileName: string | null;
   guidanceStrategies: string[];
+  requestedModelLabel: string | null;
+  resolvedModelId: string | null;
   modelFingerprint: string | null;
+  platformTargets: string[];
+  consumerTypes: string[];
 }
 
 export interface GenerationWorkbenchData {
   benchmarksDir: string;
   benchmarkId: string;
   benchmarkDir: string;
-  manifest: BenchmarkCohortManifest | null;
+  manifest: BenchmarkManifest | null;
   report: BenchmarkReport;
   surfaces: BenchmarkReport["comparisons"];
   selectedSurfaceId: string;
@@ -412,6 +556,54 @@ function readOptionalText(filePath: string | null | undefined): string | null {
   return fs.readFileSync(filePath, "utf8");
 }
 
+export function loadBenchmarkManifest(rootDir: string): BenchmarkManifest | null {
+  return (
+    readOptionalJson<BenchmarkRunManifest>(path.join(rootDir, "run.json"))
+    ?? readOptionalJson<LegacyBenchmarkCohortManifest>(path.join(rootDir, "manifest.json"))
+  );
+}
+
+function manifestModelInfo(manifest: BenchmarkManifest | null): {
+  requestedModelLabel: string | null;
+  resolvedModelId: string | null;
+  fingerprint: string | null;
+} {
+  if (!manifest?.model) {
+    return {
+      requestedModelLabel: null,
+      resolvedModelId: null,
+      fingerprint: null,
+    };
+  }
+  if ("requestedModelLabel" in manifest.model) {
+    return {
+      requestedModelLabel: manifest.model.requestedModelLabel ?? null,
+      resolvedModelId: manifest.model.resolvedModelId ?? null,
+      fingerprint: manifest.model.fingerprint ?? null,
+    };
+  }
+  return {
+    requestedModelLabel: manifest.model.model ?? null,
+    resolvedModelId: manifest.model.model ?? null,
+    fingerprint: manifest.model.fingerprint ?? null,
+  };
+}
+
+function manifestFixtures(manifest: BenchmarkManifest | null): Array<{ surfaceId: string; platformTarget?: string; consumerType?: string }> {
+  if (!manifest?.fixtures?.length) {
+    return [];
+  }
+  return manifest.fixtures.map((fixture) => ({
+    surfaceId: fixture.surfaceId,
+    ...(typeof (fixture as BenchmarkSpecFixture).platformTarget === "string"
+      ? { platformTarget: (fixture as BenchmarkSpecFixture).platformTarget }
+      : {}),
+    ...(typeof (fixture as BenchmarkSpecFixture).consumerType === "string"
+      ? { consumerType: (fixture as BenchmarkSpecFixture).consumerType }
+      : {}),
+  }));
+}
+
 function resolveRepoRoot(start = process.cwd()): string {
   let current = path.resolve(start);
   while (true) {
@@ -448,18 +640,22 @@ export function listGenerationBenchmarks(benchmarksDir = resolveBenchmarksDir())
         return null;
       }
       const report = readJson<BenchmarkReport>(reportPath);
-      const manifest = readOptionalJson<BenchmarkCohortManifest>(path.join(rootDir, "manifest.json"));
+      const manifest = loadBenchmarkManifest(rootDir);
       const guidanceStrategies = manifest?.guidanceStrategies?.length
         ? manifest.guidanceStrategies
         : [...new Set(report.comparisons.flatMap((item) => [
           item.baselineGuidanceStrategy,
           item.guidedGuidanceStrategy,
         ].filter(Boolean)))];
-      const manifestSurfaceIds = manifest?.fixtures?.length
-        ? manifest.fixtures.map((fixture) => fixture.surfaceId)
-        : manifest?.surfaceId
-          ? [manifest.surfaceId]
+      const fixtureMetadata = manifestFixtures(manifest);
+      const model = manifestModelInfo(manifest);
+      const manifestSurfaceIds = fixtureMetadata.length > 0
+        ? fixtureMetadata.map((fixture) => fixture.surfaceId)
+        : "surfaceId" in (manifest ?? {}) && typeof (manifest as LegacyBenchmarkCohortManifest).surfaceId === "string"
+          ? [(manifest as LegacyBenchmarkCohortManifest).surfaceId as string]
           : [];
+      const requestedModelLabel = model.requestedModelLabel ?? report.run?.model.requestedModelLabel ?? null;
+      const resolvedModelId = model.resolvedModelId ?? report.run?.model.resolvedModelId ?? null;
       return {
         id: entry.name,
         rootDir,
@@ -468,9 +664,14 @@ export function listGenerationBenchmarks(benchmarksDir = resolveBenchmarksDir())
           ? manifestSurfaceIds
           : report.comparisons.map((item) => item.surfaceId),
         reportPath,
-        profileName: manifest?.suiteName ?? manifest?.profileName ?? null,
+        profileName: ("suiteName" in (manifest ?? {}) ? (manifest as BenchmarkRunManifest | LegacyBenchmarkCohortManifest).suiteName : null)
+          ?? ("profileName" in (manifest ?? {}) ? (manifest as LegacyBenchmarkCohortManifest).profileName ?? null : null),
         guidanceStrategies,
-        modelFingerprint: manifest?.model.fingerprint ?? null,
+        requestedModelLabel,
+        resolvedModelId,
+        modelFingerprint: model.fingerprint ?? report.run?.model.fingerprint ?? null,
+        platformTargets: [...new Set(fixtureMetadata.map((fixture) => fixture.platformTarget).filter(Boolean) as string[])],
+        consumerTypes: [...new Set(fixtureMetadata.map((fixture) => fixture.consumerType).filter(Boolean) as string[])],
       } satisfies BenchmarkListItem;
     })
     .filter((entry): entry is BenchmarkListItem => Boolean(entry))
@@ -533,7 +734,7 @@ export function loadGenerationWorkbenchFromRoot(input: {
 }): GenerationWorkbenchData {
   const benchmarksDir = input.benchmarksDir ? path.resolve(input.benchmarksDir) : path.dirname(input.benchmarkDir);
   const benchmarkDir = path.resolve(input.benchmarkDir);
-  const manifest = readOptionalJson<BenchmarkCohortManifest>(path.join(benchmarkDir, "manifest.json"));
+  const manifest = loadBenchmarkManifest(benchmarkDir);
   const reportPath = path.join(benchmarkDir, "report", "benchmark-report.json");
   if (!fs.existsSync(reportPath)) {
     throw new Error(`Benchmark report not found at ${reportPath}.`);

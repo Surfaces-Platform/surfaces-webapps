@@ -624,6 +624,63 @@ function installBenchmarkCliMocks(input: {
       return { stdout: "", stderr: "" };
     }
 
+    if (command === "replay-generation-benchmark") {
+      const specPath = args[args.indexOf("--spec") + 1]!;
+      const outDir = args[args.indexOf("--out-dir") + 1]!;
+      const cohortId = args[args.indexOf("--cohort-id") + 1]!;
+      const requestedModelLabelIndex = args.indexOf("--requested-model-label");
+      const resolvedModelIdIndex = args.indexOf("--resolved-model-id");
+      const baseUrlIndex = args.indexOf("--base-url");
+      const fingerprintIndex = args.indexOf("--fingerprint");
+      const sourceRunIndex = args.indexOf("--source-run");
+      const spec = JSON.parse(await fs.readFile(specPath, "utf8"));
+      await fs.mkdir(outDir, { recursive: true });
+      await fs.writeFile(
+        path.join(outDir, "run.json"),
+        JSON.stringify({
+          schemaVersion: 1,
+          cohortId,
+          generatedAt: "2026-03-15T01:00:00.000Z",
+          evaluationMode: spec.evaluationMode ?? "zero-shot",
+          tool: "local-llm",
+          sourceSpecPath: specPath,
+          sourceRunPath: sourceRunIndex === -1 ? null : args[sourceRunIndex + 1],
+          attemptBudget: spec.attemptBudget ?? 1,
+          guidanceStrategies: spec.guidanceStrategies,
+          comparisonPairs: spec.comparisonPairs,
+          model: {
+            requestedModelLabel: requestedModelLabelIndex === -1 ? null : args[requestedModelLabelIndex + 1],
+            resolvedModelId: resolvedModelIdIndex === -1 ? null : args[resolvedModelIdIndex + 1],
+            baseUrl: baseUrlIndex === -1 ? null : args[baseUrlIndex + 1],
+            fingerprint: fingerprintIndex === -1 ? null : args[fingerprintIndex + 1],
+          },
+          paths: {
+            benchmarkDir: outDir,
+            specPath,
+            runPath: path.join(outDir, "run.json"),
+            reportJsonPath: null,
+            reportMarkdownPath: null,
+          },
+          fixtures: spec.fixtures.map((fixture: Record<string, unknown>) => ({
+            ...fixture,
+            sessions: [],
+            comparisons: [],
+          })),
+        }),
+        "utf8",
+      );
+      return {
+        stdout: JSON.stringify({
+          paths: {
+            benchmarkDir: outDir,
+            runPath: path.join(outDir, "run.json"),
+            specPath,
+          },
+        }),
+        stderr: "",
+      };
+    }
+
     if (command === "init-generation-session") {
       const surfaceId = args[args.indexOf("--surface") + 1]!;
       const sessionId = args[args.indexOf("--session") + 1]!;
@@ -966,6 +1023,7 @@ describe("local workbench service", () => {
       boundary: "partial",
       visual: "partial",
       responsiveness: "partial",
+      platformFit: "partial",
       notes: "Baseline snapshot before local agent edits.",
       touchedFiles: ["apps/reference-target-web/app/page.tsx"],
     });
@@ -2628,17 +2686,19 @@ describe("local workbench service", () => {
     const result = await runBenchmarkCohort({
       cohortId: "20260315010000",
       fixtureIds,
-      strategies: ["prompt-summary", "json-primary"],
+      strategies: ["unguided", "baseline-primary"],
+      requestedModelLabel: "gpt-oss-20b",
+      resolvedModelId: "openai/gpt-oss-20b",
     });
 
-    const manifest = JSON.parse(
-      await fs.readFile(path.join(result.benchmarkDir, "manifest.json"), "utf8"),
+    const runManifest = JSON.parse(
+      await fs.readFile(path.join(result.benchmarkDir, "run.json"), "utf8"),
     ) as {
       schemaVersion: number;
       fixtures: Array<{ fixtureId: string; paths: { acceptedSuggestionsPath: string } }>;
     };
-    expect(manifest.schemaVersion).toBe(2);
-    expect(manifest.fixtures.map((fixture) => fixture.fixtureId)).toEqual(fixtureIds);
+    expect(runManifest.schemaVersion).toBe(1);
+    expect(runManifest.fixtures.map((fixture) => fixture.fixtureId)).toEqual(fixtureIds);
 
     const referenceRuntimeGuidance = JSON.parse(
       await fs.readFile(
@@ -2688,19 +2748,102 @@ describe("local workbench service", () => {
     for (const [options] of mockedLocalLlm.runLocalLlmAgent.mock.calls as Array<[{
       surfaceId?: string;
       acceptedSuggestions?: LocalWorkbenchAcceptedSuggestion[];
+      config?: { model?: string };
     }]>) {
       const fixtureCallSet = acceptedSuggestionsByFixture.get(options.surfaceId ?? "") ?? [];
       fixtureCallSet.push(options.acceptedSuggestions ?? []);
       acceptedSuggestionsByFixture.set(options.surfaceId ?? "", fixtureCallSet);
+      expect(options.config?.model).toBe("openai/gpt-oss-20b");
     }
     expect(acceptedSuggestionsByFixture.get("reference-target-web")).toEqual([
-      referenceRuntimeGuidance.suggestions,
+      [],
       referenceRuntimeGuidance.suggestions,
     ]);
     expect(acceptedSuggestionsByFixture.get("benchmark-shared-shell-web")).toEqual([
-      sharedShellRuntimeGuidance.suggestions,
+      [],
       sharedShellRuntimeGuidance.suggestions,
     ]);
+  });
+
+  it("exposes the scratch image-workbench fixture as a contract-guided benchmark target", async () => {
+    const fixture = getBenchmarkFixture("benchmark-image-workbench-web");
+    const profile = getBenchmarkFixtureProfile("benchmark-image-workbench-web");
+
+    expect(fixture.authoringMode).toBe("scratch");
+    expect(fixture.primaryEditableFiles).toEqual([
+      "apps/benchmark-image-workbench-web/app/page.tsx",
+      "apps/benchmark-image-workbench-web/app/globals.css",
+    ]);
+    expect(fixture.implementationBrief).toContain("Build an image editing workbench.");
+    expect(fixture.guidanceHints.sectionPaths).toMatchObject({
+      "workbench.header": "apps/benchmark-image-workbench-web/app/page.tsx",
+      "workbench.canvas": "apps/benchmark-image-workbench-web/app/page.tsx",
+      "workbench.export": "apps/benchmark-image-workbench-web/app/page.tsx",
+    });
+    expect(profile.defaultStrategies).toEqual(["baseline-primary"]);
+    expect(profile.acceptedSuggestions).toEqual([]);
+    expect(profile.designerNotes).toEqual([]);
+  });
+
+  it("keeps unguided benchmark runs free of accepted repair suggestions", async () => {
+    const fixtureId = "benchmark-shared-shell-web";
+    await seedBenchmarkSandboxDependencies(workspaceRoot, [fixtureId]);
+    await seedBenchmarkContracts(workspaceRoot, [fixtureId]);
+    installBenchmarkCliMocks({
+      workspaceRoot,
+      baselineFindingsByFixtureId: {
+        "benchmark-shared-shell-web": [
+          {
+            code: "section.missing",
+            message: "Missing required sections: reports.metrics.",
+          },
+        ],
+      },
+      repairMapByFixtureId: {
+        "benchmark-shared-shell-web": [
+          {
+            code: "section.missing",
+            action: {
+              type: "ensure-required-sections",
+              sectionIds: ["reports.metrics"],
+            },
+          },
+        ],
+      },
+    });
+
+    const acceptedSuggestionsByStrategy = new Map<string, LocalWorkbenchAcceptedSuggestion[]>();
+    mockedLocalLlm.runLocalLlmAgent.mockImplementation(async (options: {
+      guidanceStrategy?: string;
+      acceptedSuggestions?: LocalWorkbenchAcceptedSuggestion[];
+    }) => {
+      acceptedSuggestionsByStrategy.set(options.guidanceStrategy ?? "unknown", options.acceptedSuggestions ?? []);
+      return {
+        transcript: [],
+        touchedFiles: ["apps/benchmark-shared-shell-web/app/reports/page.tsx"],
+        summary: "Applied shared-shell benchmark changes.",
+        noChanges: false,
+        agentInput: "System:\nBenchmark",
+        toolCallCount: 1,
+        writeCount: 1,
+        lastToolName: "finish",
+      };
+    });
+
+    await runBenchmarkCohort({
+      cohortId: "20260315013000",
+      fixtureIds: [fixtureId],
+      strategies: ["unguided", "baseline-primary"],
+    });
+
+    expect(acceptedSuggestionsByStrategy.get("unguided")).toEqual([]);
+    expect(acceptedSuggestionsByStrategy.get("baseline-primary")).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          findingCode: "section.missing",
+        }),
+      ]),
+    );
   });
 
   it("lets explicit fixture profile guidance override baseline-derived suggestions by finding code", async () => {
@@ -2748,7 +2891,7 @@ describe("local workbench service", () => {
     const result = await runBenchmarkCohort({
       cohortId: "20260315011500",
       fixtureIds: [fixtureId],
-      strategies: ["prompt-summary", "json-primary"],
+      strategies: ["unguided", "baseline-primary"],
       profilesByFixtureId: {
         "benchmark-shared-shell-web": {
           ...getBenchmarkFixtureProfile(fixtureId),

@@ -1,0 +1,150 @@
+{
+  "$schema": "https://contracts.surfaces.local/web.surface.contract.schema.json",
+  "color": {
+    "allowedValues": [
+      "var(--bg)",
+      "var(--surface)",
+      "var(--surface-muted)",
+      "var(--text)",
+      "var(--muted)",
+      "var(--accent)",
+      "var(--accent-soft)",
+      "var(--accent-veil)",
+      "var(--accent-veil-strong)",
+      "var(--accent-fade)",
+      "var(--border)",
+      "var(--border-strong)",
+      "var(--bg-end)",
+      "var(--shadow)",
+      "var(--surface-bright)",
+      "var(--canvas-end)",
+      "var(--thumb-start)"
+    ],
+    "policy": "warn"
+  },
+  "constraints": {
+    "motion": {
+      "allowedDurationsMs": [
+        120
+      ],
+      "allowedTimingFunctions": [
+        "linear"
+      ]
+    }
+  },
+  "contractId": "benchmark-image-workbench-web.generated",
+  "description": "Scratch-generation benchmark fixture for zero-shot image editing workbench comparisons.",
+  "sections": [
+    {
+      "description": "Top-level workbench framing for the scratch image editor fixture.",
+      "id": "workbench.header",
+      "intent": "workspace-header"
+    },
+    {
+      "description": "Primary tool rail for editing actions and mode selection.",
+      "id": "workbench.tools",
+      "intent": "tool-rail"
+    },
+    {
+      "description": "Central editor canvas stage.",
+      "id": "workbench.canvas",
+      "intent": "editor-canvas"
+    },
+    {
+      "description": "Inspector column for adjustments and controls.",
+      "id": "workbench.adjustments",
+      "intent": "adjustment-panel"
+    },
+    {
+      "description": "Asset shelf for filmstrip, layers, or history.",
+      "id": "workbench.assets",
+      "intent": "asset-strip"
+    },
+    {
+      "description": "Export or handoff action zone.",
+      "id": "workbench.export",
+      "intent": "action-bar"
+    }
+  ],
+  "surfaces": [
+    {
+      "allowedFonts": [
+        "Inter",
+        "sans-serif",
+        "var(--font-inter)"
+      ],
+      "displayName": "Benchmark Image Workbench Web",
+      "icons": {
+        "allowedSources": [],
+        "policy": "warn"
+      },
+      "id": "benchmark-image-workbench-web",
+      "layout": {
+        "maxContentWidth": 1440,
+        "requiredContainers": [
+          "page-container"
+        ]
+      },
+      "phase0": {
+        "authPosture": "public",
+        "requiresShell": true
+      },
+      "requiredSections": [
+        "workbench.header",
+        "workbench.tools",
+        "workbench.canvas",
+        "workbench.adjustments",
+        "workbench.assets",
+        "workbench.export"
+      ],
+      "type": "web"
+    }
+  ],
+  "tokens": {
+    "layout": {
+      "allowedTokens": [
+        "var(--contract-max-width)"
+      ],
+      "policy": "warn",
+      "tokenMetadata": [
+        {
+          "aliases": [],
+          "attributes": [
+            "max-width"
+          ],
+          "normalizedValue": "1440px",
+          "token": "var(--contract-max-width)"
+        }
+      ]
+    },
+    "motion": {
+      "allowedTokens": [],
+      "policy": "warn"
+    },
+    "typography": {
+      "allowedTokens": [
+        "var(--font-inter)"
+      ],
+      "policy": "warn",
+      "tokenMetadata": [
+        {
+          "aliases": [],
+          "attributes": [
+            "font-family"
+          ],
+          "normalizedValue": "var(--font-inter)",
+          "token": "var(--font-inter)"
+        }
+      ]
+    }
+  },
+  "version": "0.1.0",
+  "x_extracted": {
+    "authAware": false,
+    "designSystemComponents": [],
+    "hasShell": true,
+    "routes": [
+      "/"
+    ]
+  }
+}
