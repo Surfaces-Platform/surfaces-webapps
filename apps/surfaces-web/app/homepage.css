@@ -207,7 +207,8 @@ body.menu-open {
 .surfaces-homepage .brand-lockup {
   display: block;
   width: 172px;
-  height: 40px;
+  height: auto;
+  aspect-ratio: 334.753341733 / 109;
   flex-shrink: 0;
 }
 

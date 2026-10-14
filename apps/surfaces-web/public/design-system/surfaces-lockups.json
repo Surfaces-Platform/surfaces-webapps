@@ -1,0 +1,33 @@
+{
+  "name": "Surfaces canonical lockups",
+  "font": {
+    "family": "Inter",
+    "weight": 780,
+    "opticalSize": 32,
+    "format": "outlined glyph paths"
+  },
+  "layout": {
+    "visibleMarkHeight": 60,
+    "capHeight": 38,
+    "inkToInkGap": 20,
+    "minimumOuterPadding": 24,
+    "baseline": 73,
+    "capVerticalCenter": 54,
+    "commonCanvasHeight": 109,
+    "scalePolicy": "Uniform scale of the complete lockup only. Preserve natural wordmark width and lowercase x-height."
+  },
+  "primary": {
+    "light": {
+      "file": "surfaces-lockup-horizontal.svg",
+      "sha256": "32354a8c79fd7a174098fdb05debec61df946149054993dd97e523e28bd68fa6"
+    },
+    "dark": {
+      "file": "surfaces-lockup-horizontal-reverse.svg",
+      "sha256": "8174df02add7d2509950fad5c1d6d11492be0538ad12cfa3222f3bc6efac4987"
+    }
+  },
+  "secondary": {
+    "stacked": "surfaces-lockup-stacked.svg",
+    "monochrome": "Single-plate reproduction only. Primary and grayscale variants retain Nickel."
+  }
+}

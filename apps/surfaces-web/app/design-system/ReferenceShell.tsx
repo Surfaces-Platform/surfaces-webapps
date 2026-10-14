@@ -57,8 +57,7 @@ function ReferenceRail({ activeSlug }: { activeSlug: ReferenceSlug }) {
   return (
     <aside className={styles.rail} aria-label="Reference navigation">
       <Link className={styles.brand} href="/design-system" aria-label="Surfaces Design System home">
-        <img className={styles.brandMark} src={logo.mark} alt="" />
-        <img className={styles.brandWord} src={logo.wordmark} alt="Surfaces" />
+        <img className={styles.brandLockup} src={logo.lockup} alt="" />
       </Link>
       <nav className={styles.nav} aria-label="Primary reference">
         {navItems.map((item) => (
@@ -80,8 +79,7 @@ function ReferenceTopbar() {
   return (
     <header className={styles.topbar}>
       <Link className={styles.topbrand} href="/design-system" aria-label="Surfaces Design System home">
-        <img src={logo.mark} alt="" />
-        <span>Surfaces</span>
+        <img className={styles.brandLockup} src={logo.lockup} alt="" />
       </Link>
       <nav className={styles.toplinks} aria-label="Quick navigation">
         {navItems.map((item) => (
@@ -573,7 +571,7 @@ function IdentityPreview({ index }: { index: string }) {
           <img src={logo.lockupReverse} alt="Surfaces reverse horizontal lockup" />
         </article>
         <InfoCard title="Minimum sizes" text="Use 16 px for favicon, 24 px for small mark, 128 px for horizontal lockup, and 96 px for stacked lockup." />
-        <InfoCard title="Clearspace" text="Keep at least one mark width around lockups. In dense chrome, keep one-half mark width around the mark." />
+        <InfoCard title="Clearspace" text="Keep the supplied lockup canvas intact. At base size, preserve 24 units of outer space and a 20-unit gap between the mark and name." />
       </div>
     </section>
   );

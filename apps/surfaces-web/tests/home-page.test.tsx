@@ -128,7 +128,7 @@ describe("surfaces.systems home page", () => {
     expect(page.querySelectorAll(".proof-section")).toHaveLength(0);
     expect(page.querySelectorAll(".partner-section")).toHaveLength(0);
     expect(sha256(homepageCss)).toBe(
-      "29526cdfc082489d0fbc9d3ac6f562341667e03a673e88b4ba3f4b0ea76dc844",
+      "22c4ca0f31cfb45201e8cf2b564e8380faf7dc269cd4ba7dd71fc53298512b0f",
     );
     expect(sha256(slabAsset)).toBe(
       "8901f5ad73c5a96aeb10647e98fc9e9f6151bf55152911e948e3be0343e3a64f",
