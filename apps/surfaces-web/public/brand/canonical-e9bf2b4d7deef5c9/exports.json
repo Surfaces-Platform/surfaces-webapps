@@ -1,5 +1,6 @@
 {
   "revision": "canonical-e9bf2b4d7deef5c9",
+  "aliasOf": "/brand/canonical-a9b274d33abd0420/exports.json",
   "canonicalBrandCommit": "1d29168a9d35bc4f45de857afd7b43ea404532f8",
   "sources": {
     "markLight": {
@@ -23,10 +24,75 @@
       "sha256": "8174df02add7d2509950fad5c1d6d11492be0538ad12cfa3222f3bc6efac4987"
     }
   },
-  "policy": "Pinned vector outlines, uniform whole-lockup scaling, no font fallback; PNG metadata stripped.",
+  "sourcePolicy": {
+    "icons": "Compatibility aliases generated from the current icon sources and presentation contract.",
+    "nonIcons": "File bytes are preserved; records fingerprint the actual served bytes. Original non-icon provenance remains below.",
+    "provenanceSource": {
+      "path": "brand-source/legacy-icon-exports.json",
+      "sha256": "cced5e1f845a67ba14e78f6f627dd5f6133f96c76f457668712c931e9d9d76ef"
+    }
+  },
+  "historicalSources": {
+    "markLight": {
+      "path": "brand-source/mark-light.svg",
+      "sha256": "aba1d15a5dc3611ce05c79928db94796dafa7afeeeb8b3abea3867af7b7006df"
+    },
+    "markDark": {
+      "path": "brand-source/mark-dark.svg",
+      "sha256": "bbea2023d88049fcc9ae3f257bd9ee56a62dff828787322e88973bdc9101889b"
+    },
+    "markOneColor": {
+      "path": "brand-source/mark-one-color.svg",
+      "sha256": "e8205f70494d841c9174d181f7f29800c7cd98e82abd31ed0220448cde3eba80"
+    },
+    "lockupLight": {
+      "path": "public/design-system/logo/surfaces-lockup-horizontal.svg",
+      "sha256": "32354a8c79fd7a174098fdb05debec61df946149054993dd97e523e28bd68fa6"
+    },
+    "lockupDark": {
+      "path": "public/design-system/logo/surfaces-lockup-horizontal-reverse.svg",
+      "sha256": "8174df02add7d2509950fad5c1d6d11492be0538ad12cfa3222f3bc6efac4987"
+    }
+  },
+  "historicalNonIconExports": {
+    "assets/surfaces-platform-og.png": {
+      "sha256": "04bef1742a52021646d0a92a4f0367688b5a3754228498d830439b7f94d4af92",
+      "dimensions": [
+        1200,
+        630
+      ]
+    },
+    "brand/canonical-e9bf2b4d7deef5c9/design-system-social.png": {
+      "sha256": "04bef1742a52021646d0a92a4f0367688b5a3754228498d830439b7f94d4af92",
+      "dimensions": [
+        1200,
+        630
+      ]
+    },
+    "brand/canonical-e9bf2b4d7deef5c9/surfaces-social.png": {
+      "sha256": "04bef1742a52021646d0a92a4f0367688b5a3754228498d830439b7f94d4af92",
+      "dimensions": [
+        1200,
+        630
+      ]
+    },
+    "brand/canonical-e9bf2b4d7deef5c9/surfaces-social.svg": {
+      "sha256": "39c7d902bd58d4f1496926aa86cf8dfc71947172116f8c01a84db64ebc44705e"
+    },
+    "design-system/logo/surfaces-social-card.png": {
+      "sha256": "04bef1742a52021646d0a92a4f0367688b5a3754228498d830439b7f94d4af92",
+      "dimensions": [
+        1200,
+        630
+      ]
+    },
+    "design-system/logo/surfaces-social-card.svg": {
+      "sha256": "39c7d902bd58d4f1496926aa86cf8dfc71947172116f8c01a84db64ebc44705e"
+    }
+  },
   "exports": {
     "apple-touch-icon.png": {
-      "sha256": "b806377a363b8da4b38dba78293022a4872f1e883456543b0c9bd6119bb988a1",
+      "sha256": "4d0bf5b2414b7cd60b38a1ca33794b891b5cd8f3aef6f029ce9f563b14aa7aef",
       "dimensions": [
         180,
         180
@@ -40,11 +106,12 @@
       ]
     },
     "brand/canonical-e9bf2b4d7deef5c9/apple-touch-icon-180.png": {
-      "sha256": "b806377a363b8da4b38dba78293022a4872f1e883456543b0c9bd6119bb988a1",
+      "sha256": "4d0bf5b2414b7cd60b38a1ca33794b891b5cd8f3aef6f029ce9f563b14aa7aef",
       "dimensions": [
         180,
         180
-      ]
+      ],
+      "aliasOf": "/brand/canonical-a9b274d33abd0420/apple-touch-icon-180.png"
     },
     "brand/canonical-e9bf2b4d7deef5c9/design-system-social.png": {
       "sha256": "04bef1742a52021646d0a92a4f0367688b5a3754228498d830439b7f94d4af92",
@@ -58,85 +125,104 @@
       "dimensions": [
         16,
         16
-      ]
+      ],
+      "aliasOf": "/brand/canonical-a9b274d33abd0420/favicon-dark-16.png"
     },
     "brand/canonical-e9bf2b4d7deef5c9/favicon-dark-32.png": {
       "sha256": "d399eec0f27a8bb1cfc8dc6ec61323d8b73871adc773daacb04e30146b7f3b76",
       "dimensions": [
         32,
         32
-      ]
+      ],
+      "aliasOf": "/brand/canonical-a9b274d33abd0420/favicon-dark-32.png"
     },
     "brand/canonical-e9bf2b4d7deef5c9/favicon-dark-48.png": {
       "sha256": "630648613213ab39c6059115ba4e997da4b0fb199034a36c89f376a3766b95be",
       "dimensions": [
         48,
         48
-      ]
+      ],
+      "aliasOf": "/brand/canonical-a9b274d33abd0420/favicon-dark-48.png"
     },
     "brand/canonical-e9bf2b4d7deef5c9/favicon-dark.svg": {
-      "sha256": "8412ea442e0bc9fa2854568488d254e6681be846259d394bce0fe6ca74008846"
+      "sha256": "8412ea442e0bc9fa2854568488d254e6681be846259d394bce0fe6ca74008846",
+      "aliasOf": "/brand/canonical-a9b274d33abd0420/favicon-dark.svg"
     },
     "brand/canonical-e9bf2b4d7deef5c9/favicon-light-16.png": {
       "sha256": "eb039bca5a8671fa26ecf114167dffd98af4e929f84cc4038c5344ec6f469dae",
       "dimensions": [
         16,
         16
-      ]
+      ],
+      "aliasOf": "/brand/canonical-a9b274d33abd0420/favicon-light-16.png"
     },
     "brand/canonical-e9bf2b4d7deef5c9/favicon-light-32.png": {
       "sha256": "038fbed2757bad12082406c83aa49f24625e7e9bdb068a93cac7edf80f1b6837",
       "dimensions": [
         32,
         32
-      ]
+      ],
+      "aliasOf": "/brand/canonical-a9b274d33abd0420/favicon-light-32.png"
     },
     "brand/canonical-e9bf2b4d7deef5c9/favicon-light-48.png": {
       "sha256": "99501f5fa81d63a9e5446af157f8bd6e6ab590a0cb73e25a798bebb9032bb5f3",
       "dimensions": [
         48,
         48
-      ]
+      ],
+      "aliasOf": "/brand/canonical-a9b274d33abd0420/favicon-light-48.png"
     },
     "brand/canonical-e9bf2b4d7deef5c9/favicon-light.svg": {
-      "sha256": "97a9533fac792a8499274d064776aeb9cea738e74d8358243f72975e5e04b21f"
+      "sha256": "97a9533fac792a8499274d064776aeb9cea738e74d8358243f72975e5e04b21f",
+      "aliasOf": "/brand/canonical-a9b274d33abd0420/favicon-light.svg"
+    },
+    "brand/canonical-e9bf2b4d7deef5c9/favicon.ico": {
+      "sha256": "f08f8966a4f02987f039f16c88be4492612dcd8ffb41a1df328ae754aa2a69ab",
+      "aliasOf": "/brand/canonical-a9b274d33abd0420/favicon.ico"
     },
     "brand/canonical-e9bf2b4d7deef5c9/icon-192.png": {
-      "sha256": "fead2332ba28c11879ef4b863fb1023771736b830505936859309c83f7c9ec6b",
+      "sha256": "d9a4bc8aafe21b792c51b58d61aa44406ec5581c34570956519cdf9644bfe1d2",
       "dimensions": [
         192,
         192
-      ]
+      ],
+      "aliasOf": "/brand/canonical-a9b274d33abd0420/icon-192.png"
     },
     "brand/canonical-e9bf2b4d7deef5c9/icon-512.png": {
-      "sha256": "2e30ed1eb6cc480012c392c455d9f35263bbaeb66957a7351fc878126563aa76",
+      "sha256": "fc2f500095e582e3d1f0cc9baab740892adc4904076357ed1b48a552df16f268",
       "dimensions": [
         512,
         512
-      ]
+      ],
+      "aliasOf": "/brand/canonical-a9b274d33abd0420/icon-512.png"
     },
     "brand/canonical-e9bf2b4d7deef5c9/icon-maskable-192.png": {
-      "sha256": "ea033db575e4687bc026f917c8b17c9cb4a867d579ddb3d0dcc40b1d2218caa8",
+      "sha256": "80a5ee3d1a31c409a686adab5f013999fe451529d72d8929b28744b7868fafa7",
       "dimensions": [
         192,
         192
-      ]
+      ],
+      "aliasOf": "/brand/canonical-a9b274d33abd0420/icon-maskable-192.png"
     },
     "brand/canonical-e9bf2b4d7deef5c9/icon-maskable-512.png": {
-      "sha256": "20b08512d3ec3f483519f7d0c58795ccf19c7367527ccf541b0868d9198765d5",
+      "sha256": "d61a654623de1c94b689d60b21ebd88841ecd441e06d1d1c29371ca15029ed4f",
       "dimensions": [
         512,
         512
-      ]
+      ],
+      "aliasOf": "/brand/canonical-a9b274d33abd0420/icon-maskable-512.png"
     },
     "brand/canonical-e9bf2b4d7deef5c9/install-icon.svg": {
-      "sha256": "f0aa4cfbbb050584abde1b5917be9742dbb7d760cb8439d5bfc3a7b9684144e8"
+      "sha256": "356071a78a3b40e8a67119a2fb372a8a0846230efff4ffdc7ff224c4defedaa4",
+      "aliasOf": "/brand/canonical-a9b274d33abd0420/install-icon.svg"
     },
     "brand/canonical-e9bf2b4d7deef5c9/maskable-install-icon.svg": {
-      "sha256": "a0f101d27f51d50365266efe162da7fe72512fe31c7623792482e1c613800654"
+      "sha256": "77de3e845cbbaef26e22aa051af771e3cc60e22a7b0828b5200b75648b14d097",
+      "aliasOf": "/brand/canonical-a9b274d33abd0420/maskable-install-icon.svg"
     },
     "brand/canonical-e9bf2b4d7deef5c9/pinned-tab.svg": {
-      "sha256": "e8205f70494d841c9174d181f7f29800c7cd98e82abd31ed0220448cde3eba80"
+      "sha256": "e8205f70494d841c9174d181f7f29800c7cd98e82abd31ed0220448cde3eba80",
+      "aliasOf": "/brand/canonical-a9b274d33abd0420/pinned-tab.svg"
     },
     "brand/canonical-e9bf2b4d7deef5c9/surfaces-social.png": {
       "sha256": "04bef1742a52021646d0a92a4f0367688b5a3754228498d830439b7f94d4af92",
@@ -149,10 +235,10 @@
       "sha256": "39c7d902bd58d4f1496926aa86cf8dfc71947172116f8c01a84db64ebc44705e"
     },
     "design-system/logo/app-icon.svg": {
-      "sha256": "f0aa4cfbbb050584abde1b5917be9742dbb7d760cb8439d5bfc3a7b9684144e8"
+      "sha256": "356071a78a3b40e8a67119a2fb372a8a0846230efff4ffdc7ff224c4defedaa4"
     },
     "design-system/logo/favicon.svg": {
-      "sha256": "97a9533fac792a8499274d064776aeb9cea738e74d8358243f72975e5e04b21f"
+      "sha256": "8412ea442e0bc9fa2854568488d254e6681be846259d394bce0fe6ca74008846"
     },
     "design-system/logo/surfaces-social-card.png": {
       "sha256": "04bef1742a52021646d0a92a4f0367688b5a3754228498d830439b7f94d4af92",
@@ -168,16 +254,16 @@
       "sha256": "8412ea442e0bc9fa2854568488d254e6681be846259d394bce0fe6ca74008846"
     },
     "favicon.ico": {
-      "sha256": "8d4474697dede79c2392d5fa67d3365a13cab4926f9d25b2c7d6e79fa04ecb03"
+      "sha256": "f08f8966a4f02987f039f16c88be4492612dcd8ffb41a1df328ae754aa2a69ab"
     },
     "favicon.svg": {
-      "sha256": "97a9533fac792a8499274d064776aeb9cea738e74d8358243f72975e5e04b21f"
+      "sha256": "8412ea442e0bc9fa2854568488d254e6681be846259d394bce0fe6ca74008846"
     },
     "icon.svg": {
-      "sha256": "8456463b57dbf57b1379a88df0f5d7f5dd7796bb1b372f18bd3de44a8a5b2538"
+      "sha256": "8412ea442e0bc9fa2854568488d254e6681be846259d394bce0fe6ca74008846"
     },
     "site.webmanifest": {
-      "sha256": "a59f080a0127a56542b094012418d303b21c9ba2dc59b0e30aca82ae25e5d0a6"
+      "sha256": "19205ee1a4d1b2b8a1dd647861c291ca11c44309744affecf43a708ef4bc8b7d"
     }
   }
 }

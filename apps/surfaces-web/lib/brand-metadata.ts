@@ -7,7 +7,7 @@ export const brandManifest = `/site.webmanifest?v=${brandRevision}`;
 
 export const brandIcons: Metadata["icons"] = {
   icon: [
-    { url: `/favicon.ico?v=${brandRevision}`, sizes: "16x16 32x32 48x48", type: "image/x-icon" },
+    { url: `${brandAssetBase}/favicon.ico`, sizes: "16x16 32x32 48x48", type: "image/x-icon" },
     ...(["light", "dark"] as const).flatMap((theme) => [
       ...([16, 32] as const).map((size) => ({
         url: `${brandAssetBase}/favicon-${theme}-${size}.png`,

@@ -1,0 +1,369 @@
+{
+  "policy": "Source snapshots of prior export provenance. The generator uses these records to retain historical non-icon provenance while regenerating truthful served-icon alias manifests.",
+  "manifests": {
+    "canonical-1d29168": {
+      "revision": "canonical-1d29168",
+      "canonicalBrandCommit": "1d29168a9d35bc4f45de857afd7b43ea404532f8",
+      "sources": {
+        "markLight": {
+          "path": "brand-source/mark-light.svg",
+          "sha256": "aba1d15a5dc3611ce05c79928db94796dafa7afeeeb8b3abea3867af7b7006df"
+        },
+        "markDark": {
+          "path": "brand-source/mark-dark.svg",
+          "sha256": "bbea2023d88049fcc9ae3f257bd9ee56a62dff828787322e88973bdc9101889b"
+        },
+        "markOneColor": {
+          "path": "brand-source/mark-one-color.svg",
+          "sha256": "e8205f70494d841c9174d181f7f29800c7cd98e82abd31ed0220448cde3eba80"
+        },
+        "lockupLight": {
+          "path": "public/design-system/logo/surfaces-lockup-horizontal.svg",
+          "sha256": "32354a8c79fd7a174098fdb05debec61df946149054993dd97e523e28bd68fa6"
+        },
+        "lockupDark": {
+          "path": "public/design-system/logo/surfaces-lockup-horizontal-reverse.svg",
+          "sha256": "8174df02add7d2509950fad5c1d6d11492be0538ad12cfa3222f3bc6efac4987"
+        },
+        "socialCopy": {
+          "path": "brand-source/design-system-social-copy.svg",
+          "sha256": "27621c623fae89ed518afca2549b57bd0313ccf18e466a3c7d644c4a3adc1df9"
+        }
+      },
+      "policy": "Pinned vector outlines, uniform whole-lockup scaling, no font fallback; PNG metadata stripped.",
+      "exports": {
+        "apple-touch-icon.png": {
+          "sha256": "fefc4923197e3d7aa53dd858cd4613b662004dc0e3cb435deac8d9afd68736c9",
+          "dimensions": [
+            180,
+            180
+          ]
+        },
+        "assets/surfaces-platform-og.png": {
+          "sha256": "04bef1742a52021646d0a92a4f0367688b5a3754228498d830439b7f94d4af92",
+          "dimensions": [
+            1200,
+            630
+          ]
+        },
+        "brand/canonical-1d29168/apple-touch-icon-180.png": {
+          "sha256": "fefc4923197e3d7aa53dd858cd4613b662004dc0e3cb435deac8d9afd68736c9",
+          "dimensions": [
+            180,
+            180
+          ]
+        },
+        "brand/canonical-1d29168/design-system-social.png": {
+          "sha256": "fc6e391f6f1242415845ddeae1ea6e20c8bed51c23cd38907e480c9953fed2a1",
+          "dimensions": [
+            1200,
+            630
+          ]
+        },
+        "brand/canonical-1d29168/favicon-dark-16.png": {
+          "sha256": "0679f23bf10d1706e1e0da452580954978207e683682924a6a3c4df99024f018",
+          "dimensions": [
+            16,
+            16
+          ]
+        },
+        "brand/canonical-1d29168/favicon-dark-32.png": {
+          "sha256": "71f14fd9f5a890a3442f0f6334a5770e030cd07cae41e033da32b2b05292f56e",
+          "dimensions": [
+            32,
+            32
+          ]
+        },
+        "brand/canonical-1d29168/favicon-dark-48.png": {
+          "sha256": "f0981759357a17051396a2fc6c94b0376bdd4c582cc0f938a109fb532991aa6a",
+          "dimensions": [
+            48,
+            48
+          ]
+        },
+        "brand/canonical-1d29168/favicon-dark.svg": {
+          "sha256": "8c43c1219c56fe24bb365745acc4e2aeff6139cfee8e87caf143daeaf7cb9c00"
+        },
+        "brand/canonical-1d29168/favicon-light-16.png": {
+          "sha256": "809fc5ffb1776273d08cee91e657cbaf38fb70e6c8b40756014a89d8c89be98c",
+          "dimensions": [
+            16,
+            16
+          ]
+        },
+        "brand/canonical-1d29168/favicon-light-32.png": {
+          "sha256": "1438bcfd36b405749695351a5084d2d6869ffb85b5838684d05e7e08ebeeb3b6",
+          "dimensions": [
+            32,
+            32
+          ]
+        },
+        "brand/canonical-1d29168/favicon-light-48.png": {
+          "sha256": "8598f76ca233550cd48a48dac6fecee2a252ef3ab5f84487fbc165c83204d1be",
+          "dimensions": [
+            48,
+            48
+          ]
+        },
+        "brand/canonical-1d29168/favicon-light.svg": {
+          "sha256": "d1df26204b13594d2a05266bac0f52a84f1e17765522257fc40687b438c6687a"
+        },
+        "brand/canonical-1d29168/icon-192.png": {
+          "sha256": "90ad95ae35b7a02ab289003328bd83fedf85b6ad23f286c03955ae0306777af0",
+          "dimensions": [
+            192,
+            192
+          ]
+        },
+        "brand/canonical-1d29168/icon-512.png": {
+          "sha256": "763ecb9fdb93bcbd2e1a857353c132762a260f4408028071fe09ea8263d37ad7",
+          "dimensions": [
+            512,
+            512
+          ]
+        },
+        "brand/canonical-1d29168/icon-maskable-192.png": {
+          "sha256": "90ad95ae35b7a02ab289003328bd83fedf85b6ad23f286c03955ae0306777af0",
+          "dimensions": [
+            192,
+            192
+          ]
+        },
+        "brand/canonical-1d29168/icon-maskable-512.png": {
+          "sha256": "763ecb9fdb93bcbd2e1a857353c132762a260f4408028071fe09ea8263d37ad7",
+          "dimensions": [
+            512,
+            512
+          ]
+        },
+        "brand/canonical-1d29168/install-icon.svg": {
+          "sha256": "35d06fa345a52c9140447daf1d1213795d63da4b12f64a877057d36fb65958c3"
+        },
+        "brand/canonical-1d29168/pinned-tab.svg": {
+          "sha256": "e8205f70494d841c9174d181f7f29800c7cd98e82abd31ed0220448cde3eba80"
+        },
+        "brand/canonical-1d29168/surfaces-social.png": {
+          "sha256": "04bef1742a52021646d0a92a4f0367688b5a3754228498d830439b7f94d4af92",
+          "dimensions": [
+            1200,
+            630
+          ]
+        },
+        "brand/canonical-1d29168/surfaces-social.svg": {
+          "sha256": "39c7d902bd58d4f1496926aa86cf8dfc71947172116f8c01a84db64ebc44705e"
+        },
+        "design-system/logo/app-icon.svg": {
+          "sha256": "35d06fa345a52c9140447daf1d1213795d63da4b12f64a877057d36fb65958c3"
+        },
+        "design-system/logo/surfaces-social-card.png": {
+          "sha256": "fc6e391f6f1242415845ddeae1ea6e20c8bed51c23cd38907e480c9953fed2a1",
+          "dimensions": [
+            1200,
+            630
+          ]
+        },
+        "design-system/logo/surfaces-social-card.svg": {
+          "sha256": "63a75f19d5a72372d18ed6b6239195eff9c610d20d78b94c8e5f0333907ffe1f"
+        },
+        "favicon-dark.svg": {
+          "sha256": "8c43c1219c56fe24bb365745acc4e2aeff6139cfee8e87caf143daeaf7cb9c00"
+        },
+        "favicon.ico": {
+          "sha256": "c3b6f606989fd4f127e3be296dfe9dc16c9a34ed6a1c39d6b28690a1f3d0a13e"
+        },
+        "favicon.svg": {
+          "sha256": "d1df26204b13594d2a05266bac0f52a84f1e17765522257fc40687b438c6687a"
+        },
+        "icon.svg": {
+          "sha256": "5b8317a8c6389b699e41a5c3ddf4762112db7e704764733248291825bbc6d6d6"
+        },
+        "site.webmanifest": {
+          "sha256": "2f159ec0a7252374668cfe7dd4db05b5044a94239c5a07701a9495bf172a0f19"
+        }
+      }
+    },
+    "canonical-e9bf2b4d7deef5c9": {
+      "revision": "canonical-e9bf2b4d7deef5c9",
+      "canonicalBrandCommit": "1d29168a9d35bc4f45de857afd7b43ea404532f8",
+      "sources": {
+        "markLight": {
+          "path": "brand-source/mark-light.svg",
+          "sha256": "aba1d15a5dc3611ce05c79928db94796dafa7afeeeb8b3abea3867af7b7006df"
+        },
+        "markDark": {
+          "path": "brand-source/mark-dark.svg",
+          "sha256": "bbea2023d88049fcc9ae3f257bd9ee56a62dff828787322e88973bdc9101889b"
+        },
+        "markOneColor": {
+          "path": "brand-source/mark-one-color.svg",
+          "sha256": "e8205f70494d841c9174d181f7f29800c7cd98e82abd31ed0220448cde3eba80"
+        },
+        "lockupLight": {
+          "path": "public/design-system/logo/surfaces-lockup-horizontal.svg",
+          "sha256": "32354a8c79fd7a174098fdb05debec61df946149054993dd97e523e28bd68fa6"
+        },
+        "lockupDark": {
+          "path": "public/design-system/logo/surfaces-lockup-horizontal-reverse.svg",
+          "sha256": "8174df02add7d2509950fad5c1d6d11492be0538ad12cfa3222f3bc6efac4987"
+        }
+      },
+      "policy": "Pinned vector outlines, uniform whole-lockup scaling, no font fallback; PNG metadata stripped.",
+      "exports": {
+        "apple-touch-icon.png": {
+          "sha256": "b806377a363b8da4b38dba78293022a4872f1e883456543b0c9bd6119bb988a1",
+          "dimensions": [
+            180,
+            180
+          ]
+        },
+        "assets/surfaces-platform-og.png": {
+          "sha256": "04bef1742a52021646d0a92a4f0367688b5a3754228498d830439b7f94d4af92",
+          "dimensions": [
+            1200,
+            630
+          ]
+        },
+        "brand/canonical-e9bf2b4d7deef5c9/apple-touch-icon-180.png": {
+          "sha256": "b806377a363b8da4b38dba78293022a4872f1e883456543b0c9bd6119bb988a1",
+          "dimensions": [
+            180,
+            180
+          ]
+        },
+        "brand/canonical-e9bf2b4d7deef5c9/design-system-social.png": {
+          "sha256": "04bef1742a52021646d0a92a4f0367688b5a3754228498d830439b7f94d4af92",
+          "dimensions": [
+            1200,
+            630
+          ]
+        },
+        "brand/canonical-e9bf2b4d7deef5c9/favicon-dark-16.png": {
+          "sha256": "5fda3c2aacd24f7b1b985e081e4ad3a63c8224e482637bbd5016c55317c2858a",
+          "dimensions": [
+            16,
+            16
+          ]
+        },
+        "brand/canonical-e9bf2b4d7deef5c9/favicon-dark-32.png": {
+          "sha256": "d399eec0f27a8bb1cfc8dc6ec61323d8b73871adc773daacb04e30146b7f3b76",
+          "dimensions": [
+            32,
+            32
+          ]
+        },
+        "brand/canonical-e9bf2b4d7deef5c9/favicon-dark-48.png": {
+          "sha256": "630648613213ab39c6059115ba4e997da4b0fb199034a36c89f376a3766b95be",
+          "dimensions": [
+            48,
+            48
+          ]
+        },
+        "brand/canonical-e9bf2b4d7deef5c9/favicon-dark.svg": {
+          "sha256": "8412ea442e0bc9fa2854568488d254e6681be846259d394bce0fe6ca74008846"
+        },
+        "brand/canonical-e9bf2b4d7deef5c9/favicon-light-16.png": {
+          "sha256": "eb039bca5a8671fa26ecf114167dffd98af4e929f84cc4038c5344ec6f469dae",
+          "dimensions": [
+            16,
+            16
+          ]
+        },
+        "brand/canonical-e9bf2b4d7deef5c9/favicon-light-32.png": {
+          "sha256": "038fbed2757bad12082406c83aa49f24625e7e9bdb068a93cac7edf80f1b6837",
+          "dimensions": [
+            32,
+            32
+          ]
+        },
+        "brand/canonical-e9bf2b4d7deef5c9/favicon-light-48.png": {
+          "sha256": "99501f5fa81d63a9e5446af157f8bd6e6ab590a0cb73e25a798bebb9032bb5f3",
+          "dimensions": [
+            48,
+            48
+          ]
+        },
+        "brand/canonical-e9bf2b4d7deef5c9/favicon-light.svg": {
+          "sha256": "97a9533fac792a8499274d064776aeb9cea738e74d8358243f72975e5e04b21f"
+        },
+        "brand/canonical-e9bf2b4d7deef5c9/icon-192.png": {
+          "sha256": "fead2332ba28c11879ef4b863fb1023771736b830505936859309c83f7c9ec6b",
+          "dimensions": [
+            192,
+            192
+          ]
+        },
+        "brand/canonical-e9bf2b4d7deef5c9/icon-512.png": {
+          "sha256": "2e30ed1eb6cc480012c392c455d9f35263bbaeb66957a7351fc878126563aa76",
+          "dimensions": [
+            512,
+            512
+          ]
+        },
+        "brand/canonical-e9bf2b4d7deef5c9/icon-maskable-192.png": {
+          "sha256": "ea033db575e4687bc026f917c8b17c9cb4a867d579ddb3d0dcc40b1d2218caa8",
+          "dimensions": [
+            192,
+            192
+          ]
+        },
+        "brand/canonical-e9bf2b4d7deef5c9/icon-maskable-512.png": {
+          "sha256": "20b08512d3ec3f483519f7d0c58795ccf19c7367527ccf541b0868d9198765d5",
+          "dimensions": [
+            512,
+            512
+          ]
+        },
+        "brand/canonical-e9bf2b4d7deef5c9/install-icon.svg": {
+          "sha256": "f0aa4cfbbb050584abde1b5917be9742dbb7d760cb8439d5bfc3a7b9684144e8"
+        },
+        "brand/canonical-e9bf2b4d7deef5c9/maskable-install-icon.svg": {
+          "sha256": "a0f101d27f51d50365266efe162da7fe72512fe31c7623792482e1c613800654"
+        },
+        "brand/canonical-e9bf2b4d7deef5c9/pinned-tab.svg": {
+          "sha256": "e8205f70494d841c9174d181f7f29800c7cd98e82abd31ed0220448cde3eba80"
+        },
+        "brand/canonical-e9bf2b4d7deef5c9/surfaces-social.png": {
+          "sha256": "04bef1742a52021646d0a92a4f0367688b5a3754228498d830439b7f94d4af92",
+          "dimensions": [
+            1200,
+            630
+          ]
+        },
+        "brand/canonical-e9bf2b4d7deef5c9/surfaces-social.svg": {
+          "sha256": "39c7d902bd58d4f1496926aa86cf8dfc71947172116f8c01a84db64ebc44705e"
+        },
+        "design-system/logo/app-icon.svg": {
+          "sha256": "f0aa4cfbbb050584abde1b5917be9742dbb7d760cb8439d5bfc3a7b9684144e8"
+        },
+        "design-system/logo/favicon.svg": {
+          "sha256": "97a9533fac792a8499274d064776aeb9cea738e74d8358243f72975e5e04b21f"
+        },
+        "design-system/logo/surfaces-social-card.png": {
+          "sha256": "04bef1742a52021646d0a92a4f0367688b5a3754228498d830439b7f94d4af92",
+          "dimensions": [
+            1200,
+            630
+          ]
+        },
+        "design-system/logo/surfaces-social-card.svg": {
+          "sha256": "39c7d902bd58d4f1496926aa86cf8dfc71947172116f8c01a84db64ebc44705e"
+        },
+        "favicon-dark.svg": {
+          "sha256": "8412ea442e0bc9fa2854568488d254e6681be846259d394bce0fe6ca74008846"
+        },
+        "favicon.ico": {
+          "sha256": "8d4474697dede79c2392d5fa67d3365a13cab4926f9d25b2c7d6e79fa04ecb03"
+        },
+        "favicon.svg": {
+          "sha256": "97a9533fac792a8499274d064776aeb9cea738e74d8358243f72975e5e04b21f"
+        },
+        "icon.svg": {
+          "sha256": "8456463b57dbf57b1379a88df0f5d7f5dd7796bb1b372f18bd3de44a8a5b2538"
+        },
+        "site.webmanifest": {
+          "sha256": "a59f080a0127a56542b094012418d303b21c9ba2dc59b0e30aca82ae25e5d0a6"
+        }
+      }
+    }
+  }
+}
