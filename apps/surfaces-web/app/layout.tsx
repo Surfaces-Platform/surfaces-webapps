@@ -53,6 +53,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* Safari collects the selected ICO at parse completion. Keep this classic script synchronous. */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <script
+          src={`${brandAssetBase}/favicon-theme.js`}
+          data-light-icon={`${brandAssetBase}/favicon-light.ico`}
+          data-dark-icon={`${brandAssetBase}/favicon-dark.ico`}
+        />
+        <noscript dangerouslySetInnerHTML={{ __html: `<link rel="icon" href="${brandAssetBase}/favicon-light.ico" sizes="16x16 32x32 48x48" type="image/x-icon">` }} />
         <link rel="mask-icon" href={`${brandAssetBase}/pinned-tab.svg`} color="#0B0D0E" />
       </head>
       <body className={`${inter.variable} antialiased font-sans`}>{children}</body>

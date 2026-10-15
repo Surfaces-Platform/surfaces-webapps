@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
+import { brandAssetBase } from "@/lib/brand-metadata";
 import styles from "./reference.module.css";
 import {
   accessibilityRows,
@@ -27,7 +28,7 @@ const logo = {
   markReverse: `${assetBasePath}/logo/surfaces-mark-reverse.svg`,
   markSmall: `${assetBasePath}/logo/surfaces-mark-small.svg`,
   markSmallReverse: `${assetBasePath}/logo/surfaces-mark-small-reverse.svg`,
-  favicon: `${assetBasePath}/logo/favicon.svg`,
+  favicon: `${brandAssetBase}/favicon-light.svg`,
   appIcon: `${assetBasePath}/logo/app-icon.svg`,
   wordmark: `${assetBasePath}/logo/surfaces-wordmark.svg`,
   lockup: `${assetBasePath}/logo/surfaces-lockup-horizontal.svg`,
@@ -792,7 +793,8 @@ function ResourcePreviewStage({ item }: { item: ResourceItem }) {
   }
 
   if (item.preview === "mark") {
-    return <span className={`${styles.resourcePreview} ${styles.iconPreview}`}><img src={item.href} alt="" loading="eager" decoding="async" /></span>;
+    const preview = item.href.endsWith("/favicon.svg") ? logo.favicon : item.href;
+    return <span className={`${styles.resourcePreview} ${styles.iconPreview}`}><img src={preview} alt="" loading="eager" decoding="async" /></span>;
   }
 
   return <span className={styles.resourcePreview}><img src={item.href} alt="" loading="eager" decoding="async" /></span>;

@@ -73,6 +73,7 @@ def main():
     one_color = source("markOneColor")
     horizontal_light = source("lockupLight")
     horizontal_dark = source("lockupDark")
+    favicon_controller = source("faviconThemeController")
     light_art, dark_art = slab_art(light), slab_art(dark)
     if "<text" in horizontal_light + horizontal_dark:
         raise SystemExit("Social artwork must use checked-in vector outlines.")
@@ -103,9 +104,11 @@ def main():
             return dest.read_bytes()
 
         for theme, art in [("light", light_art), ("dark", dark_art)]:
+            plate = CONTRACT["browser"]["plates"][theme]
+            background = (f'<rect width="64" height="64" rx="{CONTRACT["browser"]["radius"]}" '
+                          f'fill="{plate}"/>') if plate is not None else ""
             browser = svg(64, 64,
-                f'<rect width="64" height="64" rx="{CONTRACT["browser"]["radius"]}" '
-                f'fill="{CONTRACT["browser"]["plates"][theme]}"/>'
+                background +
                 f'<g data-role="browser-mark" transform="{CONTRACT["browser"]["markTransform"]}">'
                 + art + '</g>', f"Surfaces {theme} browser mark")
             put(f"brand/{VERSION}/favicon-{theme}.svg", browser)
@@ -120,19 +123,22 @@ def main():
 
         put(f"brand/{VERSION}/pinned-tab.svg", one_color.encode())
 
-        # The conventional ICO contains the same default dark fallback pixels,
-        # including transparent corners outside its shared rounded container.
+        # The controller selects one typed themed ICO before parsing finishes.
+        put(f"brand/{VERSION}/favicon-theme.js", favicon_controller.encode())
         fallback = CONTRACT["browser"]["defaultTheme"]
-        frames = [(size, outputs[f"apps/surfaces-web/public/brand/{VERSION}/favicon-{fallback}-{size}.png"])
-                  for size in (16, 32, 48)]
-        offset = 6 + 16 * len(frames)
-        ico = struct.pack("<HHH", 0, 1, len(frames))
-        for size, data in frames:
-            ico += struct.pack("<BBBBHHII", size, size, 0, 0, 1, 32, len(data), offset)
-            offset += len(data)
-        ico += b"".join(data for _, data in frames)
-        put("favicon.ico", ico)
-        put(f"brand/{VERSION}/favicon.ico", ico)
+        for theme in ("light", "dark"):
+            frames = [(size, outputs[f"apps/surfaces-web/public/brand/{VERSION}/favicon-{theme}-{size}.png"])
+                      for size in (16, 32, 48)]
+            offset = 6 + 16 * len(frames)
+            ico = struct.pack("<HHH", 0, 1, len(frames))
+            for size, data in frames:
+                ico += struct.pack("<BBBBHHII", size, size, 0, 0, 1, 32, len(data), offset)
+                offset += len(data)
+            ico += b"".join(data for _, data in frames)
+            put(f"brand/{VERSION}/favicon-{theme}.ico", ico)
+            if theme == fallback:
+                put("favicon.ico", ico)
+                put(f"brand/{VERSION}/favicon.ico", ico)
 
         def install_plate(purpose):
             return svg(64, 64,

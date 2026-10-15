@@ -55,6 +55,7 @@ vi.mock("@surfaces/ui/components/Navigation", async () => {
 
 import Home from "@/app/page";
 import { ReferencePageView } from "@/app/design-system/ReferenceShell";
+import { brandAssetBase } from "@/lib/brand-metadata";
 import {
   designSystemBasePath,
   navItems,
@@ -101,6 +102,8 @@ describe("Surfaces Design System reference", () => {
     expect(html).toContain("Generated screens should carry their rationale.");
     expect(html).toContain("Release notes for the public reference.");
     expect(renderedPages).toHaveLength(navItems.length);
+    expect(html).toContain(`src="${brandAssetBase}/favicon-light.svg"`);
+    expect(html).not.toContain('src="/design-system/logo/favicon.svg"');
   });
 
   it("keeps reference navigation and downloads scoped under /design-system", () => {

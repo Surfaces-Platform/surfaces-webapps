@@ -1,6 +1,6 @@
 {
   "revision": "canonical-e9bf2b4d7deef5c9",
-  "aliasOf": "/brand/canonical-a9b274d33abd0420/exports.json",
+  "aliasOf": "/brand/canonical-8bfdbd59528629c2/exports.json",
   "canonicalBrandCommit": "1d29168a9d35bc4f45de857afd7b43ea404532f8",
   "sources": {
     "markLight": {
@@ -22,6 +22,10 @@
     "lockupDark": {
       "path": "public/design-system/logo/surfaces-lockup-horizontal-reverse.svg",
       "sha256": "8174df02add7d2509950fad5c1d6d11492be0538ad12cfa3222f3bc6efac4987"
+    },
+    "faviconThemeController": {
+      "path": "brand-source/favicon-theme.js",
+      "sha256": "438e2c44cada8c2a0ae77ff4000d87f5d943b00afda39a786850f5fe3871140e"
     }
   },
   "sourcePolicy": {
@@ -29,7 +33,7 @@
     "nonIcons": "File bytes are preserved; records fingerprint the actual served bytes. Original non-icon provenance remains below.",
     "provenanceSource": {
       "path": "brand-source/legacy-icon-exports.json",
-      "sha256": "cced5e1f845a67ba14e78f6f627dd5f6133f96c76f457668712c931e9d9d76ef"
+      "sha256": "bda8421c20942aac4c76bd9d676384fac4e71c71d209632e5adc9bb57e807692"
     }
   },
   "historicalSources": {
@@ -111,7 +115,7 @@
         180,
         180
       ],
-      "aliasOf": "/brand/canonical-a9b274d33abd0420/apple-touch-icon-180.png"
+      "aliasOf": "/brand/canonical-8bfdbd59528629c2/apple-touch-icon-180.png"
     },
     "brand/canonical-e9bf2b4d7deef5c9/design-system-social.png": {
       "sha256": "04bef1742a52021646d0a92a4f0367688b5a3754228498d830439b7f94d4af92",
@@ -121,64 +125,72 @@
       ]
     },
     "brand/canonical-e9bf2b4d7deef5c9/favicon-dark-16.png": {
-      "sha256": "5fda3c2aacd24f7b1b985e081e4ad3a63c8224e482637bbd5016c55317c2858a",
+      "sha256": "b5aea74e8597f1a70f45f4291cbc4c8be283abb800a09866ba488b8f9da1acd3",
       "dimensions": [
         16,
         16
       ],
-      "aliasOf": "/brand/canonical-a9b274d33abd0420/favicon-dark-16.png"
+      "aliasOf": "/brand/canonical-8bfdbd59528629c2/favicon-dark-16.png"
     },
     "brand/canonical-e9bf2b4d7deef5c9/favicon-dark-32.png": {
-      "sha256": "d399eec0f27a8bb1cfc8dc6ec61323d8b73871adc773daacb04e30146b7f3b76",
+      "sha256": "882616d0561d2b23ec75ec6bbabf057082114df20d187fa838b09f240f473633",
       "dimensions": [
         32,
         32
       ],
-      "aliasOf": "/brand/canonical-a9b274d33abd0420/favicon-dark-32.png"
+      "aliasOf": "/brand/canonical-8bfdbd59528629c2/favicon-dark-32.png"
     },
     "brand/canonical-e9bf2b4d7deef5c9/favicon-dark-48.png": {
-      "sha256": "630648613213ab39c6059115ba4e997da4b0fb199034a36c89f376a3766b95be",
+      "sha256": "502995b35c6023022144f46659a5866553cb6197d4542e6bd6e83da8d2fbd002",
       "dimensions": [
         48,
         48
       ],
-      "aliasOf": "/brand/canonical-a9b274d33abd0420/favicon-dark-48.png"
+      "aliasOf": "/brand/canonical-8bfdbd59528629c2/favicon-dark-48.png"
+    },
+    "brand/canonical-e9bf2b4d7deef5c9/favicon-dark.ico": {
+      "sha256": "df906fa13b45b2be7719159f3c60031837e99db2123f0cef7223dbe129fc66b6",
+      "aliasOf": "/brand/canonical-8bfdbd59528629c2/favicon-dark.ico"
     },
     "brand/canonical-e9bf2b4d7deef5c9/favicon-dark.svg": {
-      "sha256": "8412ea442e0bc9fa2854568488d254e6681be846259d394bce0fe6ca74008846",
-      "aliasOf": "/brand/canonical-a9b274d33abd0420/favicon-dark.svg"
+      "sha256": "473ff4167d9c71b2197d9093a94628a63f57a0d8b20ff0c7d049330e7e347e5b",
+      "aliasOf": "/brand/canonical-8bfdbd59528629c2/favicon-dark.svg"
     },
     "brand/canonical-e9bf2b4d7deef5c9/favicon-light-16.png": {
-      "sha256": "eb039bca5a8671fa26ecf114167dffd98af4e929f84cc4038c5344ec6f469dae",
+      "sha256": "77e753e7454a5a4e4eb972a244f439cfb4175e28efcc284977ae4c80a3a58566",
       "dimensions": [
         16,
         16
       ],
-      "aliasOf": "/brand/canonical-a9b274d33abd0420/favicon-light-16.png"
+      "aliasOf": "/brand/canonical-8bfdbd59528629c2/favicon-light-16.png"
     },
     "brand/canonical-e9bf2b4d7deef5c9/favicon-light-32.png": {
-      "sha256": "038fbed2757bad12082406c83aa49f24625e7e9bdb068a93cac7edf80f1b6837",
+      "sha256": "6db885e3905cbeb7fde7004ca425ab4a1cf5be3ffb8c6cfb7228429eb84e221b",
       "dimensions": [
         32,
         32
       ],
-      "aliasOf": "/brand/canonical-a9b274d33abd0420/favicon-light-32.png"
+      "aliasOf": "/brand/canonical-8bfdbd59528629c2/favicon-light-32.png"
     },
     "brand/canonical-e9bf2b4d7deef5c9/favicon-light-48.png": {
-      "sha256": "99501f5fa81d63a9e5446af157f8bd6e6ab590a0cb73e25a798bebb9032bb5f3",
+      "sha256": "03aa16647892da48e079778e716e3b1c25d84b4bd087945b5ea4534e1f9fcd93",
       "dimensions": [
         48,
         48
       ],
-      "aliasOf": "/brand/canonical-a9b274d33abd0420/favicon-light-48.png"
+      "aliasOf": "/brand/canonical-8bfdbd59528629c2/favicon-light-48.png"
+    },
+    "brand/canonical-e9bf2b4d7deef5c9/favicon-light.ico": {
+      "sha256": "0934b9a945f277c0d968599c0cee9e4693a3f1318fae3113e42f29aae109aede",
+      "aliasOf": "/brand/canonical-8bfdbd59528629c2/favicon-light.ico"
     },
     "brand/canonical-e9bf2b4d7deef5c9/favicon-light.svg": {
-      "sha256": "97a9533fac792a8499274d064776aeb9cea738e74d8358243f72975e5e04b21f",
-      "aliasOf": "/brand/canonical-a9b274d33abd0420/favicon-light.svg"
+      "sha256": "d26c789648ac99a4e01ac9a744ed96edc3dda7dacd279c662844f08f784b00c0",
+      "aliasOf": "/brand/canonical-8bfdbd59528629c2/favicon-light.svg"
     },
     "brand/canonical-e9bf2b4d7deef5c9/favicon.ico": {
-      "sha256": "f08f8966a4f02987f039f16c88be4492612dcd8ffb41a1df328ae754aa2a69ab",
-      "aliasOf": "/brand/canonical-a9b274d33abd0420/favicon.ico"
+      "sha256": "df906fa13b45b2be7719159f3c60031837e99db2123f0cef7223dbe129fc66b6",
+      "aliasOf": "/brand/canonical-8bfdbd59528629c2/favicon.ico"
     },
     "brand/canonical-e9bf2b4d7deef5c9/icon-192.png": {
       "sha256": "d9a4bc8aafe21b792c51b58d61aa44406ec5581c34570956519cdf9644bfe1d2",
@@ -186,7 +198,7 @@
         192,
         192
       ],
-      "aliasOf": "/brand/canonical-a9b274d33abd0420/icon-192.png"
+      "aliasOf": "/brand/canonical-8bfdbd59528629c2/icon-192.png"
     },
     "brand/canonical-e9bf2b4d7deef5c9/icon-512.png": {
       "sha256": "fc2f500095e582e3d1f0cc9baab740892adc4904076357ed1b48a552df16f268",
@@ -194,7 +206,7 @@
         512,
         512
       ],
-      "aliasOf": "/brand/canonical-a9b274d33abd0420/icon-512.png"
+      "aliasOf": "/brand/canonical-8bfdbd59528629c2/icon-512.png"
     },
     "brand/canonical-e9bf2b4d7deef5c9/icon-maskable-192.png": {
       "sha256": "80a5ee3d1a31c409a686adab5f013999fe451529d72d8929b28744b7868fafa7",
@@ -202,7 +214,7 @@
         192,
         192
       ],
-      "aliasOf": "/brand/canonical-a9b274d33abd0420/icon-maskable-192.png"
+      "aliasOf": "/brand/canonical-8bfdbd59528629c2/icon-maskable-192.png"
     },
     "brand/canonical-e9bf2b4d7deef5c9/icon-maskable-512.png": {
       "sha256": "d61a654623de1c94b689d60b21ebd88841ecd441e06d1d1c29371ca15029ed4f",
@@ -210,19 +222,19 @@
         512,
         512
       ],
-      "aliasOf": "/brand/canonical-a9b274d33abd0420/icon-maskable-512.png"
+      "aliasOf": "/brand/canonical-8bfdbd59528629c2/icon-maskable-512.png"
     },
     "brand/canonical-e9bf2b4d7deef5c9/install-icon.svg": {
       "sha256": "356071a78a3b40e8a67119a2fb372a8a0846230efff4ffdc7ff224c4defedaa4",
-      "aliasOf": "/brand/canonical-a9b274d33abd0420/install-icon.svg"
+      "aliasOf": "/brand/canonical-8bfdbd59528629c2/install-icon.svg"
     },
     "brand/canonical-e9bf2b4d7deef5c9/maskable-install-icon.svg": {
       "sha256": "77de3e845cbbaef26e22aa051af771e3cc60e22a7b0828b5200b75648b14d097",
-      "aliasOf": "/brand/canonical-a9b274d33abd0420/maskable-install-icon.svg"
+      "aliasOf": "/brand/canonical-8bfdbd59528629c2/maskable-install-icon.svg"
     },
     "brand/canonical-e9bf2b4d7deef5c9/pinned-tab.svg": {
       "sha256": "e8205f70494d841c9174d181f7f29800c7cd98e82abd31ed0220448cde3eba80",
-      "aliasOf": "/brand/canonical-a9b274d33abd0420/pinned-tab.svg"
+      "aliasOf": "/brand/canonical-8bfdbd59528629c2/pinned-tab.svg"
     },
     "brand/canonical-e9bf2b4d7deef5c9/surfaces-social.png": {
       "sha256": "04bef1742a52021646d0a92a4f0367688b5a3754228498d830439b7f94d4af92",
@@ -238,7 +250,7 @@
       "sha256": "356071a78a3b40e8a67119a2fb372a8a0846230efff4ffdc7ff224c4defedaa4"
     },
     "design-system/logo/favicon.svg": {
-      "sha256": "8412ea442e0bc9fa2854568488d254e6681be846259d394bce0fe6ca74008846"
+      "sha256": "473ff4167d9c71b2197d9093a94628a63f57a0d8b20ff0c7d049330e7e347e5b"
     },
     "design-system/logo/surfaces-social-card.png": {
       "sha256": "04bef1742a52021646d0a92a4f0367688b5a3754228498d830439b7f94d4af92",
@@ -251,19 +263,19 @@
       "sha256": "39c7d902bd58d4f1496926aa86cf8dfc71947172116f8c01a84db64ebc44705e"
     },
     "favicon-dark.svg": {
-      "sha256": "8412ea442e0bc9fa2854568488d254e6681be846259d394bce0fe6ca74008846"
+      "sha256": "473ff4167d9c71b2197d9093a94628a63f57a0d8b20ff0c7d049330e7e347e5b"
     },
     "favicon.ico": {
-      "sha256": "f08f8966a4f02987f039f16c88be4492612dcd8ffb41a1df328ae754aa2a69ab"
+      "sha256": "df906fa13b45b2be7719159f3c60031837e99db2123f0cef7223dbe129fc66b6"
     },
     "favicon.svg": {
-      "sha256": "8412ea442e0bc9fa2854568488d254e6681be846259d394bce0fe6ca74008846"
+      "sha256": "473ff4167d9c71b2197d9093a94628a63f57a0d8b20ff0c7d049330e7e347e5b"
     },
     "icon.svg": {
-      "sha256": "8412ea442e0bc9fa2854568488d254e6681be846259d394bce0fe6ca74008846"
+      "sha256": "473ff4167d9c71b2197d9093a94628a63f57a0d8b20ff0c7d049330e7e347e5b"
     },
     "site.webmanifest": {
-      "sha256": "19205ee1a4d1b2b8a1dd647861c291ca11c44309744affecf43a708ef4bc8b7d"
+      "sha256": "431f33ce4faa7a522d4515b68d4a70e4c9a3b5dc023da70c40c974b2598e1047"
     }
   }
 }
