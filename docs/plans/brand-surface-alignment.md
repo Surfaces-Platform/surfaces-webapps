@@ -1,7 +1,7 @@
 # Feature Plan: shared brand entrypoints
 
 ## Summary
-Align Surfaces browser icons with the shared three-product tile contract: radius 8, centered 48-unit visible mark, explicit light/dark plates, and Nickel retained. Regular Apple/PWA icons use the same mark height on a square plate; maskable icons use a 36-unit safe-area alternate. All public sharing metadata uses the existing dark Surfaces reference composition.
+Align Surfaces browser icons with the shared three-product tile contract: transparent canvas in both themes (radius 0), centered 48-unit visible mark, and Nickel retained. Regular Apple/PWA icons use the same mark height on a square plate; maskable icons use a 36-unit safe-area alternate. All public sharing metadata uses the existing dark Surfaces reference composition.
 
 ## Strategy alignment
 The approved brand presentation is an owner-defined invariant for generated interfaces. Deterministic source/export checks block drift before the interface ships, supporting the strategy's decision filter without changing product positioning or enforcement semantics.
@@ -20,8 +20,8 @@ Change canonical master geometry, horizontal header lockups, product messaging, 
 
 ## Acceptance criteria
 1. Original three slab coordinates and both horizontal lockup hashes remain unchanged.
-2. Light/dark browser SVG and PNG exports have radius 8 and centered 48-unit mark height with the shared palette.
-3. Actual head has distinct versioned theme-aware SVG and 16/32 PNG links; ICO/root aliases use the current dark fallback.
+2. Both browser themes have transparent SVG/PNG/ICO artwork with no plate or outline, centered 48-unit mark height, and the shared palette.
+3. Actual head runs the shared hash-pinned classic controller synchronously before parsing finishes. It selects exactly one typed theme-specific ICO, updates the same link on appearance changes, and offers a light ICO only in noscript. No competing static SVG/PNG icon advertisements remain.
 4. Apple and regular PWA exports have opaque Ink square plates and a 48-unit Ivory/Nickel mark; maskable exports have 36-unit ink fully inside the safe circle.
 5. Contract/source changes produce a new revision path; Next and standalone HTML heads agree.
 6. Every public sharing override advertises the same dark 1200×630 whole-lockup composition. Existing metadata titles/descriptions remain appropriate.
@@ -30,7 +30,7 @@ Change canonical master geometry, horizontal header lockups, product messaging, 
 
 ## Risks and drift checks
 1. Geometry could be redrawn to fit the tile. Preserve exact master polygons and apply only uniform outer transforms.
-2. A favicon cache could conceal the update. Derive the revision from the full presentation contract/source hashes and advertise new explicit URLs.
+2. A favicon cache could conceal the update. Derive the revision from the full presentation contract/source hashes, including the shared controller, and advertise new explicit URLs. Native Safari can retain a processed icon by hostname after appearance changes; DOM selection tests do not prove immediate toolbar refresh.
 3. Sharing could add promotional copy or become design tooling. Reuse the existing plain dark composition and keep titles in metadata.
 
 ## Implementation outline

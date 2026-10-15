@@ -4,9 +4,11 @@ import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { inflateSync } from "node:zlib";
+import { runInNewContext } from "node:vm";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { brandRevision, brandAssetBase, brandIcons, brandManifest, homeSocialImage, designSystemSocialImage } from "@/lib/brand-metadata";
-import { metadata as rootMetadata } from "@/app/layout";
+import RootLayout, { metadata as rootMetadata } from "@/app/layout";
 import { metadata as referenceMetadata } from "@/app/design-system/page";
 import { generateMetadata } from "@/app/design-system/[section]/page";
 import { navItems } from "@/app/design-system/referenceContent";
@@ -74,7 +76,7 @@ describe("browser, install, and sharing brand entrypoints", () => {
     expect(revision).toBe(`canonical-${hash(Buffer.from(JSON.stringify(stable(recipe)))).slice(0, 16)}`);
     expect(brandRevision).toBe(revision);
     expect(contract.iconRaster).toEqual({ background: "none", density: 384, resize: "target!", strip: true, colorspace: "sRGB", format: "PNG32", opaqueFormat: "PNG24", excludePngChunks: ["date", "time"] });
-    expect(Object.keys(exports.exports)).toHaveLength(31);
+    expect(Object.keys(exports.exports)).toHaveLength(34);
     for (const [path, item] of Object.entries(exports.exports) as [string, { sha256: string; dimensions?: number[] }][]) {
       const bytes = read(`public/${path}`);
       expect(hash(bytes), path).toBe(item.sha256);
@@ -97,9 +99,8 @@ describe("browser, install, and sharing brand entrypoints", () => {
         "#8B9096",
       ]);
       expect(svg).not.toContain("#00A7C8");
-      const plate = doc.querySelector("rect")!;
-      expect(plate.getAttribute("rx")).toBe("8");
-      expect(plate.getAttribute("fill")).toBe(theme === "light" ? "#F7F6F2" : "#0B0D0E");
+      expect(doc.querySelector("rect")).toBeNull();
+      expect(doc.querySelector("[stroke]")).toBeNull();
       const ink = transformedInk(svg, "browser-mark");
       expect(ink.maxY - ink.minY).toBeCloseTo(48, 8);
       expect((ink.minX + ink.maxX) / 2).toBeCloseTo(32, 8);
@@ -109,13 +110,18 @@ describe("browser, install, and sharing brand entrypoints", () => {
     const ico = read("public/favicon.ico");
     expect(ico).toEqual(read(`public${brandAssetBase}/favicon.ico`));
     expect([...ico.subarray(0, 6)]).toEqual([0, 0, 1, 0, 3, 0]);
-    for (const [index, size] of [16, 32, 48].entries()) {
-      const directory = 6 + 16 * index;
-      expect([ico[directory], ico[directory + 1]]).toEqual([size, size]);
-      const length = ico.readUInt32LE(directory + 8);
-      const offset = ico.readUInt32LE(directory + 12);
-      expect(sizeOfPng(ico.subarray(offset, offset + length))).toEqual([size, size]);
-      expect(ico.subarray(offset, offset + length)).toEqual(read(`public${brandAssetBase}/favicon-dark-${size}.png`));
+    expect(ico).toEqual(read(`public${brandAssetBase}/favicon-dark.ico`));
+    for (const theme of ["light", "dark"]) {
+      const themedIco = read(`public${brandAssetBase}/favicon-${theme}.ico`);
+      expect([...themedIco.subarray(0, 6)]).toEqual([0, 0, 1, 0, 3, 0]);
+      for (const [index, size] of [16, 32, 48].entries()) {
+        const directory = 6 + 16 * index;
+        expect([themedIco[directory], themedIco[directory + 1]]).toEqual([size, size]);
+        const length = themedIco.readUInt32LE(directory + 8);
+        const offset = themedIco.readUInt32LE(directory + 12);
+        expect(sizeOfPng(themedIco.subarray(offset, offset + length))).toEqual([size, size]);
+        expect(themedIco.subarray(offset, offset + length)).toEqual(read(`public${brandAssetBase}/favicon-${theme}-${size}.png`));
+      }
     }
     expect(existsSync("app/icon.svg")).toBe(false);
     for (const path of ["public/icon.svg", "public/favicon.svg", "public/design-system/logo/favicon.svg"]) {
@@ -124,18 +130,52 @@ describe("browser, install, and sharing brand entrypoints", () => {
     expect(contract.browser.defaultTheme).toBe("dark");
   });
 
-  it("keeps every partial-alpha dark tile edge Ink, including the ICO fallback pixels", () => {
-    for (const size of [16, 32, 48]) {
-      const { width, height, pixels } = rgbaPng(read(`public${brandAssetBase}/favicon-dark-${size}.png`));
-      let sampled = 0;
+  it("keeps both browser themes transparent outside the mark, including the ICO fallback pixels", () => {
+    expect(contract.browser.plates).toEqual({ light: null, dark: null });
+    expect(contract.browser.radius).toBe(0);
+    for (const theme of ["light", "dark"]) for (const size of [16, 32, 48]) {
+      const { width, height, pixels } = rgbaPng(read(`public${brandAssetBase}/favicon-${theme}-${size}.png`));
+      let visible = 0, transparent = 0;
       for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
         const offset = (y * width + x) * 4, alpha = pixels[offset + 3];
-        if (Math.min(x, y, width - 1 - x, height - 1 - y) < 2 && alpha > 0 && alpha < 255) {
-          expect([...pixels.subarray(offset, offset + 3)]).toEqual([11, 13, 14]);
-          sampled++;
+        // Keep the outer pixel ring clear; resampling may antialias into the
+        // second row at 16 px because the approved mark reaches y = 8 / 64.
+        if (Math.min(x, y, width - 1 - x, height - 1 - y) === 0) expect(alpha).toBe(0);
+        if (alpha > 0) {
+          expect([...pixels.subarray(offset, offset + 3)]).not.toEqual(theme === "dark" ? [11, 13, 14] : [247, 246, 242]);
+          visible++;
+        } else {
+          transparent++;
         }
       }
-      expect(sampled).toBeGreaterThan(0);
+      expect(visible).toBeGreaterThan(0);
+      expect(transparent).toBeGreaterThan(visible);
+    }
+  });
+
+  it("selects exactly one typed ICO synchronously and updates the same link on appearance changes", () => {
+    const controller = read("brand-source/favicon-theme.js");
+    expect(hash(controller)).toBe("438e2c44cada8c2a0ae77ff4000d87f5d943b00afda39a786850f5fe3871140e");
+    expect(read(`public${brandAssetBase}/favicon-theme.js`)).toEqual(controller);
+    for (const initiallyDark of [false, true]) {
+      const links: { rel?: string; type?: string; sizes?: string; href?: string; dataset: Record<string, string> }[] = [];
+      let change = () => {};
+      const appearance = { matches: initiallyDark, addEventListener: (event: string, callback: () => void) => {
+        expect(event).toBe("change"); change = callback;
+      } };
+      runInNewContext(controller.toString(), {
+        window: { matchMedia: (query: string) => { expect(query).toBe("(prefers-color-scheme: dark)"); return appearance; } },
+        document: {
+          currentScript: { dataset: { lightIcon: `${brandAssetBase}/favicon-light.ico`, darkIcon: `${brandAssetBase}/favicon-dark.ico` } },
+          createElement: (tag: string) => { expect(tag).toBe("link"); return { dataset: {} }; },
+          head: { append: (link: typeof links[number]) => links.push(link) },
+        },
+      });
+      expect(links).toHaveLength(1);
+      expect(links[0]).toMatchObject({ rel: "icon", type: "image/x-icon", sizes: "16x16 32x32 48x48", href: `${brandAssetBase}/favicon-${initiallyDark ? "dark" : "light"}.ico` });
+      appearance.matches = !initiallyDark; change();
+      expect(links).toHaveLength(1);
+      expect(links[0].href).toBe(`${brandAssetBase}/favicon-${initiallyDark ? "light" : "dark"}.ico`);
     }
   });
 
@@ -211,19 +251,19 @@ describe("browser, install, and sharing brand entrypoints", () => {
     const archive = "public/design-system/brand-kit/surfaces-brand-kit-v0.2.zip";
     const usage = read("public/design-system/brand-kit/README.txt");
     expect(execFileSync("unzip", ["-p", archive, "README.txt"])).toEqual(usage);
-    expect(usage.toString()).toContain("same dark fallback tile");
+    expect(usage.toString()).toContain("same transparent reversed dark fallback mark");
     expect(usage.toString()).toContain("Ivory/Nickel mark on an opaque Ink square");
     for (const path of ["surfaces-social-card.png", "app-icon.svg"]) {
       expect(execFileSync("unzip", ["-p", archive, path])).toEqual(read(`public/design-system/logo/${path}`));
     }
     expect(execFileSync("unzip", ["-p", archive, "site-brand/site.webmanifest"])).toEqual(read("public/site.webmanifest"));
-    for (const filename of ["favicon.ico", "apple-touch-icon-180.png", "icon-maskable-512.png"]) {
+    for (const filename of ["favicon.ico", "favicon-light.ico", "favicon-dark.ico", "favicon-theme.js", "apple-touch-icon-180.png", "icon-maskable-512.png"]) {
       expect(execFileSync("unzip", ["-p", archive, `site-brand/${filename}`])).toEqual(read(`public${brandAssetBase}/${filename}`));
     }
   });
 
   it("synchronizes old icon URLs and fingerprints the bytes each legacy manifest serves", () => {
-    expect(contract.legacyIconRevisions).toEqual(["canonical-1d29168", "canonical-e9bf2b4d7deef5c9"]);
+    expect(contract.legacyIconRevisions).toEqual(["canonical-1d29168", "canonical-e9bf2b4d7deef5c9", "canonical-a9b274d33abd0420"]);
     const snapshots = json(contract.legacyExportsSource.path).manifests;
     for (const revision of contract.legacyIconRevisions) {
       const legacy = json(`public/brand/${revision}/exports.json`);
@@ -250,19 +290,20 @@ describe("browser, install, and sharing brand entrypoints", () => {
     expect(page.querySelector('meta[name="twitter:image"]')?.getAttribute("content")).toBe(`https://surfaces.systems${homeSocialImage.url}`);
     expect(page.querySelector('link[rel="manifest"]')?.getAttribute("href")).toBe(brandManifest);
     expect(page.querySelector('link[rel="apple-touch-icon"]')?.getAttribute("href")).toBe(`${brandAssetBase}/apple-touch-icon-180.png`);
-    const actualIcons = [...page.querySelectorAll('link[rel="icon"]')].map((icon) => ({
-      url: icon.getAttribute("href"), sizes: icon.getAttribute("sizes"), type: icon.getAttribute("type"), media: icon.getAttribute("media"),
-    }));
-    expect(actualIcons[0].url).toBe(`${brandAssetBase}/favicon.ico`);
-    if (!brandIcons || typeof brandIcons !== "object" || !("icon" in brandIcons) || !Array.isArray(brandIcons.icon)) {
-      throw new Error("Expected the brand icon descriptor list.");
+    expect(brandIcons).not.toHaveProperty("icon");
+    for (const html of [page.documentElement.outerHTML, renderToStaticMarkup(<RootLayout><main>Fixture</main></RootLayout>)]) {
+      const document = new DOMParser().parseFromString(html, "text/html");
+      const controller = document.querySelector(`head > script[src="${brandAssetBase}/favicon-theme.js"]`)!;
+      expect(controller).not.toBeNull();
+      expect(controller.getAttribute("data-light-icon")).toBe(`${brandAssetBase}/favicon-light.ico`);
+      expect(controller.getAttribute("data-dark-icon")).toBe(`${brandAssetBase}/favicon-dark.ico`);
+      for (const attribute of ["async", "defer", "type"]) expect(controller.hasAttribute(attribute)).toBe(false);
+      const icons = [...document.querySelectorAll('link[rel="icon"]')];
+      expect(icons).toHaveLength(1);
+      expect(icons[0].parentElement?.tagName).toBe("NOSCRIPT");
+      expect(icons[0].getAttribute("href")).toBe(`${brandAssetBase}/favicon-light.ico`);
+      expect(icons[0].getAttribute("type")).toBe("image/x-icon");
+      expect(html.indexOf("favicon-theme.js")).toBeLessThan(html.indexOf("<body"));
     }
-    const expectedIcons = brandIcons.icon.map((icon) => {
-      if (!icon || typeof icon !== "object" || !("url" in icon)) {
-        throw new Error("Expected an explicit brand icon descriptor.");
-      }
-      return { ...icon, url: String(icon.url), media: icon.media ?? null };
-    });
-    expect(actualIcons).toEqual(expectedIcons);
   });
 });

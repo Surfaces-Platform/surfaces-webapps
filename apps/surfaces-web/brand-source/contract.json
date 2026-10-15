@@ -1,5 +1,5 @@
 {
-  "revision": "canonical-a9b274d33abd0420",
+  "revision": "canonical-8bfdbd59528629c2",
   "canonicalBrandCommit": "1d29168a9d35bc4f45de857afd7b43ea404532f8",
   "sources": {
     "markLight": {
@@ -21,6 +21,10 @@
     "lockupDark": {
       "path": "public/design-system/logo/surfaces-lockup-horizontal-reverse.svg",
       "sha256": "8174df02add7d2509950fad5c1d6d11492be0538ad12cfa3222f3bc6efac4987"
+    },
+    "faviconThemeController": {
+      "path": "brand-source/favicon-theme.js",
+      "sha256": "438e2c44cada8c2a0ae77ff4000d87f5d943b00afda39a786850f5fe3871140e"
     }
   },
   "polygons": [
@@ -72,7 +76,7 @@
       64,
       64
     ],
-    "radius": 8,
+    "radius": 0,
     "visibleMarkHeight": 48,
     "inkCenter": [
       32,
@@ -86,10 +90,12 @@
     ],
     "markTransform": "translate(4.307692307692 2.461538461538) scale(0.923076923077)",
     "plates": {
-      "light": "#F7F6F2",
-      "dark": "#0B0D0E"
+      "light": null,
+      "dark": null
     },
-    "defaultTheme": "dark"
+    "defaultTheme": "dark",
+    "presentation": "Transparent in both themes; no plate or outline. Exact master geometry and 48-unit visible mark retained.",
+    "themeSelection": "Exactly one typed ICO chosen by the synchronous classic head controller before parsing finishes; no other static browser icon advertisements. Noscript uses the light ICO."
   },
   "revisionPolicy": "canonical- plus first 16 SHA256 hex characters of sorted compact JSON for this contract excluding revision.",
   "iconRaster": {
@@ -143,7 +149,8 @@
   },
   "legacyIconRevisions": [
     "canonical-1d29168",
-    "canonical-e9bf2b4d7deef5c9"
+    "canonical-e9bf2b4d7deef5c9",
+    "canonical-a9b274d33abd0420"
   ],
   "iconAliasFiles": [
     "favicon-light.svg",
@@ -162,10 +169,12 @@
     "install-icon.svg",
     "maskable-install-icon.svg",
     "pinned-tab.svg",
-    "favicon.ico"
+    "favicon.ico",
+    "favicon-light.ico",
+    "favicon-dark.ico"
   ],
   "legacyExportsSource": {
     "path": "brand-source/legacy-icon-exports.json",
-    "sha256": "cced5e1f845a67ba14e78f6f627dd5f6133f96c76f457668712c931e9d9d76ef"
+    "sha256": "bda8421c20942aac4c76bd9d676384fac4e71c71d209632e5adc9bb57e807692"
   }
 }
