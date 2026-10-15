@@ -1,5 +1,5 @@
 {
-  "revision": "canonical-e9bf2b4d7deef5c9",
+  "revision": "canonical-a9b274d33abd0420",
   "canonicalBrandCommit": "1d29168a9d35bc4f45de857afd7b43ea404532f8",
   "sources": {
     "markLight": {
@@ -52,8 +52,8 @@
       }
     },
     "opaque": true,
-    "theme": "light",
-    "plate": "#F7F6F2"
+    "theme": "dark",
+    "plate": "#0B0D0E"
   },
   "social": {
     "dimensions": [
@@ -88,7 +88,8 @@
     "plates": {
       "light": "#F7F6F2",
       "dark": "#0B0D0E"
-    }
+    },
+    "defaultTheme": "dark"
   },
   "revisionPolicy": "canonical- plus first 16 SHA256 hex characters of sorted compact JSON for this contract excluding revision.",
   "iconRaster": {
@@ -111,7 +112,7 @@
     "start_url": "/",
     "scope": "/",
     "display": "standalone",
-    "background_color": "#F7F6F2",
+    "background_color": "#0B0D0E",
     "theme_color": "#0B0D0E",
     "icons": [
       {
@@ -139,5 +140,32 @@
         "purpose": "maskable"
       }
     ]
+  },
+  "legacyIconRevisions": [
+    "canonical-1d29168",
+    "canonical-e9bf2b4d7deef5c9"
+  ],
+  "iconAliasFiles": [
+    "favicon-light.svg",
+    "favicon-light-16.png",
+    "favicon-light-32.png",
+    "favicon-light-48.png",
+    "favicon-dark.svg",
+    "favicon-dark-16.png",
+    "favicon-dark-32.png",
+    "favicon-dark-48.png",
+    "apple-touch-icon-180.png",
+    "icon-192.png",
+    "icon-512.png",
+    "icon-maskable-192.png",
+    "icon-maskable-512.png",
+    "install-icon.svg",
+    "maskable-install-icon.svg",
+    "pinned-tab.svg",
+    "favicon.ico"
+  ],
+  "legacyExportsSource": {
+    "path": "brand-source/legacy-icon-exports.json",
+    "sha256": "cced5e1f845a67ba14e78f6f627dd5f6133f96c76f457668712c931e9d9d76ef"
   }
 }

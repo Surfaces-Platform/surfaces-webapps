@@ -63,6 +63,11 @@ def main():
     expected_revision = "canonical-" + sha(json.dumps(recipe, sort_keys=True, separators=(",", ":")).encode())[:16]
     if VERSION != expected_revision:
         raise SystemExit(f"Contract revision must be {expected_revision}; update the contract and standalone HTML head before rebuilding.")
+    legacy_spec = CONTRACT["legacyExportsSource"]
+    legacy_bytes = (APP / legacy_spec["path"]).read_bytes()
+    if sha(legacy_bytes) != legacy_spec["sha256"]:
+        raise SystemExit("Unapproved legacy export provenance drift.")
+    legacy_sources = json.loads(legacy_bytes)["manifests"]
     light = source("markLight")
     dark = source("markDark")
     one_color = source("markOneColor")
@@ -104,24 +109,21 @@ def main():
                 f'<g data-role="browser-mark" transform="{CONTRACT["browser"]["markTransform"]}">'
                 + art + '</g>', f"Surfaces {theme} browser mark")
             put(f"brand/{VERSION}/favicon-{theme}.svg", browser)
-            put("favicon.svg" if theme == "light" else "favicon-dark.svg", browser)
-            if theme == "light":
+            if theme == "dark":
+                put("favicon-dark.svg", browser)
+            if theme == CONTRACT["browser"]["defaultTheme"]:
+                put("favicon.svg", browser)
+                put("icon.svg", browser)  # Unqualified compatibility fallback.
                 put("design-system/logo/favicon.svg", browser)
             for size in (16, 32, 48):
                 put(f"brand/{VERSION}/favicon-{theme}-{size}.png", png(browser, size, size, icon=True), [size, size])
 
-        adaptive = svg(64, 64,
-            '<style>.plate{fill:#F7F6F2}.primary{fill:#0B0D0E}'
-            '@media(prefers-color-scheme:dark){.plate{fill:#0B0D0E}.primary{fill:#F7F6F2}}</style>'
-            f'<rect width="64" height="64" rx="{CONTRACT["browser"]["radius"]}" class="plate"/>'
-            f'<g data-role="browser-mark" transform="{CONTRACT["browser"]["markTransform"]}">'
-            + light_art.replace('fill="#0B0D0E"', 'class="primary"') + '</g>', "Surfaces adaptive browser mark")
-        put("icon.svg", adaptive)  # Compatibility for the former Next app/icon.svg route.
         put(f"brand/{VERSION}/pinned-tab.svg", one_color.encode())
 
-        # The conventional ICO contains the same light fallback tile pixels,
+        # The conventional ICO contains the same default dark fallback pixels,
         # including transparent corners outside its shared rounded container.
-        frames = [(size, outputs[f"apps/surfaces-web/public/brand/{VERSION}/favicon-light-{size}.png"])
+        fallback = CONTRACT["browser"]["defaultTheme"]
+        frames = [(size, outputs[f"apps/surfaces-web/public/brand/{VERSION}/favicon-{fallback}-{size}.png"])
                   for size in (16, 32, 48)]
         offset = 6 + 16 * len(frames)
         ico = struct.pack("<HHH", 0, 1, len(frames))
@@ -130,6 +132,7 @@ def main():
             offset += len(data)
         ico += b"".join(data for _, data in frames)
         put("favicon.ico", ico)
+        put(f"brand/{VERSION}/favicon.ico", ico)
 
         def install_plate(purpose):
             return svg(64, 64,
@@ -189,6 +192,47 @@ def main():
             },
         }
         put(f"brand/{VERSION}/exports.json", (json.dumps(exports, indent=2) + "\n").encode())
+
+        # Older URLs remain compatibility aliases. Read checked-in provenance,
+        # never the generated alias manifests, so rebuilds stay idempotent.
+        for revision in CONTRACT["legacyIconRevisions"]:
+            historical = legacy_sources[revision]
+            alias_targets = {}
+            for filename in CONTRACT["iconAliasFiles"]:
+                current = f"apps/surfaces-web/public/brand/{VERSION}/{filename}"
+                alias = f"brand/{revision}/{filename}"
+                put(alias, outputs[current], dimensions.get(current))
+                alias_targets[alias] = f"{BASE}/{filename}"
+            records = {}
+            original = historical["exports"]
+            for path in sorted(set(original) | set(alias_targets)):
+                full_path = f"apps/surfaces-web/public/{path}"
+                data = outputs.get(full_path)
+                if data is None:
+                    data = (ROOT / full_path).read_bytes()
+                size = dimensions.get(full_path, original.get(path, {}).get("dimensions"))
+                records[path] = {
+                    "sha256": sha(data),
+                    **({"dimensions": size} if size else {}),
+                    **({"aliasOf": alias_targets[path]} if path in alias_targets else {}),
+                }
+            legacy_exports = {
+                "revision": revision,
+                "aliasOf": f"{BASE}/exports.json",
+                "canonicalBrandCommit": CONTRACT["canonicalBrandCommit"],
+                "sources": CONTRACT["sources"],
+                "sourcePolicy": {
+                    "icons": "Compatibility aliases generated from the current icon sources and presentation contract.",
+                    "nonIcons": "File bytes are preserved; records fingerprint the actual served bytes. Original non-icon provenance remains below.",
+                    "provenanceSource": legacy_spec,
+                },
+                "historicalSources": historical["sources"],
+                "historicalNonIconExports": {path: spec for path, spec in original.items()
+                                             if path not in alias_targets and not any(
+                                                 token in path for token in ("favicon", "icon.svg", "icon-", "apple-touch", "site.webmanifest"))},
+                "exports": records,
+            }
+            put(f"brand/{revision}/exports.json", (json.dumps(legacy_exports, indent=2) + "\n").encode())
 
         changed = []
         for name, data in outputs.items():
