@@ -176,7 +176,15 @@ describe("browser, install, and sharing brand entrypoints", () => {
     const actualIcons = [...page.querySelectorAll('link[rel="icon"]')].map((icon) => ({
       url: icon.getAttribute("href"), sizes: icon.getAttribute("sizes"), type: icon.getAttribute("type"), media: icon.getAttribute("media"),
     }));
-    const expectedIcons = (brandIcons!.icon as { url: string; sizes: string; type: string; media?: string }[]).map((icon) => ({ ...icon, media: icon.media ?? null }));
+    if (!brandIcons || typeof brandIcons !== "object" || !("icon" in brandIcons) || !Array.isArray(brandIcons.icon)) {
+      throw new Error("Expected the brand icon descriptor list.");
+    }
+    const expectedIcons = brandIcons.icon.map((icon) => {
+      if (!icon || typeof icon !== "object" || !("url" in icon)) {
+        throw new Error("Expected an explicit brand icon descriptor.");
+      }
+      return { ...icon, url: String(icon.url), media: icon.media ?? null };
+    });
     expect(actualIcons).toEqual(expectedIcons);
   });
 });
