@@ -2,6 +2,7 @@
 """Refresh compatible color aliases and the public kit from vendored canonical SVGs."""
 from pathlib import Path
 from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
+import json
 
 root = Path(__file__).resolve().parent.parent
 public = root / "apps/surfaces-web/public/design-system"
@@ -33,7 +34,7 @@ for name in ["surfaces.tokens.json", "surfaces.product.tokens.json", "surfaces.c
 files["README.txt"] = public / "brand-kit/README.txt"
 files["surfaces-lockups.json"] = public / "surfaces-lockups.json"
 site_public = public.parent
-revision = "canonical-1d29168"
+revision = json.loads((root / "apps/surfaces-web/brand-source/contract.json").read_text())["revision"]
 for path in sorted((site_public / "brand" / revision).iterdir()):
     files[f"site-brand/{path.name}"] = path
 for name in ["favicon.ico", "site.webmanifest"]:

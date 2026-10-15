@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import brandContract from "@/brand-source/contract.json";
 
-export const brandRevision = "canonical-1d29168";
+export const brandRevision = brandContract.revision;
 export const brandAssetBase = `/brand/${brandRevision}`;
 export const brandManifest = `/site.webmanifest?v=${brandRevision}`;
 
@@ -34,9 +35,5 @@ export const homeSocialImage = {
 };
 
 export const designSystemSocialImage = {
-  url: `${brandAssetBase}/design-system-social.png`,
-  width: 1200,
-  height: 630,
-  type: "image/png",
-  alt: "Surfaces design system for reviewable generated UI.",
+  ...homeSocialImage,
 };

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">Surfaces Simple Slab one-color mark</title>
+  <desc id="desc">One-color version of the Surfaces Simple Slab mark using the master three-slab geometry.</desc>
+  <g fill="#0B0D0E" shape-rendering="geometricPrecision">
+    <polygon points="14,14 50,6 50,19 14,27"/>
+    <polygon points="10,29 50,29 50,40 10,40"/>
+    <polygon points="14,43 50,51 50,58 14,50"/>
+  </g>
+</svg>

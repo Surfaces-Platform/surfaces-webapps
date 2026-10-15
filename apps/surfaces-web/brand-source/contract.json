@@ -1,5 +1,5 @@
 {
-  "revision": "canonical-1d29168",
+  "revision": "canonical-e9bf2b4d7deef5c9",
   "canonicalBrandCommit": "1d29168a9d35bc4f45de857afd7b43ea404532f8",
   "sources": {
     "markLight": {
@@ -21,10 +21,6 @@
     "lockupDark": {
       "path": "public/design-system/logo/surfaces-lockup-horizontal-reverse.svg",
       "sha256": "8174df02add7d2509950fad5c1d6d11492be0538ad12cfa3222f3bc6efac4987"
-    },
-    "socialCopy": {
-      "path": "brand-source/design-system-social-copy.svg",
-      "sha256": "27621c623fae89ed518afca2549b57bd0313ccf18e466a3c7d644c4a3adc1df9"
     }
   },
   "polygons": [
@@ -40,35 +36,108 @@
   },
   "install": {
     "viewBox": "0 0 64 64",
-    "markTransform": "translate(9.5 8) scale(0.75)",
-    "safeCircle": {
-      "center": [
-        32,
-        32
-      ],
-      "radius": 25.6
+    "any": {
+      "visibleMarkHeight": 48,
+      "markTransform": "translate(4.307692307692 2.461538461538) scale(0.923076923077)"
     },
-    "opaque": true
+    "maskable": {
+      "visibleMarkHeight": 36,
+      "markTransform": "translate(11.230769230769 9.846153846154) scale(0.692307692308)",
+      "safeCircle": {
+        "center": [
+          32,
+          32
+        ],
+        "radius": 25.6
+      }
+    },
+    "opaque": true,
+    "theme": "light",
+    "plate": "#F7F6F2"
   },
   "social": {
     "dimensions": [
       1200,
       630
     ],
-    "homeWholeLockupScale": 2.8,
-    "referenceWholeLockupScale": 1.9,
-    "copy": [
-      "Design system for",
-      "reviewable generated UI."
-    ],
-    "copyFont": {
-      "family": "Inter",
-      "weight": 760,
-      "opticalSize": 32,
-      "fontSize": 58,
-      "fontFileSha256": "0be2399ea925f1f83ff974764761da9860ec50742ed29a5d4c1ffd0c5c7ac3a8"
-    },
+    "maxWholeLockupScale": 2.8,
+    "maxWholeLockupWidth": 960,
+    "background": "#0B0D0E",
+    "composition": "Complete canonical reversed lockup centered by its whole viewBox; no tagline, radius, title panel, or domain in the image.",
     "logoPolicy": "Complete canonical Inter 780 lockup only; never retype the wordmark."
   },
-  "pinnedTabException": "Safari mask-icon is a single-color plate, derived from the approved one-color master. All full-color exports retain Nickel."
+  "pinnedTabException": "Safari mask-icon is a single-color plate, derived from the approved one-color master. All full-color exports retain Nickel.",
+  "browser": {
+    "canvas": [
+      64,
+      64
+    ],
+    "radius": 8,
+    "visibleMarkHeight": 48,
+    "inkCenter": [
+      32,
+      32
+    ],
+    "masterInkBounds": [
+      10,
+      6,
+      50,
+      58
+    ],
+    "markTransform": "translate(4.307692307692 2.461538461538) scale(0.923076923077)",
+    "plates": {
+      "light": "#F7F6F2",
+      "dark": "#0B0D0E"
+    }
+  },
+  "revisionPolicy": "canonical- plus first 16 SHA256 hex characters of sorted compact JSON for this contract excluding revision.",
+  "iconRaster": {
+    "background": "none",
+    "density": 384,
+    "resize": "target!",
+    "strip": true,
+    "colorspace": "sRGB",
+    "format": "PNG32",
+    "opaqueFormat": "PNG24",
+    "excludePngChunks": [
+      "date",
+      "time"
+    ]
+  },
+  "manifest": {
+    "id": "/",
+    "name": "Surfaces",
+    "short_name": "Surfaces",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#F7F6F2",
+    "theme_color": "#0B0D0E",
+    "icons": [
+      {
+        "src": "icon-192.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "any"
+      },
+      {
+        "src": "icon-512.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "any"
+      },
+      {
+        "src": "icon-maskable-192.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "maskable"
+      },
+      {
+        "src": "icon-maskable-512.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "maskable"
+      }
+    ]
+  }
 }

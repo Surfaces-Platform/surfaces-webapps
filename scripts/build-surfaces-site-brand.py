@@ -59,14 +59,17 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
+    recipe = {key: value for key, value in CONTRACT.items() if key != "revision"}
+    expected_revision = "canonical-" + sha(json.dumps(recipe, sort_keys=True, separators=(",", ":")).encode())[:16]
+    if VERSION != expected_revision:
+        raise SystemExit(f"Contract revision must be {expected_revision}; update the contract and standalone HTML head before rebuilding.")
     light = source("markLight")
     dark = source("markDark")
     one_color = source("markOneColor")
     horizontal_light = source("lockupLight")
     horizontal_dark = source("lockupDark")
-    social_copy = source("socialCopy")
     light_art, dark_art = slab_art(light), slab_art(dark)
-    if "<text" in horizontal_light + horizontal_dark + social_copy:
+    if "<text" in horizontal_light + horizontal_dark:
         raise SystemExit("Social artwork must use checked-in vector outlines.")
     outputs = {}
     dimensions = {}
@@ -79,36 +82,47 @@ def main():
     with tempfile.TemporaryDirectory(prefix="surfaces-brand-") as scratch:
         scratch = Path(scratch)
 
-        def png(art, width, height, opaque=False):
+        def png(art, width, height, opaque=False, icon=False):
             (scratch / "source.svg").write_bytes(art)
             dest = scratch / "render.png"
             vector = ET.fromstring(art)
-            density = 72 * width / float(vector.attrib["width"])
+            density = CONTRACT["iconRaster"]["density"] if icon else 72 * width / float(vector.attrib["width"])
+            color_args = ["-colorspace", CONTRACT["iconRaster"]["colorspace"]] if icon else []
             subprocess.run([
                 "magick", "-background", "none", "-density", str(density), str(scratch / "source.svg"),
                 "-resize", f"{width}x{height}!", "-strip",
+                *color_args,
                 "-define", "png:exclude-chunks=date,time",
                 f"PNG{24 if opaque else 32}:{dest}",
             ], check=True, capture_output=True)
             return dest.read_bytes()
 
         for theme, art in [("light", light_art), ("dark", dark_art)]:
-            browser = svg(64, 64, art, f"Surfaces {theme} browser mark")
+            browser = svg(64, 64,
+                f'<rect width="64" height="64" rx="{CONTRACT["browser"]["radius"]}" '
+                f'fill="{CONTRACT["browser"]["plates"][theme]}"/>'
+                f'<g data-role="browser-mark" transform="{CONTRACT["browser"]["markTransform"]}">'
+                + art + '</g>', f"Surfaces {theme} browser mark")
             put(f"brand/{VERSION}/favicon-{theme}.svg", browser)
             put("favicon.svg" if theme == "light" else "favicon-dark.svg", browser)
+            if theme == "light":
+                put("design-system/logo/favicon.svg", browser)
             for size in (16, 32, 48):
-                put(f"brand/{VERSION}/favicon-{theme}-{size}.png", png(browser, size, size), [size, size])
+                put(f"brand/{VERSION}/favicon-{theme}-{size}.png", png(browser, size, size, icon=True), [size, size])
 
         adaptive = svg(64, 64,
-            '<style>.primary{fill:#0B0D0E}@media(prefers-color-scheme:dark){.primary{fill:#F7F6F2}}</style>'
-            + light_art.replace('fill="#0B0D0E"', 'class="primary"'), "Surfaces adaptive browser mark")
+            '<style>.plate{fill:#F7F6F2}.primary{fill:#0B0D0E}'
+            '@media(prefers-color-scheme:dark){.plate{fill:#0B0D0E}.primary{fill:#F7F6F2}}</style>'
+            f'<rect width="64" height="64" rx="{CONTRACT["browser"]["radius"]}" class="plate"/>'
+            f'<g data-role="browser-mark" transform="{CONTRACT["browser"]["markTransform"]}">'
+            + light_art.replace('fill="#0B0D0E"', 'class="primary"') + '</g>', "Surfaces adaptive browser mark")
         put("icon.svg", adaptive)  # Compatibility for the former Next app/icon.svg route.
         put(f"brand/{VERSION}/pinned-tab.svg", one_color.encode())
 
-        # ICO PNG frames are opaque for browsers without SVG/theme support.
-        fallback = svg(64, 64, '<rect width="64" height="64" fill="#F7F6F2"/>' + light_art,
-                       "Surfaces legacy browser icon")
-        frames = [(size, png(fallback, size, size, opaque=True)) for size in (16, 32, 48)]
+        # The conventional ICO contains the same light fallback tile pixels,
+        # including transparent corners outside its shared rounded container.
+        frames = [(size, outputs[f"apps/surfaces-web/public/brand/{VERSION}/favicon-light-{size}.png"])
+                  for size in (16, 32, 48)]
         offset = 6 + 16 * len(frames)
         ico = struct.pack("<HHH", 0, 1, len(frames))
         for size, data in frames:
@@ -117,26 +131,34 @@ def main():
         ico += b"".join(data for _, data in frames)
         put("favicon.ico", ico)
 
-        # Master ink is centered at (30,32). At 0.75 scale every polygon is
-        # inside the maskable safe circle, radius 25.6 in this 64-unit canvas.
-        plate = svg(64, 64,
-            '<rect width="64" height="64" fill="#0B0D0E"/>'
-            '<g data-role="safe-area-mark" transform="translate(9.5 8) scale(0.75)">'
-            + dark_art + '</g>', "Surfaces opaque touch and install icon")
+        def install_plate(purpose):
+            return svg(64, 64,
+                f'<rect width="64" height="64" fill="{CONTRACT["install"]["plate"]}"/>'
+                f'<g data-role="install-mark" transform="{CONTRACT["install"][purpose]["markTransform"]}">'
+                + (light_art if CONTRACT["install"]["theme"] == "light" else dark_art)
+                + '</g>', f"Surfaces opaque {purpose} install icon")
+
+        # Ordinary icons use the same centered 48-unit height as browser tiles.
+        # The explicit maskable alternate uses 36 units to fit its safe circle.
+        plate = install_plate("any")
+        maskable_plate = install_plate("maskable")
         put(f"brand/{VERSION}/install-icon.svg", plate)
+        put(f"brand/{VERSION}/maskable-install-icon.svg", maskable_plate)
         put("design-system/logo/app-icon.svg", plate)
         for size in (180, 192, 512):
-            data = png(plate, size, size, opaque=True)
+            data = png(plate, size, size, opaque=True, icon=True)
             name = "apple-touch-icon" if size == 180 else "icon"
             put(f"brand/{VERSION}/{name}-{size}.png", data, [size, size])
             if size == 180:
                 put("apple-touch-icon.png", data, [size, size])
             else:
-                put(f"brand/{VERSION}/icon-maskable-{size}.png", data, [size, size])
+                put(f"brand/{VERSION}/icon-maskable-{size}.png", png(maskable_plate, size, size, opaque=True, icon=True), [size, size])
 
-        width, height, scale = 1200, 630, 2.8
+        width, height = CONTRACT["social"]["dimensions"]
         lockup_width = float(ET.fromstring(horizontal_dark).attrib["width"])
-        x, y = (width - lockup_width * scale) / 2, (height - 109 * scale) / 2
+        lockup_height = float(ET.fromstring(horizontal_dark).attrib["height"])
+        scale = min(CONTRACT["social"]["maxWholeLockupScale"], CONTRACT["social"]["maxWholeLockupWidth"] / lockup_width)
+        x, y = (width - lockup_width * scale) / 2, (height - lockup_height * scale) / 2
         home_social = svg(width, height,
             '<rect width="1200" height="630" fill="#0B0D0E"/>'
             f'<g data-role="canonical-lockup" transform="translate({x:.12f} {y:.12f}) scale({scale})">'
@@ -146,30 +168,15 @@ def main():
         put(f"brand/{VERSION}/surfaces-social.png", home_png, [width, height])
         put("assets/surfaces-platform-og.png", home_png, [width, height])
 
-        reference_social = svg(width, height,
-            '<rect width="1200" height="630" fill="#F7F6F2"/>'
-            '<rect x="72" y="72" width="1056" height="486" rx="8" fill="#FFFFFF" stroke="#DAD7CF" stroke-width="2"/>'
-            '<g data-role="canonical-lockup" transform="translate(100 100) scale(1.9)">'
-            + inner(horizontal_light) + '</g>' + inner(social_copy)
-            + '<rect x="854" y="164" width="170" height="10" fill="#00A7C8"/>'
-            '<rect x="854" y="204" width="202" height="1" fill="#DAD7CF"/>'
-            '<rect x="854" y="244" width="138" height="1" fill="#DAD7CF"/>'
-            '<rect x="854" y="284" width="186" height="1" fill="#DAD7CF"/>',
-            "Surfaces design system. Design system for reviewable generated UI.")
-        put("design-system/logo/surfaces-social-card.svg", reference_social)
-        reference_png = png(reference_social, width, height, opaque=True)
-        put(f"brand/{VERSION}/design-system-social.png", reference_png, [width, height])
-        put("design-system/logo/surfaces-social-card.png", reference_png, [width, height])
+        # Every public sharing entrypoint uses the same dark reference pattern.
+        # Page titles and descriptions remain metadata outside the artwork.
+        put("design-system/logo/surfaces-social-card.svg", home_social)
+        put(f"brand/{VERSION}/design-system-social.png", home_png, [width, height])
+        put("design-system/logo/surfaces-social-card.png", home_png, [width, height])
 
-        manifest = {
-            "id": "/", "name": "Surfaces", "short_name": "Surfaces", "start_url": "/", "scope": "/",
-            "display": "standalone", "background_color": "#0B0D0E", "theme_color": "#0B0D0E",
-            "icons": [
-                {"src": f"{BASE}/icon{'-maskable' if purpose == 'maskable' else ''}-{size}.png",
-                 "sizes": f"{size}x{size}", "type": "image/png", "purpose": purpose}
-                for purpose in ("any", "maskable") for size in (192, 512)
-            ],
-        }
+        manifest = {**CONTRACT["manifest"], "icons": [
+            {**item, "src": f"{BASE}/{item['src']}"} for item in CONTRACT["manifest"]["icons"]
+        ]}
         put("site.webmanifest", (json.dumps(manifest, indent=2) + "\n").encode())
         exports = {
             "revision": VERSION, "canonicalBrandCommit": CONTRACT["canonicalBrandCommit"],

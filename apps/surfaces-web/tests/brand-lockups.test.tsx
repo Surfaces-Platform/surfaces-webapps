@@ -74,6 +74,7 @@ describe("canonical Surfaces lockups", () => {
     const social = read("surfaces-social-card.svg");
     expect(glyphs(social.split('data-role="social-copy"')[0])).toEqual(expectedGlyphs);
     expect(social).not.toMatch(/<text\b[^>]*>Surfaces<\/text>/);
-    expect(social).toContain('data-role="canonical-lockup" transform="translate(100 100) scale(1.9)"');
+    expect(social).toContain('data-role="canonical-lockup" transform="translate(131.345321573800 162.400000000000) scale(2.8)"');
+    expect(social).not.toContain('data-role="social-copy"');
   });
 });
