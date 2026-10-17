@@ -42,7 +42,7 @@ function renderHomeDocument() {
 }
 
 describe("surfaces.systems home page", () => {
-  it("leads with the customer outcome and a compact decision-to-guidance story", () => {
+  it("leads with the proposed decision-to-guidance workflow and its testing stage", () => {
     const { page, html } = renderHomeDocument();
     const sectionMarkers = Array.from(
       page.querySelectorAll("[data-contract-section]"),
@@ -50,11 +50,11 @@ describe("surfaces.systems home page", () => {
     );
 
     expect(page.querySelector("h1")?.textContent?.replace(/\s+/g, " ").trim()).toBe(
-      "Make every release decision reusable.",
+      "Turn UI review decisions into guidance.",
     );
     expect(
       page.querySelector(".hero-copy > .eyebrow")?.textContent?.replace(/\s+/g, " ").trim(),
-    ).toBe("For teams turning UI review into reusable guidance");
+    ).toBe("For teams reviewing agent-produced UI changes");
     expect(page.querySelector(".hero-copy > .eyebrow + h1")?.id).toBe("hero-title");
     expect(homepageCss).toMatch(
       /\.surfaces-homepage \.hero \.eyebrow\s*\{[^}]*text-transform:\s*uppercase;/,
@@ -67,11 +67,11 @@ describe("surfaces.systems home page", () => {
     );
     const heroLead = page.querySelector(".hero-lead")?.textContent?.replace(/\s+/g, " ").trim();
     expect(heroLead).toBe(
-      "Resolve clear, repeated violations sooner, so senior judgment stays focused on what’s genuinely new or contested.",
+      "We’re testing how prior decisions can guide later UI reviews, with an owner confirming or correcting proposed guidance.",
     );
     expect(
       page.querySelector("#workload-title")?.textContent?.replace(/\s+/g, " ").trim(),
-    ).toBe("The same violation should not require the same review twice.");
+    ).toBe("Keep prior decisions available for the next review.");
     expect(
       Array.from(page.querySelectorAll(".loop-fragment strong"), (heading) =>
         heading.textContent?.trim(),
@@ -82,18 +82,15 @@ describe("surfaces.systems home page", () => {
       "Chasing rework",
     ]);
     expect(page.querySelector(".loop-break")).toBeNull();
-    expect(html).toContain("Each decision should make the next clear repeat easier to resolve.");
+    expect(html).toContain("Review guidance before trying it on a later case.");
     expect(
       Array.from(page.querySelectorAll(".cycle-card h3"), (heading) => heading.textContent?.trim()),
-    ).toEqual(["Assemble context", "Decide", "Propose guidance", "Confirm changes", "Reuse"]);
-    expect(html).toContain("Every decision · including no change needed");
+    ).toEqual(["Assemble context", "Decide", "Propose guidance", "Confirm changes", "Test reuse"]);
+    expect(html).toContain("A proposed change or no change needed");
     expect(html).toContain("The owner confirms or corrects proposed changes");
-    expect(html).toContain("Accepted guidance checks the next candidate");
-    expect(html).toContain("Clear repeats use guidance");
-    expect(html).toContain("New cases reach the owner");
-    expect(html).toContain(
-      "Surfaces directs what happens next and delegates the work. Agents execute in the tools your team already uses.",
-    );
+    expect(html).toContain("Check accepted guidance against a later candidate");
+    expect(html).toContain("Try guidance on matching cases");
+    expect(html).toContain("Owner review for new or contested cases");
     expect(html).toContain(
       "Surfaces is an early product hypothesis. We’re testing it with recent interface release decisions.",
     );
@@ -163,7 +160,7 @@ describe("surfaces.systems home page", () => {
     ]);
     expect(
       heroActions.map((link) => link.textContent?.replace(/\s+/g, " ").trim()),
-    ).toEqual(["See how it works", "Share a recent release decision"]);
+    ).toEqual(["See the workflow", "Email a release decision"]);
 
     const emailLinks = Array.from(page.querySelectorAll('a[href^="mailto:"]'));
     const emailLink = emailLinks[0];
@@ -179,10 +176,10 @@ describe("surfaces.systems home page", () => {
 
     expect(emailLinks).toHaveLength(1);
     expect(emailLink?.textContent?.replace(/\s+/g, " ").trim()).toBe(
-      "Share a recent release decision",
+      "Email a release decision",
     );
     expect(emailLink?.getAttribute("aria-label")).toBe(
-      "Share a recent release decision by email with Mike",
+      "Email a release decision to Mike",
     );
     expect(emailLink?.matches(".button.button-secondary")).toBe(true);
     expect(emailLink?.getAttribute("href")).toBe(emailHref);
@@ -273,11 +270,11 @@ describe("surfaces.systems home page", () => {
     const publicSources = `${homepageContentSource}\n${layoutSource}`;
 
     expect(publicSources).toContain(
-      "Make Every Release Decision Reusable | Surfaces",
+      "UI Review Decisions and Guidance | Surfaces",
     );
-    expect(publicSources).toContain("Make every release decision reusable.");
+    expect(publicSources).toContain("Turn UI review decisions into guidance.");
     expect(publicSources).toContain(
-      "Surfaces is exploring how decisions about agent-produced UI changes can become reusable guidance, so clear repeat violations can be resolved before senior review.",
+      "Surfaces is testing how prior decisions can guide later UI reviews, with an owner confirming or correcting proposed guidance.",
     );
     expect(homepageContentSource).toContain('href="https://surfaces.systems/"');
     expect(layoutSource).toContain('canonical: "/"');
@@ -287,6 +284,10 @@ describe("surfaces.systems home page", () => {
       "above the agent work loop",
       "release admission",
       "Request a workflow review",
+      "Make every release decision reusable",
+      "Make Every Release Decision Reusable",
+      "violations sooner",
+      "your team already uses",
     ]) {
       expect(publicSources).not.toContain(internalCopy);
     }

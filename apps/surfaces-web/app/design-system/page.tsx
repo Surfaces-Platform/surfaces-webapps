@@ -4,7 +4,7 @@ import { designSystemOrigin, pages } from "./referenceContent";
 import { designSystemSocialImage } from "@/lib/brand-metadata";
 
 export const metadata: Metadata = {
-  title: "Surfaces Design System",
+  title: "Design System | Surfaces",
   description:
     "Simple Slab identity, public-page tokens, and proof-oriented patterns for reviewable generated UI.",
   alternates: {
@@ -12,14 +12,14 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    title: "Surfaces Design System",
+    title: "Design System | Surfaces",
     description: "Simple Slab identity, public-page tokens, and generated-screen review patterns.",
     url: `${designSystemOrigin}/design-system`,
     images: [designSystemSocialImage],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Surfaces Design System",
+    title: "Design System | Surfaces",
     description: "Simple Slab identity, public-page tokens, and generated-screen review patterns.",
     images: [designSystemSocialImage],
   },

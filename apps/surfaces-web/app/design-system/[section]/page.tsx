@@ -29,7 +29,9 @@ export async function generateMetadata({ params }: SectionPageProps): Promise<Me
     return {};
   }
 
-  const title = `${page.label} - Surfaces Design System`;
+  const title = page.slug === "identity"
+    ? "Identity and Design System | Surfaces"
+    : `Design System ${page.label} | Surfaces`;
   const url = `${designSystemOrigin}${designSystemBasePath}/${page.slug}`;
 
   return {

@@ -1,5 +1,11 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Public website copy
+
+The [website family copy contract](../../docs/specs/website-family-copy.md) governs public text and metadata alongside the [layout contract](../../docs/specs/website-family-layout.md). The homepage is a testing-stage decision and guidance workflow; a vision or example does not establish a measured benefit or general availability.
+
+Edit `app/homepage-content.html` for the hero, workload, and workflow copy. `app/page.tsx` imports those sections and owns the footer and website schema; `app/layout.tsx` owns page and social metadata. Keep the same claim scope in each file. The existing `tests/home-page.test.tsx` checks the copy boundary, action destinations, and unchanged image/layout assets at CI/CD time. Review violations as copy corrections, without changing product behavior or granting release authority.
+
 ## Getting Started
 
 First, run the development server:
