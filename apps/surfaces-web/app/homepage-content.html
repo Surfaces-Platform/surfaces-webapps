@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Make Every Release Decision Reusable | Surfaces</title>
+    <title>UI Review Decisions and Guidance | Surfaces</title>
     <meta
       name="description"
-      content="Surfaces is exploring how decisions about agent-produced UI changes can become reusable guidance, so clear repeat violations can be resolved before senior review."
+      content="Surfaces is testing how prior decisions can guide later UI reviews, with an owner confirming or correcting proposed guidance."
     />
     <meta
       name="theme-color"
@@ -22,11 +22,11 @@
     <meta property="og:site_name" content="Surfaces" />
     <meta
       property="og:title"
-      content="Make every release decision reusable."
+      content="UI Review Decisions and Guidance | Surfaces"
     />
     <meta
       property="og:description"
-      content="Turn decisions about agent-produced UI changes into guidance that can resolve clear repeat violations before senior review."
+      content="Surfaces is testing how prior decisions can guide later UI reviews, with an owner confirming or correcting proposed guidance."
     />
     <meta property="og:url" content="https://surfaces.systems/" />
     <meta property="og:image" content="https://surfaces.systems/brand/canonical-8bfdbd59528629c2/surfaces-social.png" />
@@ -34,6 +34,7 @@
     <meta property="og:image:height" content="630" />
     <meta property="og:image:type" content="image/png" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="UI Review Decisions and Guidance | Surfaces" />
     <meta name="twitter:image" content="https://surfaces.systems/brand/canonical-8bfdbd59528629c2/surfaces-social.png" />
     <meta name="application-name" content="Surfaces" />
     <meta name="apple-mobile-web-app-title" content="Surfaces" />
@@ -91,18 +92,18 @@
       >
         <div class="hero-copy-shell shell">
           <div class="hero-copy">
-            <p class="eyebrow">For teams turning UI review into reusable guidance</p>
-            <h1 id="hero-title">Make every release decision reusable.</h1>
+            <p class="eyebrow">For teams reviewing agent-produced UI changes</p>
+            <h1 id="hero-title">Turn UI review decisions into guidance.</h1>
             <p class="hero-lead">
-              Resolve clear, repeated violations sooner, so senior judgment stays focused on
-              what’s genuinely new or contested.
+              We’re testing how prior decisions can guide later UI reviews, with an owner
+              confirming or correcting proposed guidance.
             </p>
             <div class="action-row">
               <a
                 class="button button-primary"
                 href="#product-direction"
               >
-                See how it works
+                See the workflow
                 <svg viewBox="0 0 24 24" aria-hidden="true" data-lucide-id="arrow-right">
                   <path d="M5 12h14"></path>
                   <path d="m12 5 7 7-7 7"></path>
@@ -111,9 +112,9 @@
               <a
                 class="button button-secondary"
                 href="mailto:mike@surfaces.systems?subject=A%20recent%20interface%20release%20decision&amp;body=Hi%20Mike%2C%0A%0AI%E2%80%99d%20like%20to%20compare%20notes%20on%3A%0A%0A%5B%20%5D%20AI%20UX%20when%20interfaces%20can%20act%20or%20decide%0A%5B%20%5D%20What%20Human%20Above%20The%20Loop%20should%20look%20like%20in%20practice%0A%5B%20%5D%20Something%20else%3A"
-                aria-label="Share a recent release decision by email with Mike"
+                aria-label="Email a release decision to Mike"
               >
-                Share a recent release decision
+                Email a release decision
               </a>
             </div>
           </div>
@@ -136,8 +137,8 @@
         data-contract-section="landing.workload"
       >
         <div class="shell problem-heading">
-          <p class="section-label">The workload to remove</p>
-          <h2 id="workload-title">The same violation should not require the same review twice.</h2>
+          <p class="section-label">Repeated review work</p>
+          <h2 id="workload-title">Keep prior decisions available for the next review.</h2>
         </div>
 
         <ol
@@ -169,8 +170,8 @@
         data-contract-section="landing.guidance"
       >
         <div class="section-intro">
-          <p class="section-label">How it works</p>
-          <h2 id="product-direction-title">Each decision should make the next clear repeat easier to resolve.</h2>
+          <p class="section-label">The proposed workflow</p>
+          <h2 id="product-direction-title">Review guidance before trying it on a later case.</h2>
         </div>
 
         <ol class="cycle-list">
@@ -209,7 +210,7 @@
               </svg>
             </div>
             <h3>Propose guidance</h3>
-            <p>Every decision · including no change needed</p>
+            <p>A proposed change or no change needed</p>
           </li>
           <li class="cycle-card">
             <span class="cycle-index">04</span>
@@ -231,17 +232,14 @@
                 <path d="M8 17v-3"></path>
               </svg>
             </div>
-            <h3>Reuse</h3>
-            <p>Accepted guidance checks the next candidate</p>
+            <h3>Test reuse</h3>
+            <p>Check accepted guidance against a later candidate</p>
           </li>
         </ol>
-        <div class="cycle-return" aria-label="Clear repeats use guidance while new cases reach the owner">
-          <span>Clear repeats use guidance</span>
-          <strong>New cases reach the owner</strong>
+        <div class="cycle-return" aria-label="Try accepted guidance on matching cases; owners review new or contested cases">
+          <span>Try guidance on matching cases</span>
+          <strong>Owner review for new or contested cases</strong>
         </div>
-        <p class="loop-note">
-          Surfaces directs what happens next and delegates the work. Agents execute in the tools your team already uses.
-        </p>
         <p class="loop-note">
           Surfaces is an early product hypothesis. We’re testing it with recent interface release decisions.
         </p>
@@ -253,7 +251,7 @@
         <a class="brand footer-brand" href="/" aria-label="Surfaces home">
           <img class="brand-lockup" src="/design-system/logo/surfaces-lockup-horizontal-reverse.svg" alt="" />
         </a>
-        <p>Release decisions that become reusable guidance.</p>
+        <p>UI review decisions and proposed guidance.</p>
         <p>© <span data-current-year>2026</span> Surfaces</p>
       </div>
     </footer>

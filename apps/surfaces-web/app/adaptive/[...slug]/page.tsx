@@ -1,4 +1,9 @@
+import type { Metadata } from "next";
+import { publicPageTitleMetadata } from "@/lib/brand-metadata";
+
 export const runtime = "edge";
+
+export const metadata: Metadata = publicPageTitleMetadata("Adaptive Contract Test | Surfaces");
 
 export default async function AdaptiveTestPage({ params }: { params: Promise<{ slug?: string[] }> }) {
   const { slug } = await params;

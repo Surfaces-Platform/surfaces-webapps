@@ -44,7 +44,7 @@ const websiteSchema = {
   name: "Surfaces",
   url: "https://surfaces.systems/",
   description:
-    "Surfaces is exploring how decisions about agent-produced UI changes can become reusable guidance, so clear repeat violations can be resolved before senior review.",
+    "Surfaces is testing how prior decisions can guide later UI reviews, with an owner confirming or correcting proposed guidance.",
 };
 
 export default function Home() {
@@ -91,7 +91,7 @@ export default function Home() {
           >
             <HomeBrand />
           </Link>
-          <p>Release decisions that become reusable guidance.</p>
+          <p>UI review decisions and proposed guidance.</p>
           <p>© {new Date().getFullYear()} Surfaces</p>
         </div>
       </footer>

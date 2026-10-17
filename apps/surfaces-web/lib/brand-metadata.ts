@@ -20,3 +20,28 @@ export const homeSocialImage = {
 export const designSystemSocialImage = {
   ...homeSocialImage,
 };
+
+// Keep inherited sharing fields when a public page overrides its title.
+export function publicPageTitleMetadata(title: string): Metadata {
+  const description =
+    "Surfaces is testing how prior decisions can guide later UI reviews, with an owner confirming or correcting proposed guidance.";
+
+  return {
+    title,
+    description,
+    openGraph: {
+      type: "website",
+      siteName: "Surfaces",
+      title,
+      description,
+      url: "/",
+      images: [homeSocialImage],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [homeSocialImage],
+    },
+  };
+}

@@ -12,6 +12,9 @@ import RootLayout, { metadata as rootMetadata } from "@/app/layout";
 import { metadata as referenceMetadata } from "@/app/design-system/page";
 import { generateMetadata } from "@/app/design-system/[section]/page";
 import { navItems } from "@/app/design-system/referenceContent";
+import { metadata as ciMetadata } from "@/app/demos/ci/page";
+import { metadata as generationMetadata } from "@/app/demos/generation/page";
+import { metadata as adaptiveMetadata } from "@/app/adaptive/[...slug]/page";
 
 vi.mock("next/font/google", () => ({ Inter: () => ({ variable: "font-inter" }) }));
 
@@ -232,6 +235,51 @@ describe("browser, install, and sharing brand entrypoints", () => {
     const layout = read("app/layout.tsx").toString();
     expect(layout).toContain('rel="mask-icon"');
     expect(layout).toContain('color="#0B0D0E"');
+  });
+
+  it("uses the reviewed title on every public route and preserves inherited sharing fields", async () => {
+    const sectionTitles = {
+      identity: "Identity and Design System | Surfaces",
+      foundations: "Design System Foundations | Surfaces",
+      tokens: "Design System Tokens | Surfaces",
+      components: "Design System Components | Surfaces",
+      patterns: "Design System Patterns | Surfaces",
+      resources: "Design System Resources | Surfaces",
+      governance: "Design System Governance | Surfaces",
+      changelog: "Design System Changelog | Surfaces",
+    };
+    const reviewedPages = [
+      { metadata: rootMetadata, title: "UI Review Decisions and Guidance | Surfaces" },
+      { metadata: referenceMetadata, title: "Design System | Surfaces" },
+      { metadata: ciMetadata, title: "CI/CD Validation Demo | Surfaces" },
+      { metadata: generationMetadata, title: "Generation-Time Enforcement Demo | Surfaces" },
+      { metadata: adaptiveMetadata, title: "Adaptive Contract Test | Surfaces" },
+      ...await Promise.all(Object.entries(sectionTitles).map(async ([section, title]) => ({
+        metadata: await generateMetadata({ params: Promise.resolve({ section }) }), title,
+      }))),
+    ];
+
+    expect(reviewedPages).toHaveLength(13);
+    expect(new Set(reviewedPages.map(({ title }) => title)).size).toBe(13);
+    for (const { metadata, title } of reviewedPages) {
+      expect(metadata.title).toBe(title);
+      expect(metadata.openGraph).toMatchObject({ title });
+      expect(metadata.twitter).toMatchObject({ title });
+    }
+    for (const metadata of [ciMetadata, generationMetadata, adaptiveMetadata]) {
+      // Nested social metadata replaces parent fields in Next: keep the image,
+      // description, card and existing homepage URL when overriding just a title.
+      expect(metadata.openGraph).toEqual({ ...rootMetadata.openGraph, title: metadata.title });
+      expect(metadata.twitter).toEqual({ ...rootMetadata.twitter, title: metadata.title });
+      expect(metadata.description).toBe(rootMetadata.description);
+      expect(metadata.alternates).toBeUndefined();
+      expect(metadata.robots).toBeUndefined();
+    }
+    expect(rootMetadata.alternates).toEqual({ canonical: "/" });
+    const standalone = new DOMParser().parseFromString(read("app/homepage-content.html").toString(), "text/html");
+    expect(standalone.title).toBe(rootMetadata.title);
+    expect(standalone.querySelector('meta[property="og:title"]')?.getAttribute("content")).toBe(rootMetadata.title);
+    expect(standalone.querySelector('meta[name="twitter:title"]')?.getAttribute("content")).toBe(rootMetadata.title);
   });
 
   it("preserves complete outlined logos in social sources and refreshes legacy/download aliases", () => {

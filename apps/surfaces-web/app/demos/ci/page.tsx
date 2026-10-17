@@ -1,4 +1,9 @@
+import type { Metadata } from "next";
+import { publicPageTitleMetadata } from "@/lib/brand-metadata";
+
 export const runtime = "edge";
+
+export const metadata: Metadata = publicPageTitleMetadata("CI/CD Validation Demo | Surfaces");
 
 export default function CiDemoPage() {
   return (
