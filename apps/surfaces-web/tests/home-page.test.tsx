@@ -62,9 +62,12 @@ describe("surfaces.systems home page", () => {
     expect(homepageCss).toMatch(
       /\.surfaces-homepage \.hero \.eyebrow\s*\{[^}]*color:\s*var\(--sp-color-mist\);/,
     );
-    expect(homepageCss).toMatch(
-      /\.surfaces-homepage \.hero \.eyebrow\s*\{[^}]*border-left:\s*2px solid var\(--sp-ui-proof\);/,
-    );
+    const heroEyebrowCss = homepageCss.match(
+      /\.surfaces-homepage \.hero \.eyebrow\s*\{([^}]*)\}/,
+    )?.[1];
+    expect(heroEyebrowCss).toBeDefined();
+    expect(heroEyebrowCss).not.toMatch(/border(?:-left|-inline-start)?:/);
+    expect(heroEyebrowCss).not.toMatch(/padding(?:-left|-inline-start)?:/);
     const heroLead = page.querySelector(".hero-lead")?.textContent?.replace(/\s+/g, " ").trim();
     expect(heroLead).toBe(
       "Resolve clear, repeated violations sooner, so senior judgment stays focused on what’s genuinely new or contested.",
@@ -121,7 +124,7 @@ describe("surfaces.systems home page", () => {
     expect(page.querySelectorAll(".proof-section")).toHaveLength(0);
     expect(page.querySelectorAll(".partner-section")).toHaveLength(0);
     expect(sha256(homepageCss)).toBe(
-      "22c4ca0f31cfb45201e8cf2b564e8380faf7dc269cd4ba7dd71fc53298512b0f",
+      "92f2190a4022332e92004af576c784543af09c85519015281e9dfb61fd931789",
     );
     expect(sha256(slabAsset)).toBe(
       "8901f5ad73c5a96aeb10647e98fc9e9f6151bf55152911e948e3be0343e3a64f",
