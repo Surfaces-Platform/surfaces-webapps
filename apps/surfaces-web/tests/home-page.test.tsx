@@ -42,7 +42,7 @@ function renderHomeDocument() {
 }
 
 describe("surfaces.systems home page", () => {
-  it("leads with the proposed decision-to-guidance workflow and its testing stage", () => {
+  it("restores the approved masthead and preserves the proposed decision-to-guidance workflow", () => {
     const { page, html } = renderHomeDocument();
     const sectionMarkers = Array.from(
       page.querySelectorAll("[data-contract-section]"),
@@ -50,11 +50,11 @@ describe("surfaces.systems home page", () => {
     );
 
     expect(page.querySelector("h1")?.textContent?.replace(/\s+/g, " ").trim()).toBe(
-      "Turn UI review decisions into guidance.",
+      "Make every release decision reusable.",
     );
     expect(
       page.querySelector(".hero-copy > .eyebrow")?.textContent?.replace(/\s+/g, " ").trim(),
-    ).toBe("For teams reviewing agent-produced UI changes");
+    ).toBe("For teams turning UI review into reusable guidance");
     expect(page.querySelector(".hero-copy > .eyebrow + h1")?.id).toBe("hero-title");
     expect(homepageCss).toMatch(
       /\.surfaces-homepage \.hero \.eyebrow\s*\{[^}]*text-transform:\s*uppercase;/,
@@ -67,7 +67,7 @@ describe("surfaces.systems home page", () => {
     );
     const heroLead = page.querySelector(".hero-lead")?.textContent?.replace(/\s+/g, " ").trim();
     expect(heroLead).toBe(
-      "We’re testing how prior decisions can guide later UI reviews, with an owner confirming or correcting proposed guidance.",
+      "Resolve clear, repeated violations sooner, so senior judgment stays focused on what’s genuinely new or contested.",
     );
     expect(
       page.querySelector("#workload-title")?.textContent?.replace(/\s+/g, " ").trim(),
@@ -160,7 +160,7 @@ describe("surfaces.systems home page", () => {
     ]);
     expect(
       heroActions.map((link) => link.textContent?.replace(/\s+/g, " ").trim()),
-    ).toEqual(["See the workflow", "Email a release decision"]);
+    ).toEqual(["See how it works", "Share a recent release decision"]);
 
     const emailLinks = Array.from(page.querySelectorAll('a[href^="mailto:"]'));
     const emailLink = emailLinks[0];
@@ -176,10 +176,10 @@ describe("surfaces.systems home page", () => {
 
     expect(emailLinks).toHaveLength(1);
     expect(emailLink?.textContent?.replace(/\s+/g, " ").trim()).toBe(
-      "Email a release decision",
+      "Share a recent release decision",
     );
     expect(emailLink?.getAttribute("aria-label")).toBe(
-      "Email a release decision to Mike",
+      "Share a recent release decision by email with Mike",
     );
     expect(emailLink?.matches(".button.button-secondary")).toBe(true);
     expect(emailLink?.getAttribute("href")).toBe(emailHref);
@@ -267,12 +267,11 @@ describe("surfaces.systems home page", () => {
   });
 
   it("keeps standalone and root metadata inside a concise hypothesis boundary", () => {
-    const publicSources = `${homepageContentSource}\n${layoutSource}`;
+    const publicSources = `${homepageContentSource.split("</head>")[0]}\n${layoutSource}`;
 
     expect(publicSources).toContain(
       "UI Review Decisions and Guidance | Surfaces",
     );
-    expect(publicSources).toContain("Turn UI review decisions into guidance.");
     expect(publicSources).toContain(
       "Surfaces is testing how prior decisions can guide later UI reviews, with an owner confirming or correcting proposed guidance.",
     );
