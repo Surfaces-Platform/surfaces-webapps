@@ -2,7 +2,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import BenchmarkReportPage from "@/app/benchmarks/[reportId]/page";
-import type { BenchmarkReportDocument, BenchmarkReportListItem, BenchmarkReportVisualizationData } from "@/lib/benchmark-report-docs";
+import type { BenchmarkReportDocument, BenchmarkReportListItem, BenchmarkReportRunEvidence, BenchmarkReportVisualizationData } from "@/lib/benchmark-report-docs";
 
 vi.mock("next/navigation", () => ({
   notFound: vi.fn(() => {
@@ -36,6 +36,7 @@ function buildVisualization(): BenchmarkReportVisualizationData {
       boundary: { improved: 0, same: 1, regressed: 0 },
       visual: { improved: 1, same: 0, regressed: 0 },
       responsiveness: { improved: 0, same: 1, regressed: 0 },
+      platformFit: { improved: 0, same: 1, regressed: 0 },
     },
     heuristics: {
       improvedCounts: {
@@ -74,6 +75,7 @@ function buildVisualization(): BenchmarkReportVisualizationData {
           boundary: { baseline: "partial", guided: "partial", delta: 0 },
           visual: { baseline: "partial", guided: "strong", delta: 1 },
           responsiveness: { baseline: "partial", guided: "partial", delta: 0 },
+          platformFit: { baseline: "partial", guided: "partial", delta: 0 },
         },
         heuristics: {
           unresolvedAcceptedSuggestionRate: -0.25,
@@ -104,11 +106,68 @@ function buildListItem(overrides: Partial<BenchmarkReportListItem> = {}): Benchm
   };
 }
 
+function buildEvidence(): BenchmarkReportRunEvidence {
+  return {
+    cohortId: "20260315060000",
+    evaluationMode: "zero-shot",
+    tool: "local-llm",
+    sourceSpecPath: "/tmp/spec.json",
+    sourceRunPath: null,
+    guidanceStrategies: ["unguided", "baseline-primary", "json-primary"],
+    attemptBudget: 1,
+    model: {
+      requestedModelLabel: "gpt-oss-120b",
+      resolvedModelId: "openai/gpt-oss-120b",
+      baseUrl: "http://127.0.0.1:1234/v1",
+      fingerprint: "fingerprint",
+    },
+    fixtures: [
+      {
+        fixtureId: "reference-target-web",
+        surfaceId: "reference-target-web",
+        platformTarget: "web",
+        consumerType: "web-browser",
+        capturePreset: "web-browser",
+        brief: {
+          path: "/tmp/implementation-brief.md",
+          sha256: "brief-hash",
+          text: "Benchmark prompt body.",
+        },
+        contracts: [],
+        inputs: [],
+        sessions: [
+          {
+            guidanceStrategy: "unguided",
+            sessionId: "run/unguided",
+            latestStatus: "warn",
+            latestOutcome: "warn",
+            errorMessage: null,
+            summaryPath: "/tmp/summary.json",
+            guidanceHandoffPath: "/tmp/guidance.json",
+            guidanceHandoffText: "{\"surface\":\"reference-target-web\"}",
+            agentInputPath: "/tmp/agent-input.txt",
+            agentInputText: "Implement the zero-shot surface.",
+            preview: null,
+          },
+        ],
+        comparisons: [
+          {
+            baselineGuidanceStrategy: "unguided",
+            guidedGuidanceStrategy: "json-primary",
+            comparisonPath: "/tmp/comparison.json",
+          },
+        ],
+      },
+    ],
+  };
+}
+
 function buildDocument(overrides: Partial<BenchmarkReportDocument> = {}): BenchmarkReportDocument {
   return {
     ...buildListItem(),
     markdown: "# Generation Benchmark Report\n\nBody copy.\n",
     visualization: buildVisualization(),
+    evidence: buildEvidence(),
     ...overrides,
   };
 }
@@ -142,7 +201,10 @@ describe("BenchmarkReportPage", () => {
     expect(html).toContain("Choose report");
     expect(html).toContain("SurfaceOps benchmark archive");
     expect(html).toContain("data-testid=\"benchmark-report-visualization\"");
+    expect(html).toContain("data-testid=\"benchmark-report-evidence\"");
     expect(html).toContain("Comparison snapshot");
+    expect(html).toContain("Run prompt, contract, and screenshot evidence");
+    expect(html).toContain("gpt-oss-120b");
     expect(html).toContain("Generation Benchmark Report");
   });
 
@@ -155,6 +217,7 @@ describe("BenchmarkReportPage", () => {
       title: "2026-03-15 - SurfaceOps Expanded Benchmark Rerun",
       fileName: "2026-03-15-surfaceops-expanded-benchmark-rerun.md",
       visualization: null,
+      evidence: null,
     });
     listBenchmarkReports.mockReturnValue([buildListItem(), archiveReport]);
     loadBenchmarkReport.mockReturnValue(archiveReport);
@@ -165,6 +228,7 @@ describe("BenchmarkReportPage", () => {
     const html = renderToStaticMarkup(view);
 
     expect(html).not.toContain("data-testid=\"benchmark-report-visualization\"");
+    expect(html).not.toContain("data-testid=\"benchmark-report-evidence\"");
     expect(html).toContain("Generation Benchmark Report");
   });
 });

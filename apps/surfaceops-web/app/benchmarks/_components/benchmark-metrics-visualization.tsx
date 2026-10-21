@@ -7,6 +7,7 @@ const ASSESSMENT_DIMENSIONS: BenchmarkAssessmentDimension[] = [
   "boundary",
   "visual",
   "responsiveness",
+  "platformFit",
 ];
 
 const HEURISTICS = [

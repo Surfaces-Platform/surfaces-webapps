@@ -1,6 +1,6 @@
 import type { LocalWorkbenchAcceptedSuggestion, LocalWorkbenchDesignerNote } from "./types";
 
-export type BenchmarkGuidanceStrategy = "prompt-summary" | "json-primary" | "unguided";
+export type BenchmarkGuidanceStrategy = "prompt-summary" | "baseline-primary" | "json-primary" | "unguided";
 
 export interface BenchmarkFixtureGuidanceHints {
   stylesPath: string;
@@ -24,6 +24,7 @@ export interface BenchmarkFixture {
   stylesheetFiles: string[];
   tokenFiles: string[];
   guidanceHints: BenchmarkFixtureGuidanceHints;
+  authoringMode?: "repair" | "scratch";
 }
 
 export interface BenchmarkFixtureProfile {
@@ -59,7 +60,7 @@ export const REFERENCE_TARGET_FIXTURE = {
   implementationBrief:
     "Refine the reference target UI to better match the UI AST-guided surface while preserving deterministic fixture behavior.",
   devPort: 3004,
-  defaultStrategies: ["prompt-summary", "json-primary"],
+  defaultStrategies: ["baseline-primary", "json-primary"],
   primaryEditableFiles: ["apps/reference-target-web/app/page.tsx"],
   stylesheetFiles: ["apps/reference-target-web/app/globals.css"],
   tokenFiles: ["apps/reference-target-web/app/globals.css"],
@@ -80,6 +81,44 @@ export const REFERENCE_TARGET_FIXTURE = {
   },
 } as const satisfies BenchmarkFixture;
 
+export const BENCHMARK_IMAGE_WORKBENCH_FIXTURE = {
+  id: "benchmark-image-workbench-web",
+  label: "Benchmark Image Workbench Web",
+  appPath: "apps/benchmark-image-workbench-web",
+  contractPath: "contracts/generated/benchmark-image-workbench-web.contract.json",
+  astPath: "contracts/generated/benchmark-image-workbench-web.ui.surface.ast.json",
+  implementationBrief:
+    [
+      "Build an image editing workbench.",
+      "Treat it like a real browser-based product surface, not a marketing page.",
+      "Keep the direction minimal, but make the result feel plausible and production-minded in a single pass.",
+    ].join(" "),
+  devPort: 3010,
+  defaultStrategies: ["baseline-primary"],
+  primaryEditableFiles: [
+    "apps/benchmark-image-workbench-web/app/page.tsx",
+    "apps/benchmark-image-workbench-web/app/globals.css",
+  ],
+  stylesheetFiles: ["apps/benchmark-image-workbench-web/app/globals.css"],
+  tokenFiles: ["apps/benchmark-image-workbench-web/app/globals.css"],
+  guidanceHints: {
+    stylesPath: "apps/benchmark-image-workbench-web/app/globals.css",
+    motionSelectors: [".shellSection", ".toolChip", ".adjustmentRow"],
+    primaryPagePath: "apps/benchmark-image-workbench-web/app/page.tsx",
+    pageFramePath: "apps/benchmark-image-workbench-web/app/page.tsx",
+    widthPath: "apps/benchmark-image-workbench-web/app/globals.css",
+    sectionPaths: {
+      "workbench.header": "apps/benchmark-image-workbench-web/app/page.tsx",
+      "workbench.tools": "apps/benchmark-image-workbench-web/app/page.tsx",
+      "workbench.canvas": "apps/benchmark-image-workbench-web/app/page.tsx",
+      "workbench.adjustments": "apps/benchmark-image-workbench-web/app/page.tsx",
+      "workbench.assets": "apps/benchmark-image-workbench-web/app/page.tsx",
+      "workbench.export": "apps/benchmark-image-workbench-web/app/page.tsx",
+    },
+  },
+  authoringMode: "scratch",
+} as const satisfies BenchmarkFixture;
+
 export const REFERENCE_FLOW_FIXTURE = {
   id: "reference-flow-web",
   label: "Reference Flow Web",
@@ -88,7 +127,7 @@ export const REFERENCE_FLOW_FIXTURE = {
   implementationBrief:
     "Refine the reference flow UI so the staged request, review, and confirm path stays observable and contract-compliant across runtime flow checks.",
   devPort: 3009,
-  defaultStrategies: ["prompt-summary", "json-primary"],
+  defaultStrategies: ["baseline-primary", "json-primary"],
   primaryEditableFiles: ["apps/reference-flow-web/app/page.tsx"],
   stylesheetFiles: ["apps/reference-flow-web/app/globals.css"],
   tokenFiles: ["apps/reference-flow-web/app/globals.css"],
@@ -115,7 +154,7 @@ export const BENCHMARK_SHARED_SHELL_FIXTURE = {
   implementationBrief:
     "Repair the shared-shell benchmark fixture so all routes satisfy the contract while preserving the app's multi-route dashboard structure.",
   devPort: 3005,
-  defaultStrategies: ["prompt-summary", "json-primary"],
+  defaultStrategies: ["baseline-primary", "json-primary"],
   primaryEditableFiles: [
     "apps/benchmark-shared-shell-web/app/_components/shared-shell.tsx",
     "apps/benchmark-shared-shell-web/app/page.tsx",
@@ -148,7 +187,7 @@ export const BENCHMARK_DESTRUCTIVE_FLOW_FIXTURE = {
   implementationBrief:
     "Repair the destructive-flow benchmark fixture so the staged request, review, and confirm experience satisfies the contract without flattening the stateful flow.",
   devPort: 3006,
-  defaultStrategies: ["prompt-summary", "json-primary"],
+  defaultStrategies: ["baseline-primary", "json-primary"],
   primaryEditableFiles: [
     "apps/benchmark-destructive-flow-web/app/page.tsx",
     "apps/benchmark-destructive-flow-web/app/_components/flow-workbench.tsx",
@@ -181,7 +220,7 @@ export const BENCHMARK_DESIGN_TOKENS_FIXTURE = {
   implementationBrief:
     "Repair the dense token-heavy benchmark fixture so the reusable card and metrics system satisfies the contract without collapsing the component hierarchy.",
   devPort: 3007,
-  defaultStrategies: ["prompt-summary", "json-primary"],
+  defaultStrategies: ["baseline-primary", "json-primary"],
   primaryEditableFiles: [
     "apps/benchmark-design-tokens-web/app/page.tsx",
     "apps/benchmark-design-tokens-web/app/_components/token-matrix.tsx",
@@ -214,7 +253,7 @@ export const BENCHMARK_ASYNC_DATA_FIXTURE = {
   implementationBrief:
     "Repair the async data benchmark fixture so the server-driven dashboard and supporting panels satisfy the UI AST while preserving the async data split.",
   devPort: 3008,
-  defaultStrategies: ["prompt-summary", "json-primary"],
+  defaultStrategies: ["baseline-primary", "json-primary"],
   primaryEditableFiles: [
     "apps/benchmark-async-data-web/app/page.tsx",
     "apps/benchmark-async-data-web/app/loading.tsx",
@@ -243,6 +282,7 @@ export const BENCHMARK_ASYNC_DATA_FIXTURE = {
 
 export const BENCHMARK_FIXTURES = [
   REFERENCE_TARGET_FIXTURE,
+  BENCHMARK_IMAGE_WORKBENCH_FIXTURE,
   BENCHMARK_SHARED_SHELL_FIXTURE,
   BENCHMARK_DESTRUCTIVE_FLOW_FIXTURE,
   BENCHMARK_DESIGN_TOKENS_FIXTURE,
